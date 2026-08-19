@@ -23,6 +23,15 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
   // Toute navigation referme le menu.
   useEffect(() => setOuvert(false), [pathname]);
 
+  /**
+   * Fermeture explicite au clic, en plus de l'effet ci-dessus.
+   *
+   * Cliquer la rubrique où l'on se trouve déjà ne change pas l'URL : l'effet ne
+   * se déclenche pas, et le menu restait ouvert comme si le clic n'avait servi
+   * à rien.
+   */
+  const fermer = () => setOuvert(false);
+
   useEffect(() => {
     if (!ouvert) return;
 
@@ -85,30 +94,62 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
       >
         {/* « Accueil » ouvre la liste : le logo seul ne suffit pas à indiquer
             comment revenir à la page d'accueil. */}
-        <Link
-          href="/"
-          className="border-line font-display flex min-h-14 items-center border-b text-2xl"
-        >
-          Accueil
-        </Link>
+        <LienMenu href="/" label="Accueil" actif={pathname === "/"} onNaviguer={fermer} />
 
         {liens.map((l) => (
-          <Link
+          <LienMenu
             key={l.href}
             href={l.href}
-            className="border-line font-display flex min-h-14 items-center border-b text-2xl"
-          >
-            {l.label}
-          </Link>
+            label={l.label}
+            actif={pathname === l.href || pathname.startsWith(`${l.href}/`)}
+            onNaviguer={fermer}
+          />
         ))}
 
         <Link
           href="/contact"
+          onClick={fermer}
           className="border-gold text-ivory rounded-clixa mt-6 flex min-h-14 items-center justify-center border px-6 text-base"
         >
           Nous contacter
         </Link>
       </div>
     </>
+  );
+}
+
+/**
+ * Un lien du menu mobile.
+ *
+ * La rubrique courante est signalée par un trait or et un libellé en pleine
+ * couleur — même repère que sur écran large, pour que le visiteur sache où il
+ * se trouve avant de choisir où aller.
+ */
+function LienMenu({
+  href,
+  label,
+  actif,
+  onNaviguer,
+}: {
+  href: Route;
+  label: string;
+  actif: boolean;
+  onNaviguer: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNaviguer}
+      aria-current={actif ? "page" : undefined}
+      className={`border-line font-display flex min-h-14 items-center gap-3 border-b text-2xl transition-colors ${
+        actif ? "text-ivory" : "text-ivory-dim"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`bg-gold block h-px transition-all duration-300 ${actif ? "w-6" : "w-0"}`}
+      />
+      {label}
+    </Link>
   );
 }
