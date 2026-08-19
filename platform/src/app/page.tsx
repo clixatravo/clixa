@@ -89,6 +89,52 @@ export default function Accueil() {
         </div>
       </section>
 
+      {/* ── SkillAfrique ── reprise de la section #skillafrique de index.html.
+           La marque sur laquelle CLIXA s'est construit : elle garde sa place en
+           page d'accueil, les anciens clients cherchent ce nom. */}
+      <section id="skillafrique" className="border-line border-b px-8 py-16">
+        <div className="mx-auto grid max-w-[1180px] items-center gap-14 lg:grid-cols-2">
+          <div
+            className="border-gold from-panel to-ink relative order-first flex aspect-square items-center justify-center bg-gradient-to-br lg:order-none"
+            aria-hidden="true"
+          >
+            <span className="border-line absolute inset-[18px] border" />
+            <span className="font-display text-gold text-[5rem] opacity-90">SA</span>
+          </div>
+
+          <div>
+            <span className="mono-label text-gold mb-4 block">SkillAfrique by CLIXA</span>
+            <h2 className="mb-5 text-[clamp(1.5rem,2.8vw,2.1rem)]">
+              La marque de formation en ligne de CLIXA.
+            </h2>
+            <p className="text-ivory-dim mb-6 text-[0.98rem]">
+              SkillAfrique démocratise l&apos;accès à des formations live, premium et orientées
+              résultats, pour les professionnels africains et internationaux.
+            </p>
+
+            <div className="mb-8 flex flex-wrap gap-2.5">
+              {[
+                "Formations en direct",
+                "Cohortes interactives",
+                "Pédagogie concrète",
+                "Progression mesurable",
+              ].map((t) => (
+                <span
+                  key={t}
+                  className="border-line text-ivory-dim rounded-clixa border px-3.5 py-2 text-[0.8rem]"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <Link href="/skillafrique" className="border-gold text-ivory border-b pb-1 text-sm">
+              Découvrir SkillAfrique →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Agenda ── */}
       <section id="agenda" className="border-line border-b px-8 py-16">
         <div className="mx-auto max-w-[1180px]">

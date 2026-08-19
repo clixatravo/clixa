@@ -11,6 +11,7 @@ import { MobileMenu } from "@/components/MobileMenu";
  */
 const liens = [
   { href: "/formations", label: "Formations" },
+  { href: "/skillafrique", label: "SkillAfrique" },
   { href: "/a-propos", label: "À propos" },
   { href: "/entreprises", label: "Entreprises" },
   { href: "/campus", label: "Campus" },

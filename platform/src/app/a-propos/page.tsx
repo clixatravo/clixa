@@ -102,17 +102,18 @@ export default function APropos() {
           <div className="mb-8">
             <span className="mono-label text-gold mb-3 block">SkillAfrique by CLIXA</span>
             <h2 className="mb-4 max-w-[24ch] text-[clamp(1.5rem,2.8vw,2.1rem)]">
-              La marque qui porte nos antennes partenaires.
+              La marque de formation en ligne de CLIXA.
             </h2>
             <p className="text-ivory-dim mb-8 max-w-[62ch] text-[0.98rem]">
-              SkillAfrique fédère nos relais à Abidjan et Dakar. C&apos;est ce réseau qui nous
-              permet d&apos;ouvrir des sessions en présentiel hors du Maroc sans dégrader la qualité
-              d&apos;animation.
+              SkillAfrique démocratise l&apos;accès à des formations live, premium et orientées
+              résultats, pour les professionnels africains et internationaux. C&apos;est la marque
+              sur laquelle CLIXA Institute s&apos;est construit, et elle porte aujourd&apos;hui
+              toute notre offre à distance.
             </p>
             <div className="flex flex-wrap gap-5">
-              <Button href="/formations">Voir le catalogue</Button>
-              <Button href="/campus" variante="contour">
-                Nos campus
+              <Button href="/skillafrique">Découvrir SkillAfrique</Button>
+              <Button href="/formations" variante="contour">
+                Voir le catalogue
               </Button>
             </div>
           </div>

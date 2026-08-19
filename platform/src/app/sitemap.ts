@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    {
+      url: `${SITE_URL}/skillafrique`,
+      lastModified: maintenant,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     { url: `${SITE_URL}/blog`, lastModified: maintenant, changeFrequency: "weekly", priority: 0.7 },
     {
       url: `${SITE_URL}/a-propos`,
