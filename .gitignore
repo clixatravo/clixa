@@ -1,0 +1,31 @@
+# Dépendances et artefacts de build
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets — ne jamais commiter
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Journaux
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Éditeurs
+.vscode/
+.idea/
+
+# Hébergement
+.vercel

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLIXA Institute — Center of Leadership, Innovation &amp; Excellence in Africa</title>
+
+<meta name="description" content="CLIXA Institute forme dirigeants, managers et organisations en Afrique à travers des programmes certifiants (PMP, CMA, IFRS), des parcours exécutifs et un accompagnement corporate, portés par la marque SkillAfrique.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#080C18">
+<!-- ⚠️ À adapter : remplacez par l'URL réelle de votre nom de domaine si elle diffère -->
+<link rel="canonical" href="https://clixa-institute.org/">
+
+<!-- Open Graph / réseaux sociaux -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CLIXA Institute">
+<meta property="og:title" content="CLIXA Institute — Center of Leadership, Innovation &amp; Excellence in Africa">
+<meta property="og:description" content="Programmes certifiants, exécutifs et corporate pour les dirigeants et organisations d'Afrique, portés par SkillAfrique.">
+<meta property="og:url" content="https://clixa-institute.org/">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="https://clixa-institute.org/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://clixa-institute.org/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CLIXA Institute — Center of Leadership, Innovation &amp; Excellence in Africa">
+<meta name="twitter:description" content="Programmes certifiants, exécutifs et corporate pour les dirigeants et organisations d'Afrique.">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- Données structurées — reprennent uniquement les infos déjà publiées sur la page (adresse, téléphone, email) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "CLIXA Institute",
+  "alternateName": "SkillAfrique",
+  "url": "https://clixa-institute.org/",
+  "email": "contact@clixa-institute.org",
+  "telephone": "+212669303467",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "N° 1525, Bureau n° 5, Hay Essalam",
+    "addressLocality": "Agadir",
+    "addressCountry": "MA"
+  }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&amp;family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#080C18;
+    --panel:#111A33;
+    --panel-2:#161F3D;
+    --ivory:#F3EFE4;
+    --ivory-dim:#B9B7AC;
+    --gold:#C9A24C;
+    --gold-bright:#E9CD84;
+    --emerald:#1F7A5C;
+    --emerald-bright:#2FA37D;
+    --line: rgba(243,239,228,0.12);
+    --radius: 2px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  button, input, select, textarea{ font-family:inherit; font-size:inherit; color:inherit; }
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--ivory);
+    font-family:'Manrope', sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    line-height:1.05;
+  }
+  .mono{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    font-size:0.72rem;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+  ::selection{background:var(--gold); color:var(--ink);}
+
+  /* subtle grid texture background */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.05;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+
+  /* NAV */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 32px;
+    background:rgba(8,12,24,0.72);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:'Fraunces',serif; font-weight:700; font-size:1.25rem; letter-spacing:0.02em; color:var(--ivory);}
+  .logo span{color:var(--gold);}
+  .navlinks{display:flex; gap:34px; font-size:0.86rem;}
+  .navlinks a{opacity:0.75; transition:opacity .25s;}
+  .navlinks a:hover{opacity:1;}
+  .nav-cta{
+    border:1px solid var(--gold); padding:9px 20px; font-size:0.8rem;
+    letter-spacing:0.04em; transition:all .25s;
+  }
+  .nav-cta:hover{background:var(--gold); color:var(--ink);}
+  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer; z-index:60;}
+  .burger span{width:24px; height:1px; background:var(--ivory); transition:all .25s;}
+  @media(max-width:860px){
+    .navlinks{
+      position:fixed; inset:0; top:0; background:var(--ink);
+      flex-direction:column; justify-content:center; align-items:center; gap:36px;
+      font-size:1.3rem; font-family:'Fraunces',serif;
+      transform:translateY(-100%); transition:transform .4s ease; z-index:55;
+    }
+    .navlinks.open{transform:translateY(0);}
+    .burger{display:flex;}
+    .nav-cta{display:none;}
+  }
+
+  /* HERO */
+  header.hero{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:140px 0 80px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:12px;
+    color:var(--gold); margin-bottom:28px;
+  }
+  .eyebrow::before{content:''; width:34px; height:1px; background:var(--gold);}
+  .hero h1{
+    font-size:clamp(2.6rem, 6.4vw, 5.4rem);
+    max-width:920px;
+    margin-bottom:28px;
+  }
+  .hero h1 em{
+    font-style:normal; color:var(--gold-bright);
+  }
+  .hero p.lead{
+    max-width:560px; font-size:1.12rem; color:var(--ivory-dim); margin-bottom:44px;
+  }
+  .hero-actions{display:flex; align-items:center; gap:28px; flex-wrap:wrap; margin-bottom:80px;}
+  .btn-primary{
+    background:var(--gold); color:var(--ink); font-weight:700; font-size:0.92rem;
+    padding:16px 30px; border:1px solid var(--gold); transition:all .25s;
+  }
+  .btn-primary:hover{background:transparent; color:var(--gold-bright);}
+  .btn-ghost{
+    padding:16px 4px; border-bottom:1px solid var(--ivory-dim); font-size:0.92rem;
+    color:var(--ivory-dim); transition:all .25s;
+  }
+  .btn-ghost:hover{color:var(--ivory); border-color:var(--ivory);}
+
+  /* signature clic element */
+  .clic-zone{
+    display:flex; align-items:center; gap:22px; cursor:pointer; user-select:none;
+    position:relative; width:fit-content;
+  }
+  .clic-dot{
+    position:relative; width:64px; height:64px; border-radius:50%;
+    border:1px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .clic-dot::after{
+    content:''; position:absolute; width:8px; height:8px; border-radius:50%;
+    background:var(--gold-bright);
+  }
+  .clic-ring{
+    position:absolute; inset:0; border-radius:50%; border:1px solid var(--gold);
+    opacity:0; transform:scale(0.6);
+  }
+  .clic-ring.animate{ animation: ripple 1.1s ease-out; }
+  @keyframes ripple{
+    0%{opacity:0.9; transform:scale(0.6);}
+    100%{opacity:0; transform:scale(2.4);}
+  }
+  .clic-label .mono{color:var(--gold);}
+  .clic-label p{font-family:'Fraunces',serif; font-size:1.05rem; color:var(--ivory);}
+  .clic-counter{color:var(--ivory-dim); font-size:0.82rem; margin-top:2px;}
+
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line);
+  }
+  .stat{ padding:26px 0 0; border-right:1px solid var(--line); }
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:'Fraunces',serif; font-size:2.1rem; color:var(--gold-bright);}
+  .stat .lbl{color:var(--ivory-dim); font-size:0.82rem; margin-top:4px;}
+  @media(max-width:760px){ .stat-strip{grid-template-columns:repeat(2,1fr);} }
+
+  /* SECTION generic */
+  section{position:relative; z-index:1; padding:130px 0; border-bottom:1px solid var(--line);}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:40px; margin-bottom:64px; flex-wrap:wrap;}
+  .section-head h2{font-size:clamp(1.9rem, 3.4vw, 2.7rem); max-width:640px;}
+  .section-head .mono{color:var(--gold); margin-bottom:16px; display:block;}
+  .section-head p{max-width:380px; color:var(--ivory-dim); font-size:0.98rem;}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .8s ease, transform .8s ease;}
+  .reveal.in{opacity:1; transform:none;}
+
+  /* Ce que nous faisons */
+  .triad{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .triad-card{background:var(--ink); padding:40px 34px;}
+  .triad-card .idx{color:var(--gold); font-family:'Fraunces',serif; font-size:1rem; margin-bottom:22px; display:block;}
+  .triad-card h3{font-size:1.28rem; margin-bottom:14px;}
+  .triad-card p{color:var(--ivory-dim); font-size:0.95rem;}
+  @media(max-width:860px){ .triad{grid-template-columns:1fr;} }
+
+  /* Offres */
+  .offer-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .offer{
+    background:var(--panel); padding:32px 26px; min-height:220px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    transition:background .3s;
+  }
+  .offer:hover{background:var(--panel-2);}
+  .offer h4{font-size:1.05rem; font-family:'Fraunces',serif; margin-bottom:10px;}
+  .offer span.mono{color:var(--emerald-bright);}
+  .offer .arrow{color:var(--gold); font-size:1.3rem; align-self:flex-end;}
+  @media(max-width:900px){ .offer-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:560px){ .offer-grid{grid-template-columns:1fr;} }
+
+  /* SkillAfrique split */
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:70px; align-items:center;}
+  .split .visual{
+    aspect-ratio:1/1; border:1px solid var(--gold); position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, var(--panel), var(--ink));
+  }
+  .split .visual .mark{font-family:'Fraunces',serif; font-size:5rem; color:var(--gold); opacity:0.9;}
+  .split .visual::before{
+    content:''; position:absolute; inset:18px; border:1px solid var(--line);
+  }
+  .split h2{margin-bottom:22px;}
+  .split p{color:var(--ivory-dim); margin-bottom:24px;}
+  .tag-list{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;}
+  .tag{border:1px solid var(--line); padding:8px 14px; font-size:0.8rem; color:var(--ivory-dim);}
+  @media(max-width:860px){ .split{grid-template-columns:1fr;} .split .visual{order:-1;} }
+
+  /* Corporate CTA band */
+  .band{
+    background:var(--panel); padding:90px 0; border-bottom:1px solid var(--line);
+  }
+  .band-inner{display:flex; justify-content:space-between; align-items:center; gap:40px; flex-wrap:wrap;}
+  .band h2{max-width:520px; font-size:clamp(1.7rem,3vw,2.2rem);}
+  .band .btn-primary{white-space:nowrap;}
+
+  /* Témoignages */
+  .quote-row{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .quote{background:var(--ink); padding:36px 30px;}
+  .quote p.text{font-family:'Fraunces',serif; font-size:1.08rem; color:var(--ivory); margin-bottom:22px; font-style:italic;}
+  .quote .who{color:var(--gold); font-size:0.82rem;}
+  @media(max-width:860px){ .quote-row{grid-template-columns:1fr;} }
+
+  /* Final CTA */
+  .final{
+    padding:150px 0; text-align:center; border-bottom:none;
+  }
+  .final h2{font-size:clamp(2.2rem,5vw,3.6rem); margin-bottom:26px;}
+  .final p{color:var(--ivory-dim); max-width:480px; margin:0 auto 40px;}
+  .final-actions{display:flex; gap:22px; justify-content:center; flex-wrap:wrap;}
+
+  footer{padding:50px 0 40px;}
+  .foot-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;}
+  .foot-links{display:flex; gap:24px; font-size:0.82rem; color:var(--ivory-dim);}
+  .foot-links a:hover{color:var(--gold);}
+  .copyright{color:var(--ivory-dim); font-size:0.78rem;}
+
+  /* Filtres formations (inspiré IPM) */
+  .filter-row{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:44px;}
+  .filter-btn{
+    border:1px solid var(--line); padding:9px 18px; font-size:0.8rem; color:var(--ivory-dim);
+    background:transparent; cursor:pointer; transition:all .25s; font-family:'Manrope',sans-serif;
+  }
+  .filter-btn:hover{border-color:var(--gold); color:var(--ivory);}
+  .filter-btn.active{background:var(--gold); border-color:var(--gold); color:var(--ink); font-weight:700;}
+  .offer{cursor:pointer;}
+  .offer.hide{display:none;}
+
+  /* Campus / Contact multi-villes */
+  .campus-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .campus-card{background:var(--panel); padding:38px 32px;}
+  .campus-card .mono{color:var(--gold); display:block; margin-bottom:14px;}
+  .campus-card h3{font-size:1.2rem; margin-bottom:14px;}
+  .campus-card p{color:var(--ivory-dim); font-size:0.92rem; margin-bottom:6px;}
+  .campus-card a{color:var(--ivory); border-bottom:1px solid var(--gold); font-size:0.88rem;}
+  @media(max-width:860px){ .campus-grid{grid-template-columns:1fr;} }
+
+  /* Partenaires strip */
+  .partners-strip{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:40px; padding:50px 0; opacity:0.7;
+  }
+  .partners-strip .p-name{
+    font-family:'Fraunces',serif; font-size:1.3rem; color:var(--ivory-dim);
+    letter-spacing:0.02em; white-space:nowrap;
+  }
+
+  /* Témoignages carrousel */
+  .quote-carousel{position:relative; overflow:hidden;}
+  .quote-track{display:flex; transition:transform .6s cubic-bezier(.65,0,.35,1);}
+  .quote-slide{min-width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .carousel-dots{display:flex; gap:10px; justify-content:center; margin-top:32px;}
+  .c-dot{width:8px; height:8px; border-radius:50%; border:1px solid var(--gold); cursor:pointer; background:transparent; transition:background .25s;}
+  .c-dot.active{background:var(--gold);}
+  @media(max-width:860px){ .quote-slide{grid-template-columns:1fr;} }
+
+  /* FAQ accordion */
+  .faq-item{border-bottom:1px solid var(--line);}
+  .faq-q{
+    display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+    padding:26px 0; font-family:'Fraunces',serif; font-size:1.1rem;
+  }
+  .faq-q .plus{color:var(--gold); font-size:1.4rem; transition:transform .3s; flex-shrink:0; margin-left:20px;}
+  .faq-item.open .plus{transform:rotate(45deg);}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+  .faq-a p{color:var(--ivory-dim); padding-bottom:24px; max-width:640px; font-size:0.95rem;}
+
+  /* Back to top */
+  .totop{
+    position:fixed; bottom:28px; right:28px; width:48px; height:48px;
+    border:1px solid var(--gold); background:var(--ink); color:var(--gold);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    opacity:0; pointer-events:none; transition:opacity .3s; z-index:40; font-size:1.1rem;
+  }
+  .totop.show{opacity:1; pointer-events:auto;}
+
+  /* ---------- Accessibilité ---------- */
+  a:focus-visible, button:focus-visible, input:focus-visible,
+  select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--gold-bright); outline-offset:3px;
+  }
+  .skip-link{
+    position:absolute; left:12px; top:-60px; background:var(--gold); color:var(--ink);
+    padding:12px 20px; z-index:200; font-weight:700; transition:top .2s ease; border-radius:var(--radius);
+  }
+  .skip-link:focus{ top:12px; }
+  .visually-hidden{
+    position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:0.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:0.001ms !important; scroll-behavior:auto !important;
+    }
+  }
+  button.burger{ border:none; background:none; padding:0; }
+
+  /* CTA "Rejoindre une cohorte" dupliquée dans le menu mobile (invisible auparavant en dessous de 860px) */
+  .nav-cta-mobile{ display:none; }
+  @media(max-width:860px){
+    .nav-cta-mobile{
+      display:inline-block; margin-top:8px; border:1px solid var(--gold); padding:14px 28px;
+      font-size:1rem; font-family:'Manrope',sans-serif; color:var(--ivory);
+    }
+  }
+
+  /* ---------- Note sur les référentiels/partenaires ---------- */
+  .partners-note{ text-align:center; color:var(--ivory-dim); margin-bottom:22px; }
+
+  /* ---------- Formulaire de contact / inscription ---------- */
+  .lead-form{
+    display:grid; grid-template-columns:1fr 1fr; gap:20px 24px;
+    margin:38px auto 0; max-width:640px; text-align:left;
+  }
+  .form-row{ display:flex; flex-direction:column; gap:8px; }
+  .form-row-full{ grid-column:1 / -1; }
+  .lead-form label{
+    font-family:'IBM Plex Mono',monospace; font-size:0.7rem; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ivory-dim);
+  }
+  .lead-form input, .lead-form select, .lead-form textarea{
+    background:var(--panel); border:1px solid var(--line); color:var(--ivory);
+    padding:13px 14px; font-size:0.95rem; border-radius:var(--radius);
+  }
+  .lead-form input:focus, .lead-form select:focus, .lead-form textarea:focus{
+    border-color:var(--gold);
+  }
+  .lead-form input:focus-visible, .lead-form select:focus-visible, .lead-form textarea:focus-visible{
+    outline:2px solid var(--gold-bright); outline-offset:2px;
+  }
+  .lead-form textarea{ resize:vertical; min-height:80px; }
+  .form-note{
+    grid-column:1/-1; color:var(--gold-bright); font-size:0.85rem; min-height:1.3em; text-align:center;
+  }
+  button.btn-primary, button.btn-ghost{ cursor:pointer; }
+  @media(max-width:700px){ .lead-form{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Aller au contenu principal</a>
+<div class="grain"></div>
+
+<nav>
+  <div class="logo">CLIXA<span>.</span></div>
+  <div class="navlinks" id="navlinks">
+    <a href="#apropos">À propos</a>
+    <a href="#formations">Formations</a>
+    <a href="#skillafrique">SkillAfrique</a>
+    <a href="#entreprises">Entreprises</a>
+    <a href="#campus">Campus</a>
+    <a href="#temoignages">Témoignages</a>
+    <a href="#faq">FAQ</a>
+    <a href="#final" class="nav-cta-mobile">Rejoindre une cohorte</a>
+  </div>
+  <a href="#final" class="nav-cta">Rejoindre une cohorte</a>
+  <button type="button" class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navlinks"><span></span><span></span><span></span></button>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow mono">Center of Leadership, Innovation &amp; Excellence in Africa</div>
+    <h1>Le leadership <br> commence par un <em>clic</em>.</h1>
+    <p class="lead">CLIXA Institute forme les dirigeants, managers et organisations qui construisent l'excellence professionnelle en Afrique — à travers des programmes certifiants, exécutifs et corporate portés par SkillAfrique.</p>
+
+    <div class="hero-actions">
+      <a href="#formations" class="btn-primary">Découvrir nos formations</a>
+      <a href="#entreprises" class="btn-ghost">Parler à un conseiller →</a>
+    </div>
+
+    <div class="clic-zone" id="clicZone" role="button" tabindex="0" aria-label="Cliquer pour découvrir nos formations">
+      <div class="clic-dot" id="clicDot"></div>
+      <div class="clic-label">
+        <p class="mono">Cliquez pour commencer</p>
+        <p>Découvrez votre prochaine étape professionnelle</p>
+        <p class="clic-counter">Sans engagement — 2 minutes suffisent</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" style="margin-top:70px;">
+    <div class="stat-strip">
+      <div class="stat"><div class="num" data-count="14">0</div><div class="lbl mono">Pays couverts</div></div>
+      <div class="stat"><div class="num" data-count="3200">0</div><div class="lbl mono">Professionnels formés</div></div>
+      <div class="stat"><div class="num" data-count="180">0</div><div class="lbl mono">Entreprises accompagnées</div></div>
+      <div class="stat"><div class="num" data-count="97">0</div><div class="lbl mono">% de satisfaction</div></div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<section id="apropos">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="mono">Ce que nous faisons</span>
+        <h2>Une plateforme, trois leviers de transformation.</h2>
+      </div>
+      <p>CLIXA conçoit et déploie des expériences d'apprentissage à forte valeur ajoutée, ancrées dans les réalités du marché africain et international.</p>
+    </div>
+
+    <div class="triad reveal">
+      <div class="triad-card">
+        <span class="idx">01</span>
+        <h3>Former</h3>
+        <p>Des parcours live, pratiques et orientés résultats en management, finance, stratégie et digital.</p>
+      </div>
+      <div class="triad-card">
+        <span class="idx">02</span>
+        <h3>Certifier</h3>
+        <p>Une préparation exigeante aux certifications internationales de référence : PMP, CMA, IFRS.</p>
+      </div>
+      <div class="triad-card">
+        <span class="idx">03</span>
+        <h3>Accompagner</h3>
+        <p>Un accompagnement corporate sur mesure, du diagnostic à la mesure d'impact.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="formations">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="mono">Nos formations</span>
+        <h2>Des programmes conçus pour l'impact professionnel.</h2>
+      </div>
+      <p>Chaque programme transmet des savoirs utiles, ancrés dans des cas concrets et directement mobilisables.</p>
+    </div>
+
+    <div class="filter-row reveal">
+      <button class="filter-btn active" data-filter="tous">Tous</button>
+      <button class="filter-btn" data-filter="certif">Certifications</button>
+      <button class="filter-btn" data-filter="exec">Exécutif</button>
+      <button class="filter-btn" data-filter="finance">Finance</button>
+      <button class="filter-btn" data-filter="digital">Digital</button>
+    </div>
+
+    <div class="offer-grid reveal" id="offerGrid">
+      <div class="offer" data-cat="certif">
+        <div><span class="mono">Certification</span><h3>PMP</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="certif finance">
+        <div><span class="mono">Certification</span><h3>CMA</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="certif finance">
+        <div><span class="mono">Certification</span><h3>IFRS</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="exec">
+        <div><span class="mono">Parcours exécutif</span><h3>Leadership &amp; management</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="finance">
+        <div><span class="mono">Métier</span><h3>Finance d'entreprise</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="finance">
+        <div><span class="mono">Métier</span><h3>Contrôle de gestion</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="digital">
+        <div><span class="mono">Digital</span><h3>Transformation digitale</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+      <div class="offer" data-cat="exec">
+        <div><span class="mono">Sur mesure</span><h3>Academies internes</h3></div>
+        <div class="arrow">↗</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skillafrique">
+  <div class="wrap">
+    <div class="split reveal">
+      <div>
+        <span class="mono" style="color:var(--gold); display:block; margin-bottom:16px;">SkillAfrique by CLIXA</span>
+        <h2>La marque de formation en ligne de CLIXA.</h2>
+        <p>SkillAfrique démocratise l'accès à des formations live, premium et orientées résultats, pour les professionnels africains et internationaux.</p>
+        <div class="tag-list">
+          <span class="tag">Formations en direct</span>
+          <span class="tag">Cohortes interactives</span>
+          <span class="tag">Pédagogie concrète</span>
+          <span class="tag">Progression mesurable</span>
+        </div>
+        <!-- ⚠️ Si SkillAfrique a son propre site/sous-domaine, remplacez ce lien par son URL réelle -->
+        <a href="#final" class="btn-ghost">Découvrir SkillAfrique →</a>
+      </div>
+      <div class="visual"><span class="mark">SA</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="campus">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="mono">Présence panafricaine</span>
+        <h2>Un ancrage local, une ambition continentale.</h2>
+      </div>
+      <p>CLIXA opère depuis plusieurs hubs pour rester proche des professionnels qu'il forme.</p>
+    </div>
+    <div class="campus-grid reveal">
+      <div class="campus-card">
+        <span class="mono">Siège social</span>
+        <h3>Agadir, Maroc</h3>
+        <p>N° 1525, Bureau n° 5, Hay Essalam</p>
+        <p>+212 6 69 30 34 67</p>
+        <a href="mailto:contact@clixa-institute.org">contact@clixa-institute.org</a><br>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Hay+Essalam%2C+Agadir%2C+Maroc" target="_blank" rel="noopener noreferrer">Itinéraire →</a>
+      </div>
+      <div class="campus-card">
+        <span class="mono">Hub Afrique de l'Ouest</span>
+        <h3>Abidjan, Côte d'Ivoire</h3>
+        <p>Cocody, zone administrative</p>
+        <p>Antenne partenaire SkillAfrique</p>
+        <a href="#final">Prendre rendez-vous →</a><br>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Cocody%2C+Abidjan%2C+C%C3%B4te+d%27Ivoire" target="_blank" rel="noopener noreferrer">Itinéraire →</a>
+      </div>
+      <div class="campus-card">
+        <!-- Correction : Dakar est en Afrique de l'Ouest, pas en Afrique Centrale. Vous avez maintenant 2 hubs "Afrique de l'Ouest" et aucun en Afrique Centrale — envisagez un vrai hub centre-africain (Douala, Yaoundé, Kinshasa…) si votre couverture "panafricaine" doit le refléter. -->
+        <span class="mono">Hub Afrique de l'Ouest</span>
+        <h3>Dakar, Sénégal</h3>
+        <p>Plateau, zone d'affaires</p>
+        <p>Antenne partenaire SkillAfrique</p>
+        <a href="#final">Prendre rendez-vous →</a><br>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Plateau%2C+Dakar%2C+S%C3%A9n%C3%A9gal" target="_blank" rel="noopener noreferrer">Itinéraire →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- ⚠️ À VÉRIFIER AVANT PUBLICATION : confirmez que CLIXA a une relation réelle et documentée avec chacune de ces organisations (IFC, World Bank Group, EC-Council en particulier) avant de les afficher publiquement — l'usage du nom/logo d'une institution comme IFC/World Bank Group sans autorisation est un risque juridique et réputationnel. Le libellé ajouté ci-dessous atténue l'implication d'un partenariat officiel, mais ne remplace pas cette vérification. -->
+  <p class="mono partners-note">Référentiels, standards et certifications visés par nos parcours</p>
+  <div class="partners-strip reveal">
+    <span class="p-name">IFC</span>
+    <span class="p-name">World Bank Group</span>
+    <span class="p-name">EC-Council</span>
+    <span class="p-name">PMI Aligned</span>
+    <span class="p-name">ISO 21001</span>
+  </div>
+</div>
+
+<div class="band" id="entreprises">
+  <div class="wrap band-inner reveal">
+    <h2>Vous formez une équipe, pas un individu ? Construisons un dispositif sur mesure.</h2>
+    <a href="#final" class="btn-primary">Demander une proposition</a>
+  </div>
+</div>
+
+<section id="temoignages">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="mono">Impact</span>
+        <h2>Ils ont transformé leur trajectoire.</h2>
+      </div>
+    </div>
+    <div class="quote-carousel reveal">
+      <div class="quote-track" id="quoteTrack">
+        <div class="quote-slide">
+          <div class="quote">
+            <p class="text">"Une formation structurée, claire et directement applicable."</p>
+            <p class="who mono">Directrice financière — Abidjan</p>
+          </div>
+          <div class="quote">
+            <p class="text">"Une vraie montée en compétence, au-delà du simple contenu théorique."</p>
+            <p class="who mono">Chef de projet — Dakar</p>
+          </div>
+          <div class="quote">
+            <p class="text">"Un accompagnement sérieux, humain et exigeant."</p>
+            <p class="who mono">Responsable RH — Casablanca</p>
+          </div>
+        </div>
+        <div class="quote-slide">
+          <div class="quote">
+            <p class="text">"Une expérience premium, très utile pour ma progression."</p>
+            <p class="who mono">Consultant senior — Rabat</p>
+          </div>
+          <div class="quote">
+            <p class="text">"Un niveau d'exigence rare dans une formation à distance."</p>
+            <p class="who mono">Chef comptable — Douala</p>
+          </div>
+          <div class="quote">
+            <p class="text">"J'ai pu appliquer les outils dès la semaine suivante."</p>
+            <p class="who mono">Manager opérations — Tunis</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-dots" id="carouselDots">
+        <button class="c-dot active" data-i="0"></button>
+        <button class="c-dot" data-i="1"></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="mono">Questions fréquentes</span>
+        <h2>Tout ce qu'il faut savoir avant de vous lancer.</h2>
+      </div>
+    </div>
+    <div class="reveal" id="faqList">
+      <div class="faq-item open">
+        <div class="faq-q"><span>Les formations sont-elles 100% en ligne ?</span><span class="plus">+</span></div>
+        <div class="faq-a"><p>Oui, l'ensemble des programmes CLIXA et SkillAfrique se déroulent en direct via visioconférence, avec accès aux enregistrements pour revoir chaque session.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><span>Quelle est la durée moyenne d'un programme ?</span><span class="plus">+</span></div>
+        <div class="faq-a"><p>Selon le parcours, entre 6 et 16 semaines, à raison de 2 à 3 sessions live par semaine, compatibles avec une activité professionnelle.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><span>Proposez-vous des formations sur mesure pour les entreprises ?</span><span class="plus">+</span></div>
+        <div class="faq-a"><p>Oui, nos équipes conçoivent des dispositifs intra-entreprise à partir d'un diagnostic de vos besoins réels, avec mesure d'impact à la clé.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><span>Comment se déroule le paiement ?</span><span class="plus">+</span></div>
+        <div class="faq-a"><p>Paiement en ligne sécurisé ou virement bancaire, avec possibilité d'échelonnement selon le programme choisi.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final" id="final" style="border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <span class="mono" style="color:var(--gold);">Prochaine cohorte</span>
+    <h2>Rejoignez l'écosystème CLIXA.</h2>
+    <p>Inscription ouverte pour les prochaines cohortes PMP, CMA et Leadership exécutif. Places limitées.</p>
+
+    <!-- ⚠️ Solution de secours SANS back-end : au clic, ceci ouvre le client mail du visiteur avec les infos pré-remplies. C'est fonctionnel, mais chaque prospect doit encore cliquer "Envoyer" dans son propre client mail — le taux de conversion sera meilleur avec un vrai back-end (Formspree, EmailJS, Netlify Forms, ou votre propre API). Remplacez alors la fonction sendLead() plus bas. -->
+    <form id="leadForm" class="lead-form" novalidate>
+      <div class="form-row">
+        <label for="lf-name">Nom complet</label>
+        <input type="text" id="lf-name" name="name" autocomplete="name" required>
+      </div>
+      <div class="form-row">
+        <label for="lf-email">Email professionnel</label>
+        <input type="email" id="lf-email" name="email" autocomplete="email" required>
+      </div>
+      <div class="form-row">
+        <label for="lf-phone">Téléphone (avec indicatif)</label>
+        <input type="tel" id="lf-phone" name="phone" autocomplete="tel">
+      </div>
+      <div class="form-row">
+        <label for="lf-program">Programme qui vous intéresse</label>
+        <select id="lf-program" name="program">
+          <option value="Certification PMP">Certification PMP</option>
+          <option value="Certification CMA">Certification CMA</option>
+          <option value="Certification IFRS">Certification IFRS</option>
+          <option value="Parcours exécutif — Leadership &amp; management">Parcours exécutif — Leadership &amp; management</option>
+          <option value="Finance d'entreprise">Finance d'entreprise</option>
+          <option value="Contrôle de gestion">Contrôle de gestion</option>
+          <option value="Transformation digitale">Transformation digitale</option>
+          <option value="Academies internes (entreprise)">Academies internes (entreprise)</option>
+          <option value="Catalogue complet">Recevoir le catalogue complet</option>
+        </select>
+      </div>
+      <div class="form-row form-row-full">
+        <label for="lf-message">Message (optionnel)</label>
+        <textarea id="lf-message" name="message" rows="3"></textarea>
+      </div>
+      <p class="form-note" id="lfStatus" role="status" aria-live="polite"></p>
+      <div class="final-actions">
+        <button type="submit" class="btn-primary">Je m'inscris maintenant</button>
+        <button type="button" class="btn-ghost" id="lfCatalogueBtn">Demander le catalogue →</button>
+      </div>
+    </form>
+  </div>
+</section>
+</main>
+
+<button class="totop" id="totop" aria-label="Retour en haut">↑</button>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="logo" style="font-size:1rem;">CLIXA<span>.</span> Institute</div>
+    <div class="foot-links">
+      <a href="#skillafrique">SkillAfrique</a>
+      <a href="https://wa.me/212669303467" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <!-- ⚠️ Lien LinkedIn désactivé : remplacez l'URL ci-dessous par votre page réelle puis décommentez -->
+      <!-- <a href="https://www.linkedin.com/company/VOTRE-PAGE" target="_blank" rel="noopener noreferrer">LinkedIn</a> -->
+      <a href="#final">Contact</a>
+    </div>
+  </div>
+  <div class="wrap foot-inner" style="margin-top:18px; padding-top:18px; border-top:1px solid var(--line);">
+    <div class="copyright">© 2026 CLIXA Institute — Tous droits réservés</div>
+    <div class="foot-links">
+      <a href="mentions-legales.html">Mentions légales</a>
+      <a href="politique-confidentialite.html">Politique de confidentialité</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.15});
+  reveals.forEach(r=>io.observe(r));
+
+  // counters
+  const nums = document.querySelectorAll('.num');
+  const io2 = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const el = e.target;
+        const target = parseInt(el.getAttribute('data-count'),10);
+        if(prefersReducedMotion){
+          el.textContent = target;
+          io2.unobserve(el);
+          return;
+        }
+        let cur = 0;
+        const step = Math.max(1, Math.round(target/40));
+        const t = setInterval(()=>{
+          cur += step;
+          if(cur>=target){ cur=target; clearInterval(t); }
+          el.textContent = cur;
+        }, 25);
+        io2.unobserve(el);
+      }
+    });
+  }, {threshold:0.4});
+  nums.forEach(n=>io2.observe(n));
+
+  // clic zone signature interaction — anneau visuel, puis direction la section formations
+  const zone = document.getElementById('clicZone');
+  const dot = document.getElementById('clicDot');
+  function triggerClicZone(){
+    const ring = document.createElement('div');
+    ring.className = 'clic-ring animate';
+    dot.appendChild(ring);
+    setTimeout(()=>ring.remove(), 1200);
+    const formations = document.getElementById('formations');
+    if(formations){
+      const delay = prefersReducedMotion ? 0 : 380;
+      setTimeout(()=> formations.scrollIntoView({behavior: prefersReducedMotion ? 'auto' : 'smooth'}), delay);
+    }
+  }
+  zone.addEventListener('click', triggerClicZone);
+  zone.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); triggerClicZone(); }
+  });
+
+  // burger menu mobile
+  const burger = document.getElementById('burger');
+  const navlinks = document.getElementById('navlinks');
+  function setMenuOpen(open){
+    navlinks.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    burger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+  }
+  burger.addEventListener('click', ()=> setMenuOpen(!navlinks.classList.contains('open')));
+  navlinks.querySelectorAll('a').forEach(a=>a.addEventListener('click', ()=> setMenuOpen(false)));
+
+  // filtres formations
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const offers = document.querySelectorAll('#offerGrid .offer');
+  filterBtns.forEach(b=> b.setAttribute('aria-pressed', b.classList.contains('active') ? 'true' : 'false'));
+  filterBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      filterBtns.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed','true');
+      const f = btn.getAttribute('data-filter');
+      offers.forEach(o=>{
+        const cats = o.getAttribute('data-cat') || '';
+        if(f==='tous' || cats.includes(f)){ o.classList.remove('hide'); }
+        else { o.classList.add('hide'); }
+      });
+    });
+  });
+
+  // carrousel témoignages
+  const track = document.getElementById('quoteTrack');
+  const carousel = document.querySelector('.quote-carousel');
+  const dots = document.querySelectorAll('.c-dot');
+  dots.forEach((d,i)=> d.setAttribute('aria-label', `Aller au groupe de témoignages ${i+1}`));
+  let slideIndex = 0;
+  function goToSlide(i){
+    slideIndex = i;
+    track.style.transform = `translateX(-${i*100}%)`;
+    dots.forEach(d=>d.classList.remove('active'));
+    dots[i].classList.add('active');
+  }
+  dots.forEach(d=>d.addEventListener('click', ()=>goToSlide(parseInt(d.getAttribute('data-i'),10))));
+
+  let carouselTimer = null;
+  function startCarousel(){
+    if(prefersReducedMotion || carouselTimer) return;
+    carouselTimer = setInterval(()=>{ goToSlide((slideIndex+1)%dots.length); }, 6000);
+  }
+  function stopCarousel(){ clearInterval(carouselTimer); carouselTimer = null; }
+  startCarousel();
+  if(carousel){
+    carousel.addEventListener('mouseenter', stopCarousel);
+    carousel.addEventListener('mouseleave', startCarousel);
+    carousel.addEventListener('focusin', stopCarousel);
+    carousel.addEventListener('focusout', startCarousel);
+  }
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach((item, idx)=>{
+    const q = item.querySelector('.faq-q');
+    const a = item.querySelector('.faq-a');
+    const qId = 'faq-q-' + idx;
+    const aId = 'faq-a-' + idx;
+    q.id = qId;
+    a.id = aId;
+    q.setAttribute('role','button');
+    q.setAttribute('tabindex','0');
+    q.setAttribute('aria-controls', aId);
+    a.setAttribute('role','region');
+    a.setAttribute('aria-labelledby', qId);
+
+    const isInitiallyOpen = item.classList.contains('open');
+    q.setAttribute('aria-expanded', isInitiallyOpen ? 'true' : 'false');
+    if(isInitiallyOpen){ a.style.maxHeight = a.scrollHeight + 'px'; }
+
+    function toggle(){
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>{
+        i.classList.remove('open');
+        i.querySelector('.faq-a').style.maxHeight = null;
+        i.querySelector('.faq-q').setAttribute('aria-expanded','false');
+      });
+      if(!isOpen){
+        item.classList.add('open');
+        a.style.maxHeight = a.scrollHeight + 'px';
+        q.setAttribute('aria-expanded','true');
+      }
+    }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+    });
+  });
+
+  // retour en haut
+  const totop = document.getElementById('totop');
+  window.addEventListener('scroll', ()=>{
+    if(window.scrollY > 600){ totop.classList.add('show'); } else { totop.classList.remove('show'); }
+  });
+  totop.addEventListener('click', ()=> window.scrollTo({top:0, behavior: prefersReducedMotion ? 'auto' : 'smooth'}));
+
+  // Formulaire d'inscription / catalogue — solution sans back-end : ouvre le client mail avec les infos pré-remplies.
+  // Pour un vrai formulaire (meilleur taux de conversion, pas besoin que le client mail soit configuré),
+  // remplacez le corps de sendLead() par un fetch() vers Formspree / EmailJS / votre API.
+  const leadForm = document.getElementById('leadForm');
+  const lfStatus = document.getElementById('lfStatus');
+  const lfProgram = document.getElementById('lf-program');
+  const lfCatalogueBtn = document.getElementById('lfCatalogueBtn');
+
+  function sendLead(intent){
+    const name = document.getElementById('lf-name').value.trim();
+    const email = document.getElementById('lf-email').value.trim();
+    const phone = document.getElementById('lf-phone').value.trim();
+    const program = lfProgram.value;
+    const message = document.getElementById('lf-message').value.trim();
+
+    if(!name || !email){
+      lfStatus.textContent = "Merci d'indiquer au moins votre nom et votre email.";
+      return;
+    }
+
+    const subject = encodeURIComponent(`${intent} — ${program} — ${name}`);
+    const body = encodeURIComponent(
+      `Nom: ${name}\nEmail: ${email}\nTéléphone: ${phone || '—'}\nProgramme: ${program}\nMessage: ${message || '—'}`
+    );
+    window.location.href = `mailto:contact@clixa-institute.org?subject=${subject}&body=${body}`;
+    lfStatus.textContent = "Votre client mail va s'ouvrir pour finaliser l'envoi — pensez à cliquer sur \"Envoyer\".";
+  }
+
+  if(leadForm){
+    leadForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      sendLead('Inscription');
+    });
+    lfCatalogueBtn.addEventListener('click', ()=>{
+      lfProgram.value = 'Catalogue complet';
+      sendLead('Demande de catalogue');
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/**
+ * DES-01 — Design system CLIXA en tokens.
+ * Valeurs reprises à l'identique de index.html : elles ne sont pas réinventées ici,
+ * elles sont extraites. index.html reste la référence historique.
+ */
+@theme {
+  /* Fonds et texte */
+  --color-ink: #080c18;
+  --color-panel: #111a33;
+  --color-panel-2: #161f3d;
+  --color-ivory: #f3efe4;
+  --color-ivory-dim: #b9b7ac;
+
+  /* Accent de marque */
+  --color-gold: #c9a24c;
+  --color-gold-bright: #e9cd84;
+
+  /* DES-04 — l'émeraude devient la couleur sémantique :
+     places disponibles, modalité, confirmation. L'or reste l'accent de marque. */
+  --color-emerald: #1f7a5c;
+  --color-emerald-bright: #2fa37d;
+
+  /* Filets */
+  --color-line: rgba(243, 239, 228, 0.12);
+  --color-line-strong: rgba(243, 239, 228, 0.24);
+
+  /* Signature : angles vifs, jamais d'arrondi */
+  --radius-clixa: 2px;
+
+  /* Typographie — trois rôles, jamais plus (DES-03) */
+  --font-display: var(--font-fraunces), "Hoefler Text", Georgia, serif;
+  --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-ivory);
+    font-family: var(--font-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-bright);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Étiquette capitale — le libellé signature du design system */
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Eyebrow : étiquette or précédée d'un tiret de 34 px */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-gold);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 34px;
+    height: 1px;
+    background: var(--color-gold);
+    flex-shrink: 0;
+  }
+
+  /* Grille en filets de 1 px — le motif structurant de CLIXA */
+  .hairline-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+  }
+
+  /* Texture de grille fixe à 5 % */
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image:
+      linear-gradient(var(--color-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,49 @@
+# SOC-05 — Intégration continue.
+#
+# Trois vérifications sur chaque push et chaque pull request : les types, les
+# règles de lint (dont l'étanchéité src/data → src/lib), et le build complet.
+# Le build est la vérification la plus forte : typedRoutes y casse sur tout
+# lien mort, et les 31 pages sont réellement générées.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Types, lint, format, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérifier les types
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Vérifier le formatage
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
