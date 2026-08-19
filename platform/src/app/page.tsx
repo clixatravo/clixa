@@ -93,13 +93,17 @@ export default function Accueil() {
            La marque sur laquelle CLIXA s'est construit : elle garde sa place en
            page d'accueil, les anciens clients cherchent ce nom. */}
       <section id="skillafrique" className="border-line border-b px-8 py-16">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-14 lg:grid-cols-2">
+        <div className="mx-auto grid max-w-[1180px] items-center gap-8 lg:grid-cols-2 lg:gap-14">
+          {/* Sur mobile : bandeau compact. Un carré pleine largeur mangeait tout
+              l'écran avant même que le texte n'apparaisse. */}
           <div
-            className="border-gold from-panel to-ink relative order-first flex aspect-square items-center justify-center bg-gradient-to-br lg:order-none"
+            className="border-gold from-panel to-ink relative flex h-28 items-center justify-center bg-gradient-to-br lg:aspect-square lg:h-auto"
             aria-hidden="true"
           >
-            <span className="border-line absolute inset-[18px] border" />
-            <span className="font-display text-gold text-[5rem] opacity-90">SA</span>
+            <span className="border-line absolute inset-3 border lg:inset-[18px]" />
+            <span className="font-display text-gold text-[2.6rem] opacity-90 lg:text-[5rem]">
+              SA
+            </span>
           </div>
 
           <div>
@@ -112,7 +116,9 @@ export default function Accueil() {
               résultats, pour les professionnels africains et internationaux.
             </p>
 
-            <div className="mb-8 flex flex-wrap gap-2.5">
+            {/* Typographie resserrée sur mobile pour que deux étiquettes tiennent
+                par ligne au lieu d'une seule. */}
+            <div className="mb-8 flex flex-wrap gap-2 lg:gap-2.5">
               {[
                 "Formations en direct",
                 "Cohortes interactives",
@@ -121,7 +127,7 @@ export default function Accueil() {
               ].map((t) => (
                 <span
                   key={t}
-                  className="border-line text-ivory-dim rounded-clixa border px-3.5 py-2 text-[0.8rem]"
+                  className="border-line text-ivory-dim rounded-clixa border px-3 py-1.5 text-[0.72rem] lg:px-3.5 lg:py-2 lg:text-[0.8rem]"
                 >
                   {t}
                 </span>
