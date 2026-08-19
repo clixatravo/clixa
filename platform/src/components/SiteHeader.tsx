@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { MobileMenu } from "@/components/MobileMenu";
+import { NavDesktop } from "@/components/NavDesktop";
 
 /**
  * FE-02 — Gabarit global.
@@ -21,6 +22,7 @@ const liens = [
 export function SiteHeader() {
   return (
     <header className="border-line bg-ink/85 sticky top-0 z-50 border-b backdrop-blur-md">
+      {/* relative implicite via sticky : le panneau du menu mobile s'y ancre. */}
       <nav
         aria-label="Navigation principale"
         className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-8 py-5"
@@ -29,13 +31,7 @@ export function SiteHeader() {
           CLIXA<span className="text-gold">.</span>
         </Link>
 
-        <div className="text-ivory-dim hidden items-center gap-7 text-sm md:flex">
-          {liens.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-ivory transition-colors">
-              {l.label}
-            </Link>
-          ))}
-        </div>
+        <NavDesktop liens={liens} />
 
         <div className="flex items-center gap-4">
           {/* Sélecteur de langue : l'interface existe, le routage par langue arrive
@@ -43,7 +39,7 @@ export function SiteHeader() {
           <span className="mono-label text-ivory-dim hidden sm:inline">FR</span>
           <Link
             href="/contact"
-            className="border-gold rounded-clixa hidden min-h-11 items-center border px-4 text-xs tracking-wide md:inline-flex"
+            className="border-gold text-ivory hover:bg-gold hover:text-ink rounded-clixa hidden min-h-11 items-center border px-5 text-[0.82rem] tracking-wide transition-colors md:inline-flex"
           >
             Nous contacter
           </Link>

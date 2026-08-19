@@ -51,8 +51,11 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         aria-expanded={ouvert}
         aria-controls="menu-mobile"
         aria-label={ouvert ? "Fermer le menu" : "Ouvrir le menu"}
-        className="-mr-3 flex size-11 items-center justify-center md:hidden"
+        className="-mr-2 flex min-h-11 items-center gap-2.5 px-2 md:hidden"
       >
+        {/* Le libellé est explicite : trois traits seuls ne se lisent pas comme
+            un bouton pour une partie des visiteurs. */}
+        <span className="mono-label text-ivory-dim">{ouvert ? "Fermer" : "Menu"}</span>
         <span className="relative block h-4 w-[22px]" aria-hidden="true">
           <span
             className={`bg-ivory absolute left-0 block h-px w-full transition-all duration-300 ${
@@ -75,8 +78,20 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
       <div
         id="menu-mobile"
         hidden={!ouvert}
-        className="bg-ink fixed inset-0 top-[73px] z-40 flex flex-col gap-2 overflow-y-auto px-8 py-10 md:hidden"
+        /* Positionné sous l'en-tête via top-full, jamais par une hauteur écrite
+           en dur : ajouter un libellé au bouton avait suffi à décaler l'en-tête
+           de 73 à 85 px, et le panneau passait dessous. */
+        className="border-line bg-ink absolute inset-x-0 top-full z-40 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-2 overflow-y-auto border-t px-8 py-6 md:hidden"
       >
+        {/* « Accueil » ouvre la liste : le logo seul ne suffit pas à indiquer
+            comment revenir à la page d'accueil. */}
+        <Link
+          href="/"
+          className="border-line font-display flex min-h-14 items-center border-b text-2xl"
+        >
+          Accueil
+        </Link>
+
         {liens.map((l) => (
           <Link
             key={l.href}
