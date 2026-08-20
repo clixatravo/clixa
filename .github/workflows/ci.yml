@@ -47,3 +47,9 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Le build interroge la base : Payload refuse de démarrer sans ces
+          # deux valeurs, et les pages du catalogue sont pré-générées.
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          NEXT_PUBLIC_SITE_ENV: preview
