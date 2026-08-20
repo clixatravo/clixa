@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, estProduction } from "@/lib/seo";
 
+/**
+ * À conserver à la racine de src/app/, hors des groupes de routes.
+ * Placé dans (frontend), Next 16 ne l'enregistre pas et /robots.txt
+ * renvoie 404 — sans erreur au build, donc le défaut passe inaperçu.
+ */
 export default function robots(): MetadataRoute.Robots {
   /**
    * Garde-fou : tant que NEXT_PUBLIC_SITE_ENV ne vaut pas "production", le site

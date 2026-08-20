@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Module } from "@/lib/types";
-import { dureeModule, formatDuree } from "@/lib/catalogue";
+import { dureeModule, formatDuree } from "@/lib/format";
 
 /**
  * FE-06 — Plan de cours en modules et leçons.

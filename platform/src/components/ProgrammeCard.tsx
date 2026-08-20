@@ -11,11 +11,11 @@ import {
   prixMinimum,
 } from "@/lib/catalogue";
 
-export function ProgrammeCard({ programme }: { programme: Programme }) {
-  const spec = getSpecialisation(programme.specialisation);
-  const prochaine = getProchaineSession(programme.slug);
-  const prix = prixMinimum(programme.slug);
-  const modes = modalites(programme.slug);
+export async function ProgrammeCard({ programme }: { programme: Programme }) {
+  const spec = await getSpecialisation(programme.specialisation);
+  const prochaine = await getProchaineSession(programme.slug);
+  const prix = await prixMinimum(programme.slug);
+  const modes = await modalites(programme.slug);
 
   return (
     <Link

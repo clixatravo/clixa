@@ -1,20 +1,18 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
+import coreWebVitals from "eslint-config-next/core-web-vitals";
+import typescript from "eslint-config-next/typescript";
 
 /**
  * SOC-04 — Règles de qualité.
+ *
+ * Depuis eslint-config-next 16, les préréglages sont livrés en config plate :
+ * on les importe directement, sans passer par FlatCompat.
  *
  * Au-delà des règles Next.js, deux garde-fous propres au projet :
  * l'étanchéité de la couche d'accès aux données, et l'interdiction du `any`.
  */
 const config = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...coreWebVitals,
+  ...typescript,
   {
     rules: {
       "@typescript-eslint/no-unused-vars": [
@@ -46,6 +44,19 @@ const config = [
           ],
         },
       ],
+    },
+  },
+  {
+    /**
+     * Scripts de maintenance et de vérification.
+     *
+     * Le style « condition ? ok(…) : ko(…) » y est volontaire : il rend la
+     * lecture d'une suite d'assertions plus courte qu'une cascade de if/else.
+     * La règle reste active partout ailleurs.
+     */
+    files: ["scripts/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
   {

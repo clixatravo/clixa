@@ -16,3 +16,6 @@ npm-debug.log*
 next-env.d.ts
 tsconfig.tsbuildinfo
 .env*
+
+# Médias versés localement (production : Cloudflare R2)
+public/medias/

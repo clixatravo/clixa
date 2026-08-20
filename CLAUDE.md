@@ -1,11 +1,9 @@
 # CLIXA — plateforme de formation
 
-Deux choses vivent dans ce dépôt :
-
 | Chemin | Quoi |
 |---|---|
-| `index.html`, `mentions-legales.html`, … | Le site vitrine actuel, statique. **Référence historique du design system.** Ne pas modifier sans raison. |
-| `platform/` | La nouvelle plateforme Next.js. C'est ici que se fait le développement. |
+| `platform/` | L'application Next.js 16 + Payload CMS. **Tout le développement est ici.** |
+| `index.html`, `*.html` | Le site vitrine actuel, statique. Référence historique du design system. |
 
 ## Démarrer
 
@@ -13,115 +11,133 @@ Deux choses vivent dans ce dépôt :
 cd platform && npm run dev
 ```
 
-**Ne jamais lancer `npm run build` pendant que `npm run dev` tourne** : les deux écrivent dans `.next` et corrompent le cache du serveur de dev (erreurs `Cannot find module './xxx.js'`). Pour builder :
+Prérequis : PostgreSQL local avec une base `clixa`, et `platform/.env.local`
+(voir `.env.example`). Le site tourne sur `/`, le back-office sur `/admin`.
+
+**Ne jamais lancer `npm run build` pendant que `npm run dev` tourne** : les deux
+écrivent dans `.next`. Pour builder :
 
 ```bash
 pkill -f "next dev" && rm -rf .next && npm run build
 ```
 
-## Vérifier avant de livrer
+## Vérifier
 
 ```bash
-cd platform && npm run verify
+cd platform && npm run verify        # types + lint + formatage
 ```
 
-Enchaîne types, lint et formatage. La CI (`.github/workflows/ci.yml`) fait la même chose plus le build, sur chaque push et chaque pull request.
+Cinq suites vérifient le back-office de bout en bout, via l'API locale de
+Payload (aucun mot de passe requis). Elles créent puis suppriment leurs données :
 
-| Commande | Rôle |
-|---|---|
-| `npm run typecheck` | TypeScript strict |
-| `npm run lint` | ESLint, dont l'étanchéité `src/data` → `src/lib` |
-| `npm run format` | Prettier, avec tri des classes Tailwind |
-| `npm run verify` | Les trois d'un coup |
-
-**Une règle ESLint sert de garde-fou d'architecture** : un import de `@/data/*` depuis `src/app/` ou `src/components/` est une erreur. C'est ce qui garantit que la bascule vers Payload (`INT-01`) ne touchera aucun composant. Si tu as besoin d'un type du domaine, ré-exporte-le depuis `src/lib/`.
-
-## Architecture — quatre couches
-
-Chaque couche ne connaît que celle en dessous.
-
-```
-src/app/          PAGES        les dossiers sont les URL
-src/components/   COMPOSANTS   morceaux réutilisables
-src/lib/          ACCÈS        catalogue.ts, blog.ts, seo.ts
-src/data/         DONNÉES      factices aujourd'hui, Payload demain
+```bash
+npx payload run scripts/verifier-collections.ts   # champs, arbre, relations
+npx payload run scripts/verifier-roles.ts         # permissions, élévation
+npx payload run scripts/verifier-medias.ts        # variantes d'images
+npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
+npx payload run scripts/verifier-semis.ts         # base ≡ src/data/
 ```
 
-**`src/lib/catalogue.ts` et `src/lib/blog.ts` sont la couture prévue par le plan.** Aucune page ne lit jamais `src/data/` directement. En phase 01 temps 4 (`INT-01`), le corps de ces fonctions passe sur Payload ; les signatures ne changent pas, donc aucun composant n'est touché.
+⚠️ `scripts/semer.ts` **vide les collections** avant de les remplir. Ne pas le
+lancer une fois que l'équipe aura saisi du vrai contenu.
 
-Corollaire : **si tu ajoutes un accès aux données, passe par `src/lib/`.** Un import direct depuis `src/data/` dans un composant casse cette garantie.
+## Architecture
 
-## Le contrat d'extensibilité — non négociable
+```
+src/app/(frontend)/   PAGES        le site public
+src/app/(payload)/    BACK-OFFICE  /admin et les API
+src/collections/      CONTENU      la forme des données, côté CMS
+src/lib/              ACCÈS        catalogue.ts, blog.ts, payload.ts, seo.ts
+src/data/             HÉRITAGE     ne sert plus qu'au seed et aux catégories
+```
 
-`src/lib/types.ts` porte huit décisions prises en phase 00. Elles existent pour que l'ajout du LMS soit un ajout, pas une réécriture. **Ne pas les défaire sous pression de planning.**
+**Deux racines de layout**, pas de layout partagé : Payload rend son propre
+`<html>`. Les mettre sous un même layout provoquait une erreur d'hydratation.
 
-Les trois qui comptent le plus :
+**Une règle ESLint interdit d'importer `@/data/*` depuis `src/app/` ou
+`src/components/`.** C'est ce qui a permis de basculer vers Payload (INT-01) en
+ne touchant que deux fichiers.
 
-1. **Ne jamais fusionner `Programme` / `Session` / `Inscription`.** Un programme est intemporel, une session est une occurrence datée, une inscription lie une personne à une session.
-2. **`Inscription` est le pivot.** La V1 y accroche paiement et convocation ; le LMS y accrochera progression, notes et certificat.
-3. **Garder l'arbre `Module → Leçon`.** Même si en V1 il n'est qu'affiché comme plan de cours.
+**`src/lib/format.ts` est séparé de `catalogue.ts`** parce que `PlanDeCours` est
+un composant client : tant que le formatage vivait avec l'accès aux données,
+l'import entraînait Payload dans le paquet navigateur et le build échouait.
 
-Les types `Utilisateur`, `Payeur`, `Inscription`, `Paiement` sont déclarés mais inutilisés en V1 : c'est voulu.
+## Le contrat d'extensibilité
 
-### Décision A — pas de e-learning cette année
+`src/lib/types.ts` porte huit décisions. Les trois qui comptent :
 
-Une `Lecon` ne porte que **titre + durée**. Les champs `objectif` et `contenuId` existent dans le schéma et restent vides. Ne pas demander d'objectifs par leçon à l'équipe pédagogique.
+1. **Ne jamais fusionner `Programme` / `Session` / `Inscription`.**
+2. **`Inscription` est le pivot** — le LMS y accrochera progression et certificat.
+3. **Garder l'arbre `Module → Leçon`**, même si la V1 ne l'affiche qu'en plan de cours.
 
-## Design system
-
-Les tokens sont dans `src/app/globals.css`, sous `@theme`. Ils sont **extraits de `index.html`, pas réinventés**. Tailwind en dérive les classes : `bg-panel`, `text-gold`, `border-line`.
-
-Trois signatures visuelles à respecter :
-
-- Filets de **1 px** entre les cases (`.hairline-grid`)
-- Rayon de **2 px** — jamais d'angles arrondis (`rounded-clixa`)
-- Trame de grille à 5 % en fond (`.grain`)
-
-**L'or est la couleur de marque. L'émeraude est sémantique** — places disponibles, confirmation, validation. Ne pas les intervertir.
-
-Typographie : Fraunces (titres), Manrope (texte), IBM Plex Mono (étiquettes capitales). Auto-hébergées par `next/font`, jamais de CDN.
+**Décision A — pas de e-learning cette année.** Une `Lecon` ne porte que titre et
+durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Conventions
 
-- **Le code et les commentaires sont en français**, comme le produit.
-- `typedRoutes` est activé : un `<Link>` vers une route inexistante **casse le build**. C'est voulu — pas de 404 en production. Pour une URL construite dynamiquement, annoter `as Route`.
-- Les filtres vivent **dans l'URL**, pas dans un état client : partageable, indexable, et le bouton retour fonctionne.
-- Composants serveur par défaut. `"use client"` uniquement quand il faut réagir à l'utilisateur (`PlanDeCours`, `MobileMenu`).
-- Toute liste doit avoir son **état vide** traité.
+- **Code et commentaires en français.**
+- `typedRoutes` actif : un lien vers une route inexistante casse le build. Pour
+  une URL construite à l'exécution, annoter `as Route`.
+- **`robots.ts` doit rester à la racine de `src/app/`** : dans un groupe de
+  routes, Next 16 ne l'enregistre pas et `/robots.txt` renvoie 404 sans erreur.
+- Filtres dans l'URL, pas dans un état client.
+- Composants serveur par défaut.
+- **Le français est la langue de référence.** `required` est remplacé par
+  `requisEnFrancais` sur les champs traduisibles (`src/collections/champs.ts`) :
+  sinon traduire impose de tout remplir d'un coup dans la langue visée.
 
-## SEO
+## Pièges rencontrés
 
-- `src/lib/seo.ts` construit les données structurées. `FilAriane` émet son `BreadcrumbList` tout seul — le fil affiché et les données ne peuvent pas diverger.
-- Chaque fiche formation expose un `Course` avec une `CourseInstance` par session (dates, prix, disponibilité). **C'est l'écart décisif avec le concurrent**, dont le contenu est enfermé dans des images.
-- Les combinaisons de filtres se canonisent vers `/formations` et sont en `Disallow`. Ce sont les pages `/specialisations/[slug]` qui servent de pages d'atterrissage indexables.
+- **`sharp` doit être passé à `buildConfig`**, sinon Payload accepte les images
+  mais saute redimensionnement et WebP, sans la moindre erreur.
+- **`payload run` termine dès que le module est évalué** : utiliser un `await`
+  racine, jamais un `main().catch()`.
+- Payload attend une confirmation sur stdin pour toute migration destructrice —
+  un script qui semble figé attend souvent une réponse.
+- **Trier explicitement** (`sort: "id"`) : sans cela Payload renvoie du plus
+  récent au plus ancien et l'ordre du catalogue change à chaque ajout.
+
+## Où en est le projet
+
+**60 tâches sur 86.** Le front public et le back-office sont complets, et le
+site lit ses données depuis PostgreSQL.
+
+Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
+`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12`, `INT-03,04,05`, **`INT-01`**.
+
+Reste côté développement : `INT-02` (cache et invalidation), `BE-04` (tables LMS
+déclarées), `BE-09` (recherche PostgreSQL), `INT-06` (redirections), `INT-07`
+(perf 3G), `INT-10` (Playwright), `INT-11` (recette), `DES-07` (Storybook).
+
+Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, `INT-08` (le contenu réel).
 
 ## Points ouverts
 
-| Sujet | Où | État |
+| Sujet | Où | Attend |
 |---|---|---|
-| Affichage du nombre de places | `src/components/ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | Attend le jalon 1 |
-| Polices des images de partage | `src/lib/og.tsx` | Attend `DES-02` (licences) |
-| Pages légales | absentes | Attend `RIS-06` — les modèles portent encore des `[à compléter]` |
-| Routage par langue | `SiteHeader` affiche « FR » sans effet | Attend `SOC-02` / `BE-06` |
+| Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
+| Deux tarifs ou tarif + supplément | fiche formation | décision client |
+| Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
+| Pages légales | collection `pages`, vide | `RIS-06` |
+| Témoignages et partenaires | en base, **pas encore affichés** | travail front |
+| Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 
-## Ce qui n'est pas encore fait
+## Déploiement
 
-Le front public est complet. La suite (`BE-01` → `BE-12` pour Payload, `INT-01`, `INT-02`, `INT-06` → `INT-11`) **ne démarre qu'après le jalon 1**, la validation formelle des maquettes — c'est la règle du projet : le design est validé avant toute ligne de backend.
+- GitHub : `clixatravo/clixa` — CI sur chaque push.
+- Vercel : `clixa-institute.vercel.app`, **désindexé** tant que
+  `NEXT_PUBLIC_SITE_ENV` ne vaut pas `production`.
+- La production n'a **pas encore de base de données** : elle sert toujours la
+  version d'avant INT-01.
 
 ## Attention — dépôt git
 
-Le dépôt git est raciné sur `~` (le dossier personnel), pas sur ce projet, et sans `.gitignore`. Un `git add -A` embarquerait `.ssh/` et des identifiants. À corriger avant tout commit :
+Le dépôt est raciné sur `~`, pas sur ce projet, et sans `.gitignore`. Un
+`git add -A` y embarquerait `.ssh/`. À corriger :
 
 ```bash
 rm -rf ~/.git && cd ~/Desktop/clixa && git init
 ```
 
-**Deux choses en dépendent :**
-
-- Les **hooks de pré-commit** (`SOC-04`) ne sont pas installés. Husky écrit dans le dossier `.git` de la racine du dépôt — aujourd'hui ce serait `~/.git/hooks`, ce qui poserait des hooks sur ton dossier personnel. Une fois le dépôt raciné ici :
-
-  ```bash
-  cd platform && npm i -D husky lint-staged && npx husky init
-  ```
-
-- La **CI** (`.github/workflows/ci.yml`) est écrite mais ne s'exécutera qu'une fois le dépôt poussé sur GitHub.
+Tant que ce n'est pas fait, les hooks de pré-commit (`SOC-04`) ne peuvent pas
+être installés : Husky écrirait dans `~/.git/hooks`.

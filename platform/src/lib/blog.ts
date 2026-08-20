@@ -1,27 +1,47 @@
 /**
- * Couche d'accès à l'éditorial — même couture que src/lib/catalogue.ts.
- * En INT-01, le corps de ces fonctions passe sur Payload sans toucher aux pages.
+ * Couche d'accès à l'éditorial.
+ *
+ * INT-01 — Même bascule que le catalogue : la source est désormais Payload,
+ * les signatures sont inchangées.
  */
+import { cache } from "react";
 
-import { articles, categories, type Article, type Bloc, type CategorieArticle } from "@/data/blog";
+import { categories, type Article, type Bloc, type CategorieArticle } from "@/data/blog";
+import { payloadClient, versArticle } from "@/lib/payload";
 
 /**
  * Les types du domaine éditorial sont ré-exportés ici pour que les pages et
  * composants n'aient jamais à importer src/data/ — la règle no-restricted-imports
- * fait respecter cette étanchéité, qui est ce qui rendra la bascule Payload indolore.
+ * fait respecter cette étanchéité.
+ *
+ * Les catégories restent en dur : ce sont des valeurs de code, reprises à
+ * l'identique dans le champ « Catégorie » du CMS. Les rendre modifiables
+ * demanderait une collection dédiée, sans bénéfice tant qu'elles ne bougent pas.
  */
 export type { Article, Bloc, CategorieArticle };
 
-export function getArticles(): Article[] {
-  return [...articles].sort((a, b) => b.publieLe.localeCompare(a.publieLe));
+const chargerArticles = cache(async (): Promise<Article[]> => {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "articles",
+    limit: 500,
+    locale: "fr",
+    depth: 1,
+    sort: "-publieLe",
+  });
+  return docs.map(versArticle);
+});
+
+export async function getArticles(): Promise<Article[]> {
+  return chargerArticles();
 }
 
-export function getArticle(slug: string): Article | undefined {
-  return articles.find((a) => a.slug === slug);
+export async function getArticle(slug: string): Promise<Article | undefined> {
+  return (await chargerArticles()).find((a) => a.slug === slug);
 }
 
-export function getArticlesParCategorie(cat: string): Article[] {
-  return getArticles().filter((a) => a.categorie === cat);
+export async function getArticlesParCategorie(cat: string): Promise<Article[]> {
+  return (await chargerArticles()).filter((a) => a.categorie === cat);
 }
 
 export function getCategories() {
@@ -37,14 +57,13 @@ export function nomCategorie(slug: CategorieArticle): string {
 }
 
 /** Articles proches : même catégorie d'abord, complétés par les plus récents. */
-export function getArticlesLies(slug: string, limite = 3): Article[] {
-  const courant = getArticle(slug);
+export async function getArticlesLies(slug: string, limite = 3): Promise<Article[]> {
+  const tous = await chargerArticles();
+  const courant = tous.find((a) => a.slug === slug);
   if (!courant) return [];
 
-  const memeCategorie = getArticles().filter(
-    (a) => a.slug !== slug && a.categorie === courant.categorie,
-  );
-  const autres = getArticles().filter((a) => a.slug !== slug && a.categorie !== courant.categorie);
+  const memeCategorie = tous.filter((a) => a.slug !== slug && a.categorie === courant.categorie);
+  const autres = tous.filter((a) => a.slug !== slug && a.categorie !== courant.categorie);
 
   return [...memeCategorie, ...autres].slice(0, limite);
 }

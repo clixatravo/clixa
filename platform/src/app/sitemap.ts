@@ -10,7 +10,7 @@ import { SITE_URL } from "@/lib/seo";
  * le CMS apparaît ici sans intervention. La date de dernière modification d'un
  * programme suit sa session la plus récemment ouverte.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const maintenant = new Date();
 
   const statiques: MetadataRoute.Sitemap = [
@@ -54,25 +54,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const programmes: MetadataRoute.Sitemap = getProgrammes().map((p) => {
-    const sessions = getSessions(p.slug);
-    const derniere = sessions.at(-1)?.debut;
-    return {
-      url: `${SITE_URL}/formations/${p.slug}`,
-      lastModified: derniere ? new Date(derniere) : maintenant,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    };
-  });
+  const programmes: MetadataRoute.Sitemap = await Promise.all(
+    (await getProgrammes()).map(async (p) => {
+      const sessions = await getSessions(p.slug);
+      const derniere = sessions.at(-1)?.debut;
+      return {
+        url: `${SITE_URL}/formations/${p.slug}`,
+        lastModified: derniere ? new Date(derniere) : maintenant,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      };
+    }),
+  );
 
-  const specialisations: MetadataRoute.Sitemap = getSpecialisations().map((s) => ({
+  const specialisations: MetadataRoute.Sitemap = (await getSpecialisations()).map((s) => ({
     url: `${SITE_URL}/specialisations/${s.slug}`,
     lastModified: maintenant,
     changeFrequency: "monthly",
     priority: 0.7,
   }));
 
-  const articles: MetadataRoute.Sitemap = getArticles().map((a) => ({
+  const articles: MetadataRoute.Sitemap = (await getArticles()).map((a) => ({
     url: `${SITE_URL}/blog/${a.slug}`,
     lastModified: new Date(a.publieLe),
     changeFrequency: "yearly",

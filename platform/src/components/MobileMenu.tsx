@@ -20,8 +20,19 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
   const boutonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
-  // Toute navigation referme le menu.
-  useEffect(() => setOuvert(false), [pathname]);
+  /**
+   * Toute navigation referme le menu — y compris via les boutons Précédent /
+   * Suivant du navigateur, qui ne passent pas par un clic sur un lien.
+   *
+   * Comparaison pendant le rendu plutôt qu'un effet : c'est le motif recommandé
+   * par React pour réinitialiser un état quand une valeur dérivée change, et il
+   * évite un second rendu inutile.
+   */
+  const [cheminPrecedent, setCheminPrecedent] = useState(pathname);
+  if (cheminPrecedent !== pathname) {
+    setCheminPrecedent(pathname);
+    setOuvert(false);
+  }
 
   /**
    * Fermeture explicite au clic, en plus de l'effet ci-dessus.

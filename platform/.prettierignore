@@ -2,3 +2,5 @@
 node_modules/
 next-env.d.ts
 *.md
+src/payload-types.ts
+src/app/(payload)/admin/importMap.js
