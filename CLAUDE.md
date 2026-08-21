@@ -178,9 +178,17 @@ vrai contenu, il faudra recréer `dev` pour la remettre à niveau.
 ⚠️ Utiliser l'adresse **directe**, pas celle en `-pooler` : Payload interroge
 le schéma au démarrage, ce que le pooler gère mal.
 
-⚠️ La chaîne de connexion a circulé en clair dans une conversation. Le mot de
-passe devrait être régénéré depuis Neon (Roles → Reset password), puis mis à
-jour aux trois endroits : `.env.local`, secrets Vercel, secrets GitHub.
+Les mots de passe des deux branches ont été régénérés le 21 août 2026, après
+que la chaîne de connexion eut circulé en clair. Les anciens ne donnent plus
+accès — vérifié.
+
+Chaque branche Neon porte son propre mot de passe : régénérer celui de `dev`
+laisse `production` intacte. Une régénération se répercute à la main sur
+`.env.local`, les variables Vercel (Development, Preview, Production) et le
+secret GitHub `DATABASE_URL`.
+
+⚠️ Régénérer celui de `production` coupe le site jusqu'au redéploiement :
+Vercel fige les variables au build, changer la valeur ne suffit pas.
 
 ## Dépôt git
 
