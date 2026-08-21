@@ -38,6 +38,21 @@ npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
 npx payload run scripts/verifier-semis.ts         # base ≡ src/data/
 ```
 
+Deux scripts servent l'accès au back-office. Aucun adaptateur d'e-mail n'est
+configuré : le lien « Mot de passe oublié » de `/admin` ne mène nulle part, et
+ces scripts sont le seul recours quand quelqu'un perd son mot de passe.
+
+```bash
+npx payload run scripts/reinitialiser-mot-de-passe.ts <email>  # lien de réinit.
+npx payload run scripts/supprimer-compte.ts <email>            # supprime un compte
+```
+
+Quand plus aucun compte n'existe, `/admin` affiche « Créer le premier
+utilisateur » : c'est la sortie de secours si le dernier mot de passe est perdu.
+
+⚠️ Payload met **près d'une minute** à démarrer un script (`Pulling schema from
+database` contre Neon). Un script qui semble figé n'a probablement pas fini.
+
 ⚠️ `scripts/semer.ts` **vide les collections** avant de les remplir. Ne pas le
 lancer une fois que l'équipe aura saisi du vrai contenu.
 
@@ -141,14 +156,11 @@ et pointer `.env.local` dessus.
 passe devrait être régénéré depuis Neon (Roles → Reset password), puis mis à
 jour aux trois endroits : `.env.local`, secrets Vercel, secrets GitHub.
 
-## Attention — dépôt git
+## Dépôt git
 
-Le dépôt est raciné sur `~`, pas sur ce projet, et sans `.gitignore`. Un
-`git add -A` y embarquerait `.ssh/`. À corriger :
+Raciné sur `~/Desktop/clixa`, avec `.gitignore` à la racine et un second dans
+`platform/`. Seul `platform/.env.example` est suivi ; aucun `.env` réel ne l'est.
 
-```bash
-rm -rf ~/.git && cd ~/Desktop/clixa && git init
-```
-
-Tant que ce n'est pas fait, les hooks de pré-commit (`SOC-04`) ne peuvent pas
-être installés : Husky écrirait dans `~/.git/hooks`.
+Le danger décrit ici auparavant — dépôt raciné sur `~`, un `git add -A`
+embarquant `.ssh/` — n'existe plus. Les hooks de pré-commit (`SOC-04`) peuvent
+donc être installés.
