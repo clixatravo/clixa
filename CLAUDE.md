@@ -142,10 +142,24 @@ Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, `INT-08` (le conte
 - GitHub : `clixatravo/clixa` — CI verte sur chaque push. Les secrets
   `DATABASE_URL` et `PAYLOAD_SECRET` sont nécessaires à l'étape Build, qui
   interroge la base pour pré-générer les pages.
-- Vercel : `clixa-institute.vercel.app`, **désindexé** tant que
-  `NEXT_PUBLIC_SITE_ENV` ne vaut pas `production`. Le back-office public est
-  sur `/admin`.
+- Vercel : projet `clixa`, **désindexé** tant que `NEXT_PUBLIC_SITE_ENV` ne
+  vaut pas `production`. Le back-office public est sur `/admin`.
+  **Root Directory : `platform`** — le dépôt a le site statique à sa racine ;
+  sans ce réglage, le build ne trouve pas de `package.json`.
+  Trois URL mènent au même site : `clixa-institute.vercel.app` et
+  `clixa-zeta.vercel.app` sont des alias stables, `clixa-<hash>-cl-95af…`
+  change à chaque build et ne doit pas être partagée.
 - Base : **Neon, région Frankfurt**, peuplée par `scripts/semer.ts`.
+
+Jusqu'au 21 août 2026, le dépôt n'était pas relié à Vercel : chaque mise en
+ligne passait par `vercel --prod` à la main, et la production a fini par
+accuser trois commits de retard sans que rien ne le signale. Le dépôt est
+désormais connecté — un push sur `main` déploie.
+
+⚠️ Les quatre variables d'environnement ne sont définies que pour
+**Production**. Les aperçus de branche n'en ont aucune, et Payload refuse de
+démarrer sans `DATABASE_URL` ni `PAYLOAD_SECRET` : leurs builds échoueront tant
+que les variables ne seront pas ajoutées à **Preview**.
 
 ⚠️ **Une seule base pour le développement et la production.** Modifier le
 contenu en local modifie le site public. Avant que l'équipe ne saisisse du vrai
