@@ -156,10 +156,9 @@ ligne passait par `vercel --prod` à la main, et la production a fini par
 accuser trois commits de retard sans que rien ne le signale. Le dépôt est
 désormais connecté — un push sur `main` déploie.
 
-⚠️ Les quatre variables d'environnement ne sont définies que pour
-**Production**. Les aperçus de branche n'en ont aucune, et Payload refuse de
-démarrer sans `DATABASE_URL` ni `PAYLOAD_SECRET` : leurs builds échoueront tant
-que les variables ne seront pas ajoutées à **Preview**.
+Les quatre variables d'environnement existent dans les trois environnements —
+Development, Preview et Production. Les aperçus de branche construisent donc
+sans réglage supplémentaire.
 
 ⚠️ **Une seule base pour le développement et la production.** Modifier le
 contenu en local modifie le site public. Avant que l'équipe ne saisisse du vrai
