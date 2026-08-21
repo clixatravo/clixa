@@ -99,8 +99,8 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**60 tâches sur 86.** Le front public et le back-office sont complets, et le
-site lit ses données depuis PostgreSQL.
+**61 tâches sur 86.** Le front public et le back-office sont complets, le site
+lit ses données depuis PostgreSQL, et l'ensemble tourne en production.
 
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
 `MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12`, `INT-03,04,05`, **`INT-01`**.
@@ -124,11 +124,22 @@ Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, `INT-08` (le conte
 
 ## Déploiement
 
-- GitHub : `clixatravo/clixa` — CI sur chaque push.
+- GitHub : `clixatravo/clixa` — CI verte sur chaque push. Les secrets
+  `DATABASE_URL` et `PAYLOAD_SECRET` sont nécessaires à l'étape Build, qui
+  interroge la base pour pré-générer les pages.
 - Vercel : `clixa-institute.vercel.app`, **désindexé** tant que
-  `NEXT_PUBLIC_SITE_ENV` ne vaut pas `production`.
-- La production n'a **pas encore de base de données** : elle sert toujours la
-  version d'avant INT-01.
+  `NEXT_PUBLIC_SITE_ENV` ne vaut pas `production`. Le back-office public est
+  sur `/admin`.
+- Base : **Neon, région Frankfurt**, peuplée par `scripts/semer.ts`.
+
+⚠️ **Une seule base pour le développement et la production.** Modifier le
+contenu en local modifie le site public. Avant que l'équipe ne saisisse du vrai
+contenu, créer une branche Neon dédiée au développement (10 branches offertes)
+et pointer `.env.local` dessus.
+
+⚠️ La chaîne de connexion a circulé en clair dans une conversation. Le mot de
+passe devrait être régénéré depuis Neon (Roles → Reset password), puis mis à
+jour aux trois endroits : `.env.local`, secrets Vercel, secrets GitHub.
 
 ## Attention — dépôt git
 
