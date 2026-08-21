@@ -160,10 +160,23 @@ Les quatre variables d'environnement existent dans les trois environnements —
 Development, Preview et Production. Les aperçus de branche construisent donc
 sans réglage supplémentaire.
 
-⚠️ **Une seule base pour le développement et la production.** Modifier le
-contenu en local modifie le site public. Avant que l'équipe ne saisisse du vrai
-contenu, créer une branche Neon dédiée au développement (10 branches offertes)
-et pointer `.env.local` dessus.
+**Deux branches Neon, depuis le 21 août 2026.** `production` sert le site
+public ; `dev` sert le poste de travail et les aperçus de branche. Modifier le
+contenu en local ne touche plus au site public.
+
+| Où | Branche Neon | Réglé dans |
+|---|---|---|
+| Poste de travail | `dev` | `platform/.env.local` |
+| Aperçus de branche | `dev` | variable Preview sur Vercel |
+| Site public | `production` | variable Production sur Vercel |
+
+`dev` est une copie sur écriture de `production` prise à sa création : les
+données y étaient complètes dès la première seconde, sans réimporter quoi que
+ce soit. Elle ne se resynchronise pas toute seule — quand `production` aura du
+vrai contenu, il faudra recréer `dev` pour la remettre à niveau.
+
+⚠️ Utiliser l'adresse **directe**, pas celle en `-pooler` : Payload interroge
+le schéma au démarrage, ce que le pooler gère mal.
 
 ⚠️ La chaîne de connexion a circulé en clair dans une conversation. Le mot de
 passe devrait être régénéré depuis Neon (Roles → Reset password), puis mis à
