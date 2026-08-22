@@ -30,13 +30,13 @@ export function FilAriane({ items }: { items: Miette[] }) {
   return (
     <nav
       aria-label="Fil d'Ariane"
-      className="border-line text-ivory-dim border-b px-8 py-3.5 text-[0.78rem]"
+      className="border-line text-ivory-dim border-b px-8 py-3 text-[0.78rem]"
     >
       {/* INT-04 — le BreadcrumbList suit automatiquement le fil affiché,
           donc les deux ne peuvent pas diverger. */}
       <JsonLd data={jsonLdFilAriane(items)} />
 
-      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mx-auto flex max-w-[1180px] items-center">
         {retour && (
           <Link
             href={retour.href!}
@@ -53,11 +53,15 @@ export function FilAriane({ items }: { items: Miette[] }) {
         )}
 
         {/*
-          Sur mobile, la trace complète occupait trois lignes avant même le titre.
-          Elle reste dans le document pour les lecteurs d'écran, et ne réapparaît
-          à l'œil qu'à partir de deux colonnes — le bouton suffit à situer.
+          La trace n'est plus montrée, à aucune largeur.
+          Elle répétait ce que le bouton dit déjà — « ← Accueil » suivi de
+          « ACCUEIL / SKILLAFRIQUE » — et sur mobile elle occupait trois lignes
+          avant même le titre. Le bouton indique d'où l'on vient, le titre dit
+          où l'on est : la trace n'ajoutait rien à l'œil.
+          Elle reste dans le document, lue par les lecteurs d'écran, et alimente
+          le BreadcrumbList que Google lit plus haut.
         */}
-        <ol className="mono-label text-ivory-dim/70 sr-only gap-x-2.5 text-[0.64rem] sm:not-sr-only sm:flex sm:flex-wrap sm:items-center">
+        <ol className="mono-label sr-only gap-x-2.5">
           {items.map((m, i) => {
             const dernier = i === items.length - 1;
             return (
