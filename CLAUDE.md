@@ -160,6 +160,18 @@ et les trois villes du pied de page ne ramènent donc rien. C'est voulu : la
 direction prévoit d'ouvrir des sessions en présentiel. Ne pas les retirer en
 croyant nettoyer du code mort.
 
+⚠️ **Un script ne rafraîchit pas le site.** `revalidatePath` exige le contexte
+de requête de Next ; sous `payload run`, l'appel échoue et les crochets le
+taisent — refuser d'écrire en base parce qu'un cache n'a pas pu être vidé serait
+pire. Après un script qui touche du contenu publié, redéployer :
+
+```bash
+npx vercel redeploy $(npx vercel ls clixa --scope cl-95af | grep -oE 'https://clixa-[a-z0-9]+-cl-95af\.vercel\.app' | head -1) --scope cl-95af
+```
+
+Le 22 août 2026, onze documents dépubliés par script restaient affichés :
+l'API répondait bien « aucun », la page servie datait du build précédent.
+
 **Les pages se rafraîchissent seules** depuis `INT-02` : chaque collection
 prévient Next de ce qu'elle change. Une session ajoutée depuis `/admin` apparaît
 sur la fiche sans déploiement. Vérifié en conditions réelles le 22 août 2026.
