@@ -110,6 +110,9 @@ export default async function FicheFormation({ params }: Props) {
         <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
           <div>
             <Bloc titre="Objectifs de la formation">
+              {programme.positionnement && (
+                <p className="text-gold-bright mb-3 text-[0.9rem]">{programme.positionnement}</p>
+              )}
               <p>{programme.objectifs}</p>
             </Bloc>
 
@@ -132,6 +135,12 @@ export default async function FicheFormation({ params }: Props) {
             <Bloc titre="Sessions disponibles">
               <SessionsDisponibles sessions={sessions} />
             </Bloc>
+
+            {programme.approche && programme.approche.length > 0 && (
+              <Bloc titre="Approche pédagogique">
+                <Liste items={programme.approche} />
+              </Bloc>
+            )}
 
             {programme.livrables && programme.livrables.length > 0 && (
               <Bloc titre="Livrables remis aux participants">

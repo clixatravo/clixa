@@ -250,6 +250,34 @@ export const Programmes: CollectionConfig = {
               ],
             },
             {
+              name: "positionnement",
+              type: "text",
+              label: "Positionnement",
+              localized: true,
+              admin: {
+                placeholder: "Posture DAF · Pilotage, contrôle, cash & financement",
+                description: "Deux ou trois mots : la posture que le parcours vise.",
+              },
+            },
+            {
+              name: "approche",
+              type: "array",
+              label: "Approche pédagogique",
+              labels: { singular: "Point", plural: "Points" },
+              admin: {
+                description: "Comment le parcours est mené : live, cas fil rouge, ateliers.",
+              },
+              fields: [
+                {
+                  name: "valeur",
+                  type: "text",
+                  label: "Point",
+                  validate: requisEnFrancais,
+                  localized: true,
+                },
+              ],
+            },
+            {
               name: "mentionsLegales",
               type: "textarea",
               label: "Mentions légales",
@@ -301,6 +329,16 @@ export const Programmes: CollectionConfig = {
                   label: "Titre du module",
                   validate: requisEnFrancais,
                   localized: true,
+                },
+                {
+                  name: "livrables",
+                  type: "text",
+                  label: "Livrables de la séance",
+                  localized: true,
+                  admin: {
+                    placeholder: "diagnostic finance ; plan d'action 90 jours",
+                    description: "Ce que la séance produit. Affiché sous son objectif.",
+                  },
                 },
                 {
                   name: "objectif",

@@ -226,6 +226,19 @@ export interface Programme {
       }[]
     | null;
   /**
+   * Deux ou trois mots : la posture que le parcours vise.
+   */
+  positionnement?: string | null;
+  /**
+   * Comment le parcours est mené : live, cas fil rouge, ateliers.
+   */
+  approche?:
+    | {
+        valeur?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Mention imposée par un tiers, affichée sous la fiche. Exemple : PMP® est une marque du Project Management Institute ; les frais d'examen ne sont pas inclus.
    */
   mentionsLegales?: string | null;
@@ -238,6 +251,10 @@ export interface Programme {
   modules?:
     | {
         titre?: string | null;
+        /**
+         * Ce que la séance produit. Affiché sous son objectif.
+         */
+        livrables?: string | null;
         /**
          * Une phrase : ce que la séance vise. Affichée quand le module est déplié.
          */
@@ -746,6 +763,13 @@ export interface ProgrammesSelect<T extends boolean = true> {
         valeur?: T;
         id?: T;
       };
+  positionnement?: T;
+  approche?:
+    | T
+    | {
+        valeur?: T;
+        id?: T;
+      };
   mentionsLegales?: T;
   debouches?:
     | T
@@ -757,6 +781,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
     | T
     | {
         titre?: T;
+        livrables?: T;
         objectif?: T;
         lecons?:
           | T

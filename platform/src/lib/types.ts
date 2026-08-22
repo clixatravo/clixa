@@ -52,6 +52,8 @@ export interface Module {
    * huit séances — le taire reviendrait à jeter la moitié du plan de cours.
    */
   objectif?: string;
+  /** Ce que la séance produit : « diagnostic finance ; plan d'action 90 jours ». */
+  livrables?: string;
   lecons: Lecon[];
 }
 
@@ -81,6 +83,10 @@ export interface Programme {
   livrables?: string[];
   /** Templates et ressources fournis en plus du cours (« bonus inclus »). */
   outils?: string[];
+  /** Posture visée, en deux mots : « Posture DAF », « Pilotage, contrôle, cash ». */
+  positionnement?: string;
+  /** Comment le parcours est mené — live, cas fil rouge, ateliers. */
+  approche?: string[];
   /**
    * Mention imposée par un tiers. La fiche PMP doit rappeler que PMP® est une
    * marque du PMI et que les frais d'examen ne sont pas compris : l'omettre

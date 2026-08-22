@@ -73,6 +73,7 @@ function versModules(d: ProgrammePayload): Module[] {
     id: m.id ?? `module-${i}`,
     titre: t(m.titre),
     ...(m.objectif ? { objectif: t(m.objectif) } : {}),
+    ...(m.livrables ? { livrables: t(m.livrables) } : {}),
     lecons: (m.lecons ?? []).map((l, j) => ({
       id: l.id ?? `lecon-${i}-${j}`,
       titre: t(l.titre),
@@ -101,6 +102,8 @@ export function versProgramme(d: ProgrammePayload): Programme {
     ...(d.certification ? { certification: d.certification } : {}),
     ...(valeurs(d.livrables).length ? { livrables: valeurs(d.livrables) } : {}),
     ...(valeurs(d.outils).length ? { outils: valeurs(d.outils) } : {}),
+    ...(d.positionnement ? { positionnement: t(d.positionnement) } : {}),
+    ...(valeurs(d.approche).length ? { approche: valeurs(d.approche) } : {}),
     ...(d.mentionsLegales ? { mentionsLegales: t(d.mentionsLegales) } : {}),
   };
 }
