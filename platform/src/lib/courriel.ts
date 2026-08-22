@@ -142,3 +142,61 @@ export async function courrielRappel(
       .join("\n"),
   });
 }
+
+/**
+ * Relance d'échéance.
+ *
+ * Le ton compte : la personne a déjà retenu sa place et souvent déjà payé une
+ * fois. Ce n'est pas un recouvrement, c'est un rappel. On donne le montant, la
+ * date, la référence et le lien — de quoi agir sans avoir à chercher.
+ */
+export async function courrielRelance(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    montant: number;
+    dateLimite: string;
+    enRetard: boolean;
+    urlDossier: string;
+  },
+): Promise<void> {
+  const quand = JOUR.format(new Date(d.dateLimite));
+
+  await envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: d.enRetard
+      ? `Échéance dépassée — ${d.programmeTitre}`
+      : `Prochaine échéance le ${quand} — ${d.programmeTitre}`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      d.enRetard
+        ? `Une échéance de ${EUROS.format(d.montant)} était attendue le ${quand} pour « ${d.programmeTitre} ».`
+        : `Votre prochaine échéance de ${EUROS.format(d.montant)} est à régler avant le ${quand}, pour « ${d.programmeTitre} ».`,
+      "",
+      "Le règlement se fait par Western Union, Ria ou MoneyGram.",
+      `Pensez à citer la référence ${d.reference} et à nous transmettre le numéro de transfert par WhatsApp.`,
+      "",
+      "Votre dossier :",
+      d.urlDossier,
+      "",
+      "Si le transfert est déjà parti, ce message n'appelle pas de réponse : nous le rapprocherons.",
+      "",
+      "CLIXA Institute",
+    ].join("\n"),
+  });
+}
+
+/** À l'équipe : le récapitulatif de ce que la relance a fait. */
+export async function courrielBilanRelances(payload: Payload, lignes: string[]): Promise<void> {
+  if (!EQUIPE || lignes.length === 0) return;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `Relances envoyées — ${lignes.length} échéance(s)`,
+    text: ["Les participants suivants ont été relancés :", "", ...lignes].join("\n"),
+  });
+}

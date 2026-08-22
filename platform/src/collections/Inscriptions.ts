@@ -382,11 +382,23 @@ export const Inscriptions: CollectionConfig = {
                   },
                 },
                 {
+                  name: "relanceeLe",
+                  type: "date",
+                  label: "Relancée le",
+                  admin: {
+                    width: "30%",
+                    readOnly: true,
+                    description:
+                      "Posé par la relance automatique. Empêche d'écrire deux fois la même semaine.",
+                    date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+                  },
+                },
+                {
                   name: "regleLe",
                   type: "date",
                   label: "Vérifié le",
                   admin: {
-                    width: "30%",
+                    width: "25%",
                     date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
                   },
                 },

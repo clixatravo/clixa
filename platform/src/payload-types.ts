@@ -618,6 +618,10 @@ export interface Inscription {
          * MTCN pour Western Union, PIN pour Ria.
          */
         reference?: string | null;
+        /**
+         * Posé par la relance automatique. Empêche d'écrire deux fois la même semaine.
+         */
+        relanceeLe?: string | null;
         regleLe?: string | null;
         id?: string | null;
       }[]
@@ -1108,6 +1112,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
         statut?: T;
         moyen?: T;
         reference?: T;
+        relanceeLe?: T;
         regleLe?: T;
         id?: T;
       };
