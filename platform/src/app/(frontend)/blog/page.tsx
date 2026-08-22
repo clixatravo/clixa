@@ -107,7 +107,7 @@ export default async function Blog({ searchParams }: Props) {
 
               {/* Les suivants */}
               {suite.length > 0 && (
-                <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-3">
+                <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
                   {suite.map((a) => (
                     <Link
                       key={a.slug}

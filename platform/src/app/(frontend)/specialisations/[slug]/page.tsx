@@ -107,7 +107,7 @@ export default async function PageSpecialisation({ params }: Props) {
               </Link>
             </div>
           ) : (
-            <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-3">
+            <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
               {programmes.map((p) => (
                 <ProgrammeCard key={p.slug} programme={p} />
               ))}

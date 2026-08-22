@@ -106,7 +106,7 @@ export default async function ArticlePage({ params }: Props) {
               <span className="mono-label text-gold mb-3 block">À lire ensuite</span>
               <h2 className="text-[clamp(1.4rem,2.6vw,1.9rem)]">D&apos;autres articles.</h2>
             </div>
-            <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-3">
+            <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
               {lies.map((a) => (
                 <Link
                   key={a.slug}

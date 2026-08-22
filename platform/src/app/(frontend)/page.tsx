@@ -94,7 +94,7 @@ export default async function Accueil() {
             </p>
           </div>
 
-          <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-4">
+          <div className="carte-grid sm:grid-cols-2 lg:grid-cols-4">
             {specs.map((s, i) => {
               const nb = nbParSpecialisation.get(s.slug) ?? 0;
               return (
@@ -180,7 +180,7 @@ export default async function Accueil() {
             </h2>
           </div>
 
-          <div className="hairline-grid">
+          <div className="carte-grid">
             {agenda.map((s) => {
               const prog = parSlug.get(s.programmeSlug);
               return (
@@ -217,7 +217,7 @@ export default async function Accueil() {
             </Link>
           </div>
 
-          <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-3">
+          <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
             {vedettes.map((p) => (
               <ProgrammeCard key={p.slug} programme={p} />
             ))}

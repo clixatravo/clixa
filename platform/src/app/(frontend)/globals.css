@@ -129,6 +129,29 @@
     }
   }
 
+  /*
+    Grille de cartes détachées.
+    La distinction avec .hairline-grid n'est pas décorative. Une grille de
+    cellules — chiffres clés, piliers, étapes — forme une famille : les cellules
+    se tiennent, un filet suffit à les séparer. Une carte de formation est un
+    objet qu'on choisit et sur lequel on clique ; elle a besoin de ses bords et
+    d'un peu d'air autour, sans quoi douze cartes se lisent comme un tableau.
+  */
+  .carte-grid {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .carte-grid > * {
+    border: 1px solid var(--color-hairline);
+  }
+
+  @media (width >= 40rem) {
+    .carte-grid {
+      gap: 1.25rem;
+    }
+  }
+
   /* Texture de grille fixe à 5 % */
   .grain {
     position: fixed;

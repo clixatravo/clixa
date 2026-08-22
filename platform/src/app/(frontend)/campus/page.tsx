@@ -116,7 +116,7 @@ export default async function Campus() {
             </h2>
           </div>
 
-          <div className="hairline-grid">
+          <div className="carte-grid">
             {presentiel.map(({ session, programme }) => (
               <Link
                 key={session.id}
