@@ -67,6 +67,20 @@ export const DemandesRappel: CollectionConfig = {
       admin: { description: "Vide si la personne ne savait pas encore." },
     },
     {
+      name: "planPaiement",
+      type: "select",
+      label: "Rythme de paiement souhaité",
+      options: [
+        { label: "En une fois", value: "P1" },
+        { label: "En deux fois", value: "P2" },
+        { label: "En trois fois", value: "P3" },
+      ],
+      admin: {
+        description:
+          "Ce que la personne a choisi sur la fiche. Payer en plusieurs fois coûte plus cher : le savoir avant le rappel évite de découvrir l'écart au téléphone.",
+      },
+    },
+    {
       name: "message",
       type: "textarea",
       label: "Message",

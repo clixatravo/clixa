@@ -532,6 +532,10 @@ export interface DemandesRappel {
    * Vide si la personne ne savait pas encore.
    */
   programme?: (number | null) | Programme;
+  /**
+   * Ce que la personne a choisi sur la fiche. Payer en plusieurs fois coûte plus cher : le savoir avant le rappel évite de découvrir l'écart au téléphone.
+   */
+  planPaiement?: ('P1' | 'P2' | 'P3') | null;
   message?: string | null;
   statut: 'nouvelle' | 'rappelee' | 'devis' | 'inscrite' | 'sans-suite';
   /**
@@ -977,6 +981,7 @@ export interface DemandesRappelSelect<T extends boolean = true> {
   whatsapp?: T;
   pays?: T;
   programme?: T;
+  planPaiement?: T;
   message?: T;
   statut?: T;
   notes?: T;

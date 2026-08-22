@@ -67,6 +67,9 @@ export async function POST(request: Request) {
         whatsapp,
         pays,
         programme,
+        // Seuls les trois codes du barème sont acceptés : un champ de
+        // formulaire est de la saisie visiteur, pas une valeur de confiance.
+        planPaiement: (["P1", "P2", "P3"] as const).find((c) => c === texte("plan")),
         message: texte("message") || undefined,
         origine: texte("origine") || "/contact",
         statut: "nouvelle",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
-import { getProgrammes } from "@/lib/catalogue";
+import { formatPrix, getProgrammes, getTarifs } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
   title: "Être rappelé",
@@ -9,7 +9,12 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  searchParams: Promise<{ envoye?: string; erreur?: string; programme?: string }>;
+  searchParams: Promise<{
+    envoye?: string;
+    erreur?: string;
+    programme?: string;
+    plan?: string;
+  }>;
 }
 
 /**
@@ -20,8 +25,14 @@ interface Props {
  * sans JavaScript, et la demande est enregistrée en base avant tout le reste.
  */
 export default async function Contact({ searchParams }: Props) {
-  const { envoye, erreur, programme: programmePreselectionne } = await searchParams;
+  const {
+    envoye,
+    erreur,
+    programme: programmePreselectionne,
+    plan: planChoisi,
+  } = await searchParams;
   const programmes = await getProgrammes();
+  const tarifs = await getTarifs();
 
   return (
     <>
@@ -111,6 +122,33 @@ export default async function Contact({ searchParams }: Props) {
                     {programmes.map((p) => (
                       <option key={p.slug} value={p.slug}>
                         {p.titre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/*
+                  Le rythme arrive pré-rempli quand la personne l'a choisi sur la
+                  fiche. Les montants sont répétés ici : à ce stade elle a quitté
+                  la page des tarifs, et trois fois coûte 47 € de plus qu'une.
+                */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label htmlFor="plan" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Rythme de paiement souhaité
+                  </label>
+                  <select
+                    id="plan"
+                    name="plan"
+                    defaultValue={planChoisi ?? ""}
+                    className="border-line bg-panel rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                  >
+                    <option value="">À décider avec le conseiller</option>
+                    {tarifs.plans.map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {p.libelle} — {formatPrix(p.totalCentimes)}
+                        {p.echeancesCentimes.length > 1
+                          ? ` (${p.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")})`
+                          : ""}
                       </option>
                     ))}
                   </select>

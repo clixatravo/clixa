@@ -1,4 +1,5 @@
 import type { Metadata, Route } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { JsonLd } from "@/components/JsonLd";
@@ -172,27 +173,50 @@ export default async function FicheFormation({ params }: Props) {
                 laisser le visiteur le découvrir au moment de payer.
               */}
               <div className="border-gold mb-6 border p-5">
-                <div className="border-line flex items-baseline justify-between border-b pb-3">
-                  <span className="mono-label text-ivory-dim text-[0.6rem]">Comptant</span>
-                  <span className="font-display text-gold-bright text-2xl">
-                    {formatPrix(tarifs.prixComptantCentimes)}
-                  </span>
-                </div>
-                {tarifs.plans
-                  .filter((plan) => plan.echeancesCentimes.length > 1)
-                  .map((plan) => (
-                    <div key={plan.code} className="border-line border-b py-2.5 last:border-b-0">
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-ivory-dim text-[0.82rem]">{plan.libelle}</span>
-                        <span className="text-ivory font-mono text-[0.82rem] tabular-nums">
-                          {plan.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")}
+                {/*
+                  Chaque rythme est un lien : le choix part avec la demande au
+                  lieu de se rejouer au téléphone. Le premier plan sert de
+                  référence — les suivants affichent ce qu'ils coûtent en plus.
+                */}
+                {tarifs.plans.map((plan, i) => {
+                  const surcout = plan.totalCentimes - tarifs.prixComptantCentimes;
+                  const cible = `/contact?programme=${programme.slug}&plan=${plan.code}` as Route;
+                  return (
+                    <Link
+                      key={plan.code}
+                      href={cible}
+                      className="border-line hover:bg-panel-2 block border-b py-3 transition-colors first:pt-0 last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span
+                          className={
+                            i === 0
+                              ? "mono-label text-ivory-dim text-[0.6rem]"
+                              : "text-ivory-dim text-[0.82rem]"
+                          }
+                        >
+                          {i === 0 ? "Comptant" : plan.libelle}
+                        </span>
+                        <span
+                          className={
+                            i === 0
+                              ? "font-display text-gold-bright text-2xl"
+                              : "text-ivory font-mono text-[0.82rem] tabular-nums"
+                          }
+                        >
+                          {i === 0
+                            ? formatPrix(plan.totalCentimes)
+                            : plan.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")}
                         </span>
                       </div>
                       <div className="text-ivory-dim mt-0.5 text-[0.7rem]">
-                        {formatPrix(plan.totalCentimes)} au total · {plan.conditions}
+                        {i === 0
+                          ? plan.conditions
+                          : `${formatPrix(plan.totalCentimes)} au total, soit ${formatPrix(surcout)} de plus · ${plan.conditions}`}
                       </div>
-                    </div>
-                  ))}
+                    </Link>
+                  );
+                })}
               </div>
 
               {prochaine && (
