@@ -8,6 +8,7 @@ import { fr } from "@payloadcms/translations/languages/fr";
 
 import { Utilisateurs } from "@/collections/Utilisateurs";
 import { Specialisations } from "@/collections/Specialisations";
+import { Tarifs } from "@/collections/Tarifs";
 import { Programmes } from "@/collections/Programmes";
 import { Sessions } from "@/collections/Sessions";
 import { Articles } from "@/collections/Articles";
@@ -52,6 +53,12 @@ export default buildConfig({
     // Accès
     Utilisateurs,
   ],
+
+  /**
+   * Le barème vaut pour tout le catalogue : un réglage, pas une donnée de
+   * session. Seule la direction peut le modifier.
+   */
+  globals: [Tarifs],
 
   editor: lexicalEditor(),
 

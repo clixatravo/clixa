@@ -103,8 +103,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('fr' | 'en') | ('fr' | 'en')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    tarifs: Tarif;
+  };
+  globalsSelect: {
+    tarifs: TarifsSelect<false> | TarifsSelect<true>;
+  };
   locale: 'fr' | 'en';
   widgets: {
     collections: CollectionsWidget;
@@ -234,6 +238,10 @@ export interface Programme {
   modules?:
     | {
         titre?: string | null;
+        /**
+         * Une phrase : ce que la séance vise. Affichée quand le module est déplié.
+         */
+        objectif?: string | null;
         lecons?:
           | {
               titre?: string | null;
@@ -745,6 +753,7 @@ export interface ProgrammesSelect<T extends boolean = true> {
     | T
     | {
         titre?: T;
+        objectif?: T;
         lecons?:
           | T
           | {
@@ -1038,6 +1047,82 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tarifs".
+ */
+export interface Tarif {
+  id: number;
+  /**
+   * En unité entière. Le montant réglé en une seule fois.
+   */
+  prixComptant: number;
+  devise: 'EUR' | 'MAD' | 'XOF';
+  /**
+   * Du plus simple au plus étalé. Le premier de la liste est celui mis en avant sur la fiche.
+   */
+  plans?:
+    | {
+        code: string;
+        libelle?: string | null;
+        total: number;
+        /**
+         * Les montants successifs, dans l'ordre.
+         */
+        echeances?:
+          | {
+              montant: number;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Phrase montrée sous le plan.
+         */
+        conditions?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  moyensPaiement?:
+    | {
+        valeur: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tarifs_select".
+ */
+export interface TarifsSelect<T extends boolean = true> {
+  prixComptant?: T;
+  devise?: T;
+  plans?:
+    | T
+    | {
+        code?: T;
+        libelle?: T;
+        total?: T;
+        echeances?:
+          | T
+          | {
+              montant?: T;
+              id?: T;
+            };
+        conditions?: T;
+        id?: T;
+      };
+  moyensPaiement?:
+    | T
+    | {
+        valeur?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

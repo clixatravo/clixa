@@ -47,6 +47,11 @@ export interface Lecon {
 export interface Module {
   id: string;
   titre: string;
+  /**
+   * Ce que la séance vise. Les fiches réelles en portent un pour chacune des
+   * huit séances — le taire reviendrait à jeter la moitié du plan de cours.
+   */
+  objectif?: string;
   lecons: Lecon[];
 }
 
@@ -177,4 +182,25 @@ export interface Paiement {
   moyen: "carte" | "mobile-money" | "virement";
   statut: "en-attente" | "regle" | "echoue" | "rembourse";
   regleLe?: string;
+}
+
+/**
+ * Barème du catalogue.
+ *
+ * Les douze parcours partagent le même tarif : c'est un réglage, pas une donnée
+ * de session. Payer en plusieurs fois coûte plus cher, et l'écart est affiché.
+ */
+export interface PlanPaiement {
+  code: string;
+  libelle: string;
+  totalCentimes: number;
+  echeancesCentimes: number[];
+  conditions: string;
+}
+
+export interface Tarifs {
+  prixComptantCentimes: number;
+  devise: Session["devise"];
+  plans: PlanPaiement[];
+  moyensPaiement: string[];
 }

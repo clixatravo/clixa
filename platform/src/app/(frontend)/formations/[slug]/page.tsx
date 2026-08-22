@@ -18,6 +18,7 @@ import {
   getSpecialisation,
   libelleMode,
   lieuSession,
+  getTarifs,
 } from "@/lib/catalogue";
 
 interface Props {
@@ -51,6 +52,7 @@ export default async function FicheFormation({ params }: Props) {
 
   const spec = await getSpecialisation(programme.specialisation);
   const sessions = await getSessions(programme.slug);
+  const tarifs = await getTarifs();
   const prochaine = await getProchaineSession(programme.slug);
 
   const parMode = new Map<string, number>();
@@ -162,20 +164,35 @@ export default async function FicheFormation({ params }: Props) {
           {/* ── Colonne latérale ── */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <div className="bg-panel p-6">
+              {/*
+                Le tarif est celui du catalogue, pas celui de la session : les
+                douze parcours partagent le même barème. Les plans échelonnés
+                coûtent plus cher, et l'écart est montré — 423 € comptant contre
+                470 € en trois fois. Le taire pour « faire propre » reviendrait à
+                laisser le visiteur le découvrir au moment de payer.
+              */}
               <div className="border-gold mb-6 border p-5">
-                {[...parMode.entries()].map(([mode, prix]) => (
-                  <div
-                    key={mode}
-                    className="border-line flex items-baseline justify-between border-b py-2.5 last:border-b-0"
-                  >
-                    <span className="mono-label text-ivory-dim text-[0.6rem]">
-                      {libelleMode[mode as never]}
-                    </span>
-                    <span className="font-display text-gold-bright text-2xl">
-                      {formatPrix(prix)}
-                    </span>
-                  </div>
-                ))}
+                <div className="border-line flex items-baseline justify-between border-b pb-3">
+                  <span className="mono-label text-ivory-dim text-[0.6rem]">Comptant</span>
+                  <span className="font-display text-gold-bright text-2xl">
+                    {formatPrix(tarifs.prixComptantCentimes)}
+                  </span>
+                </div>
+                {tarifs.plans
+                  .filter((plan) => plan.echeancesCentimes.length > 1)
+                  .map((plan) => (
+                    <div key={plan.code} className="border-line border-b py-2.5 last:border-b-0">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-ivory-dim text-[0.82rem]">{plan.libelle}</span>
+                        <span className="text-ivory font-mono text-[0.82rem] tabular-nums">
+                          {plan.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")}
+                        </span>
+                      </div>
+                      <div className="text-ivory-dim mt-0.5 text-[0.7rem]">
+                        {formatPrix(plan.totalCentimes)} au total · {plan.conditions}
+                      </div>
+                    </div>
+                  ))}
               </div>
 
               {prochaine && (
@@ -200,10 +217,15 @@ export default async function FicheFormation({ params }: Props) {
                 </Button>
               </div>
 
+              {/*
+                Cette liste annonçait « paiement en 3 fois sans frais » et le
+                paiement par carte. Le barème réel dit l'inverse : trois fois
+                coûte 47 € de plus, et les règlements passent par Western Union,
+                Ria ou MoneyGram. On affiche ce qui est vrai.
+              */}
               <ul className="border-line flex flex-col gap-2.5 border-t pt-4">
                 {[
-                  "Paiement en 3 fois sans frais",
-                  "Carte bancaire et Mobile Money",
+                  ...tarifs.moyensPaiement,
                   "Support de cours inclus",
                   "Attestation de fin de formation",
                 ].map((t) => (

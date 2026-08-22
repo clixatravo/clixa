@@ -52,6 +52,11 @@ export function PlanDeCours({ modules }: { modules: Module[] }) {
 
             {ouvert && (
               <div id={`mod-${m.id}`} className="bg-ink px-5 pt-1.5 pb-4">
+                {m.objectif && (
+                  <p className="text-ivory-dim border-line border-b py-2.5 text-sm italic">
+                    {m.objectif}
+                  </p>
+                )}
                 {m.lecons.map((l) => (
                   <div
                     key={l.id}

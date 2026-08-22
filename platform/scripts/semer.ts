@@ -25,12 +25,36 @@ const info = (m: string) => console.log(`  ${m}`);
 const enUnites = (centimes: number) => Math.round(centimes / 100);
 
 const temoignages = [
-  { texte: "Une formation structurée, claire et directement applicable.", auteur: "Directrice financière", fonction: "Abidjan" },
-  { texte: "Une vraie montée en compétence, au-delà du simple contenu théorique.", auteur: "Chef de projet", fonction: "Dakar" },
-  { texte: "Un accompagnement sérieux, humain et exigeant.", auteur: "Responsable RH", fonction: "Casablanca" },
-  { texte: "Une expérience premium, très utile pour ma progression.", auteur: "Consultant senior", fonction: "Rabat" },
-  { texte: "Un niveau d'exigence rare dans une formation à distance.", auteur: "Chef comptable", fonction: "Douala" },
-  { texte: "J'ai pu appliquer les outils dès la semaine suivante.", auteur: "Manager opérations", fonction: "Tunis" },
+  {
+    texte: "Une formation structurée, claire et directement applicable.",
+    auteur: "Directrice financière",
+    fonction: "Abidjan",
+  },
+  {
+    texte: "Une vraie montée en compétence, au-delà du simple contenu théorique.",
+    auteur: "Chef de projet",
+    fonction: "Dakar",
+  },
+  {
+    texte: "Un accompagnement sérieux, humain et exigeant.",
+    auteur: "Responsable RH",
+    fonction: "Casablanca",
+  },
+  {
+    texte: "Une expérience premium, très utile pour ma progression.",
+    auteur: "Consultant senior",
+    fonction: "Rabat",
+  },
+  {
+    texte: "Un niveau d'exigence rare dans une formation à distance.",
+    auteur: "Chef comptable",
+    fonction: "Douala",
+  },
+  {
+    texte: "J'ai pu appliquer les outils dès la semaine suivante.",
+    auteur: "Manager opérations",
+    fonction: "Tunis",
+  },
 ];
 
 /** Repris de index.html, sous la mention « Référentiels, standards et
@@ -47,8 +71,20 @@ try {
   const payload = await getPayload({ config });
 
   console.log("\n── Nettoyage ────────────────────────────────");
-  for (const c of ["sessions", "articles", "programmes", "specialisations", "temoignages", "partenaires"] as const) {
-    const { docs } = await payload.find({ collection: c, limit: 500, overrideAccess: true, depth: 0 });
+  for (const c of [
+    "sessions",
+    "articles",
+    "programmes",
+    "specialisations",
+    "temoignages",
+    "partenaires",
+  ] as const) {
+    const { docs } = await payload.find({
+      collection: c,
+      limit: 500,
+      overrideAccess: true,
+      depth: 0,
+    });
     for (const d of docs) {
       await payload.delete({ collection: c, id: d.id, overrideAccess: true });
     }

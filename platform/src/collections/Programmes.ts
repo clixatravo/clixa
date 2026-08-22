@@ -303,6 +303,16 @@ export const Programmes: CollectionConfig = {
                   localized: true,
                 },
                 {
+                  name: "objectif",
+                  type: "textarea",
+                  label: "Objectif de la séance",
+                  localized: true,
+                  admin: {
+                    description:
+                      "Une phrase : ce que la séance vise. Affichée quand le module est déplié.",
+                  },
+                },
+                {
                   name: "lecons",
                   type: "array",
                   label: "Leçons",

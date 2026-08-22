@@ -62,7 +62,9 @@ try {
       ["prerequis", attendu.prerequis, obtenu.prerequis],
     ];
     for (const [nom, a, b] of paires) {
-      a === b ? ok(nom) : ko(`${nom} : « ${String(b).slice(0, 40)} » ≠ « ${String(a).slice(0, 40)} »`);
+      a === b
+        ? ok(nom)
+        : ko(`${nom} : « ${String(b).slice(0, 40)} » ≠ « ${String(a).slice(0, 40)} »`);
     }
 
     const spec = obtenu.specialisation;
@@ -110,10 +112,13 @@ try {
       continue;
     }
     const prixOk = (s.prix ?? 0) * 100 === attendue.prixCentimes;
-    const placesOk = s.capacite === attendue.capacite && s.placesReservees === attendue.placesReservees;
+    const placesOk =
+      s.capacite === attendue.capacite && s.placesReservees === attendue.placesReservees;
     prixOk && placesOk
       ? ok(`${attendue.id} : ${s.prix} ${s.devise}, ${s.placesReservees}/${s.capacite} places`)
-      : ko(`${attendue.id} : prix ${s.prix}×100 vs ${attendue.prixCentimes}, places ${s.placesReservees}/${s.capacite}`);
+      : ko(
+          `${attendue.id} : prix ${s.prix}×100 vs ${attendue.prixCentimes}, places ${s.placesReservees}/${s.capacite}`,
+        );
   }
 
   console.log("\n── Un article, blocs compris ────────────────");

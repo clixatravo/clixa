@@ -9,12 +9,20 @@ import {
   libelleMode,
   modalites,
   prixMinimum,
+  getTarifs,
 } from "@/lib/catalogue";
 
 export async function ProgrammeCard({ programme }: { programme: Programme }) {
   const spec = await getSpecialisation(programme.specialisation);
   const prochaine = await getProchaineSession(programme.slug);
-  const prix = await prixMinimum(programme.slug);
+  /*
+    Le prix d'une session prime quand il existe — un parcours pourra faire
+    exception. À défaut, c'est celui du catalogue : les douze parcours partagent
+    le même barème, et une carte qui annonce « Sur devis » alors que le tarif est
+    public ferait fuir sans raison.
+  */
+  const tarifs = await getTarifs();
+  const prix = (await prixMinimum(programme.slug)) ?? tarifs.prixComptantCentimes;
   const modes = await modalites(programme.slug);
 
   return (

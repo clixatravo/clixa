@@ -13,9 +13,15 @@
  */
 import { cache } from "react";
 
-import type { ModeDiffusion, Programme, Session, Specialisation } from "@/lib/types";
+import type { ModeDiffusion, Programme, Session, Specialisation, Tarifs } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
-import { payloadClient, versProgramme, versSession, versSpecialisation } from "@/lib/payload";
+import {
+  payloadClient,
+  versProgramme,
+  versSession,
+  versSpecialisation,
+  versTarifs,
+} from "@/lib/payload";
 
 const chargerCatalogue = cache(async () => {
   const payload = await payloadClient();
@@ -158,6 +164,15 @@ export async function villesDisponibles(): Promise<string[]> {
   const { sessions } = await chargerCatalogue();
   return [...new Set(sessions.map((s) => s.ville).filter((v): v is string => Boolean(v)))].sort();
 }
+
+/**
+ * Barème du catalogue — un seul document, partagé par les douze parcours.
+ * `cache()` évite de le relire à chaque fiche rendue dans la même requête.
+ */
+export const getTarifs = cache(async (): Promise<Tarifs> => {
+  const payload = await payloadClient();
+  return versTarifs(await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0 }));
+});
 
 /** Ré-export : les pages serveur importent tout depuis un seul endroit. */
 export * from "@/lib/format";

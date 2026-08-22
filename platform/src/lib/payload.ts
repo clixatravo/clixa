@@ -8,7 +8,14 @@ import type {
   Specialisation as SpecialisationPayload,
 } from "@/payload-types";
 import type { Bloc } from "@/data/blog";
-import type { Module, Programme, Session, Specialisation, SpecialisationSlug } from "@/lib/types";
+import type {
+  Module,
+  Programme,
+  Session,
+  Specialisation,
+  SpecialisationSlug,
+  Tarifs,
+} from "@/lib/types";
 import type { Article, CategorieArticle } from "@/lib/blog";
 
 /**
@@ -65,6 +72,7 @@ function versModules(d: ProgrammePayload): Module[] {
   return (d.modules ?? []).map((m, i) => ({
     id: m.id ?? `module-${i}`,
     titre: t(m.titre),
+    ...(m.objectif ? { objectif: t(m.objectif) } : {}),
     lecons: (m.lecons ?? []).map((l, j) => ({
       id: l.id ?? `lecon-${i}-${j}`,
       titre: t(l.titre),
@@ -147,5 +155,33 @@ export function versArticle(d: ArticlePayload): Article {
     lectureMinutes: d.lectureMinutes,
     ...(lie ? { programmeLie: lie } : {}),
     contenu: versBlocs(d.contenu),
+  };
+}
+
+export function versTarifs(d: {
+  prixComptant?: number | null;
+  devise?: Tarifs["devise"] | null;
+  plans?:
+    | {
+        code?: string | null;
+        libelle?: string | null;
+        total?: number | null;
+        echeances?: { montant?: number | null }[] | null;
+        conditions?: string | null;
+      }[]
+    | null;
+  moyensPaiement?: { valeur?: string | null }[] | null;
+}): Tarifs {
+  return {
+    prixComptantCentimes: Math.round((d.prixComptant ?? 0) * 100),
+    devise: d.devise ?? "EUR",
+    plans: (d.plans ?? []).map((p) => ({
+      code: t(p.code),
+      libelle: t(p.libelle),
+      totalCentimes: Math.round((p.total ?? 0) * 100),
+      echeancesCentimes: (p.echeances ?? []).map((e) => Math.round((e.montant ?? 0) * 100)),
+      conditions: t(p.conditions),
+    })),
+    moyensPaiement: valeurs(d.moyensPaiement),
   };
 }

@@ -58,7 +58,8 @@ try {
     ["carte", 800],
     ["large", 1600],
   ] as const) {
-    const t = tailles[nom as keyof typeof tailles] as { width?: number; filesize?: number } | undefined;
+    const t = tailles[nom as keyof typeof tailles] as
+      { width?: number; filesize?: number } | undefined;
     t?.width === largeurAttendue
       ? ok(`${nom} : ${t.width} px, ${Math.round((t.filesize ?? 0) / 1024)} Ko`)
       : ko(`${nom} : largeur ${t?.width ?? "absente"}, attendu ${largeurAttendue}`);
@@ -66,9 +67,7 @@ try {
 
   const poidsVignette = (tailles.vignette as { filesize?: number } | undefined)?.filesize ?? 0;
   poidsVignette > 0 && poidsVignette < original.length
-    ? ok(
-        `La vignette pèse ${Math.round((poidsVignette / original.length) * 100)} % de l'original`,
-      )
+    ? ok(`La vignette pèse ${Math.round((poidsVignette / original.length) * 100)} % de l'original`)
     : ko("La vignette n'allège pas l'original");
 
   console.log("\n── Texte alternatif obligatoire ─────────────");
