@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { lectureLibre, reserveA } from "@/access/roles";
+import { revaliderSession, revaliderSessionSupprimee } from "@/collections/revalider";
 
 /**
  * BE-03 — Sessions.
@@ -32,6 +33,8 @@ export const Sessions: CollectionConfig = {
     delete: reserveA("pedagogie"),
   },
   hooks: {
+    afterChange: [revaliderSession],
+    afterDelete: [revaliderSessionSupprimee],
     beforeChange: [
       /**
        * Compose un intitulé lisible pour les listes du back-office.

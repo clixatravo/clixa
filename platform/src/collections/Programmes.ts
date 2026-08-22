@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lectureLibre, reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
+import { revaliderProgramme, revaliderProgrammeSupprime } from "@/collections/revalider";
 
 /**
  * BE-02 — Programmes de formation.
@@ -25,6 +26,10 @@ import { requisEnFrancais } from "@/collections/champs";
  * travail qui ne servirait à rien avant le LMS.
  */
 export const Programmes: CollectionConfig = {
+  hooks: {
+    afterChange: [revaliderProgramme],
+    afterDelete: [revaliderProgrammeSupprime],
+  },
   slug: "programmes",
   labels: { singular: "Programme", plural: "Programmes" },
   admin: {

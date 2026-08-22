@@ -1,6 +1,7 @@
 import type { GlobalConfig } from "payload";
 import { reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
+import { revaliderTarifs } from "@/collections/revalider";
 
 /**
  * BE-13 — Barème et plans de paiement.
@@ -26,6 +27,7 @@ export const Tarifs: GlobalConfig = {
     update: reserveA("direction"),
   },
   versions: { drafts: false, max: 20 },
+  hooks: { afterChange: [revaliderTarifs] },
   fields: [
     {
       type: "row",

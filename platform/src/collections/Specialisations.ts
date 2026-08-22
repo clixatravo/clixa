@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lectureLibre, reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
+import { revaliderSpecialisation } from "@/collections/revalider";
 
 /**
  * BE-02 — Spécialisations (filières métier).
@@ -10,6 +11,9 @@ import { requisEnFrancais } from "@/collections/champs";
  * qui sert d'URL et il doit rester stable d'une langue à l'autre.
  */
 export const Specialisations: CollectionConfig = {
+  hooks: {
+    afterChange: [revaliderSpecialisation],
+  },
   slug: "specialisations",
   labels: { singular: "Spécialisation", plural: "Spécialisations" },
   admin: {

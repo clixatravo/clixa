@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lectureLibre, reserveA } from "@/access/roles";
 import { auMoinsUnEnFrancais, requisEnFrancais } from "@/collections/champs";
+import { revaliderArticle } from "@/collections/revalider";
 
 /**
  * BE-05 — Articles du blog.
@@ -18,6 +19,9 @@ import { auMoinsUnEnFrancais, requisEnFrancais } from "@/collections/champs";
  *    ressemblent, quel que soit l'auteur.
  */
 export const Articles: CollectionConfig = {
+  hooks: {
+    afterChange: [revaliderArticle],
+  },
   slug: "articles",
   labels: { singular: "Article", plural: "Articles" },
   admin: {
