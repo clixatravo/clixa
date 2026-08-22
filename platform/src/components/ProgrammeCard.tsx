@@ -28,7 +28,7 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
   return (
     <Link
       href={`/formations/${programme.slug}`}
-      className="bg-panel hover:bg-panel-2 flex min-h-[250px] flex-col gap-3.5 p-6 transition-colors"
+      className="bg-panel hover:bg-panel-2 flex flex-col gap-3.5 p-6 transition-colors sm:min-h-[250px]"
     >
       <span className="text-emerald-bright font-mono text-[0.6rem] tracking-[0.12em] uppercase">
         {spec?.nom}
