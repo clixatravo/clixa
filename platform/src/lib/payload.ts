@@ -91,6 +91,9 @@ export function versProgramme(d: ProgrammePayload): Programme {
     debouches: valeurs(d.debouches),
     modules: versModules(d),
     ...(d.certification ? { certification: d.certification } : {}),
+    ...(valeurs(d.livrables).length ? { livrables: valeurs(d.livrables) } : {}),
+    ...(valeurs(d.outils).length ? { outils: valeurs(d.outils) } : {}),
+    ...(d.mentionsLegales ? { mentionsLegales: t(d.mentionsLegales) } : {}),
   };
 }
 
@@ -110,6 +113,7 @@ export function versSession(d: SessionPayload): Session {
     // Le CMS stocke des unités entières ; le domaine raisonne en centimes.
     prixCentimes: Math.round((d.prix ?? 0) * 100),
     devise: d.devise,
+    ...(d.fuseau ? { fuseau: d.fuseau } : {}),
   };
 }
 

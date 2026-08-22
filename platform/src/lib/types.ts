@@ -69,6 +69,19 @@ export interface Programme {
   modules: Module[];
   /** Certification délivrée par un tiers, le cas échéant. */
   certification?: string;
+  /**
+   * Ce que le participant emporte : support, replays, corrigés, grilles.
+   * Optionnel — tous les parcours n'en promettent pas.
+   */
+  livrables?: string[];
+  /** Templates et ressources fournis en plus du cours (« bonus inclus »). */
+  outils?: string[];
+  /**
+   * Mention imposée par un tiers. La fiche PMP doit rappeler que PMP® est une
+   * marque du PMI et que les frais d'examen ne sont pas compris : l'omettre
+   * n'est pas une négligence de mise en page, c'est un manquement.
+   */
+  mentionsLegales?: string;
 }
 
 /* ────────────────────────────  SESSIONS  ──────────────────────────── */
@@ -97,6 +110,12 @@ export interface Session {
   placesReservees: number;
   prixCentimes: number;
   devise: "EUR" | "MAD" | "XOF";
+  /**
+   * Fuseau dans lequel les horaires sont annoncés. Les parcours réels affichent
+   * « 13h00–17h00 UTC » : sans cette précision, un participant à Abidjan et un
+   * autre à Casablanca ne lisent pas la même heure.
+   */
+  fuseau?: string;
 }
 
 export function placesRestantes(s: Session): number {

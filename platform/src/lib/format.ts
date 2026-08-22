@@ -72,3 +72,20 @@ export function lieuSession(s: Session): string {
   if (s.mode === "visio") return "Classe virtuelle";
   return "Accès permanent";
 }
+
+/**
+ * Nom lisible d'un fuseau. Les fiches annoncent « 13h00–17h00 UTC » : la valeur
+ * brute d'un identifiant IANA (« Africa/Casablanca ») ne se montre pas telle
+ * quelle à un visiteur.
+ */
+const FUSEAUX: Record<string, string> = {
+  UTC: "UTC",
+  GMT: "GMT",
+  "Africa/Casablanca": "heure du Maroc",
+  "Africa/Abidjan": "heure d'Abidjan",
+  "Africa/Dakar": "heure de Dakar",
+};
+
+export function libelleFuseau(fuseau: string): string {
+  return FUSEAUX[fuseau] ?? fuseau;
+}

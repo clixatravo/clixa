@@ -1,6 +1,6 @@
 import type { Session } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
-import { formatPeriode, libelleMode, lieuSession } from "@/lib/catalogue";
+import { formatPeriode, libelleFuseau, libelleMode, lieuSession } from "@/lib/catalogue";
 import { PlacesBadge } from "@/components/ui/Badge";
 
 /**
@@ -32,9 +32,20 @@ export function SessionsDisponibles({ sessions }: { sessions: Session[] }) {
           >
             <div className="font-display text-base">
               {formatPeriode(s.debut, s.fin)}
-              {s.cadence && (
-                <small className="font-body text-ivory-dim block text-[0.72rem]">{s.cadence}</small>
-              )}
+              {/*
+                Le fuseau n'a de sens qu'à distance. Sur une session en présentiel
+                à Agadir, la ville dit déjà l'heure : ajouter « UTC » brouillerait
+                au lieu de préciser.
+              */}
+              {(() => {
+                const zone = s.mode === "presentiel" ? undefined : s.fuseau;
+                const bas = [s.cadence, zone && libelleFuseau(zone)].filter(Boolean);
+                return bas.length > 0 ? (
+                  <small className="font-body text-ivory-dim block text-[0.72rem]">
+                    {bas.join(" · ")}
+                  </small>
+                ) : null;
+              })()}
             </div>
 
             <div className="text-ivory-dim text-sm">{lieuSession(s)}</div>

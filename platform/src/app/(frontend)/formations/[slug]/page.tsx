@@ -130,9 +130,33 @@ export default async function FicheFormation({ params }: Props) {
               <SessionsDisponibles sessions={sessions} />
             </Bloc>
 
-            <Bloc titre="Débouchés professionnels" dernier>
+            {programme.livrables && programme.livrables.length > 0 && (
+              <Bloc titre="Livrables remis aux participants">
+                <Liste items={programme.livrables} colonnes />
+              </Bloc>
+            )}
+
+            {programme.outils && programme.outils.length > 0 && (
+              <Bloc titre="Outils et bonus inclus">
+                <Liste items={programme.outils} colonnes />
+              </Bloc>
+            )}
+
+            <Bloc titre="Débouchés professionnels" dernier={!programme.mentionsLegales}>
               <Liste items={programme.debouches} colonnes />
             </Bloc>
+
+            {/*
+              La mention n'est pas décorative : la fiche PMP doit rappeler que la
+              marque appartient au PMI et que les frais d'examen restent à la charge
+              du participant. On la sort du flux des rubriques pour ce qu'elle est —
+              une note de bas de fiche, lisible mais discrète.
+            */}
+            {programme.mentionsLegales && (
+              <p className="border-line text-ivory-dim mt-9 border-t pt-6 text-[0.82rem] leading-relaxed">
+                {programme.mentionsLegales}
+              </p>
+            )}
           </div>
 
           {/* ── Colonne latérale ── */}

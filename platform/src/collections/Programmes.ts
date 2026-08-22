@@ -212,6 +212,54 @@ export const Programmes: CollectionConfig = {
               localized: true,
             },
             {
+              name: "livrables",
+              type: "array",
+              label: "Livrables remis aux participants",
+              labels: { singular: "Livrable", plural: "Livrables" },
+              admin: {
+                description:
+                  "Ce que le participant emporte : support, replays, corrigés, grilles de lecture.",
+              },
+              fields: [
+                {
+                  name: "valeur",
+                  type: "text",
+                  label: "Livrable",
+                  validate: requisEnFrancais,
+                  localized: true,
+                },
+              ],
+            },
+            {
+              name: "outils",
+              type: "array",
+              label: "Outils et bonus inclus",
+              labels: { singular: "Outil", plural: "Outils" },
+              admin: {
+                description:
+                  "Ressources fournies en plus du cours : templates Excel, Word, PowerPoint, cas fil rouge.",
+              },
+              fields: [
+                {
+                  name: "valeur",
+                  type: "text",
+                  label: "Outil",
+                  validate: requisEnFrancais,
+                  localized: true,
+                },
+              ],
+            },
+            {
+              name: "mentionsLegales",
+              type: "textarea",
+              label: "Mentions légales",
+              localized: true,
+              admin: {
+                description:
+                  "Mention imposée par un tiers, affichée sous la fiche. Exemple : PMP® est une marque du Project Management Institute ; les frais d'examen ne sont pas inclus.",
+              },
+            },
+            {
               name: "debouches",
               type: "array",
               label: "Débouchés professionnels",

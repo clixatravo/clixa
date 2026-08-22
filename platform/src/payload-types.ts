@@ -203,6 +203,28 @@ export interface Programme {
       }[]
     | null;
   prerequis?: string | null;
+  /**
+   * Ce que le participant emporte : support, replays, corrigés, grilles de lecture.
+   */
+  livrables?:
+    | {
+        valeur?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ressources fournies en plus du cours : templates Excel, Word, PowerPoint, cas fil rouge.
+   */
+  outils?:
+    | {
+        valeur?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Mention imposée par un tiers, affichée sous la fiche. Exemple : PMP® est une marque du Project Management Institute ; les frais d'examen ne sont pas inclus.
+   */
+  mentionsLegales?: string | null;
   debouches?:
     | {
         valeur?: string | null;
@@ -251,6 +273,10 @@ export interface Session {
   lienVisio?: string | null;
   debut: string;
   fin: string;
+  /**
+   * Les fiches annoncent leurs horaires en UTC. Sans cette précision, un participant à Abidjan et un autre à Casablanca ne lisent pas la même heure.
+   */
+  fuseau?: ('UTC' | 'GMT' | 'Africa/Casablanca' | 'Africa/Abidjan' | 'Africa/Dakar') | null;
   /**
    * Texte libre montré sous les dates sur la fiche formation.
    */
@@ -696,6 +722,19 @@ export interface ProgrammesSelect<T extends boolean = true> {
         id?: T;
       };
   prerequis?: T;
+  livrables?:
+    | T
+    | {
+        valeur?: T;
+        id?: T;
+      };
+  outils?:
+    | T
+    | {
+        valeur?: T;
+        id?: T;
+      };
+  mentionsLegales?: T;
   debouches?:
     | T
     | {
@@ -732,6 +771,7 @@ export interface SessionsSelect<T extends boolean = true> {
   lienVisio?: T;
   debut?: T;
   fin?: T;
+  fuseau?: T;
   cadence?: T;
   capacite?: T;
   placesReservees?: T;

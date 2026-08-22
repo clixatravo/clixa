@@ -174,6 +174,26 @@ export const Sessions: CollectionConfig = {
       ],
     },
     {
+      name: "fuseau",
+      type: "select",
+      label: "Fuseau des horaires",
+      // Les parcours réels annoncent tous des horaires UTC : le proposer
+      // d'emblée épargne une saisie. Une session en présentiel peut le laisser
+      // vide — la page ne l'affiche pas dans ce cas.
+      defaultValue: "UTC",
+      options: [
+        { label: "UTC", value: "UTC" },
+        { label: "GMT", value: "GMT" },
+        { label: "Maroc (GMT+1)", value: "Africa/Casablanca" },
+        { label: "Côte d'Ivoire (GMT)", value: "Africa/Abidjan" },
+        { label: "Sénégal (GMT)", value: "Africa/Dakar" },
+      ],
+      admin: {
+        description:
+          "Les fiches annoncent leurs horaires en UTC. Sans cette précision, un participant à Abidjan et un autre à Casablanca ne lisent pas la même heure.",
+      },
+    },
+    {
       name: "cadence",
       type: "text",
       label: "Rythme affiché",
