@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
 import { Button } from "@/components/ui/Button";
-import { getProgrammes, getSpecialisations } from "@/lib/catalogue";
+import { getAgenda, getProgrammes, getSpecialisations, libelleMode } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -30,6 +30,43 @@ const leviers = [
 export default async function APropos() {
   const specs = await getSpecialisations();
   const programmes = await getProgrammes();
+  const sessions = await getAgenda(500);
+
+  /*
+    Les chiffres sortent du catalogue, jamais du clavier.
+    Deux d'entre eux annonçaient « 3 campus » et « 2 modalités » alors que les
+    douze parcours se donnent tous à distance : des promesses qu'aucune session
+    ne tenait. Ceux qui ne valent rien aujourd'hui sont tus, et reparaîtront
+    d'eux-mêmes quand une session en présentiel sera ouverte.
+  */
+  const villes = [...new Set(sessions.map((s) => s.ville).filter(Boolean))];
+  const modes = [...new Set(sessions.map((s) => s.mode))];
+  const seances = [...new Set(programmes.map((p) => p.modules.length).filter((n) => n > 0))];
+
+  const chiffres: [string, string][] = [
+    [String(programmes.length), "programmes au catalogue"],
+    [String(specs.length), "spécialisations métier"],
+  ];
+
+  // Un nombre de séances identique partout se dit ; s'il varie, il ne veut rien dire.
+  const uniqueSeances = seances.length === 1 ? seances[0] : undefined;
+  if (uniqueSeances !== undefined) chiffres.push([String(uniqueSeances), "séances par parcours"]);
+
+  if (villes.length > 0) {
+    chiffres.push([
+      String(villes.length),
+      villes.length > 1 ? "villes d'accueil" : "ville d'accueil",
+    ]);
+  }
+
+  const modeUnique = modes.length === 1 ? modes[0] : undefined;
+  if (modes.length > 1) {
+    chiffres.push([String(modes.length), "modalités de formation"]);
+  } else if (modeUnique) {
+    chiffres.push(["100 %", `des parcours ${libelleMode[modeUnique].toLowerCase()}`]);
+  }
+
+  const quatre = chiffres.slice(0, 4);
 
   return (
     <>
@@ -82,12 +119,7 @@ export default async function APropos() {
       <section className="border-line border-b px-8 py-16">
         <div className="mx-auto max-w-[1180px]">
           <div className="hairline-grid grid-cols-2 lg:grid-cols-4">
-            {[
-              [String(programmes.length), "programmes au catalogue"],
-              [String(specs.length), "spécialisations métier"],
-              ["3", "campus sur le continent"],
-              ["2", "modalités — présentiel et distance"],
-            ].map(([n, l]) => (
+            {quatre.map(([n, l]) => (
               <div key={l} className="bg-panel p-6">
                 <div className="font-display text-gold-bright text-[2rem] leading-none">{n}</div>
                 <div className="text-ivory-dim mt-3 text-[0.84rem]">{l}</div>
