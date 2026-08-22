@@ -209,6 +209,11 @@ export interface Tarifs {
   devise: Session["devise"];
   plans: PlanPaiement[];
   moyensPaiement: string[];
+  /** À qui transférer l'argent. Vide tant que la direction ne l'a pas renseigné. */
+  beneficiaireNom?: string;
+  beneficiaireVille?: string;
+  beneficiairePays?: string;
+  consignesPaiement?: string;
 }
 
 /**

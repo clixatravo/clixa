@@ -76,6 +76,7 @@ export interface Config {
     pages: Page;
     medias: Media;
     'demandes-rappel': DemandesRappel;
+    inscriptions: Inscription;
     utilisateurs: Utilisateur;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -93,6 +94,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
+    inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     utilisateurs: UtilisateursSelect<false> | UtilisateursSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -567,6 +569,67 @@ export interface DemandesRappel {
   createdAt: string;
 }
 /**
+ * Une ligne par place demandée. Le paiement arrive par transfert : c'est ici qu'on le rapproche.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inscriptions".
+ */
+export interface Inscription {
+  id: number;
+  /**
+   * Attribuée à la création.
+   */
+  reference?: string | null;
+  statut: 'demandee' | 'confirmee' | 'payee' | 'terminee' | 'annulee';
+  /**
+   * Calculée. Trier dessus pour les relances.
+   */
+  prochaineEcheance?: string | null;
+  /**
+   * La place demandée. C'est elle qui porte les dates et le tarif.
+   */
+  session: number | Session;
+  apprenantNom: string;
+  apprenantEmail: string;
+  /**
+   * Avec l'indicatif du pays.
+   */
+  apprenantWhatsapp: string;
+  apprenantPays: string;
+  payeurType: 'particulier' | 'organisation';
+  payeurNom?: string | null;
+  payeurEmail?: string | null;
+  planPaiement: 'P1' | 'P2' | 'P3';
+  /**
+   * Figé à l'inscription : un barème qui change ne rouvre pas un dossier.
+   */
+  montantTotal?: number | null;
+  devise?: ('EUR' | 'MAD' | 'XOF') | null;
+  /**
+   * Créées à l'inscription d'après le rythme choisi. Cocher « réglée » quand le transfert est vérifié.
+   */
+  echeances?:
+    | {
+        montant: number;
+        dateLimite?: string | null;
+        statut: 'attendu' | 'annonce' | 'regle';
+        moyen?: ('western-union' | 'ria' | 'moneygram' | 'virement' | 'especes') | null;
+        /**
+         * MTCN pour Western Union, PIN pour Ria.
+         */
+        reference?: string | null;
+        regleLe?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Jamais montré au participant.
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "utilisateurs".
  */
@@ -655,6 +718,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'demandes-rappel';
         value: number | DemandesRappel;
+      } | null)
+    | ({
+        relationTo: 'inscriptions';
+        value: number | Inscription;
       } | null)
     | ({
         relationTo: 'utilisateurs';
@@ -1016,6 +1083,40 @@ export interface DemandesRappelSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inscriptions_select".
+ */
+export interface InscriptionsSelect<T extends boolean = true> {
+  reference?: T;
+  statut?: T;
+  prochaineEcheance?: T;
+  session?: T;
+  apprenantNom?: T;
+  apprenantEmail?: T;
+  apprenantWhatsapp?: T;
+  apprenantPays?: T;
+  payeurType?: T;
+  payeurNom?: T;
+  payeurEmail?: T;
+  planPaiement?: T;
+  montantTotal?: T;
+  devise?: T;
+  echeances?:
+    | T
+    | {
+        montant?: T;
+        dateLimite?: T;
+        statut?: T;
+        moyen?: T;
+        reference?: T;
+        regleLe?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "utilisateurs_select".
  */
 export interface UtilisateursSelect<T extends boolean = true> {
@@ -1119,6 +1220,13 @@ export interface Tarif {
         id?: string | null;
       }[]
     | null;
+  beneficiaireNom?: string | null;
+  beneficiaireVille?: string | null;
+  beneficiairePays?: string | null;
+  /**
+   * Affiché sous les coordonnées. Par exemple : envoyer le numéro de transfert par WhatsApp après l'envoi.
+   */
+  consignesPaiement?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1150,6 +1258,10 @@ export interface TarifsSelect<T extends boolean = true> {
         valeur?: T;
         id?: T;
       };
+  beneficiaireNom?: T;
+  beneficiaireVille?: T;
+  beneficiairePays?: T;
+  consignesPaiement?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

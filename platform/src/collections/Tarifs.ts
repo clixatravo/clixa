@@ -142,5 +142,59 @@ export const Tarifs: GlobalConfig = {
         },
       ],
     },
+
+    /**
+     * À qui envoyer l'argent.
+     *
+     * Western Union, Ria et MoneyGram ne sont pas des passerelles : personne ne
+     * paie sur le site. On y transfère de l'argent à une personne nommée, dans
+     * une ville donnée. Sans ces trois lignes, le tunnel s'arrête sur « payez »
+     * sans dire à qui.
+     *
+     * Ces informations ne s'inventent pas : tant qu'elles sont vides, la page
+     * de paiement le dit au lieu d'afficher des champs creux.
+     */
+    {
+      type: "collapsible",
+      label: "Coordonnées du bénéficiaire",
+      admin: {
+        description: "Ce que le participant devra saisir au guichet ou dans l'application.",
+      },
+      fields: [
+        {
+          type: "row",
+          fields: [
+            {
+              name: "beneficiaireNom",
+              type: "text",
+              label: "Nom complet du bénéficiaire",
+              admin: { width: "50%", placeholder: "Tel qu'il figure sur la pièce d'identité" },
+            },
+            {
+              name: "beneficiaireVille",
+              type: "text",
+              label: "Ville",
+              admin: { width: "25%", placeholder: "Agadir" },
+            },
+            {
+              name: "beneficiairePays",
+              type: "text",
+              label: "Pays",
+              admin: { width: "25%", placeholder: "Maroc" },
+            },
+          ],
+        },
+        {
+          name: "consignesPaiement",
+          type: "textarea",
+          label: "Consignes complémentaires",
+          localized: true,
+          admin: {
+            description:
+              "Affiché sous les coordonnées. Par exemple : envoyer le numéro de transfert par WhatsApp après l'envoi.",
+          },
+        },
+      ],
+    },
   ],
 };

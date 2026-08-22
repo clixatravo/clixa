@@ -176,6 +176,10 @@ export function versTarifs(d: {
       }[]
     | null;
   moyensPaiement?: { valeur?: string | null }[] | null;
+  beneficiaireNom?: string | null;
+  beneficiaireVille?: string | null;
+  beneficiairePays?: string | null;
+  consignesPaiement?: string | null;
 }): Tarifs {
   return {
     prixComptantCentimes: Math.round((d.prixComptant ?? 0) * 100),
@@ -188,6 +192,10 @@ export function versTarifs(d: {
       conditions: t(p.conditions),
     })),
     moyensPaiement: valeurs(d.moyensPaiement),
+    ...(d.beneficiaireNom ? { beneficiaireNom: d.beneficiaireNom } : {}),
+    ...(d.beneficiaireVille ? { beneficiaireVille: d.beneficiaireVille } : {}),
+    ...(d.beneficiairePays ? { beneficiairePays: d.beneficiairePays } : {}),
+    ...(d.consignesPaiement ? { consignesPaiement: t(d.consignesPaiement) } : {}),
   };
 }
 

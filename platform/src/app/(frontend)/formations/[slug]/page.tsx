@@ -192,7 +192,16 @@ export default async function FicheFormation({ params }: Props) {
                 */}
                 {tarifs.plans.map((plan, i) => {
                   const surcout = plan.totalCentimes - tarifs.prixComptantCentimes;
-                  const cible = `/contact?programme=${programme.slug}&plan=${plan.code}` as Route;
+                  /*
+                    Le rythme mène au tunnel quand une session est ouverte, au
+                    rappel sinon : proposer de réserver une place qui n'existe
+                    pas mène à une impasse.
+                  */
+                  const cible = (
+                    prochaine
+                      ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}&plan=${plan.code}`
+                      : `/contact?programme=${programme.slug}&plan=${plan.code}`
+                  ) as Route;
                   return (
                     <Link
                       key={plan.code}
@@ -247,7 +256,22 @@ export default async function FicheFormation({ params }: Props) {
 
               <div className="mb-6 flex flex-col gap-2.5">
                 {/* FE-07 — transactionnel à partir de la phase 02 */}
-                <Button href="/contact">Réserver ma place</Button>
+                {/*
+                  La réservation part vers le tunnel avec le parcours, la
+                  prochaine session ouverte et le rythme retenu. Sans session
+                  ouverte, il n'y a rien à réserver : on renvoie vers le rappel.
+                */}
+                {prochaine ? (
+                  <Button
+                    href={
+                      `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}` as Route
+                    }
+                  >
+                    Réserver ma place
+                  </Button>
+                ) : (
+                  <Button href="/contact">Être prévenu de la prochaine session</Button>
+                )}
                 <Button href="/contact" variante="contour">
                   Être rappelé par un conseiller
                 </Button>
