@@ -130,7 +130,7 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**65 tâches sur 86.** Le front public et le back-office sont complets, le site
+**70 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production.
 
 **Le catalogue en ligne est le vrai** depuis le 22 août 2026 : douze parcours
@@ -182,9 +182,17 @@ Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo
 `MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12,13`, `INT-02` (cache et invalidation), `INT-03,04,05`, **`INT-01`**,
 **`INT-08`** (le contenu réel).
 
-Reste côté développement : `BE-04` (tables LMS
-déclarées), `BE-09` (recherche PostgreSQL), `INT-06` (redirections), `INT-07`
-(perf 3G), `INT-10` (Playwright), `INT-11` (recette), `DES-07` (Storybook).
+**La phase 02 est ouverte.** Un visiteur retient sa place depuis la fiche,
+choisit son rythme de paiement et repart avec une référence de dossier. Deux
+courriels partent — au participant et à l'équipe. Aucune passerelle de
+paiement : les règlements passent par Western Union, Ria et MoneyGram, qui sont
+des services de transfert, pas des passerelles. L'équipe rapproche le versement
+depuis le back-office, et le décompte de places se recalcule à chaque écriture.
+
+Reste côté développement : `BE-04` (tables LMS déclarées), `BE-09` (recherche
+PostgreSQL), `INT-06` (redirections), `INT-07` (perf 3G), `INT-10` (Playwright),
+`INT-11` (recette), `DES-07` (Storybook), et côté phase 02 les relances
+d'échéance et le compte apprenant.
 
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.
@@ -193,11 +201,13 @@ prochaines cohortes.
 
 | Sujet | Où | Attend |
 |---|---|---|
-| **Dates des prochaines cohortes** | aucune session en base | **la direction** |
+| Capacité réelle d'une cohorte | 20 par défaut, inventé | **la direction** |
+| Coordonnées du bénéficiaire | global `tarifs`, vides | **la direction** |
+| Domaine et clé Resend | aucun courriel ne part sans eux | **la direction** |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
 | Pages légales | collection `pages`, vide | `RIS-06` |
-| Témoignages et partenaires | en base, **pas encore affichés** | travail front |
+| Témoignages et partenaires réels | affichés dès qu'ils sont publiés ; les exemples sont dépubliés | la direction |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 
 ## Déploiement
