@@ -63,7 +63,7 @@ jobs:
           fi
           if grep -qE '42P01|42703|does not exist' /tmp/build.log; then
             manquant=$(grep -oE 'relation "[^"]+" does not exist|column "[^"]+" does not exist' /tmp/build.log | head -1)
-            echo "::error title=Le schéma de la base est en retard sur le code::${manquant:-Une table ou une colonne attendue par le modèle n'existe pas encore.} Pousser le schéma sur la base AVANT ce build — voir « La base passe avant le code » dans CLAUDE.md."
+            echo "::error title=Le schéma de la base est en retard sur le code::${manquant:-Une table ou une colonne attendue par le modele est absente de la base.} Pousser le schéma sur la base AVANT ce build — voir « La base passe avant le code » dans CLAUDE.md."
           fi
           exit 1
         env:
