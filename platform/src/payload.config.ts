@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { resendAdapter } from "@payloadcms/email-resend";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import sharp from "sharp";
 import { fr } from "@payloadcms/translations/languages/fr";
@@ -74,6 +75,26 @@ export default buildConfig({
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL },
   }),
+
+  /**
+   * L'envoi de courriels, quand il est configuré.
+   *
+   * Sans clé, l'adaptateur n'est pas branché : Payload écrit alors les messages
+   * dans la console. C'est délibéré — le tunnel d'inscription doit tourner en
+   * développement sans qu'aucun message ne parte pour de vrai, et une clé
+   * absente en production ne doit pas empêcher le site de démarrer.
+   *
+   * L'expéditeur doit appartenir à un domaine vérifié chez Resend.
+   */
+  ...(process.env.RESEND_API_KEY
+    ? {
+        email: resendAdapter({
+          defaultFromAddress: process.env.EMAIL_EXPEDITEUR ?? "onboarding@resend.dev",
+          defaultFromName: "CLIXA Institute",
+          apiKey: process.env.RESEND_API_KEY,
+        }),
+      }
+    : {}),
 
   secret: process.env.PAYLOAD_SECRET ?? "",
 

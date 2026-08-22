@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { courrielRappel } from "@/lib/courriel";
 
 /**
  * BE-12 — Réception du formulaire de rappel.
@@ -81,6 +82,18 @@ export async function POST(request: Request) {
     console.error("[demande-rappel] échec de l'enregistrement :", e);
     redirect("/contact?erreur=technique" as Route);
   }
+  /*
+    L'équipe est prévenue. Sans cela, une demande dormait dans le back-office
+    jusqu'à ce que quelqu'un pense à regarder.
+  */
+  await courrielRappel(payload, {
+    nom,
+    email,
+    whatsapp,
+    pays,
+    ...(texte("programme") ? { programme: texte("programme") } : {}),
+    ...(texte("plan") ? { plan: texte("plan") } : {}),
+  });
 
   // La notification interne (e-mail, WhatsApp) arrive avec la phase 02, quand
   // les comptes Resend et WhatsApp Business seront ouverts. La demande est déjà

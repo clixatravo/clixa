@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 
 /**
  * BE-15 — Réception d'une demande de place.
@@ -133,6 +134,38 @@ export async function POST(request: Request) {
     echec("technique");
     return;
   }
+
+  /*
+    Les deux courriels partent après l'enregistrement, jamais avant : on
+    n'annonce pas une place qui n'est pas retenue. Ils n'échouent pas non
+    plus — voir src/lib/courriel.ts. Le dossier existe, c'est l'essentiel.
+  */
+  const { docs: progs } = await payload.find({
+    collection: "programmes",
+    where: { id: { equals: programme!.id } },
+    limit: 1,
+    locale: "fr",
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://clixa-institute.vercel.app";
+  const details = {
+    reference,
+    apprenantNom: nom,
+    apprenantEmail: email,
+    apprenantWhatsapp: whatsapp,
+    apprenantPays: pays,
+    programmeTitre: progs[0]?.titre ?? "Parcours CLIXA",
+    sessionLibelle: String(session!.reference ?? ""),
+    planLibelle: String(barème?.libelle ?? plan),
+    montantTotal: barème?.total ?? 0,
+    echeances: echeances.map((e) => ({ montant: e.montant, dateLimite: e.dateLimite })),
+    urlDossier: `${site}/inscription/${reference}`,
+  };
+
+  await courrielParticipant(payload, details);
+  await courrielEquipe(payload, details);
 
   redirect(`/inscription/${reference}` as Route);
 }
