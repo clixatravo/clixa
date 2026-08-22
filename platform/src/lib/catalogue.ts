@@ -13,7 +13,15 @@
  */
 import { cache } from "react";
 
-import type { ModeDiffusion, Programme, Session, Specialisation, Tarifs } from "@/lib/types";
+import type {
+  ModeDiffusion,
+  Partenaire,
+  Programme,
+  Session,
+  Specialisation,
+  Tarifs,
+  Temoignage,
+} from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
 import {
   payloadClient,
@@ -21,6 +29,8 @@ import {
   versSession,
   versSpecialisation,
   versTarifs,
+  versTemoignage,
+  versPartenaire,
 } from "@/lib/payload";
 
 const chargerCatalogue = cache(async () => {
@@ -30,9 +40,30 @@ const chargerCatalogue = cache(async () => {
   // plus ancien, et l'ordre du catalogue changeait à chaque ajout. « id » suit
   // l'ordre de création, donc l'ordre dans lequel l'équipe a saisi les fiches.
   const [specs, progs, sess] = await Promise.all([
-    payload.find({ collection: "specialisations", limit: 200, locale: "fr", depth: 0, sort: "id" }),
-    payload.find({ collection: "programmes", limit: 200, locale: "fr", depth: 1, sort: "id" }),
-    payload.find({ collection: "sessions", limit: 500, locale: "fr", depth: 1, sort: "debut" }),
+    payload.find({
+      collection: "specialisations",
+      limit: 200,
+      locale: "fr",
+      depth: 0,
+      sort: "id",
+      overrideAccess: false,
+    }),
+    payload.find({
+      collection: "programmes",
+      limit: 200,
+      locale: "fr",
+      depth: 1,
+      sort: "id",
+      overrideAccess: false,
+    }),
+    payload.find({
+      collection: "sessions",
+      limit: 500,
+      locale: "fr",
+      depth: 1,
+      sort: "debut",
+      overrideAccess: false,
+    }),
   ]);
 
   return {
@@ -171,7 +202,48 @@ export async function villesDisponibles(): Promise<string[]> {
  */
 export const getTarifs = cache(async (): Promise<Tarifs> => {
   const payload = await payloadClient();
-  return versTarifs(await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0 }));
+  return versTarifs(
+    await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0, overrideAccess: false }),
+  );
+});
+
+/**
+ * Témoignages et partenaires.
+ *
+ * `lecturePubliee` filtre déjà les brouillons pour un visiteur anonyme : ce qui
+ * n'est pas publié ne remonte pas. Les pages n'affichent leur section que si la
+ * liste est non vide — un bandeau de partenaires vide vaut moins que pas de
+ * bandeau.
+ */
+export const getTemoignages = cache(async (): Promise<Temoignage[]> => {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "temoignages",
+    limit: 50,
+    locale: "fr",
+    depth: 1,
+    sort: "id",
+    overrideAccess: false,
+  });
+  return docs.map(versTemoignage);
+});
+
+/** Les témoignages rattachés à un parcours donné. */
+export async function getTemoignagesDe(programmeSlug: string): Promise<Temoignage[]> {
+  return (await getTemoignages()).filter((t) => t.programmeSlug === programmeSlug);
+}
+
+export const getPartenaires = cache(async (): Promise<Partenaire[]> => {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "partenaires",
+    limit: 50,
+    locale: "fr",
+    depth: 1,
+    sort: "ordre",
+    overrideAccess: false,
+  });
+  return docs.map(versPartenaire);
 });
 
 /** Ré-export : les pages serveur importent tout depuis un seul endroit. */

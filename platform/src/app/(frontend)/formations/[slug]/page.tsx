@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { jsonLdCourse } from "@/lib/seo";
 import { PlanDeCours } from "@/components/PlanDeCours";
 import { SessionsDisponibles } from "@/components/SessionsDisponibles";
+import { Temoignages } from "@/components/Temoignages";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { placesRestantes } from "@/lib/types";
@@ -20,6 +21,7 @@ import {
   libelleMode,
   lieuSession,
   getTarifs,
+  getTemoignagesDe,
 } from "@/lib/catalogue";
 
 interface Props {
@@ -54,6 +56,7 @@ export default async function FicheFormation({ params }: Props) {
   const spec = await getSpecialisation(programme.specialisation);
   const sessions = await getSessions(programme.slug);
   const tarifs = await getTarifs();
+  const temoignages = await getTemoignagesDe(programme.slug);
   const prochaine = await getProchaineSession(programme.slug);
 
   const parMode = new Map<string, number>();
@@ -272,6 +275,8 @@ export default async function FicheFormation({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <Temoignages temoignages={temoignages} />
     </>
   );
 }

@@ -28,6 +28,7 @@ const chargerArticles = cache(async (): Promise<Article[]> => {
     locale: "fr",
     depth: 1,
     sort: "-publieLe",
+    overrideAccess: false,
   });
   return docs.map(versArticle);
 });

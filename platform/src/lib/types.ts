@@ -210,3 +210,25 @@ export interface Tarifs {
   plans: PlanPaiement[];
   moyensPaiement: string[];
 }
+
+/**
+ * Une parole rapportée. `programme` la rattache au parcours suivi, pour
+ * l'afficher sur sa fiche plutôt que dans un mur anonyme.
+ */
+export interface Temoignage {
+  id: string;
+  texte: string;
+  auteur: string;
+  fonction: string;
+  programmeSlug?: string;
+}
+
+/** Une organisation partenaire, certificatrice ou de référence. */
+export interface Partenaire {
+  id: string;
+  nom: string;
+  nature: string;
+  lien?: string;
+  logoUrl?: string;
+  logoAlt?: string;
+}

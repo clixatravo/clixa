@@ -15,6 +15,8 @@ import type {
   Specialisation,
   SpecialisationSlug,
   Tarifs,
+  Temoignage,
+  Partenaire,
 } from "@/lib/types";
 import type { Article, CategorieArticle } from "@/lib/blog";
 
@@ -186,5 +188,41 @@ export function versTarifs(d: {
       conditions: t(p.conditions),
     })),
     moyensPaiement: valeurs(d.moyensPaiement),
+  };
+}
+
+export function versTemoignage(d: {
+  id: number | string;
+  texte?: string | null;
+  auteur?: string | null;
+  fonction?: string | null;
+  programme?: unknown;
+}): Temoignage {
+  return {
+    id: String(d.id),
+    texte: t(d.texte),
+    auteur: t(d.auteur),
+    fonction: t(d.fonction),
+    ...(slugDe(d.programme) ? { programmeSlug: slugDe(d.programme) } : {}),
+  };
+}
+
+export function versPartenaire(d: {
+  id: number | string;
+  nom?: string | null;
+  nature?: string | null;
+  lien?: string | null;
+  logo?: unknown;
+}): Partenaire {
+  const logo = d.logo;
+  const media =
+    logo && typeof logo === "object" ? (logo as { url?: string; alt?: string }) : undefined;
+  return {
+    id: String(d.id),
+    nom: t(d.nom),
+    nature: t(d.nature),
+    ...(d.lien ? { lien: d.lien } : {}),
+    ...(media?.url ? { logoUrl: media.url } : {}),
+    ...(media?.alt ? { logoAlt: media.alt } : {}),
   };
 }

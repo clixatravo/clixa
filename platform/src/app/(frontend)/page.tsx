@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ProgrammeCard } from "@/components/ProgrammeCard";
+import { Temoignages } from "@/components/Temoignages";
+import { Partenaires } from "@/components/Partenaires";
 import { Button } from "@/components/ui/Button";
 import { PlacesBadge } from "@/components/ui/Badge";
 import { placesRestantes } from "@/lib/types";
@@ -8,14 +10,26 @@ import {
   getAgenda,
   getProgrammes,
   getSpecialisations,
+  getTemoignages,
+  getPartenaires,
   lieuSession,
 } from "@/lib/catalogue";
 
+/**
+ * Les parcours mis en avant sur l'accueil.
+ *
+ * Ces adresses ont pointé dans le vide entre le 22 août 2026 et sa correction :
+ * le catalogue de démonstration avait été remplacé, ces trois slugs n'existaient
+ * plus, et la section s'affichait avec son titre et aucune carte. D'où le repli
+ * plus bas — une liste qui vieillit ne doit pas vider la page d'accueil.
+ */
 const EN_VEDETTE = [
-  "preparation-certification-pmp",
-  "ifrs-comptable-international",
-  "cma-certified-management-accountant",
+  "directeur-administratif-et-financier",
+  "preparation-a-la-certification-pmp",
+  "directeur-de-projets",
 ];
+
+const NOMBRE_EN_VEDETTE = 3;
 
 export default async function Accueil() {
   // Tout est chargé ici : impossible d'attendre une promesse au milieu du JSX,
@@ -27,8 +41,14 @@ export default async function Accueil() {
   ]);
 
   const parSlug = new Map(programmes.map((p) => [p.slug, p]));
-  const vedettes = EN_VEDETTE.map((slug) => parSlug.get(slug)).filter((p) => p !== undefined);
+  // Les parcours nommés d'abord, puis le début du catalogue pour compléter :
+  // une adresse devenue caduque coûte une carte, pas la section entière.
+  const choisis = EN_VEDETTE.map((slug) => parSlug.get(slug)).filter((p) => p !== undefined);
+  const complements = programmes.filter((p) => !choisis.includes(p));
+  const vedettes = [...choisis, ...complements].slice(0, NOMBRE_EN_VEDETTE);
   const total = programmes.length;
+  const temoignages = await getTemoignages();
+  const partenaires = await getPartenaires();
 
   const nbParSpecialisation = new Map(
     specs.map((s) => [s.slug, programmes.filter((p) => p.specialisation === s.slug).length]),
@@ -204,6 +224,13 @@ export default async function Accueil() {
           </div>
         </div>
       </section>
+
+      {/*
+        Les deux sections se taisent tant qu'aucun contenu n'est publié. Elles
+        apparaîtront d'elles-mêmes quand l'équipe en publiera.
+      */}
+      <Temoignages temoignages={temoignages} titre="Ils sont passés par CLIXA." />
+      <Partenaires partenaires={partenaires} />
     </>
   );
 }
