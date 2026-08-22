@@ -46,10 +46,28 @@ jobs:
         run: npm run format:check
 
       - name: Build
-        run: npm run build
+        # Le build interroge la base pour pré-générer les pages. Quand un champ
+        # vient d'être ajouté au modèle mais que le schéma n'a pas encore été
+        # poussé sur la base de production, PostgreSQL répond 42P01 (table
+        # absente) ou 42703 (colonne absente) — et Next enterre la cause sous
+        # deux cents lignes de trace. Trois déploiements ont été perdus ainsi
+        # le 22 août 2026 avant que le diagnostic ne soit posé.
+        #
+        # On garde donc la sortie, et on nomme la cause quand c'est celle-là.
+        run: |
+          set -o pipefail
+          # Le test d'un `if` suspend le -e de GitHub : sans lui, l'échec du
+          # build sortirait du script avant le diagnostic.
+          if npm run build 2>&1 | tee /tmp/build.log; then
+            exit 0
+          fi
+          if grep -qE '42P01|42703|does not exist' /tmp/build.log; then
+            manquant=$(grep -oE 'relation "[^"]+" does not exist|column "[^"]+" does not exist' /tmp/build.log | head -1)
+            echo "::error title=Le schéma de la base est en retard sur le code::${manquant:-Une table ou une colonne attendue par le modèle n'existe pas encore.} Pousser le schéma sur la base AVANT ce build — voir « La base passe avant le code » dans CLAUDE.md."
+          fi
+          exit 1
         env:
-          # Le build interroge la base : Payload refuse de démarrer sans ces
-          # deux valeurs, et les pages du catalogue sont pré-générées.
+          # Payload refuse de démarrer sans ces deux valeurs.
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           NEXT_PUBLIC_SITE_ENV: preview
