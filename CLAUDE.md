@@ -130,7 +130,7 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**63 tâches sur 86.** Le front public et le back-office sont complets, le site
+**65 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production.
 
 **Le catalogue en ligne est le vrai** depuis le 22 août 2026 : douze parcours
@@ -143,15 +143,28 @@ Le barème vit dans un document à part (`Tarifs`) : les douze parcours partagen
 coûte plus cher, et l'écart est affiché sur la fiche plutôt que découvert au
 paiement. Chaque rythme est un lien vers le formulaire, choix déjà rempli.
 
-**Aucune session n'existe.** Les fiches montrent le contenu et le tarif, mais
-ni dates ni « prochaine session » : les quatre cohortes documentées (avril et
-juin 2026) sont passées, et inventer des dates aurait été pire.
+**La cohorte de septembre est ouverte** : douze sessions, samedi 19 septembre
+pour les parcours exécutifs et dimanche 20 pour la préparation PMP, huit
+séances hebdomadaires jusqu'au 7 et 8 novembre. Mode « visio » — les séances
+sont live à heure fixe ; « en ligne » afficherait « Accès permanent » et
+promettrait au visiteur de suivre à son rythme.
+
+⚠️ La capacité vaut 20, faute de chiffre dans les fiches. C'est elle qui produit
+le décompte de places montré au visiteur : premier réglage à revoir avec la
+direction. Le rythme des dix parcours autres que DAF et PMP est également une
+hypothèse — le catalogue Word ne documente que ces deux-là.
+
+**Les pages se rafraîchissent seules** depuis `INT-02` : chaque collection
+prévient Next de ce qu'elle change. Une session ajoutée depuis `/admin` apparaît
+sur la fiche sans déploiement. Vérifié en conditions réelles le 22 août 2026.
+L'effet ne s'observe pas en développement, où chaque page est recalculée à
+chaque requête.
 
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
-`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12,13`, `INT-03,04,05`, **`INT-01`**,
+`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12,13`, `INT-02` (cache et invalidation), `INT-03,04,05`, **`INT-01`**,
 **`INT-08`** (le contenu réel).
 
-Reste côté développement : `INT-02` (cache et invalidation), `BE-04` (tables LMS
+Reste côté développement : `BE-04` (tables LMS
 déclarées), `BE-09` (recherche PostgreSQL), `INT-06` (redirections), `INT-07`
 (perf 3G), `INT-10` (Playwright), `INT-11` (recette), `DES-07` (Storybook).
 
