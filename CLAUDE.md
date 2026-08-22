@@ -154,6 +154,12 @@ le décompte de places montré au visiteur : premier réglage à revoir avec la
 direction. Le rythme des dix parcours autres que DAF et PMP est également une
 hypothèse — le catalogue Word ne documente que ces deux-là.
 
+**Le présentiel reste en place, sans contenu pour l'instant.** Les douze
+parcours se donnent tous à distance, et le filtre par ville, la page `/campus`
+et les trois villes du pied de page ne ramènent donc rien. C'est voulu : la
+direction prévoit d'ouvrir des sessions en présentiel. Ne pas les retirer en
+croyant nettoyer du code mort.
+
 **Les pages se rafraîchissent seules** depuis `INT-02` : chaque collection
 prévient Next de ce qu'elle change. Une session ajoutée depuis `/admin` apparaît
 sur la fiche sans déploiement. Vérifié en conditions réelles le 22 août 2026.
@@ -177,7 +183,6 @@ prochaines cohortes.
 |---|---|---|
 | **Dates des prochaines cohortes** | aucune session en base | **la direction** |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
-| Présentiel et campus | filtre ville, page `/campus`, pied de page | la direction |
 | Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
 | Pages légales | collection `pages`, vide | `RIS-06` |
 | Témoignages et partenaires | en base, **pas encore affichés** | travail front |
