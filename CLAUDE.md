@@ -53,8 +53,22 @@ utilisateur » : c'est la sortie de secours si le dernier mot de passe est perdu
 ⚠️ Payload met **près d'une minute** à démarrer un script (`Pulling schema from
 database` contre Neon). Un script qui semble figé n'a probablement pas fini.
 
-⚠️ `scripts/semer.ts` **vide les collections** avant de les remplir. Ne pas le
-lancer une fois que l'équipe aura saisi du vrai contenu.
+⚠️ `scripts/semer.ts` **vide les collections** avant de les remplir. Il ne sert
+plus à rien depuis que le catalogue réel a remplacé les exemples : le lancer
+détruirait le contenu de la direction.
+
+Quatre scripts ont porté cette bascule, le 22 août 2026. Ils sont rejouables et
+gardés pour la prochaine :
+
+```bash
+npx payload run scripts/importer-catalogue.ts <fichier.json>  # les douze parcours
+npx payload run scripts/definir-bareme.ts                     # 423 / 448 / 470 €
+npx payload run scripts/retirer-demonstration.ts              # publie, puis retire les exemples
+npx payload run scripts/retirer-specialisations-vides.ts      # les catégories sans parcours
+```
+
+L'extraction des fiches Word vit hors du dépôt : Word n'est pas une source de
+vérité durable, et l'équipe saisit la suite depuis `/admin`.
 
 ## Architecture
 
@@ -114,24 +128,41 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**61 tâches sur 86.** Le front public et le back-office sont complets, le site
+**63 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production.
 
+**Le catalogue en ligne est le vrai** depuis le 22 août 2026 : douze parcours
+transmis par la direction — onze directions d'entreprise et la préparation PMP —
+rangés en cinq spécialisations calquées sur ce qu'ils contiennent. Les huit
+formations d'exemple ont été retirées ; leurs adresses répondent 404.
+
+Le barème vit dans un document à part (`Tarifs`) : les douze parcours partagent
+423 € comptant, 448 € en deux fois, 470 € en trois. Payer en plusieurs fois
+coûte plus cher, et l'écart est affiché sur la fiche plutôt que découvert au
+paiement. Chaque rythme est un lien vers le formulaire, choix déjà rempli.
+
+**Aucune session n'existe.** Les fiches montrent le contenu et le tarif, mais
+ni dates ni « prochaine session » : les quatre cohortes documentées (avril et
+juin 2026) sont passées, et inventer des dates aurait été pire.
+
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
-`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12`, `INT-03,04,05`, **`INT-01`**.
+`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12,13`, `INT-03,04,05`, **`INT-01`**,
+**`INT-08`** (le contenu réel).
 
 Reste côté développement : `INT-02` (cache et invalidation), `BE-04` (tables LMS
 déclarées), `BE-09` (recherche PostgreSQL), `INT-06` (redirections), `INT-07`
 (perf 3G), `INT-10` (Playwright), `INT-11` (recette), `DES-07` (Storybook).
 
-Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, `INT-08` (le contenu réel).
+Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
+prochaines cohortes.
 
 ## Points ouverts
 
 | Sujet | Où | Attend |
 |---|---|---|
+| **Dates des prochaines cohortes** | aucune session en base | **la direction** |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
-| Deux tarifs ou tarif + supplément | fiche formation | décision client |
+| Présentiel et campus | filtre ville, page `/campus`, pied de page | la direction |
 | Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
 | Pages légales | collection `pages`, vide | `RIS-06` |
 | Témoignages et partenaires | en base, **pas encore affichés** | travail front |
@@ -177,6 +208,39 @@ vrai contenu, il faudra recréer `dev` pour la remettre à niveau.
 
 ⚠️ Utiliser l'adresse **directe**, pas celle en `-pooler` : Payload interroge
 le schéma au démarrage, ce que le pooler gère mal.
+
+### La base passe avant le code
+
+Payload ne pousse le schéma qu'en dehors de la production. Tant que les deux
+environnements partageaient une base, une modification faite en local arrivait
+seule sur le site public ; ce n'est plus le cas.
+
+Un champ ajouté au modèle veut donc dire : **d'abord la base, ensuite le
+push**. Dans l'autre sens le build échoue — il interroge la base pour
+pré-générer les pages, et cherche une colonne qui n'existe pas encore. Deux
+déploiements ont été perdus ainsi le 22 août 2026.
+
+Pousser le schéma sur la production revient à faire tourner n'importe quel
+script en pointant `DATABASE_URL` sur elle : hors production, Payload pousse
+le schéma à l'initialisation.
+
+```bash
+cd platform && set -a && . ./.env.prod && set +a && npx payload run scripts/<script>.ts
+```
+
+`platform/.env.prod` contient la chaîne de production et n'est pas suivi par
+git. Avant toute poussée, comparer les deux schémas — une colonne présente en
+production et absente en local serait supprimée :
+
+```sql
+SELECT table_name||'.'||column_name FROM information_schema.columns
+WHERE table_schema='public' ORDER BY 1;
+```
+
+⚠️ Payload met **près d'une minute** à démarrer contre Neon. Un `Ctrl+C` pendant
+`Pulling schema` n'annule pas ce qui a déjà été écrit : lors de l'import du
+catalogue, onze parcours sur douze étaient déjà en base au moment de
+l'interruption. Les scripts d'import sont donc écrits pour être rejouables.
 
 Les mots de passe des deux branches ont été régénérés le 21 août 2026, après
 que la chaîne de connexion eut circulé en clair. Les anciens ne donnent plus
