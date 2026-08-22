@@ -35,7 +35,7 @@ npx payload run scripts/verifier-collections.ts   # champs, arbre, relations
 npx payload run scripts/verifier-roles.ts         # permissions, élévation
 npx payload run scripts/verifier-medias.ts        # variantes d'images
 npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
-npx payload run scripts/verifier-semis.ts         # base ≡ src/data/
+npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
 ```
 
 Deux scripts servent l'accès au back-office. Aucun adaptateur d'e-mail n'est
@@ -53,9 +53,11 @@ utilisateur » : c'est la sortie de secours si le dernier mot de passe est perdu
 ⚠️ Payload met **près d'une minute** à démarrer un script (`Pulling schema from
 database` contre Neon). Un script qui semble figé n'a probablement pas fini.
 
-⚠️ `scripts/semer.ts` **vide les collections** avant de les remplir. Il ne sert
-plus à rien depuis que le catalogue réel a remplacé les exemples : le lancer
-détruirait le contenu de la direction.
+`scripts/semer.ts` et `verifier-semis.ts` ont été retirés le 22 août 2026 :
+le premier vidait les collections pour les remplir d'exemples, le second
+mesurait l'écart entre la base et ces exemples. Depuis que le catalogue réel a
+pris la place, l'un détruirait le contenu de la direction et l'autre échouait
+sans rien signaler d'utile. `verifier-catalogue.ts` les remplace.
 
 Quatre scripts ont porté cette bascule, le 22 août 2026. Ils sont rejouables et
 gardés pour la prochaine :
@@ -180,7 +182,8 @@ prochaines cohortes.
   Trois URL mènent au même site : `clixa-institute.vercel.app` et
   `clixa-zeta.vercel.app` sont des alias stables, `clixa-<hash>-cl-95af…`
   change à chaque build et ne doit pas être partagée.
-- Base : **Neon, région Frankfurt**, peuplée par `scripts/semer.ts`.
+- Base : **Neon, région Frankfurt**. Le catalogue y a été importé depuis les
+  fiches Word de la direction ; l'équipe le tient depuis `/admin`.
 
 Jusqu'au 21 août 2026, le dépôt n'était pas relié à Vercel : chaque mise en
 ligne passait par `vercel --prod` à la main, et la production a fini par
