@@ -118,7 +118,22 @@ export default async function Inscription({ searchParams }: Props) {
 
               <input type="hidden" name="formation" value={programme.slug} />
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              {/*
+                `min-w-0` sur chaque case, et sur les listes déroulantes.
+
+                Une case de grille — comme un élément flexible — ne descend pas
+                sous la largeur de son contenu. Or une liste déroulante prend
+                celle de son option la plus longue, et la première tient la
+                session entière : « 19 sept. 2026 → 07 nov. 2026 — 8 samedis ».
+                Elle réclamait 483 px, imposait cette largeur à toutes ses
+                voisines, et le formulaire sortait de l'écran de 164 px sur un
+                téléphone — champs coupés, page à faire glisser de côté.
+
+                Le libellé long reste : c'est lui qui permet de choisir sa
+                session sans revenir en arrière. C'est la case qui apprend à
+                rétrécir.
+              */}
+              <div className="grid gap-5 sm:grid-cols-2 [&>*]:min-w-0">
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="debut" className="mono-label text-ivory-dim text-[0.7rem]">
                     Session
@@ -127,7 +142,7 @@ export default async function Inscription({ searchParams }: Props) {
                     id="debut"
                     name="debut"
                     defaultValue={debut ?? sessions[0]?.debut.slice(0, 10)}
-                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   >
                     {sessions.map((s) => (
                       <option key={s.id} value={s.debut.slice(0, 10)}>
@@ -175,7 +190,7 @@ export default async function Inscription({ searchParams }: Props) {
                     id="plan"
                     name="plan"
                     defaultValue={plan?.code}
-                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   >
                     {tarifs.plans.map((p) => (
                       <option key={p.code} value={p.code}>
@@ -195,7 +210,7 @@ export default async function Inscription({ searchParams }: Props) {
                   <select
                     id="payeur"
                     name="payeur"
-                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   >
                     <option value="particulier">Moi-même</option>
                     <option value="organisation">Mon employeur ou une organisation</option>
@@ -211,7 +226,7 @@ export default async function Inscription({ searchParams }: Props) {
                     id="organisation"
                     name="organisation"
                     type="text"
-                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   />
                 </div>
               </div>
@@ -261,7 +276,7 @@ function Champ({
         required
         autoComplete={autoComplete}
         defaultValue={valeur}
-        className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+        className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
       />
       {aide && <span className="text-ivory-dim text-[0.72rem]">{aide}</span>}
     </div>
