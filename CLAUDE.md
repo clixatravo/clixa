@@ -214,6 +214,24 @@ paiement : les règlements passent par Western Union, Ria et MoneyGram, qui sont
 des services de transfert, pas des passerelles. L'équipe rapproche le versement
 depuis le back-office, et le décompte de places se recalcule à chaque écriture.
 
+**Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
+`api/transfert`). L'état « Annoncé par le participant » existait au modèle et
+rien ne l'écrivait : la page demandait d'envoyer le numéro « par WhatsApp »,
+sans qu'aucun numéro ne figure nulle part sur le site. Le numéro arrive
+maintenant attaché à sa référence — c'est le rapprochement qui coûtait le plus
+de temps.
+
+- **Annoncer n'est pas payer.** L'échéance passe « en vérification » ; la
+  marquer réglée demande d'avoir vu l'argent et reste un geste d'équipe. Une
+  route publique qui pourrait marquer une échéance réglée offrirait une place à
+  qui connaît une référence.
+- **Une seule annonce à la fois, dans l'ordre.** On n'annonce que la première
+  échéance non réglée, et seulement si elle attend encore. Chercher la première
+  « attendue » ne suffit pas : l'échéance 1 passée en vérification, une seconde
+  annonce marquait la 2 alors qu'un seul transfert avait été fait.
+- La clef reste la référence du dossier, comme pour le consulter. Annoncer
+  n'ouvre donc rien de plus que lire.
+
 **La recherche du catalogue passe par PostgreSQL** depuis `BE-09`
 (`src/lib/recherche.ts`). Elle ne compare plus des chaînes : elle ramène les
 mots à leur racine, ce qui répare des recherches qui rendaient zéro alors que

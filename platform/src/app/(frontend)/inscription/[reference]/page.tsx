@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ reference: string }>;
+  searchParams: Promise<{ annonce?: string }>;
 }
+
+/** Ce que dit la page au retour d'une annonce de transfert. */
+const RETOUR_ANNONCE: Record<string, string> = {
+  ok: "C'est noté. Nous vérifions le transfert et vous confirmons votre place — comptez un jour ouvré.",
+  champs: "Il manque le moyen d'envoi ou le numéro de transfert.",
+  rien: "Aucune échéance n'attend d'annonce en ce moment.",
+};
 
 const JOUR = new Intl.DateTimeFormat("fr-FR", {
   day: "2-digit",
@@ -31,7 +39,7 @@ const JOUR = new Intl.DateTimeFormat("fr-FR", {
  * mot de passe avant même le paiement ferait perdre des inscrits. Elle n'est
  * pas indexée, et la référence ne se devine pas.
  */
-export default async function Dossier({ params }: Props) {
+export default async function Dossier({ params, searchParams }: Props) {
   const { reference } = await params;
   const dossier = await getDossier(reference);
   if (!dossier) notFound();
@@ -39,6 +47,18 @@ export default async function Dossier({ params }: Props) {
   const tarifs = await getTarifs();
   const participant = await participantConnecte();
   const beneficiaireConnu = Boolean(tarifs.beneficiaireNom);
+  const { annonce } = await searchParams;
+
+  /*
+    On ne propose d'annoncer que s'il y a quelque chose à annoncer, et seulement
+    pour la première échéance non réglée : on paie dans l'ordre. Tant qu'une
+    annonce attend vérification, le formulaire se retire — le reproposer
+    inviterait à envoyer deux fois le même numéro, ou à annoncer d'avance une
+    échéance qu'on n'a pas encore versée.
+  */
+  const enCours = dossier.echeances.find((e) => e.statut !== "regle");
+  const aAnnoncer =
+    dossier.statut !== "annulee" && dossier.statut !== "terminee" && enCours?.statut === "attendu";
 
   return (
     <>
@@ -53,6 +73,17 @@ export default async function Dossier({ params }: Props) {
             <strong className="text-gold-bright font-mono">{dossier.reference}</strong>
           </p>
 
+          {annonce && (
+            <p
+              role="status"
+              className={`bg-panel mb-8 border-l-2 p-4 text-[0.9rem] ${
+                annonce === "ok" ? "border-emerald-bright text-ivory" : "border-gold text-ivory"
+              }`}
+            >
+              {RETOUR_ANNONCE[annonce] ?? RETOUR_ANNONCE.champs}
+            </p>
+          )}
+
           <div className="border-gold bg-panel mb-8 border p-6">
             <h2 className="font-display mb-3 text-[1.1rem]">Ce qu&apos;il reste à faire</h2>
             <p className="text-gold-bright mb-4 text-[0.92rem]">{prochaineEtape(dossier)}</p>
@@ -62,9 +93,9 @@ export default async function Dossier({ params }: Props) {
                 échéance par Western Union, Ria ou MoneyGram.
               </li>
               <li>
-                <strong className="text-ivory">2.</strong> Nous transmettre le numéro de transfert
-                par WhatsApp, en citant la référence{" "}
-                <span className="font-mono">{dossier.reference}</span>.
+                <strong className="text-ivory">2.</strong> Nous indiquer le numéro de transfert{" "}
+                {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — il arrive
+                rattaché à votre dossier, sans que vous ayez à citer sa référence.
               </li>
               <li>
                 <strong className="text-ivory">3.</strong> Nous vérifions le transfert et confirmons
@@ -132,10 +163,95 @@ export default async function Dossier({ params }: Props) {
               qui laisserait croire à un oubli du participant.
             */
             <p className="border-line bg-panel border p-6 text-[0.92rem]">
-              Les coordonnées de transfert vous seront communiquées par WhatsApp. Citez la référence{" "}
-              <span className="text-gold-bright font-mono">{dossier.reference}</span> dans votre
-              message.
+              Nous vous transmettons les coordonnées de transfert par WhatsApp, au numéro que vous
+              avez indiqué à l&apos;inscription. Votre dossier{" "}
+              <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
+              enregistré : vous n&apos;avez rien à écrire de votre côté.
             </p>
+          )}
+
+          {/*
+            ── Annoncer le transfert ───────────────────────────────────────
+            L'échéancier prévoyait « Annoncé par le participant » depuis le
+            début, et rien ne l'écrivait : la page demandait d'envoyer le
+            numéro « par WhatsApp », sans qu'aucun numéro ne figure nulle part
+            sur le site. Le voici rattaché à son dossier, ce qui épargne
+            surtout à l'équipe de deviner de quelle inscription parle un
+            message reçu seul.
+
+            Annoncer n'est pas payer : l'échéance passe « en vérification »,
+            et c'est un humain qui la marque réglée après avoir vu l'argent.
+          */}
+          {aAnnoncer && (
+            <div className="border-line bg-panel mt-9 border p-6 sm:p-8">
+              <span className="mono-label text-gold mb-3 block">Transfert envoyé ?</span>
+              <h2 className="font-display mb-2 text-[1.1rem]">Indiquez-nous son numéro</h2>
+              <p className="text-ivory-dim mb-6 text-[0.88rem]">
+                Western Union et MoneyGram l&apos;appellent MTCN, Ria le numéro de commande. Il
+                figure sur le reçu remis à l&apos;envoi.
+              </p>
+
+              <form
+                action="/api/transfert"
+                method="POST"
+                className="grid gap-5 sm:grid-cols-2 [&>*]:min-w-0"
+              >
+                {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
+                <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
+                  <label htmlFor="site_web">Ne pas remplir</label>
+                  <input
+                    id="site_web"
+                    name="site_web"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <input type="hidden" name="dossier" value={dossier.reference} />
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="moyen" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Moyen d&apos;envoi
+                  </label>
+                  <select
+                    id="moyen"
+                    name="moyen"
+                    required
+                    defaultValue="western-union"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
+                  >
+                    <option value="western-union">Western Union</option>
+                    <option value="ria">Ria</option>
+                    <option value="moneygram">MoneyGram</option>
+                    <option value="virement">Virement bancaire</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="numero" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Numéro de transfert
+                  </label>
+                  <input
+                    id="numero"
+                    name="numero"
+                    type="text"
+                    required
+                    maxLength={40}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full min-w-0 border px-3.5 text-[0.95rem]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-6 text-[0.9rem] font-semibold transition-colors sm:col-span-2 sm:justify-self-start"
+                >
+                  Annoncer le transfert
+                </button>
+              </form>
+            </div>
           )}
 
           {participant ? (

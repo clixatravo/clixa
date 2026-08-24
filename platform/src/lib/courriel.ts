@@ -112,6 +112,52 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
   });
 }
 
+/**
+ * À l'équipe : un participant dit avoir fait son transfert.
+ *
+ * C'est le message qui remplace le « je vous ai envoyé l'argent » reçu par
+ * WhatsApp, hors de tout dossier. Il porte le numéro de transfert et la
+ * référence ensemble : c'est le rapprochement qui coûtait le plus de temps,
+ * puisqu'il fallait retrouver de quel dossier parlait le message.
+ *
+ * Rien n'est encaissé pour autant. L'échéance passe en « annoncé » — vérifier
+ * le transfert, et le passer en « réglé », reste un geste humain.
+ */
+export async function courrielTransfert(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantWhatsapp: string;
+    programmeTitre: string;
+    moyen: string;
+    numero: string;
+    montant: number;
+  },
+): Promise<void> {
+  if (!EQUIPE) {
+    payload.logger.warn("[courriel] EMAIL_EQUIPE absent : personne n'est prévenu des transferts");
+    return;
+  }
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `Transfert annoncé — ${d.reference} — ${d.apprenantNom}`,
+    text: [
+      `${d.apprenantNom} déclare avoir envoyé ${EUROS.format(d.montant)}.`,
+      "",
+      `Moyen : ${d.moyen}`,
+      `Numéro de transfert : ${d.numero}`,
+      `Référence du dossier : ${d.reference}`,
+      `Parcours : ${d.programmeTitre}`,
+      `WhatsApp : ${d.apprenantWhatsapp}`,
+      "",
+      "L'échéance est passée en « annoncé ». Elle attend la vérification du",
+      "transfert pour être marquée réglée dans le back-office.",
+    ].join("\n"),
+  });
+}
+
 /** À l'équipe : quelqu'un demande à être rappelé. */
 export async function courrielRappel(
   payload: Payload,
