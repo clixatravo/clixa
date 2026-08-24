@@ -24,6 +24,8 @@ export interface Dossier {
   statut: string;
   programmeTitre: string;
   sessionLibelle: string;
+  /** Début de la session, pour dire quand le parcours commence. */
+  sessionDebut?: string;
   echeances: EcheanceDossier[];
 }
 
@@ -54,6 +56,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     statut: String(d.statut),
     programmeTitre: programme?.titre ?? "Parcours",
     sessionLibelle: session?.reference ?? "Session",
+    ...(session?.debut ? { sessionDebut: session.debut } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
       ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),
@@ -92,6 +95,7 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       statut: String(d.statut),
       programmeTitre: programme?.titre ?? "Parcours",
       sessionLibelle: session?.reference ?? "Session",
+      ...(session?.debut ? { sessionDebut: session.debut } : {}),
       echeances: (d.echeances ?? []).map((e) => ({
         montantCentimes: Math.round((e.montant ?? 0) * 100),
         ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),
@@ -100,3 +104,41 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
     };
   });
 });
+
+const EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+
+/**
+ * Ce que le dossier attend de son titulaire, en une phrase.
+ *
+ * Le statut seul ne le dit pas : « En attente de paiement » ne précise ni le
+ * montant, ni la date, ni qui doit bouger. Quelqu'un qui vient de virer son
+ * acompte et lit encore « en attente » croit que rien n'est arrivé.
+ *
+ * La phrase se déduit donc des échéances, pas du statut : c'est là qu'est
+ * l'information, et c'est elle qui bouge.
+ */
+export function prochaineEtape(d: Dossier): string {
+  if (d.statut === "annulee") return "Ce dossier est annulé.";
+  if (d.statut === "terminee") return "Parcours suivi. Merci de votre confiance.";
+
+  const enVerification = d.echeances.find((e) => e.statut === "annonce");
+  if (enVerification) {
+    return `Nous vérifions votre transfert de ${EUROS.format(enVerification.montantCentimes / 100)}. Rien à faire de votre côté.`;
+  }
+
+  const due = d.echeances.find((e) => e.statut !== "regle");
+  if (due) {
+    const montant = EUROS.format(due.montantCentimes / 100);
+    const premiere = d.echeances[0] === due;
+    const quand = due.dateLimite ? ` avant le ${JOUR.format(new Date(due.dateLimite))}` : "";
+    return premiere
+      ? `Nous attendons votre premier transfert de ${montant}${quand}.`
+      : `Prochaine échéance : ${montant}${quand}.`;
+  }
+
+  // Tout est réglé : il ne reste que la date.
+  return d.sessionDebut
+    ? `Tout est réglé. Rendez-vous le ${JOUR.format(new Date(d.sessionDebut))}.`
+    : "Tout est réglé.";
+}

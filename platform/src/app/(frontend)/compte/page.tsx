@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
-import { dossiersDuCompte } from "@/lib/inscriptions";
+import { dossiersDuCompte, prochaineEtape } from "@/lib/inscriptions";
 import { formatPrix } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
@@ -86,6 +86,14 @@ export default async function Compte() {
                       {ETAT[d.statut] ?? d.statut}
                     </span>
                   </div>
+
+                  {/*
+                    Ce que le dossier attend, en clair. Le statut seul ne dit ni
+                    le montant, ni la date, ni qui doit bouger.
+                  */}
+                  <p className="border-gold text-ivory mb-4 border-l-2 pl-3 text-[0.88rem]">
+                    {prochaineEtape(d)}
+                  </p>
 
                   <div className="border-line flex flex-wrap gap-x-6 gap-y-2 border-t pt-4">
                     {d.echeances.map((e, i) => (

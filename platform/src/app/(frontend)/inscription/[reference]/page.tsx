@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { formatPrix, getTarifs } from "@/lib/catalogue";
-import { getDossier } from "@/lib/inscriptions";
+import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
 import Link from "next/link";
 
@@ -54,7 +54,8 @@ export default async function Dossier({ params }: Props) {
           </p>
 
           <div className="border-gold bg-panel mb-8 border p-6">
-            <h2 className="font-display mb-4 text-[1.1rem]">Ce qu&apos;il reste à faire</h2>
+            <h2 className="font-display mb-3 text-[1.1rem]">Ce qu&apos;il reste à faire</h2>
+            <p className="text-gold-bright mb-4 text-[0.92rem]">{prochaineEtape(dossier)}</p>
             <ol className="text-ivory-dim flex flex-col gap-3 text-[0.9rem]">
               <li>
                 <strong className="text-ivory">1.</strong> Envoyer le montant de la première
