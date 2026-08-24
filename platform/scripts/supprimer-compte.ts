@@ -8,11 +8,18 @@
  *
  *   npx payload run scripts/supprimer-compte.ts prenom@exemple.com
  *
- * Le script ne touche qu'à la collection « utilisateurs ». Les formations, les
- * sessions et les articles ne bougent pas : il recompte tout à la fin pour le
- * montrer.
+ * Il cherche dans les deux collections qui portent une identité : « utilisateurs »
+ * pour l'équipe, « apprenants » pour les participants. Il ne visait que la
+ * première, écrite avant que les comptes clients existent ; demander à retirer
+ * un participant répondait « aucun compte », ce qui était faux.
  *
- * ⚠️ Il vise la base pointée par .env.local — aujourd'hui celle de production.
+ * Les formations, les sessions et les articles ne bougent pas : il recompte
+ * tout à la fin pour le montrer.
+ *
+ * ⚠️ Il vise la base pointée par DATABASE_URL. Depuis la séparation des deux
+ * branches Neon, c'est celle du poste de travail sauf à charger .env.prod :
+ *
+ *   set -a && . ./.env.prod && set +a && npx payload run scripts/supprimer-compte.ts <email>
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -28,27 +35,56 @@ if (!email) {
 
 const payload = await getPayload({ config });
 
-const { docs } = await payload.find({
-  collection: "utilisateurs",
-  where: { email: { equals: email } },
-  limit: 1,
-  overrideAccess: true,
-});
+const OU = ["utilisateurs", "apprenants"] as const;
 
-const compte = docs[0];
+let trouve: { collection: (typeof OU)[number]; doc: Record<string, unknown> } | undefined;
 
-if (!compte) {
-  console.error(`Aucun compte pour « ${email} ».`);
+for (const collection of OU) {
+  const { docs } = await payload.find({
+    collection,
+    where: { email: { equals: email } },
+    limit: 1,
+    overrideAccess: true,
+  });
+  if (docs[0]) {
+    trouve = { collection, doc: docs[0] as unknown as Record<string, unknown> };
+    break;
+  }
+}
+
+if (!trouve) {
+  console.error(`Aucun compte pour « ${email} », ni dans l'équipe ni chez les participants.`);
   process.exit(1);
 }
 
-await payload.delete({ collection: "utilisateurs", id: compte.id, overrideAccess: true });
-console.log(`\nSupprimé : ${compte.email} — ${compte.nom ?? "sans nom"} (${compte.role})`);
+const { collection, doc: compte } = trouve;
+const quoi = collection === "utilisateurs" ? "équipe" : "participant";
 
-const restants = await payload.count({ collection: "utilisateurs", overrideAccess: true });
-console.log(`Comptes restants : ${restants.totalDocs}`);
+await payload.delete({ collection, id: compte.id as string | number, overrideAccess: true });
+console.log(`\nSupprimé (${quoi}) : ${compte.email} — ${compte.nom ?? "sans nom"}`);
 
-if (restants.totalDocs === 0) {
+/*
+  Un dossier ne disparaît pas avec le compte : il reste joignable par sa
+  référence, comme il l'était avant que son propriétaire en crée un. C'est
+  voulu — supprimer un accès n'est pas annuler une inscription.
+*/
+if (collection === "apprenants") {
+  const rattaches = await payload.count({
+    collection: "inscriptions",
+    where: { apprenant: { equals: compte.id as string | number } },
+    overrideAccess: true,
+  });
+  if (rattaches.totalDocs > 0) {
+    console.log(
+      `${rattaches.totalDocs} dossier(s) étaient rattachés : ils restent accessibles par leur référence.`,
+    );
+  }
+}
+
+const restants = await payload.count({ collection, overrideAccess: true });
+console.log(`Comptes restants dans « ${collection} » : ${restants.totalDocs}`);
+
+if (collection === "utilisateurs" && restants.totalDocs === 0) {
   // Une seule base sert le local et la production : le compte existe des deux
   // côtés. On pointe le back-office public, seul joignable à coup sûr.
   const site = "https://clixa-institute.vercel.app";
