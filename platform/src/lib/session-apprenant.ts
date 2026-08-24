@@ -34,6 +34,9 @@ export interface Participant {
   id: number | string;
   email: string;
   nom: string;
+  /** Repris tels quels dans le tunnel : on ne redemande pas ce qu'on sait déjà. */
+  telephone?: string;
+  pays?: string;
 }
 
 /**
@@ -48,9 +51,13 @@ export async function participantConnecte(): Promise<Participant | undefined> {
 
   if (!user || user.collection !== "apprenants") return undefined;
 
+  const u = user as { nom?: unknown; telephone?: unknown; pays?: unknown };
+
   return {
     id: user.id,
     email: String(user.email),
-    nom: String((user as { nom?: unknown }).nom ?? ""),
+    nom: String(u.nom ?? ""),
+    ...(u.telephone ? { telephone: String(u.telephone) } : {}),
+    ...(u.pays ? { pays: String(u.pays) } : {}),
   };
 }

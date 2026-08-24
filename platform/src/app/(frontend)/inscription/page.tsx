@@ -1,6 +1,7 @@
 import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
+import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
 import {
   formatPeriode,
@@ -50,6 +51,13 @@ export default async function Inscription({ searchParams }: Props) {
   if (!programme) notFound();
 
   const sessions = (await getSessions(formation)).filter((s) => placesRestantes(s) > 0);
+
+  /*
+    Quelqu'un qui revient s'inscrire à un second parcours a déjà donné son nom,
+    son adresse et son pays. Les lui redemander à chaque fois, c'est lui dire
+    qu'on ne l'a pas reconnu.
+  */
+  const participant = await participantConnecte();
   const tarifs = await getTarifs();
   const plan = tarifs.plans.find((p) => p.code === planDemande) ?? tarifs.plans[0];
 
@@ -67,6 +75,13 @@ export default async function Inscription({ searchParams }: Props) {
         <div className="mx-auto max-w-[860px]">
           <span className="mono-label text-gold mb-3 block">Demande de place</span>
           <h1 className="mb-3 text-[clamp(1.6rem,3vw,2.3rem)]">{programme.titre}</h1>
+          {participant && (
+            <p className="border-gold bg-panel text-ivory mb-6 border-l-2 p-4 text-[0.9rem]">
+              Bonjour {participant.nom} — vos coordonnées sont déjà remplies. Ce dossier rejoindra
+              votre espace.
+            </p>
+          )}
+
           <p className="text-ivory-dim mb-9 max-w-[62ch] text-[0.98rem]">
             Votre place est retenue dès l&apos;envoi de ce formulaire. Le règlement se fait ensuite
             par transfert — les consignes s&apos;affichent à l&apos;étape suivante.
@@ -124,16 +139,33 @@ export default async function Inscription({ searchParams }: Props) {
                   </select>
                 </div>
 
-                <Champ label="Nom complet" name="nom" autoComplete="name" />
-                <Champ label="E-mail" name="email" type="email" autoComplete="email" />
+                <Champ
+                  label="Nom complet"
+                  name="nom"
+                  autoComplete="name"
+                  valeur={participant?.nom}
+                />
+                <Champ
+                  label="E-mail"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  valeur={participant?.email}
+                />
                 <Champ
                   label="WhatsApp"
                   name="whatsapp"
                   type="tel"
                   autoComplete="tel"
                   aide="Avec l'indicatif du pays."
+                  valeur={participant?.telephone}
                 />
-                <Champ label="Pays" name="pays" autoComplete="country-name" />
+                <Champ
+                  label="Pays"
+                  name="pays"
+                  autoComplete="country-name"
+                  valeur={participant?.pays}
+                />
 
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="plan" className="mono-label text-ivory-dim text-[0.7rem]">
@@ -208,12 +240,14 @@ function Champ({
   type = "text",
   autoComplete,
   aide,
+  valeur,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
   aide?: string;
+  valeur?: string;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -226,6 +260,7 @@ function Champ({
         type={type}
         required
         autoComplete={autoComplete}
+        defaultValue={valeur}
         className="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
       />
       {aide && <span className="text-ivory-dim text-[0.72rem]">{aide}</span>}

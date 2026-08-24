@@ -34,6 +34,18 @@ export function SiteHeader() {
         <NavDesktop liens={liens} />
 
         <div className="flex items-center gap-4">
+          {/*
+            Un seul lien, et il ne dépend pas de la session : lire le cookie ici
+            rendrait tout le site dynamique et ferait perdre la pré-génération de
+            chaque page. C'est /compte qui tranche — il renvoie vers la connexion
+            quand personne n'est identifié.
+          */}
+          <Link
+            href="/compte"
+            className="text-ivory-dim hover:text-ivory hidden min-h-11 items-center text-[0.82rem] tracking-wide transition-colors sm:inline-flex"
+          >
+            Mon espace
+          </Link>
           {/* Sélecteur de langue : l'interface existe, le routage par langue arrive
               avec SOC-02 / BE-06 quand le CMS multilingue est en place. */}
           <span className="mono-label text-ivory-dim hidden sm:inline">FR</span>

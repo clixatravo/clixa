@@ -106,6 +106,12 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         {/* « Accueil » ouvre la liste : le logo seul ne suffit pas à indiquer
             comment revenir à la page d'accueil. */}
         <LienMenu href="/" label="Accueil" actif={pathname === "/"} onNaviguer={fermer} />
+        <LienMenu
+          href="/compte"
+          label="Mon espace"
+          actif={pathname.startsWith("/compte")}
+          onNaviguer={fermer}
+        />
 
         {liens.map((l) => (
           <LienMenu

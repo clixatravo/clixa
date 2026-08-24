@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
+import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
  * BE-15 — Réception d'une demande de place.
@@ -106,6 +107,13 @@ export async function POST(request: Request) {
     statut: "attendu" as const,
   }));
 
+  /*
+    Rattaché tout de suite quand la personne est reconnue : sans cela son
+    dossier n'apparaîtrait dans son espace qu'après une nouvelle création de
+    compte, qui n'aura jamais lieu.
+  */
+  const participant = await participantConnecte();
+
   let reference: string;
   try {
     const cree = await payload.create({
@@ -120,6 +128,7 @@ export async function POST(request: Request) {
         apprenantPays: pays,
         payeurType: texte("payeur") === "organisation" ? "organisation" : "particulier",
         ...(texte("organisation") ? { payeurNom: texte("organisation") } : {}),
+        ...(participant ? { apprenant: Number(participant.id) } : {}),
         planPaiement: plan,
         montantTotal: barème?.total ?? tarifs.prixComptant ?? 0,
         devise: tarifs.devise ?? "EUR",

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { formatPrix, getTarifs } from "@/lib/catalogue";
 import { getDossier } from "@/lib/inscriptions";
+import { participantConnecte } from "@/lib/session-apprenant";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Votre dossier",
@@ -35,6 +37,7 @@ export default async function Dossier({ params }: Props) {
   if (!dossier) notFound();
 
   const tarifs = await getTarifs();
+  const participant = await participantConnecte();
   const beneficiaireConnu = Boolean(tarifs.beneficiaireNom);
 
   return (
@@ -134,9 +137,36 @@ export default async function Dossier({ params }: Props) {
             </p>
           )}
 
-          <p className="text-ivory-dim mt-8 text-[0.8rem]">
-            Conservez cette adresse : elle vous ramène à votre dossier, sans mot de passe.
-          </p>
+          {participant ? (
+            <p className="text-ivory-dim mt-8 text-[0.8rem]">
+              Ce dossier figure dans{" "}
+              <Link href="/compte" className="border-gold text-ivory border-b">
+                votre espace
+              </Link>
+              , avec les précédents.
+            </p>
+          ) : (
+            /*
+              Proposé ici et pas avant : la place est retenue, la personne a vu
+              que cela a marché. Un mot de passe demandé plus tôt, avant même le
+              paiement, en aurait écarté.
+            */
+            <div className="border-line bg-panel mt-8 border p-5">
+              <p className="text-[0.9rem]">
+                Retrouvez ce dossier et les suivants au même endroit, sans avoir à conserver la
+                référence.
+              </p>
+              <Link
+                href="/compte/creer"
+                className="border-gold text-ivory mt-3 inline-block border-b pb-1 text-[0.86rem]"
+              >
+                Créer un accès →
+              </Link>
+              <p className="text-ivory-dim mt-3 text-[0.78rem]">
+                Sinon, conservez cette adresse : elle vous ramène ici, sans mot de passe.
+              </p>
+            </div>
+          )}
         </div>
       </section>
     </>
