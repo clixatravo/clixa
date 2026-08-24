@@ -3,6 +3,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { Button } from "@/components/ui/Button";
 import { ProgrammeCard } from "@/components/ProgrammeCard";
 import { getProgrammes, getSessions } from "@/lib/catalogue";
+import { MarqueSkillAfrique } from "@/components/MarqueSkillAfrique";
 
 /**
  * Page dédiée à SkillAfrique.
@@ -88,14 +89,8 @@ export default async function SkillAfrique() {
             </div>
           </div>
 
-          {/* Le monogramme repris de index.html */}
-          <div
-            className="border-gold from-panel to-ink relative hidden aspect-square items-center justify-center bg-gradient-to-br lg:flex"
-            aria-hidden="true"
-          >
-            <span className="border-line absolute inset-[18px] border" />
-            <span className="font-display text-gold text-[5rem] opacity-90">SA</span>
-          </div>
+          {/* La marque, sur sa propre surface claire — voir le composant. */}
+          <MarqueSkillAfrique />
         </div>
       </section>
 
