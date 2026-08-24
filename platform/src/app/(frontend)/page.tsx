@@ -14,8 +14,6 @@ import {
   getTemoignages,
   getPartenaires,
   lieuSession,
-  getTarifs,
-  formatPrix,
   villesDisponibles,
 } from "@/lib/catalogue";
 
@@ -51,7 +49,6 @@ export default async function Accueil() {
   const complements = programmes.filter((p) => !choisis.includes(p));
   const vedettes = [...choisis, ...complements].slice(0, NOMBRE_EN_VEDETTE);
   const total = programmes.length;
-  const tarifs = await getTarifs();
 
   /*
     Ce que le catalogue propose vraiment, plutôt qu'une promesse écrite une
@@ -66,8 +63,6 @@ export default async function Accueil() {
     cinquième pour que la page n'en parle plus.
   */
   const villes = await villesDisponibles();
-  const prochaine = agenda[0];
-  const seances = [...new Set(programmes.map((p) => p.modules.length).filter((n) => n > 0))];
 
   const ouLesCours =
     villes.length > 0
@@ -85,57 +80,25 @@ export default async function Accueil() {
     <>
       {/* ── Héros ── */}
       <section className="border-line border-b px-8 py-20">
-        <div className="mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[1.35fr_1fr] lg:items-start">
-          <div>
-            <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
-            <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
-              Des programmes qui{" "}
-              <em className="text-gold-bright not-italic">changent une trajectoire</em>.
-            </h1>
-            <p className="text-ivory-dim mb-8 max-w-[54ch] text-[1.05rem]">
-              Formations certifiantes et parcours exécutifs pour dirigeants et managers en Afrique.{" "}
-              {ouLesCours}
-            </p>
-            <div className="flex flex-wrap items-center gap-6">
-              <Button href="/formations">Explorer le catalogue</Button>
-              <Link
-                href="#agenda"
-                className="border-ivory-dim text-ivory-dim hover:text-ivory border-b py-3.5 text-sm"
-              >
-                Voir les prochaines sessions →
-              </Link>
-            </div>
+        <div className="mx-auto max-w-[1180px]">
+          <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
+          <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
+            Des programmes qui{" "}
+            <em className="text-gold-bright not-italic">changent une trajectoire</em>.
+          </h1>
+          <p className="text-ivory-dim mb-8 max-w-[54ch] text-[1.05rem]">
+            Formations certifiantes et parcours exécutifs pour dirigeants et managers en Afrique.{" "}
+            {ouLesCours}
+          </p>
+          <div className="flex flex-wrap items-center gap-6">
+            <Button href="/formations">Explorer le catalogue</Button>
+            <Link
+              href="#agenda"
+              className="border-ivory-dim text-ivory-dim hover:text-ivory border-b py-3.5 text-sm"
+            >
+              Voir les prochaines sessions →
+            </Link>
           </div>
-
-          {/*
-            Les quatre chiffres qui décident, et rien d'autre : combien de
-            parcours, quand ça commence, à quel prix, sur combien de séances.
-            Ils sont calculés — la moitié droite du héros était vide, et un
-            visuel décoratif n'aurait rien appris à personne.
-
-            ── Pourquoi plus de cadre ──────────────────────────────────────
-            C'était un panneau plein et bordé, le seul de la page. Le reste du
-            site est fait de filets et de vide ; ce bloc y arrivait comme un
-            encart rapporté, et il disputait le regard au titre au lieu de le
-            suivre. Les mêmes chiffres, posés sur des filets, appartiennent au
-            héros au lieu de se poser dessus.
-
-            Son étiquette s'aligne sur celle du titre — deux repères de même
-            nature à la même hauteur, plutôt qu'un bloc flottant au milieu.
-          */}
-          <aside className="w-full lg:max-w-[290px] lg:justify-self-end">
-            <span className="mono-label text-gold mb-5 block">La prochaine cohorte</span>
-            <dl className="border-line flex flex-col border-t">
-              <Chiffre valeur={String(total)} legende="parcours au catalogue" />
-              {prochaine && (
-                <Chiffre valeur={formatDateCourte(prochaine.debut)} legende="première séance" />
-              )}
-              <Chiffre valeur={formatPrix(tarifs.prixComptantCentimes)} legende="comptant" />
-              {seances.length === 1 && (
-                <Chiffre valeur={String(seances[0])} legende="séances par parcours" />
-              )}
-            </dl>
-          </aside>
         </div>
       </section>
 
@@ -287,18 +250,3 @@ export default async function Accueil() {
 }
 
 /** Une ligne de la carte du héros : un nombre, ce qu'il compte. */
-function Chiffre({ valeur, legende }: { valeur: string; legende: string }) {
-  return (
-    /*
-      `flex-col-reverse` : la légende reste avant la valeur dans le document —
-      c'est ce qu'attend une liste de définitions, et ce que lit un lecteur
-      d'écran — mais s'affiche dessous. Légende à gauche et valeur à droite
-      faisait zigzaguer l'oeil sur quatre lignes ; l'une sous l'autre, chaque
-      chiffre se lit d'un seul mouvement.
-    */
-    <div className="border-line flex flex-col-reverse gap-1.5 border-b py-4">
-      <dt className="text-ivory-dim text-[0.8rem]">{legende}</dt>
-      <dd className="font-display text-gold-bright text-[1.55rem] leading-none">{valeur}</dd>
-    </div>
-  );
-}
