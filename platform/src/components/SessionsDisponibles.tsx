@@ -9,6 +9,7 @@ import {
   seancesHebdomadaires,
 } from "@/lib/catalogue";
 import { PlacesBadge } from "@/components/ui/Badge";
+import { HeureLocale } from "@/components/HeureLocale";
 
 /**
  * FE-07 — Bloc de sélection de session.
@@ -63,6 +64,12 @@ export function SessionsDisponibles({
                   return bas.length > 0 ? (
                     <small className="font-body text-ivory-dim block text-[0.72rem]">
                       {bas.join(" · ")}
+                      {/*
+                        L'horaire dans le fuseau du visiteur, quand il diffère.
+                        En présentiel la ville dit déjà l'heure : le convertir
+                        n'aurait pas de sens.
+                      */}
+                      {zone && <HeureLocale debut={s.debut} fin={s.fin} />}
                     </small>
                   ) : null;
                 })()}
