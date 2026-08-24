@@ -80,7 +80,7 @@ export default async function Compte() {
                       <h2 className="font-display text-[1.15rem] leading-snug">
                         {d.programmeTitre}
                       </h2>
-                      <p className="text-ivory-dim mt-1 text-[0.82rem]">{d.sessionLibelle}</p>
+                      <p className="text-ivory-dim mt-1 text-[0.82rem]">{d.sessionDetail}</p>
                     </div>
                     <span className="border-line text-ivory-dim rounded-clixa shrink-0 border px-2.5 py-1 font-mono text-[0.62rem] tracking-[0.08em] uppercase">
                       {ETAT[d.statut] ?? d.statut}

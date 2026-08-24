@@ -49,7 +49,7 @@ export default async function Dossier({ params }: Props) {
           <span className="mono-label text-gold mb-3 block">Place retenue</span>
           <h1 className="mb-2 text-[clamp(1.5rem,2.8vw,2.1rem)]">{dossier.programmeTitre}</h1>
           <p className="text-ivory-dim mb-8 text-[0.95rem]">
-            {dossier.sessionLibelle} · dossier{" "}
+            {dossier.sessionDetail} · dossier{" "}
             <strong className="text-gold-bright font-mono">{dossier.reference}</strong>
           </p>
 

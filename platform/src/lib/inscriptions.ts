@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { formatPrix } from "@/lib/format";
 import { payloadClient } from "@/lib/payload";
 
 /**
@@ -24,9 +25,31 @@ export interface Dossier {
   statut: string;
   programmeTitre: string;
   sessionLibelle: string;
+  /**
+   * La session sans le nom du parcours : « Classe virtuelle — 19 sept. 2026 ».
+   *
+   * La référence d'une session s'écrit « Parcours — Mode — Date ». Elle se
+   * suffit dans un courriel, où rien ne l'introduit ; sous un titre qui nomme
+   * déjà le parcours, elle le répétait mot pour mot.
+   */
+  sessionDetail: string;
   /** Début de la session, pour dire quand le parcours commence. */
   sessionDebut?: string;
   echeances: EcheanceDossier[];
+}
+
+/**
+ * Retire du libellé de session le nom du parcours, quand il l'ouvre.
+ *
+ * Comparaison prudente : si la référence ne commence pas par ce titre — parce
+ * qu'elle a été saisie à la main, ou que le parcours a été renommé depuis — on
+ * rend le libellé entier plutôt qu'un fragment tronqué au mauvais endroit.
+ */
+function sansLeParcours(reference?: string | null, titre?: string | null): string {
+  const libelle = reference ?? "Session";
+  if (!titre) return libelle;
+  const prefixe = `${titre} — `;
+  return libelle.startsWith(prefixe) ? libelle.slice(prefixe.length) : libelle;
 }
 
 export const getDossier = cache(async (reference: string): Promise<Dossier | undefined> => {
@@ -56,6 +79,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     statut: String(d.statut),
     programmeTitre: programme?.titre ?? "Parcours",
     sessionLibelle: session?.reference ?? "Session",
+    sessionDetail: sansLeParcours(session?.reference, programme?.titre),
     ...(session?.debut ? { sessionDebut: session.debut } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
@@ -95,6 +119,7 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       statut: String(d.statut),
       programmeTitre: programme?.titre ?? "Parcours",
       sessionLibelle: session?.reference ?? "Session",
+      sessionDetail: sansLeParcours(session?.reference, programme?.titre),
       ...(session?.debut ? { sessionDebut: session.debut } : {}),
       echeances: (d.echeances ?? []).map((e) => ({
         montantCentimes: Math.round((e.montant ?? 0) * 100),
@@ -105,7 +130,13 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
   });
 });
 
-const EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+/*
+  L'argent s'écrit avec le formateur du reste du site. Celui d'ici avait les
+  siens, et le défaut de l'euro est à deux décimales : la même somme paraissait
+  « 423,00 € » dans la phrase et « 423 € » dans la pastille juste en dessous.
+  Des centimes qui valent toujours zéro n'apprennent rien, et deux écritures
+  d'un même montant sur une même carte font douter des deux.
+*/
 const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 
 /**
@@ -124,12 +155,12 @@ export function prochaineEtape(d: Dossier): string {
 
   const enVerification = d.echeances.find((e) => e.statut === "annonce");
   if (enVerification) {
-    return `Nous vérifions votre transfert de ${EUROS.format(enVerification.montantCentimes / 100)}. Rien à faire de votre côté.`;
+    return `Nous vérifions votre transfert de ${formatPrix(enVerification.montantCentimes)}. Rien à faire de votre côté.`;
   }
 
   const due = d.echeances.find((e) => e.statut !== "regle");
   if (due) {
-    const montant = EUROS.format(due.montantCentimes / 100);
+    const montant = formatPrix(due.montantCentimes);
     const premiere = d.echeances[0] === due;
     const quand = due.dateLimite ? ` avant le ${JOUR.format(new Date(due.dateLimite))}` : "";
     return premiere
