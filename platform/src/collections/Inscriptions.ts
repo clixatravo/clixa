@@ -170,6 +170,20 @@ export const Inscriptions: CollectionConfig = {
       ],
     },
     {
+      /*
+        Rattaché au compte quand il en existe un, laissé vide sinon. Le tunnel
+        n'exige pas de compte : ce champ se remplit après coup, quand la
+        personne en crée un avec la même adresse.
+      */
+      name: "apprenant",
+      type: "relationship",
+      relationTo: "apprenants",
+      label: "Compte du participant",
+      admin: {
+        description: "Rempli automatiquement à la création du compte, par l'adresse e-mail.",
+      },
+    },
+    {
       name: "session",
       type: "relationship",
       relationTo: "sessions",

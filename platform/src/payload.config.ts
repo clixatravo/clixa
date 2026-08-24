@@ -11,6 +11,7 @@ import { Utilisateurs } from "@/collections/Utilisateurs";
 import { Specialisations } from "@/collections/Specialisations";
 import { Tarifs } from "@/collections/Tarifs";
 import { Inscriptions } from "@/collections/Inscriptions";
+import { Apprenants } from "@/collections/Apprenants";
 import { Programmes } from "@/collections/Programmes";
 import { Sessions } from "@/collections/Sessions";
 import { Articles } from "@/collections/Articles";
@@ -53,6 +54,7 @@ export default buildConfig({
     // Admissions
     DemandesRappel,
     Inscriptions,
+    Apprenants,
     // Accès
     Utilisateurs,
   ],

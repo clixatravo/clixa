@@ -63,6 +63,7 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
+    apprenants: ApprenantAuthOperations;
     utilisateurs: UtilisateurAuthOperations;
   };
   blocks: {};
@@ -77,6 +78,7 @@ export interface Config {
     medias: Media;
     'demandes-rappel': DemandesRappel;
     inscriptions: Inscription;
+    apprenants: Apprenant;
     utilisateurs: Utilisateur;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -95,6 +97,7 @@ export interface Config {
     medias: MediasSelect<false> | MediasSelect<true>;
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
     inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
+    apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
     utilisateurs: UtilisateursSelect<false> | UtilisateursSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -115,10 +118,28 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Utilisateur;
+  user: Apprenant | Utilisateur;
   jobs: {
     tasks: unknown;
     workflows: unknown;
+  };
+}
+export interface ApprenantAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
   };
 }
 export interface UtilisateurAuthOperations {
@@ -586,6 +607,10 @@ export interface Inscription {
    */
   prochaineEcheance?: string | null;
   /**
+   * Rempli automatiquement à la création du compte, par l'adresse e-mail.
+   */
+  apprenant?: (number | null) | Apprenant;
+  /**
    * La place demandée. C'est elle qui porte les dates et le tarif.
    */
   session: number | Session;
@@ -632,6 +657,36 @@ export interface Inscription {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Les comptes que les participants créent eux-mêmes. Le personnel les consulte, il ne les crée pas.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apprenants".
+ */
+export interface Apprenant {
+  id: number;
+  nom: string;
+  telephone?: string | null;
+  pays?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'apprenants';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -728,14 +783,23 @@ export interface PayloadLockedDocument {
         value: number | Inscription;
       } | null)
     | ({
+        relationTo: 'apprenants';
+        value: number | Apprenant;
+      } | null)
+    | ({
         relationTo: 'utilisateurs';
         value: number | Utilisateur;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'utilisateurs';
-    value: number | Utilisateur;
-  };
+  user:
+    | {
+        relationTo: 'apprenants';
+        value: number | Apprenant;
+      }
+    | {
+        relationTo: 'utilisateurs';
+        value: number | Utilisateur;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -745,10 +809,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'utilisateurs';
-    value: number | Utilisateur;
-  };
+  user:
+    | {
+        relationTo: 'apprenants';
+        value: number | Apprenant;
+      }
+    | {
+        relationTo: 'utilisateurs';
+        value: number | Utilisateur;
+      };
   key?: string | null;
   value?:
     | {
@@ -1093,6 +1162,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   reference?: T;
   statut?: T;
   prochaineEcheance?: T;
+  apprenant?: T;
   session?: T;
   apprenantNom?: T;
   apprenantEmail?: T;
@@ -1119,6 +1189,31 @@ export interface InscriptionsSelect<T extends boolean = true> {
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apprenants_select".
+ */
+export interface ApprenantsSelect<T extends boolean = true> {
+  nom?: T;
+  telephone?: T;
+  pays?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

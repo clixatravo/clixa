@@ -61,3 +61,42 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     })),
   };
 });
+
+/**
+ * Les dossiers rattachés à un compte.
+ *
+ * Le rattachement se fait à la création du compte, par l'adresse. Un dossier
+ * déposé avec une autre adresse reste accessible par sa référence : c'est le
+ * prix d'un tunnel qui n'exige pas de compte, et la page le dit.
+ */
+export const dossiersDuCompte = cache(async (apprenantId: number | string): Promise<Dossier[]> => {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "inscriptions",
+    where: { apprenant: { equals: apprenantId } },
+    limit: 50,
+    depth: 2,
+    sort: "-createdAt",
+    overrideAccess: true,
+  });
+
+  return docs.map((d) => {
+    const session = typeof d.session === "object" && d.session !== null ? d.session : undefined;
+    const programme =
+      session && typeof session.programme === "object" && session.programme !== null
+        ? session.programme
+        : undefined;
+
+    return {
+      reference: String(d.reference),
+      statut: String(d.statut),
+      programmeTitre: programme?.titre ?? "Parcours",
+      sessionLibelle: session?.reference ?? "Session",
+      echeances: (d.echeances ?? []).map((e) => ({
+        montantCentimes: Math.round((e.montant ?? 0) * 100),
+        ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),
+        statut: (e.statut ?? "attendu") as EcheanceDossier["statut"],
+      })),
+    };
+  });
+});
