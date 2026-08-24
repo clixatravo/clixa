@@ -85,7 +85,7 @@ export default async function Accueil() {
     <>
       {/* ── Héros ── */}
       <section className="border-line border-b px-8 py-20">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-12 lg:grid-cols-[1.35fr_1fr]">
+        <div className="mx-auto grid max-w-[1180px] gap-12 lg:grid-cols-[1.35fr_1fr] lg:items-start">
           <div>
             <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
             <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
@@ -112,10 +112,20 @@ export default async function Accueil() {
             parcours, quand ça commence, à quel prix, sur combien de séances.
             Ils sont calculés — la moitié droite du héros était vide, et un
             visuel décoratif n'aurait rien appris à personne.
+
+            ── Pourquoi plus de cadre ──────────────────────────────────────
+            C'était un panneau plein et bordé, le seul de la page. Le reste du
+            site est fait de filets et de vide ; ce bloc y arrivait comme un
+            encart rapporté, et il disputait le regard au titre au lieu de le
+            suivre. Les mêmes chiffres, posés sur des filets, appartiennent au
+            héros au lieu de se poser dessus.
+
+            Son étiquette s'aligne sur celle du titre — deux repères de même
+            nature à la même hauteur, plutôt qu'un bloc flottant au milieu.
           */}
-          <aside className="border-line bg-panel border p-7 lg:justify-self-end">
+          <aside className="w-full lg:max-w-[290px] lg:justify-self-end">
             <span className="mono-label text-gold mb-5 block">La prochaine cohorte</span>
-            <dl className="flex flex-col gap-4">
+            <dl className="border-line flex flex-col border-t">
               <Chiffre valeur={String(total)} legende="parcours au catalogue" />
               {prochaine && (
                 <Chiffre valeur={formatDateCourte(prochaine.debut)} legende="première séance" />
@@ -279,9 +289,16 @@ export default async function Accueil() {
 /** Une ligne de la carte du héros : un nombre, ce qu'il compte. */
 function Chiffre({ valeur, legende }: { valeur: string; legende: string }) {
   return (
-    <div className="border-line flex items-baseline justify-between gap-4 border-b pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-ivory-dim text-[0.82rem]">{legende}</dt>
-      <dd className="font-display text-gold-bright text-[1.35rem] leading-none">{valeur}</dd>
+    /*
+      `flex-col-reverse` : la légende reste avant la valeur dans le document —
+      c'est ce qu'attend une liste de définitions, et ce que lit un lecteur
+      d'écran — mais s'affiche dessous. Légende à gauche et valeur à droite
+      faisait zigzaguer l'oeil sur quatre lignes ; l'une sous l'autre, chaque
+      chiffre se lit d'un seul mouvement.
+    */
+    <div className="border-line flex flex-col-reverse gap-1.5 border-b py-4">
+      <dt className="text-ivory-dim text-[0.8rem]">{legende}</dt>
+      <dd className="font-display text-gold-bright text-[1.55rem] leading-none">{valeur}</dd>
     </div>
   );
 }

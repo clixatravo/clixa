@@ -71,7 +71,7 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         aria-expanded={ouvert}
         aria-controls="menu-mobile"
         aria-label={ouvert ? "Fermer le menu" : "Ouvrir le menu"}
-        className="-mr-2 flex min-h-11 items-center gap-2.5 px-2 md:hidden"
+        className="-mr-2 flex min-h-11 items-center gap-2.5 px-2 lg:hidden"
       >
         {/* Le libellé est explicite : trois traits seuls ne se lisent pas comme
             un bouton pour une partie des visiteurs. */}
@@ -101,7 +101,7 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         /* Positionné sous l'en-tête via top-full, jamais par une hauteur écrite
            en dur : ajouter un libellé au bouton avait suffi à décaler l'en-tête
            de 73 à 85 px, et le panneau passait dessous. */
-        className="border-line bg-ink absolute inset-x-0 top-full z-40 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-2 overflow-y-auto border-t px-8 py-6 md:hidden"
+        className="border-line bg-ink absolute inset-x-0 top-full z-40 flex max-h-[calc(100dvh-5.5rem)] flex-col gap-2 overflow-y-auto border-t px-8 py-6 lg:hidden"
       >
         {/* « Accueil » ouvre la liste : le logo seul ne suffit pas à indiquer
             comment revenir à la page d'accueil. */}
@@ -122,11 +122,17 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
           rubrique du site : le laisser dans la liste le noyait parmi les pages.
           Même hiérarchie que sur écran large — l'or pour l'appel principal, le
           contour pour le second.
+
+          Chacune ne paraît que tant que l'en-tête ne la montre pas : `sm` pour
+          « Mon espace », `md` pour « Nous contacter », les seuils mêmes de
+          `SiteHeader`. Entre les deux, le menu ouvert répétait un bouton visible
+          juste au-dessus de lui. Ces trois valeurs vont par paires — changer un
+          seuil dans l'en-tête sans changer celui d'ici fait revenir le doublon.
         */}
         <Link
           href="/compte"
           onClick={fermer}
-          className="border-line-strong bg-panel text-ivory rounded-clixa mt-6 flex min-h-14 items-center justify-center gap-2.5 border px-6 text-base"
+          className="border-line-strong bg-panel text-ivory rounded-clixa mt-6 flex min-h-14 items-center justify-center gap-2.5 border px-6 text-base sm:hidden"
         >
           <svg
             aria-hidden="true"
@@ -145,7 +151,7 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         <Link
           href="/contact"
           onClick={fermer}
-          className="border-gold text-ivory rounded-clixa mt-3 flex min-h-14 items-center justify-center border px-6 text-base"
+          className="border-gold text-ivory rounded-clixa mt-3 flex min-h-14 items-center justify-center border px-6 text-base sm:mt-6 md:hidden"
         >
           Nous contacter
         </Link>

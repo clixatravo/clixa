@@ -16,7 +16,17 @@ export function NavDesktop({ liens }: { liens: readonly { href: Route; label: st
   const pathname = usePathname();
 
   return (
-    <div className="hidden items-center gap-1 md:flex">
+    /*
+      `lg`, pas `md`. À 768 px la barre complète — six liens, plus « FR », « Mon
+      espace » et « Nous contacter » — réclame 936 px : la page débordait de
+      151 px et se faisait glisser latéralement sur toute tablette. Le seuil
+      décide donc de ce qui tient, pas de ce qu'on appelle « bureau ».
+
+      Le menu et son panneau (`MobileMenu`) basculent au même seuil : les deux
+      valeurs doivent rester égales, sinon on obtient soit deux navigations à
+      la fois, soit aucune.
+    */
+    <div className="hidden items-center gap-1 lg:flex">
       {liens.map((l) => {
         const actif = pathname === l.href || pathname.startsWith(`${l.href}/`);
 

@@ -35,6 +35,20 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-4">
           {/*
+            Sélecteur de langue : l'interface existe, le routage par langue
+            arrive avec SOC-02 / BE-06 quand le CMS multilingue est en place.
+
+            Il était coincé entre « Mon espace » et « Nous contacter ». Un mot
+            nu entre deux boutons casse la paire qu'ils forment, et se lit comme
+            une étiquette égarée plutôt que comme un réglage. Placé avant, sur
+            un filet, il termine la navigation au lieu d'interrompre les
+            actions — et la page finit sur son appel principal, pas sur un
+            repère gris.
+          */}
+          <span className="mono-label text-ivory-dim border-line hidden border-r pr-4 sm:inline">
+            FR
+          </span>
+          {/*
             Un seul lien, et il ne dépend pas de la session : lire le cookie ici
             rendrait tout le site dynamique et ferait perdre la pré-génération de
             chaque page. C'est /compte qui tranche — il renvoie vers la connexion
@@ -64,9 +78,6 @@ export function SiteHeader() {
             </svg>
             Mon espace
           </Link>
-          {/* Sélecteur de langue : l'interface existe, le routage par langue arrive
-              avec SOC-02 / BE-06 quand le CMS multilingue est en place. */}
-          <span className="mono-label text-ivory-dim hidden sm:inline">FR</span>
           <Link
             href="/contact"
             className="border-gold text-ivory hover:bg-gold hover:text-ink rounded-clixa hidden min-h-11 items-center border px-5 text-[0.82rem] tracking-wide transition-colors md:inline-flex"
