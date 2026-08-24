@@ -8,6 +8,7 @@ import {
   getSpecialisations,
   libelleMode,
   villesDisponibles,
+  metiersSuggeres,
 } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ interface Props {
 export default async function Catalogue({ searchParams }: Props) {
   const params = await searchParams;
   const specs = await getSpecialisations();
+  const metiers = await metiersSuggeres();
   const villes = await villesDisponibles();
 
   const mode = MODES.includes(params.mode as ModeDiffusion)
@@ -117,7 +119,7 @@ export default async function Catalogue({ searchParams }: Props) {
                 name="q"
                 type="search"
                 defaultValue={params.q ?? ""}
-                placeholder="Rechercher — PMP, IFRS, contrôle de gestion…"
+                placeholder="Rechercher — votre métier, une compétence, un parcours…"
                 className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 flex-1 border px-4 text-[0.9rem]"
               />
               <button
@@ -127,6 +129,27 @@ export default async function Catalogue({ searchParams }: Props) {
                 Rechercher
               </button>
             </form>
+
+            {/*
+              Le catalogue est fait de douze « Directeur X ». Quelqu'un qui
+              n'est pas encore directeur ne s'y reconnaît pas et s'en va. Les
+              fiches nomment pourtant son métier, dans le public visé : ces
+              liens le lui montrent, et la recherche sait désormais y répondre.
+            */}
+            {metiers.length > 0 && (
+              <div className="mt-4 flex items-center gap-x-3 gap-y-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
+                <span className="mono-label text-ivory-dim shrink-0 text-[0.62rem]">Vous êtes</span>
+                {metiers.map((m) => (
+                  <Link
+                    key={m}
+                    href={`/formations?q=${encodeURIComponent(m)}` as Route}
+                    className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa shrink-0 border px-2.5 py-1 text-[0.76rem] whitespace-nowrap transition-colors"
+                  >
+                    {m}
+                  </Link>
+                ))}
+              </div>
+            )}
 
             <div className="border-line flex flex-wrap items-baseline gap-3.5 border-b py-3">
               <span className="mono-label text-ivory-dim w-full sm:w-[120px]">Spécialisation</span>

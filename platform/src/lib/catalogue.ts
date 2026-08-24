@@ -165,6 +165,11 @@ export async function filtrerProgrammes(f: FiltresCatalogue): Promise<Programme[
         spec,
         ...p.competences,
         ...p.debouches,
+        // Le public visé porte les métiers : « chef comptable », « PMO »,
+        // « HR business partner ». C'est sous ce nom-là qu'un visiteur se
+        // reconnaît, bien avant « Directeur des Ressources Humaines ».
+        ...p.publicVise,
+        ...(p.positionnement ? [p.positionnement] : []),
         ...p.modules.map((m) => m.titre),
         ...villes,
       ].join(" "),
@@ -244,6 +249,38 @@ export const getPartenaires = cache(async (): Promise<Partenaire[]> => {
     overrideAccess: false,
   });
   return docs.map(versPartenaire);
+});
+
+/**
+ * Quelques métiers à proposer au visiteur, pour amorcer sa recherche.
+ *
+ * Le catalogue est fait de douze « Directeur X ». Quelqu'un qui n'est pas
+ * encore directeur — chef comptable, PMO, HR business partner — ne se
+ * reconnaît dans aucun titre et passe son chemin. Or les fiches nomment ces
+ * métiers-là : soixante intitulés de public visé dorment en base.
+ *
+ * On en tire un par spécialisation, le plus court, pour que la ligne reste
+ * lisible. Rien n'est écrit ici : le jour où l'équipe change un public visé,
+ * la suggestion suit.
+ */
+export const metiersSuggeres = cache(async (limite = 6): Promise<string[]> => {
+  const { programmes } = await chargerCatalogue();
+
+  const parSpecialisation = new Map<string, string>();
+  for (const p of programmes) {
+    for (const metier of p.publicVise) {
+      // Les intitulés longs — « DAF en prise de poste ou en renforcement de
+      // pratique » — décrivent une situation, pas un métier : ils ne font pas
+      // un bon bouton.
+      if (metier.length > 30) continue;
+      const actuel = parSpecialisation.get(p.specialisation);
+      if (!actuel || metier.length < actuel.length) {
+        parSpecialisation.set(p.specialisation, metier);
+      }
+    }
+  }
+
+  return [...new Set(parSpecialisation.values())].slice(0, limite);
 });
 
 /** Ré-export : les pages serveur importent tout depuis un seul endroit. */
