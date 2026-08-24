@@ -42,8 +42,26 @@ export function SiteHeader() {
           */}
           <Link
             href="/compte"
-            className="text-ivory-dim hover:text-ivory hidden min-h-11 items-center text-[0.82rem] tracking-wide transition-colors sm:inline-flex"
+            className="border-line-strong bg-panel text-ivory hover:border-gold hover:bg-panel-2 rounded-clixa group hidden min-h-11 items-center gap-2 border px-4 text-[0.82rem] tracking-wide transition-colors sm:inline-flex"
           >
+            {/*
+              Une silhouette plutôt qu'un mot seul : à côté d'un bouton doré,
+              du texte nu se lisait comme une étiquette et personne n'y voyait
+              un lien. Le contour vient de la même famille que le bouton de
+              retour du fil d'Ariane — c'est le second niveau d'action, sous
+              « Nous contacter » qui reste l'appel principal.
+            */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 16 16"
+              className="text-gold size-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            >
+              <circle cx="8" cy="5" r="2.6" />
+              <path d="M2.6 14c0-2.6 2.4-4.2 5.4-4.2s5.4 1.6 5.4 4.2" strokeLinecap="round" />
+            </svg>
             Mon espace
           </Link>
           {/* Sélecteur de langue : l'interface existe, le routage par langue arrive
