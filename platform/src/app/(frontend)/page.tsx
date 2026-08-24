@@ -5,6 +5,7 @@ import { Partenaires } from "@/components/Partenaires";
 import { Button } from "@/components/ui/Button";
 import { PlacesBadge } from "@/components/ui/Badge";
 import { placesRestantes } from "@/lib/types";
+import { MarqueSkillAfrique } from "@/components/MarqueSkillAfrique";
 import {
   formatDateCourte,
   getAgenda,
@@ -171,17 +172,9 @@ export default async function Accueil() {
            page d'accueil, les anciens clients cherchent ce nom. */}
       <section id="skillafrique" className="border-line border-b px-8 py-16">
         <div className="mx-auto grid max-w-[1180px] items-center gap-8 lg:grid-cols-2 lg:gap-14">
-          {/* Sur mobile : bandeau compact. Un carré pleine largeur mangeait tout
-              l'écran avant même que le texte n'apparaisse. */}
-          <div
-            className="border-gold from-panel to-ink relative flex h-28 items-center justify-center bg-gradient-to-br lg:aspect-square lg:h-auto"
-            aria-hidden="true"
-          >
-            <span className="border-line absolute inset-3 border lg:inset-[18px]" />
-            <span className="font-display text-gold text-[2.6rem] opacity-90 lg:text-[5rem]">
-              SA
-            </span>
-          </div>
+          {/* La même marque qu'en tête de /skillafrique — un seul composant, un
+              seul rendu à corriger le jour où le logo change. */}
+          <MarqueSkillAfrique />
 
           <div>
             <span className="mono-label text-gold mb-4 block">SkillAfrique by CLIXA</span>
