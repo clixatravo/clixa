@@ -189,10 +189,34 @@ paiement : les règlements passent par Western Union, Ria et MoneyGram, qui sont
 des services de transfert, pas des passerelles. L'équipe rapproche le versement
 depuis le back-office, et le décompte de places se recalcule à chaque écriture.
 
-Reste côté développement : `BE-04` (tables LMS déclarées), `BE-09` (recherche
-PostgreSQL), `INT-06` (redirections), `INT-07` (perf 3G), `INT-10` (Playwright),
-`INT-11` (recette), `DES-07` (Storybook), et côté phase 02 les relances
-d'échéance et le compte apprenant.
+**La recherche du catalogue passe par PostgreSQL** depuis `BE-09`
+(`src/lib/recherche.ts`). Elle ne compare plus des chaînes : elle ramène les
+mots à leur racine, ce qui répare des recherches qui rendaient zéro alors que
+la fiche existait — « financière » ne trouvait pas « Directeur Administratif et
+Financier », « auditer » ne trouvait pas « Directeur Audit Interne ».
+
+Trois choses à savoir avant d'y toucher :
+
+- **Les accents partent après, jamais avant.** Le réflexe est de les retirer
+  d'abord ; mesuré, cela casse le radicaliseur français (`financiere` → radical
+  `financier`, quand `financière` → `financi`). Les deux formes sont donc
+  indexées, et interrogées toutes les deux.
+- **Le radical seul ne suffit pas** : il ne reconnaît pas un début de mot.
+  Sans interrogation par préfixe, « prépa » perdait « Préparation » et
+  « partner » perdait « partnering ». C'est-à-dire les abréviations et les mots
+  anglais — ce qu'on tape le plus volontiers.
+- **Aucune colonne, aucune extension.** Le texte est envoyé à chaque requête
+  plutôt que stocké : douze parcours ne justifient pas un index GIN, et une
+  colonne imposerait une migration avant chaque déploiement. Le jour où le
+  catalogue dépassera le millier d'entrées, il suffira de stocker le vecteur —
+  la requête, elle, ne change pas.
+
+Une requête qui échoue retombe sur l'ancienne comparaison de chaînes et le
+journalise : la recherche est un raffinement du catalogue, pas le catalogue.
+
+Reste côté développement : `BE-04` (tables LMS déclarées), `INT-06`
+(redirections), `INT-07` (perf 3G), `INT-10` (Playwright), `INT-11` (recette),
+`DES-07` (Storybook).
 
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.

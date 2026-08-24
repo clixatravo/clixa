@@ -23,6 +23,7 @@ import type {
   Temoignage,
 } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
+import { aplatir, rechercher, type DocumentIndexe } from "@/lib/recherche";
 import {
   payloadClient,
   versProgramme,
@@ -134,66 +135,87 @@ export interface FiltresCatalogue {
 }
 
 /**
- * Normalise pour la recherche : minuscules et accents retirés.
- * Indispensable en français — sans cela « controle » ne trouve pas
- * « contrôle », et « prepa » ne trouve pas « préparation ».
+ * Le texte sur lequel porte la recherche, pour un parcours.
  *
- * BE-09 remplacera ce filtrage en mémoire par la recherche plein texte de
- * PostgreSQL, le jour où le catalogue dépassera quelques centaines d'entrées.
+ * Le titre est rendu à part : il pèse plus lourd au classement qu'une simple
+ * mention en corps de fiche. Chercher « audit » doit d'abord ramener
+ * « Directeur Audit Interne », pas un parcours dont un module cite le mot.
  */
-function normaliser(s: string): string {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function indexer(
+  p: Programme,
+  specialisations: Specialisation[],
+  sessions: Session[],
+): DocumentIndexe {
+  const spec = specialisations.find((s) => s.slug === p.specialisation)?.nom ?? "";
+  // Les villes sont indexées : chercher « dakar » est un réflexe naturel,
+  // même si le filtre Ville existe par ailleurs.
+  const villes = sessions
+    .filter((s) => s.programmeSlug === p.slug)
+    .map((s) => s.ville)
+    .filter(Boolean) as string[];
+
+  return {
+    slug: p.slug,
+    titre: p.titre,
+    corps: [
+      p.accroche,
+      spec,
+      ...p.competences,
+      ...p.debouches,
+      // Le public visé porte les métiers : « chef comptable », « PMO »,
+      // « HR business partner ». C'est sous ce nom-là qu'un visiteur se
+      // reconnaît, bien avant « Directeur des Ressources Humaines ».
+      ...p.publicVise,
+      ...(p.positionnement ? [p.positionnement] : []),
+      ...p.modules.map((m) => m.titre),
+      ...villes,
+    ].join(" "),
+  };
 }
 
 export async function filtrerProgrammes(f: FiltresCatalogue): Promise<Programme[]> {
   const { programmes, sessions, specialisations } = await chargerCatalogue();
-  const termes = f.q ? normaliser(f.q).split(/\s+/).filter(Boolean) : [];
 
-  const texteIndexe = (p: Programme): string => {
-    const spec = specialisations.find((s) => s.slug === p.specialisation)?.nom ?? "";
-    // Les villes sont indexées : chercher « dakar » est un réflexe naturel,
-    // même si le filtre Ville existe par ailleurs.
-    const villes = sessions
-      .filter((s) => s.programmeSlug === p.slug)
-      .map((s) => s.ville)
-      .filter(Boolean) as string[];
-
-    return normaliser(
-      [
-        p.titre,
-        p.accroche,
-        spec,
-        ...p.competences,
-        ...p.debouches,
-        // Le public visé porte les métiers : « chef comptable », « PMO »,
-        // « HR business partner ». C'est sous ce nom-là qu'un visiteur se
-        // reconnaît, bien avant « Directeur des Ressources Humaines ».
-        ...p.publicVise,
-        ...(p.positionnement ? [p.positionnement] : []),
-        ...p.modules.map((m) => m.titre),
-        ...villes,
-      ].join(" "),
-    );
-  };
-
-  return programmes.filter((p) => {
+  // Les filtres de façade d'abord : ils sont exacts, et ils réduisent ce qu'on
+  // soumet à la recherche.
+  const retenus = programmes.filter((p) => {
     if (f.specialisation && p.specialisation !== f.specialisation) return false;
 
     if (f.mode || f.ville) {
       const ses = sessions.filter((s) => s.programmeSlug === p.slug);
-      const ok = ses.some(
-        (s) => (!f.mode || s.mode === f.mode) && (!f.ville || s.ville === f.ville),
-      );
-      if (!ok) return false;
-    }
-
-    if (termes.length > 0) {
-      const texte = texteIndexe(p);
-      if (!termes.every((t) => texte.includes(t))) return false;
+      return ses.some((s) => (!f.mode || s.mode === f.mode) && (!f.ville || s.ville === f.ville));
     }
 
     return true;
   });
+
+  const q = f.q?.trim();
+  if (!q) return retenus;
+
+  const documents = retenus.map((p) => indexer(p, specialisations, sessions));
+  const parSlug = new Map(retenus.map((p) => [p.slug, p]));
+
+  try {
+    const classes = await rechercher(documents, q);
+    return classes.map((slug) => parSlug.get(slug)).filter((p): p is Programme => Boolean(p));
+  } catch (erreur) {
+    /*
+      La recherche est un raffinement, pas la page. Une requête qui échoue doit
+      dégrader le classement, pas rendre le catalogue inaccessible — on retombe
+      sur la comparaison de chaînes, qui trouve moins mais ne trouve jamais faux.
+
+      Journalisé plutôt qu'avalé : sans cette trace, une régression de la
+      requête resterait invisible, le catalogue paraissant simplement moins bon.
+    */
+    console.error("BE-09 — recherche PostgreSQL indisponible, repli en mémoire :", erreur);
+
+    const termes = aplatir(q).split(/\s+/).filter(Boolean);
+    return retenus.filter((p) => {
+      const d = documents.find((x) => x.slug === p.slug);
+      const texte = aplatir(`${d?.titre ?? ""} ${d?.corps ?? ""}`);
+      return termes.every((t) => texte.includes(t));
+    });
+  }
 }
 
 export async function villesDisponibles(): Promise<string[]> {
