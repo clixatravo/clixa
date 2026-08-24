@@ -89,3 +89,42 @@ const FUSEAUX: Record<string, string> = {
 export function libelleFuseau(fuseau: string): string {
   return FUSEAUX[fuseau] ?? fuseau;
 }
+
+/**
+ * Les dates de chaque séance, déduites de la période et d'un rythme hebdomadaire.
+ *
+ * La fiche annonce « 8 samedis · 9h00–13h00 » sans dire lesquels : le visiteur
+ * doit sortir un calendrier pour savoir s'il sera libre. Or les dates sont
+ * calculables — le début, la fin, et une séance par semaine suffisent.
+ *
+ * Rend `undefined` dès que le compte ne tombe pas juste. Une session de cinq
+ * jours d'affilée, ou dont la fin ne coïncide pas avec un multiple de sept
+ * jours, n'a pas un rythme hebdomadaire : mieux vaut ne rien afficher que
+ * d'inventer un calendrier faux.
+ */
+const SEMAINE_MS = 7 * 86400000;
+
+export function seancesHebdomadaires(debut: string, fin: string): string[] | undefined {
+  const d = new Date(debut).getTime();
+  const f = new Date(fin).getTime();
+  if (Number.isNaN(d) || Number.isNaN(f) || f <= d) return undefined;
+
+  // Le jour de la semaine doit être le même aux deux bouts.
+  const ecart = f - d;
+  const semaines = Math.round(ecart / SEMAINE_MS);
+  if (semaines < 1 || semaines > 52) return undefined;
+  if (Math.abs(ecart - semaines * SEMAINE_MS) > 12 * 3600000) return undefined;
+
+  return Array.from({ length: semaines + 1 }, (_, i) => new Date(d + i * SEMAINE_MS).toISOString());
+}
+
+/** « 19 sept. » — assez pour une pastille de calendrier. */
+const JOUR_MOIS = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "short",
+  timeZone: "UTC",
+});
+
+export function formatJourMois(iso: string): string {
+  return JOUR_MOIS.format(new Date(iso));
+}

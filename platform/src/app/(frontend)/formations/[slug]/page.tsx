@@ -136,7 +136,7 @@ export default async function FicheFormation({ params }: Props) {
             </Bloc>
 
             <Bloc titre="Sessions disponibles">
-              <SessionsDisponibles sessions={sessions} />
+              <SessionsDisponibles sessions={sessions} programmeSlug={programme.slug} />
             </Bloc>
 
             {programme.approche && programme.approche.length > 0 && (
