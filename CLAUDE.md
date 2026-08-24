@@ -246,6 +246,13 @@ prochaines cohortes.
   Trois URL mènent au même site : `clixa-institute.vercel.app` et
   `clixa-zeta.vercel.app` sont des alias stables, `clixa-<hash>-cl-95af…`
   change à chaque build et ne doit pas être partagée.
+- **Les fonctions tournent à Francfort** (`regions` dans `platform/vercel.json`),
+  parce que la base y est. Par défaut Vercel les place à Washington : chaque
+  requête SQL traversait alors l'Atlantique deux fois, et `/formations` — qui
+  lit le catalogue à chaque affichage, les filtres vivant dans l'URL — répondait
+  en 985 ms au lieu de 364, avec des pointes à 3,6 s. Les pages statiques, elles,
+  n'y gagnent rien : elles ne parlent pas à la base. **Déplacer la base sans
+  déplacer ce réglage annulerait le gain.**
 - Base : **Neon, région Frankfurt**. Le catalogue y a été importé depuis les
   fiches Word de la direction ; l'équipe le tient depuis `/admin`.
 
