@@ -13,6 +13,9 @@ import {
   getTemoignages,
   getPartenaires,
   lieuSession,
+  getTarifs,
+  formatPrix,
+  villesDisponibles,
 } from "@/lib/catalogue";
 
 /**
@@ -47,6 +50,29 @@ export default async function Accueil() {
   const complements = programmes.filter((p) => !choisis.includes(p));
   const vedettes = [...choisis, ...complements].slice(0, NOMBRE_EN_VEDETTE);
   const total = programmes.length;
+  const tarifs = await getTarifs();
+
+  /*
+    Ce que le catalogue propose vraiment, plutôt qu'une promesse écrite une
+    fois. L'accroche annonçait « en présentiel à Agadir, Abidjan et Dakar » —
+    trois villes où aucune session n'est ouverte. C'est la première phrase que
+    lit un visiteur : elle doit tenir.
+  */
+  /*
+    Sur tout le catalogue, pas sur l'agenda : celui-ci ne rend que les quatre
+    prochaines sessions. Une promesse faite en tête de page ne peut pas se
+    déduire d'une tranche — il suffirait qu'une session en présentiel soit la
+    cinquième pour que la page n'en parle plus.
+  */
+  const villes = await villesDisponibles();
+  const prochaine = agenda[0];
+  const seances = [...new Set(programmes.map((p) => p.modules.length).filter((n) => n > 0))];
+
+  const ouLesCours =
+    villes.length > 0
+      ? `En présentiel à ${villes.join(", ")}, ou à distance en classe virtuelle.`
+      : "À distance, en classe virtuelle, où que vous soyez sur le continent.";
+
   const temoignages = await getTemoignages();
   const partenaires = await getPartenaires();
 
@@ -58,25 +84,47 @@ export default async function Accueil() {
     <>
       {/* ── Héros ── */}
       <section className="border-line border-b px-8 py-20">
-        <div className="mx-auto max-w-[1180px]">
-          <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
-          <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
-            Des programmes qui{" "}
-            <em className="text-gold-bright not-italic">changent une trajectoire</em>.
-          </h1>
-          <p className="text-ivory-dim mb-8 max-w-[54ch] text-[1.05rem]">
-            Formations certifiantes et parcours exécutifs pour dirigeants et managers en Afrique. En
-            présentiel à Agadir, Abidjan et Dakar, ou à distance en classe virtuelle.
-          </p>
-          <div className="flex flex-wrap items-center gap-6">
-            <Button href="/formations">Explorer le catalogue</Button>
-            <Link
-              href="#agenda"
-              className="border-ivory-dim text-ivory-dim hover:text-ivory border-b py-3.5 text-sm"
-            >
-              Voir les prochaines sessions →
-            </Link>
+        <div className="mx-auto grid max-w-[1180px] items-center gap-12 lg:grid-cols-[1.35fr_1fr]">
+          <div>
+            <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
+            <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
+              Des programmes qui{" "}
+              <em className="text-gold-bright not-italic">changent une trajectoire</em>.
+            </h1>
+            <p className="text-ivory-dim mb-8 max-w-[54ch] text-[1.05rem]">
+              Formations certifiantes et parcours exécutifs pour dirigeants et managers en Afrique.{" "}
+              {ouLesCours}
+            </p>
+            <div className="flex flex-wrap items-center gap-6">
+              <Button href="/formations">Explorer le catalogue</Button>
+              <Link
+                href="#agenda"
+                className="border-ivory-dim text-ivory-dim hover:text-ivory border-b py-3.5 text-sm"
+              >
+                Voir les prochaines sessions →
+              </Link>
+            </div>
           </div>
+
+          {/*
+            Les quatre chiffres qui décident, et rien d'autre : combien de
+            parcours, quand ça commence, à quel prix, sur combien de séances.
+            Ils sont calculés — la moitié droite du héros était vide, et un
+            visuel décoratif n'aurait rien appris à personne.
+          */}
+          <aside className="border-line bg-panel border p-7 lg:justify-self-end">
+            <span className="mono-label text-gold mb-5 block">La prochaine cohorte</span>
+            <dl className="flex flex-col gap-4">
+              <Chiffre valeur={String(total)} legende="parcours au catalogue" />
+              {prochaine && (
+                <Chiffre valeur={formatDateCourte(prochaine.debut)} legende="première séance" />
+              )}
+              <Chiffre valeur={formatPrix(tarifs.prixComptantCentimes)} legende="comptant" />
+              {seances.length === 1 && (
+                <Chiffre valeur={String(seances[0])} legende="séances par parcours" />
+              )}
+            </dl>
+          </aside>
         </div>
       </section>
 
@@ -232,5 +280,15 @@ export default async function Accueil() {
       <Temoignages temoignages={temoignages} titre="Ils sont passés par CLIXA." />
       <Partenaires partenaires={partenaires} />
     </>
+  );
+}
+
+/** Une ligne de la carte du héros : un nombre, ce qu'il compte. */
+function Chiffre({ valeur, legende }: { valeur: string; legende: string }) {
+  return (
+    <div className="border-line flex items-baseline justify-between gap-4 border-b pb-3 last:border-b-0 last:pb-0">
+      <dt className="text-ivory-dim text-[0.82rem]">{legende}</dt>
+      <dd className="font-display text-gold-bright text-[1.35rem] leading-none">{valeur}</dd>
+    </div>
   );
 }
