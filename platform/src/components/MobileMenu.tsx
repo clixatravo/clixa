@@ -106,12 +106,6 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         {/* « Accueil » ouvre la liste : le logo seul ne suffit pas à indiquer
             comment revenir à la page d'accueil. */}
         <LienMenu href="/" label="Accueil" actif={pathname === "/"} onNaviguer={fermer} />
-        <LienMenu
-          href="/compte"
-          label="Mon espace"
-          actif={pathname.startsWith("/compte")}
-          onNaviguer={fermer}
-        />
 
         {liens.map((l) => (
           <LienMenu
@@ -123,10 +117,35 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
           />
         ))}
 
+        {/*
+          Les deux actions, sous les rubriques. « Mon espace » n'est pas une
+          rubrique du site : le laisser dans la liste le noyait parmi les pages.
+          Même hiérarchie que sur écran large — l'or pour l'appel principal, le
+          contour pour le second.
+        */}
+        <Link
+          href="/compte"
+          onClick={fermer}
+          className="border-line-strong bg-panel text-ivory rounded-clixa mt-6 flex min-h-14 items-center justify-center gap-2.5 border px-6 text-base"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            className="text-gold size-4 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          >
+            <circle cx="8" cy="5" r="2.6" />
+            <path d="M2.6 14c0-2.6 2.4-4.2 5.4-4.2s5.4 1.6 5.4 4.2" strokeLinecap="round" />
+          </svg>
+          Mon espace
+        </Link>
+
         <Link
           href="/contact"
           onClick={fermer}
-          className="border-gold text-ivory rounded-clixa mt-6 flex min-h-14 items-center justify-center border px-6 text-base"
+          className="border-gold text-ivory rounded-clixa mt-3 flex min-h-14 items-center justify-center border px-6 text-base"
         >
           Nous contacter
         </Link>
