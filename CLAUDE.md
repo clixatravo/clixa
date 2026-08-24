@@ -172,6 +172,31 @@ npx vercel redeploy $(npx vercel ls clixa --scope cl-95af | grep -oE 'https://cl
 Le 22 août 2026, onze documents dépubliés par script restaient affichés :
 l'API répondait bien « aucun », la page servie datait du build précédent.
 
+**Le catalogue est lu une fois, pas à chaque affichage** (`src/lib/etiquettes.ts`).
+`/formations` se rend à la demande — ses filtres vivent dans l'URL — et lisait
+donc la base à chaque visite : trois requêtes pour le catalogue, une quatrième
+pour le barème, que chaque carte réclame. Elles sont désormais dans le cache de
+données de Next, sous les étiquettes `catalogue` et `tarifs`.
+
+Trois points valent d'être connus :
+
+- **`cache()` de React et `unstable_cache` de Next ne font pas le même travail.**
+  Le premier vaut pour une requête — il évite que douze cartes relisent la même
+  chose. Le second vaut d'une requête à l'autre. Retirer l'un laisse la moitié
+  du travail.
+- **Les crochets lèvent l'étiquette avec `{ expire: 0 }`, pas avec le profil
+  « max ».** « max » sert le contenu périmé pendant qu'il rafraîchit derrière :
+  qui vient d'enregistrer dans /admin verrait encore l'ancien. C'est ce
+  qu'`INT-02` existe pour empêcher. (`updateTag` dirait cela plus clairement,
+  mais ne s'appelle que depuis une action serveur ; un crochet Payload n'en est
+  pas une.)
+- **La recherche n'est pas mise en cache, exprès.** Sa clé serait ce que tape le
+  visiteur : chaque terme inédit laisserait une entrée, et rien n'empêcherait
+  d'en fabriquer autant qu'on veut.
+
+Un plafond d'une heure (`PEREMPTION`) rattrape les écritures faites par script,
+qui ne peuvent lever aucune étiquette — même limite que `revalidatePath`.
+
 **Les pages se rafraîchissent seules** depuis `INT-02` : chaque collection
 prévient Next de ce qu'elle change. Une session ajoutée depuis `/admin` apparaît
 sur la fiche sans déploiement. Vérifié en conditions réelles le 22 août 2026.

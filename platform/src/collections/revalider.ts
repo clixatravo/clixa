@@ -1,4 +1,5 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { ETIQUETTE_CATALOGUE, ETIQUETTE_TARIFS } from "@/lib/etiquettes";
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
@@ -21,16 +22,32 @@ import type {
  * d'enregistrer une session parce qu'on n'a pas pu vider un cache serait pire
  * que le cache périmé.
  */
-function rafraichir(chemins: string[], quoi: string): void {
-  for (const chemin of chemins) {
-    try {
-      revalidatePath(chemin);
-    } catch {
-      // Hors contexte Next (script en ligne de commande) : rien à rafraîchir.
-      return;
-    }
+function rafraichir(chemins: string[], quoi: string, etiquettes: string[] = []): void {
+  try {
+    for (const chemin of chemins) revalidatePath(chemin);
+    /*
+      Les pages rendues à la demande — le catalogue et ses filtres — ne sont pas
+      dans le cache de pages : c'est leur lecture de la base qui est mise de
+      côté. Vider l'une sans lever l'autre laisse la page fraîche relire des
+      données périmées.
+
+      `expire: 0` et non le profil « max ». « max » sert le contenu périmé
+      pendant qu'il rafraîchit derrière : celui qui vient d'enregistrer dans
+      /admin verrait encore l'ancien, et le suivant seulement le nouveau. C'est
+      précisément ce qu'INT-02 existe pour empêcher. Ici la première lecture
+      attend la base — une requête plus lente après chaque enregistrement,
+      contre la certitude de voir ce qu'on vient d'écrire.
+
+      `updateTag`, qui dit cela plus clairement, ne s'appelle que depuis une
+      action serveur ; un crochet Payload n'en est pas une.
+    */
+    for (const etiquette of etiquettes) revalidateTag(etiquette, { expire: 0 });
+  } catch {
+    // Hors contexte Next (script en ligne de commande) : rien à rafraîchir.
+    return;
   }
-  console.log(`[revalidation] ${quoi} → ${chemins.join(", ")}`);
+  const cible = [...chemins, ...etiquettes.map((e) => `#${e}`)].join(", ");
+  console.log(`[revalidation] ${quoi} → ${cible}`);
 }
 
 /** Rend le slug d'une relation, qu'elle soit peuplée ou réduite à un identifiant. */
@@ -55,14 +72,14 @@ export const revaliderProgramme: CollectionAfterChangeHook = ({ doc, previousDoc
     const spec = slugDe(d?.specialisation);
     if (spec) chemins.add(`/specialisations/${spec}`);
   }
-  rafraichir([...chemins], `formation « ${doc?.titre ?? "?"} »`);
+  rafraichir([...chemins], `formation « ${doc?.titre ?? "?"} »`, [ETIQUETTE_CATALOGUE]);
   return doc;
 };
 
 export const revaliderProgrammeSupprime: CollectionAfterDeleteHook = ({ doc }) => {
   const chemins = ["/", "/formations", "/sitemap.xml"];
   if (doc?.slug) chemins.push(`/formations/${doc.slug}`);
-  rafraichir(chemins, `formation retirée « ${doc?.titre ?? "?"} »`);
+  rafraichir(chemins, `formation retirée « ${doc?.titre ?? "?"} »`, [ETIQUETTE_CATALOGUE]);
   return doc;
 };
 
@@ -76,7 +93,7 @@ export const revaliderSession: CollectionAfterChangeHook = ({ doc, previousDoc }
     const slug = slugDe(d?.programme);
     if (slug) chemins.add(`/formations/${slug}`);
   }
-  rafraichir([...chemins], "session");
+  rafraichir([...chemins], "session", [ETIQUETTE_CATALOGUE]);
   return doc;
 };
 
@@ -84,7 +101,7 @@ export const revaliderSessionSupprimee: CollectionAfterDeleteHook = ({ doc }) =>
   const chemins = new Set(["/", "/formations"]);
   const slug = slugDe(doc?.programme);
   if (slug) chemins.add(`/formations/${slug}`);
-  rafraichir([...chemins], "session retirée");
+  rafraichir([...chemins], "session retirée", [ETIQUETTE_CATALOGUE]);
   return doc;
 };
 
@@ -94,7 +111,7 @@ export const revaliderSpecialisation: CollectionAfterChangeHook = ({ doc, previo
   for (const d of [doc, previousDoc]) {
     if (d?.slug) chemins.add(`/specialisations/${d.slug}`);
   }
-  rafraichir([...chemins], `spécialisation « ${doc?.nom ?? "?"} »`);
+  rafraichir([...chemins], `spécialisation « ${doc?.nom ?? "?"} »`, [ETIQUETTE_CATALOGUE]);
   return doc;
 };
 
@@ -124,6 +141,6 @@ export const revaliderTarifs: GlobalAfterChangeHook = async ({ doc, req }) => {
     overrideAccess: true,
   });
   for (const p of docs) if (p.slug) chemins.add(`/formations/${p.slug}`);
-  rafraichir([...chemins], "barème");
+  rafraichir([...chemins], "barème", [ETIQUETTE_TARIFS]);
   return doc;
 };

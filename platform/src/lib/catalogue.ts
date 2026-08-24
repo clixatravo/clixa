@@ -12,6 +12,9 @@
  * qu'une fois par requête, quel que soit le nombre d'appels.
  */
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
+
+import { ETIQUETTE_CATALOGUE, ETIQUETTE_TARIFS, PEREMPTION } from "@/lib/etiquettes";
 
 import type {
   ModeDiffusion,
@@ -34,45 +37,72 @@ import {
   versPartenaire,
 } from "@/lib/payload";
 
-const chargerCatalogue = cache(async () => {
-  const payload = await payloadClient();
+/**
+ * ── Deux caches, et ils ne font pas le même travail ─────────────────────────
+ *
+ * `cache()` de React ne vaut que pour une requête : il évite que les douze
+ * cartes du catalogue relisent chacune la même chose. `unstable_cache` de Next
+ * vaut d'une requête à l'autre — c'est lui qui évite d'aller jusqu'à la base.
+ * L'un sans l'autre laisse la moitié du travail.
+ *
+ * Ce que cela retire : quatre allers-retours vers Francfort à chaque affichage
+ * du catalogue, qui se rend à la demande puisque ses filtres vivent dans l'URL.
+ *
+ * Ce que cela ne retire pas : la recherche. Sa clé serait ce que tape le
+ * visiteur — chaque terme inédit laisserait une entrée, et rien n'empêcherait
+ * d'en fabriquer autant qu'on veut. Depuis Francfort elle coûte une trentaine
+ * de millisecondes ; ce n'est pas ce qu'on cherchait à économiser.
+ *
+ * Les lectures publiques passent `overrideAccess: false` sans requête : le
+ * résultat est celui d'un visiteur anonyme, le même pour tous. C'est la
+ * condition pour qu'un cache partagé soit correct — le jour où une lecture
+ * dépendrait de qui regarde, elle ne pourrait plus vivre ici.
+ */
+const chargerCatalogue = cache(
+  unstable_cache(
+    async () => {
+      const payload = await payloadClient();
 
-  // Tri explicite : sans lui, Payload renvoie les documents du plus récent au
-  // plus ancien, et l'ordre du catalogue changeait à chaque ajout. « id » suit
-  // l'ordre de création, donc l'ordre dans lequel l'équipe a saisi les fiches.
-  const [specs, progs, sess] = await Promise.all([
-    payload.find({
-      collection: "specialisations",
-      limit: 200,
-      locale: "fr",
-      depth: 0,
-      sort: "id",
-      overrideAccess: false,
-    }),
-    payload.find({
-      collection: "programmes",
-      limit: 200,
-      locale: "fr",
-      depth: 1,
-      sort: "id",
-      overrideAccess: false,
-    }),
-    payload.find({
-      collection: "sessions",
-      limit: 500,
-      locale: "fr",
-      depth: 1,
-      sort: "debut",
-      overrideAccess: false,
-    }),
-  ]);
+      // Tri explicite : sans lui, Payload renvoie les documents du plus récent au
+      // plus ancien, et l'ordre du catalogue changeait à chaque ajout. « id » suit
+      // l'ordre de création, donc l'ordre dans lequel l'équipe a saisi les fiches.
+      const [specs, progs, sess] = await Promise.all([
+        payload.find({
+          collection: "specialisations",
+          limit: 200,
+          locale: "fr",
+          depth: 0,
+          sort: "id",
+          overrideAccess: false,
+        }),
+        payload.find({
+          collection: "programmes",
+          limit: 200,
+          locale: "fr",
+          depth: 1,
+          sort: "id",
+          overrideAccess: false,
+        }),
+        payload.find({
+          collection: "sessions",
+          limit: 500,
+          locale: "fr",
+          depth: 1,
+          sort: "debut",
+          overrideAccess: false,
+        }),
+      ]);
 
-  return {
-    specialisations: specs.docs.map(versSpecialisation),
-    programmes: progs.docs.map(versProgramme),
-    sessions: sess.docs.map(versSession),
-  };
-});
+      return {
+        specialisations: specs.docs.map(versSpecialisation),
+        programmes: progs.docs.map(versProgramme),
+        sessions: sess.docs.map(versSession),
+      };
+    },
+    ["catalogue"],
+    { tags: [ETIQUETTE_CATALOGUE], revalidate: PEREMPTION },
+  ),
+);
 
 /* ────────────────────────────  LECTURES  ──────────────────────────── */
 
@@ -227,12 +257,22 @@ export async function villesDisponibles(): Promise<string[]> {
  * Barème du catalogue — un seul document, partagé par les douze parcours.
  * `cache()` évite de le relire à chaque fiche rendue dans la même requête.
  */
-export const getTarifs = cache(async (): Promise<Tarifs> => {
-  const payload = await payloadClient();
-  return versTarifs(
-    await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0, overrideAccess: false }),
-  );
-});
+/**
+ * Le barème est lu par chaque carte du catalogue — douze par affichage — et par
+ * chaque fiche. Même raison, mêmes deux caches.
+ */
+export const getTarifs = cache(
+  unstable_cache(
+    async (): Promise<Tarifs> => {
+      const payload = await payloadClient();
+      return versTarifs(
+        await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0, overrideAccess: false }),
+      );
+    },
+    ["tarifs"],
+    { tags: [ETIQUETTE_TARIFS], revalidate: PEREMPTION },
+  ),
+);
 
 /**
  * Témoignages et partenaires.
