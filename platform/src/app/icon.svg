@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CLIXA">
+  <!--
+    La marque réduite à ce qui la distingue : le C de l'enseigne et le point d'or.
+    En SVG parce qu'un favicon se voit à 16 px comme à 180 px, et qu'un tracé
+    reste net aux deux tailles là où une image se pixellise.
+    Le point se tient à l'écart du C : posé sur son extrémité, il se lisait
+    comme un défaut de tracé plutôt que comme la ponctuation de l'enseigne.
+    Le C est dessiné, non composé : la police du site n'est pas embarquée dans
+    une icône, et un caractère rendu par le système changerait d'un poste à
+    l'autre.
+  -->
+  <rect width="64" height="64" rx="12" fill="#080c18" />
+  <path
+    d="M44 21.5a15.5 15.5 0 1 0 0 21"
+    fill="none"
+    stroke="#f3efe4"
+    stroke-width="7.5"
+    stroke-linecap="round"
+  />
+  <circle cx="52" cy="48" r="4.5" fill="#c9a24c" />
+</svg>

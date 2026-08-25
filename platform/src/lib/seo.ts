@@ -31,6 +31,16 @@ export const organisation = {
   name: SITE_NOM,
   alternateName: "SkillAfrique",
   url: SITE_URL,
+  /*
+    Google lit `logo` pour illustrer le site dans ses résultats et son panneau
+    de connaissance. Sans lui, il n'a rien à montrer — d'où le globe gris.
+
+    L'enseigne est rendue en image plutôt qu'en texte comme sur le site : un
+    moteur ne compose pas une police, il affiche un fichier. Il vit dans
+    `public/` pour garder une adresse stable ; une image générée à la volée
+    changerait d'URL à chaque construction, et Google la reprendrait à zéro.
+  */
+  logo: `${SITE_URL}/logo-clixa.png`,
   email: "contact@clixa-institute.org",
   telephone: "+212669303467",
   address: {
