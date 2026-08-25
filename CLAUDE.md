@@ -73,10 +73,19 @@ une page au nom de Payload. Trois choses seulement sont retouchées :
   renverser pour obtenir un back-office sombre se paierait en textes illisibles
   trouvés un par un. Les deux thèmes de Payload restent offerts, et l'équipe
   choisit.
-- **Le bouton principal se peint directement.** Payload ne le rend pas avec son
-  accent mais avec `--theme-elevation-800` : redéfinir l'accent ne l'atteint pas,
-  et retoucher son élévation avait donné du texte encre sur gris sombre.
-  Or sur encre, mesuré à 8,14:1.
+- **Les boutons passent par les variables de Payload.** Chaque style expose
+  `--color`, `--bg-color`, `--btn-border` et leurs variantes de survol : les
+  poser laisse la mise en page, l'état désactivé et la mise au point à l'outil.
+  Forcer `background` faisait échapper le survol et le désactivé à la règle.
+  Le principal est or sur encre, mesuré à 8,14:1 ; le secondaire reste neutre
+  et ne prend l'or qu'au survol — deux boutons dorés côte à côte ne diraient
+  plus lequel est l'action principale.
+- ⚠️ **`--theme-success-*` n'est pas l'accent de la marque.** Chez Payload il
+  veut dire « réussi » : bandeaux « enregistré », pastilles d'état, anneau de
+  mise au point, zones de dépôt. Le teindre en or disait « attention » là où
+  l'interface dit « c'est fait » — et l'échelle compte une dizaine de crans,
+  dont deux seulement avaient été repeints : les pastilles restaient bleues à
+  côté de bandeaux dorés.
 
 **Le tableau de bord dit ce qui attend** (`components/admin/Veille.tsx`). Celui
 de Payload est un sommaire : douze rectangles portant chacun le nom d'une

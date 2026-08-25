@@ -23,10 +23,16 @@
   --clixa-encre: #080c18;
   --clixa-ivoire: #f3efe4;
 
-  /* L'accent de Payload : boutons pleins, liens, états actifs. */
-  --theme-success-500: var(--clixa-or);
-  --theme-success-600: #b08d3f;
-  --theme-success-400: var(--clixa-or-clair);
+  /*
+    `--theme-success-*` n'est PAS l'accent de la marque : chez Payload, il veut
+    dire « réussi ». Il colore les bandeaux « enregistré », les pastilles d'état,
+    l'anneau de mise au point d'un bouton radio, les zones de dépôt. Le teindre
+    en or disait « attention » là où l'interface dit « c'est fait » — et l'échelle
+    compte une dizaine de crans, dont deux seulement avaient été repeints : les
+    pastilles restaient bleues à côté de bandeaux dorés.
+
+    La marque se pose sur les boutons, ci-dessous, et nulle part ailleurs.
+  */
 
   --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), "Hoefler Text", Georgia, serif;
@@ -102,31 +108,46 @@ h3,
 }
 
 /*
-  ── Le bouton principal ─────────────────────────────────────────────────────
-  Payload ne le peint pas avec son accent, contrairement à ce qu'on pourrait
-  croire, mais avec `--theme-elevation-800` — un gris sombre. Redéfinir l'accent
-  ne l'atteint donc pas, et retoucher son élévation a produit un texte encre sur
-  fond gris sombre : illisible. On lui donne la couleur directement.
+  ── Les boutons ─────────────────────────────────────────────────────────────
+  Payload donne à chaque style un jeu de variables locales — `--color`,
+  `--bg-color`, `--btn-border` et leurs équivalents au survol. On passe par
+  elles plutôt que de forcer `background` : la mise en page, l'état désactivé et
+  la mise au point restent ceux de l'outil, seule la couleur change.
 
-  L'or est clair : le texte doit être sombre. Ce couple ne dépend pas du thème
-  choisi, l'or ne changeant pas avec lui — la règle tient donc en clair comme
-  en sombre.
+  Une première version peignait `background` en dur, et redéfinissait
+  `--theme-elevation-0` pour le texte : le bouton désactivé et le survol
+  échappaient à la règle, et le texte encre atterrissait sur le gris sombre
+  d'origine, illisible.
 */
-.btn--style-primary,
-.btn--style-primary:not(:disabled):focus {
-  background-color: var(--clixa-or);
-  color: var(--clixa-encre);
+
+/*
+  Le bouton principal — enregistrer, publier, créer. C'est le geste qui compte,
+  il porte la couleur de la maison. L'or est clair : il lui faut un texte
+  sombre. Le couple ne dépend pas du thème, l'or ne changeant pas avec lui.
+  Mesuré à 8,14:1, bien au-delà des 4,5 exigés.
+*/
+.btn--style-primary {
+  --color: var(--clixa-encre);
+  --bg-color: var(--clixa-or);
+  --hover-bg: var(--clixa-or-clair);
+  --hover-color: var(--clixa-encre);
 }
 
-.btn--style-primary .btn__content,
-.btn--style-primary .btn__label {
-  color: var(--clixa-encre);
+/*
+  Le bouton secondaire — annuler, enregistrer un brouillon, revenir. Il reste
+  neutre au repos : deux boutons dorés côte à côte ne diraient plus lequel est
+  l'action principale. La marque n'apparaît qu'au survol, quand la main désigne.
+*/
+.btn--style-secondary {
+  --hover-color: var(--clixa-or);
+  --hover-btn-border: 1px solid var(--clixa-or);
 }
 
-.btn--style-primary:not(:disabled):hover {
-  background-color: var(--clixa-or-clair);
-  color: var(--clixa-encre);
-}
+/*
+  Les styles discrets — `subtle` et `pill` — ne changent pas. Ils habillent des
+  commandes de service : filtrer une liste, replier une colonne. Les teinter
+  ferait de chaque réglage une action, et l'oeil ne saurait plus où se poser.
+*/
 
 /* ── Ce qui attend l'équipe ─────────────────────────────────────────────── */
 
