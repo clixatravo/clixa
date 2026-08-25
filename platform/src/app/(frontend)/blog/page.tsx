@@ -49,13 +49,13 @@ export default async function Blog({ searchParams }: Props) {
       <section className="px-8 py-12">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Blog</span>
-            <h1 className="max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.6rem)]">
+            <span className="mono-label text-gold mb-3 block">Analyses &amp; Perspectives</span>
+            <h1 className="max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.6rem)] font-bold">
               {catActive ? catActive.nom : "Repères pour décider de votre parcours."}
             </h1>
           </div>
 
-          {/* Filtres par catégorie, portés par l'URL comme sur le catalogue */}
+          {/* Filtres par catégorie */}
           <div className="mb-10 flex flex-wrap gap-2">
             <Link href={"/blog" as Route} className={chip(!catActive)}>
               Tous les articles
@@ -72,11 +72,13 @@ export default async function Blog({ searchParams }: Props) {
           </div>
 
           {liste.length === 0 ? (
-            <div className="border-line bg-panel border p-12 text-center">
-              <p className="font-display mb-3 text-xl">Aucun article dans cette catégorie.</p>
+            <div className="border-line/70 bg-panel/70 rounded-clixa border p-12 text-center backdrop-blur-sm">
+              <p className="font-display text-ivory mb-3 text-xl font-semibold">
+                Aucun article dans cette catégorie.
+              </p>
               <Link
                 href={"/blog" as Route}
-                className="border-gold text-ivory border-b pb-1 text-sm"
+                className="border-gold text-ivory hover:text-gold-bright border-b pb-1 text-sm transition-colors"
               >
                 Voir tous les articles
               </Link>
@@ -87,20 +89,24 @@ export default async function Blog({ searchParams }: Props) {
               {une && (
                 <Link
                   href={`/blog/${une.slug}`}
-                  className="bg-panel hover:bg-panel-2 border-line mb-px block border p-8 transition-colors sm:p-12"
+                  className="executive-card group rounded-clixa mb-8 block p-8 shadow-xl transition-all sm:p-12"
                 >
                   <div className="mb-4 flex flex-wrap items-center gap-4">
-                    <span className="text-emerald-bright font-mono text-[0.6rem] tracking-[0.12em] uppercase">
-                      {nomCategorie(une.categorie)}
+                    <span className="text-emerald-bright font-mono text-[0.62rem] font-semibold tracking-[0.14em] uppercase">
+                      ✦ {nomCategorie(une.categorie)}
                     </span>
-                    <span className="text-ivory-dim text-[0.75rem]">
-                      {formatDateArticle(une.publieLe)} · {une.lectureMinutes} min
+                    <span className="text-ivory-dim font-mono text-[0.74rem]">
+                      {formatDateArticle(une.publieLe)} · {une.lectureMinutes} min de lecture
                     </span>
                   </div>
-                  <h2 className="mb-4 max-w-[22ch] text-[clamp(1.5rem,3vw,2.2rem)]">{une.titre}</h2>
-                  <p className="text-ivory-dim max-w-[62ch] text-[0.98rem]">{une.chapo}</p>
-                  <span className="text-gold-bright mt-6 inline-block text-sm">
-                    Lire l&apos;article →
+                  <h2 className="font-display text-ivory group-hover:text-gold-bright mb-4 max-w-[24ch] text-[clamp(1.6rem,3.2vw,2.4rem)] leading-tight font-bold transition-colors">
+                    {une.titre}
+                  </h2>
+                  <p className="text-ivory-dim/90 max-w-[62ch] text-[1.02rem] leading-relaxed">
+                    {une.chapo}
+                  </p>
+                  <span className="text-gold-bright group-hover:text-gold mt-6 inline-flex items-center gap-2 text-sm font-semibold transition-colors">
+                    Lire l&apos;article complet <span>→</span>
                   </span>
                 </Link>
               )}
@@ -112,15 +118,21 @@ export default async function Blog({ searchParams }: Props) {
                     <Link
                       key={a.slug}
                       href={`/blog/${a.slug}`}
-                      className="bg-panel hover:bg-panel-2 flex min-h-[220px] flex-col gap-3 p-6 transition-colors"
+                      className="executive-card group rounded-clixa flex min-h-[230px] flex-col justify-between gap-3 p-6.5 transition-all"
                     >
-                      <span className="text-emerald-bright font-mono text-[0.6rem] tracking-[0.12em] uppercase">
-                        {nomCategorie(a.categorie)}
-                      </span>
-                      <h3 className="font-display text-[1.08rem] leading-tight">{a.titre}</h3>
-                      <p className="text-ivory-dim line-clamp-3 text-[0.86rem]">{a.chapo}</p>
-                      <span className="border-line text-ivory-dim mt-auto border-t pt-3 text-[0.74rem]">
-                        {formatDateArticle(a.publieLe)} · {a.lectureMinutes} min de lecture
+                      <div className="space-y-2.5">
+                        <span className="text-emerald-bright font-mono text-[0.6rem] tracking-[0.12em] uppercase">
+                          {nomCategorie(a.categorie)}
+                        </span>
+                        <h3 className="font-display text-ivory group-hover:text-gold-bright text-[1.12rem] leading-snug font-semibold transition-colors">
+                          {a.titre}
+                        </h3>
+                        <p className="text-ivory-dim/85 line-clamp-3 text-[0.86rem] leading-relaxed">
+                          {a.chapo}
+                        </p>
+                      </div>
+                      <span className="border-line/60 text-ivory-dim/70 mt-auto border-t pt-3.5 font-mono text-[0.72rem]">
+                        {formatDateArticle(a.publieLe)} · {a.lectureMinutes} min
                       </span>
                     </Link>
                   ))}

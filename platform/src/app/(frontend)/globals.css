@@ -158,11 +158,142 @@
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.05;
+    opacity: 0.04;
     background-image:
       linear-gradient(var(--color-line) 1px, transparent 1px),
       linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
-    background-size: 64px 64px;
+    background-size: 56px 56px;
+  }
+
+  /* ── Effets de lumière & Profondeur Executive ── */
+  .ambient-glow-top {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 960px;
+    height: 480px;
+    background: radial-gradient(
+      circle 380px at 50% 15%,
+      rgba(201, 162, 76, 0.12),
+      rgba(17, 26, 51, 0.05) 65%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .ambient-glow-sapphire {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(31, 122, 92, 0.1) 0%, rgba(17, 26, 51, 0) 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Panneau Glassmorphism raffiné */
+  .glass-panel {
+    background: linear-gradient(135deg, rgba(17, 26, 51, 0.75) 0%, rgba(8, 12, 24, 0.85) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(243, 239, 228, 0.12);
+  }
+
+  .glass-panel-gold {
+    background: linear-gradient(135deg, rgba(22, 31, 61, 0.85) 0%, rgba(17, 26, 51, 0.9) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(201, 162, 76, 0.28);
+    box-shadow:
+      0 8px 32px -4px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(201, 162, 76, 0.15) inset;
+  }
+
+  /* Carte Executive avec transition fluide */
+  .executive-card {
+    position: relative;
+    background: var(--color-panel);
+    border: 1px solid var(--color-hairline);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .executive-card:hover {
+    background: var(--color-panel-2);
+    border-color: rgba(201, 162, 76, 0.45);
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 28px -6px rgba(0, 0, 0, 0.45),
+      0 0 20px -4px rgba(201, 162, 76, 0.12);
+  }
+
+  /* Texte Dégradé Or */
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #f3efe4 20%, #e9cd84 60%, #c9a24c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Badge Pulse indicateur de direct */
+  .pulse-live {
+    position: relative;
+  }
+  .pulse-live::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    background: currentColor;
+    opacity: 0.4;
+    animation: live-pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  }
+
+  @keyframes live-pulse {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+  }
+
+  /* Effet Shimmer pour CTA et badges prestigieux */
+  .shimmer-gold {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-gold::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      60deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 70%
+    );
+    transform: rotate(30deg) translateX(-100%);
+    animation: shimmer-swipe 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer-swipe {
+    0% {
+      transform: rotate(30deg) translateX(-150%);
+    }
+    20%,
+    100% {
+      transform: rotate(30deg) translateX(150%);
+    }
   }
 }
 

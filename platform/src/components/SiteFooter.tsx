@@ -28,44 +28,43 @@ const colonnes = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-line border-t">
-      <div className="mx-auto max-w-[1180px] px-8 py-14">
+    <footer className="bg-ink/95 border-t border-white/[0.08]">
+      <div className="mx-auto max-w-[1180px] px-8 py-16">
         <div className="flex flex-wrap justify-between gap-12">
-          <div className="max-w-[30ch]">
-            <Link href="/" className="font-display text-xl font-bold">
-              CLIXA<span className="text-gold">.</span>
+          <div className="max-w-[34ch]">
+            <Link
+              href="/"
+              className="font-display group flex items-center gap-2.5 text-xl font-bold"
+            >
+              <span className="border-gold/30 bg-panel text-gold rounded-clixa group-hover:border-gold flex size-7 items-center justify-center border font-mono text-xs font-bold transition-all">
+                C
+              </span>
+              <span>
+                CLIXA<span className="text-gold">.</span>
+              </span>
             </Link>
-            <p className="text-ivory-dim mt-4 text-[0.86rem]">
-              Center of Leadership, Innovation &amp; Excellence in Africa.
+            <p className="text-ivory-dim/80 mt-4 text-[0.86rem] leading-relaxed">
+              Center of Leadership, Innovation &amp; Excellence in Africa. Accompagner les
+              dirigeants et certifier les compétences clés.
             </p>
-            {/*
-              Le soulignement doré reste collé au texte, mais la zone cliquable
-              déborde : sans le `py-0.5`, le lien ne fait que 23 px de haut.
-            */}
             <a
               href="mailto:contact@clixa-institute.org"
-              className="text-ivory mt-4 inline-block py-0.5 text-[0.86rem]"
+              className="text-gold-bright hover:text-gold mt-4 inline-flex items-center gap-1.5 py-0.5 text-[0.84rem] transition-colors"
             >
-              <span className="border-gold border-b">contact@clixa-institute.org</span>
+              <span>contact@clixa-institute.org</span>
+              <span>→</span>
             </a>
           </div>
 
           {colonnes.map((c) => (
             <div key={c.titre}>
               <span className="mono-label text-gold mb-4 block">{c.titre}</span>
-              {/*
-                Le lien porte lui-même sa hauteur de cible : à 0,88 rem, le texte
-                seul ne fait que 19 px, sous les 24 px exigés au doigt (WCAG 2.5.8).
-                Le `py-1` la porte à 27 px, et l'écart de la liste est réduit
-                d'autant pour que le rythme visuel ne bouge pas : le pas passe de
-                29 px à 31 px, l'écart de liste étant absorbé par le remplissage.
-              */}
-              <ul className="flex flex-col">
+              <ul className="flex flex-col space-y-1">
                 {c.liens.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-ivory-dim hover:text-ivory inline-block py-1 text-[0.88rem]"
+                      className="text-ivory-dim hover:text-gold-bright inline-block py-1 text-[0.88rem] transition-colors"
                     >
                       {l.label}
                     </Link>
@@ -76,11 +75,14 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="border-line mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
-          <span className="text-ivory-dim text-[0.78rem]">
+        <div className="border-line/60 mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+          <span className="text-ivory-dim/70 text-[0.78rem]">
             © {new Date().getFullYear()} CLIXA Institute — Tous droits réservés
           </span>
-          <span className="mono-label text-ivory-dim">Agadir · Abidjan · Dakar</span>
+          <div className="text-ivory-dim flex items-center gap-2 font-mono text-[0.66rem] tracking-wider uppercase">
+            <span className="bg-gold inline-block size-1.5 rounded-full" />
+            <span>Agadir · Abidjan · Dakar</span>
+          </div>
         </div>
       </div>
     </footer>

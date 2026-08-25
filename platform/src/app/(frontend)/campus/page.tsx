@@ -57,13 +57,14 @@ export default async function Campus() {
     <>
       <FilAriane items={[{ href: "/", label: "Accueil" }, { label: "Campus" }]} />
 
-      <section className="border-line border-b px-8 py-16">
-        <div className="mx-auto max-w-[1180px]">
+      <section className="border-line relative overflow-hidden border-b px-8 py-16 lg:py-20">
+        <div className="ambient-glow-top" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-[1180px]">
           <div className="eyebrow mono-label mb-5">Présence panafricaine</div>
-          <h1 className="mb-5 max-w-[18ch] text-[clamp(2rem,4.4vw,3.2rem)]">
-            Un ancrage local, une ambition continentale.
+          <h1 className="mb-5 max-w-[18ch] text-[clamp(2.2rem,4.6vw,3.4rem)] font-bold">
+            Un ancrage local, une <span className="gold-gradient-text">ambition continentale</span>.
           </h1>
-          <p className="text-ivory-dim max-w-[60ch] text-[1.02rem]">
+          <p className="text-ivory-dim/95 max-w-[60ch] text-[1.05rem] leading-relaxed">
             CLIXA opère depuis plusieurs hubs pour rester proche des professionnels qu&apos;il
             forme. Les mêmes programmes, les mêmes intervenants, sans imposer un déplacement
             international.
@@ -73,34 +74,45 @@ export default async function Campus() {
 
       <section className="border-line border-b px-8 py-16">
         <div className="mx-auto max-w-[1180px]">
-          <div className="hairline-grid lg:grid-cols-3">
+          <div className="carte-grid lg:grid-cols-3">
             {campus.map((c) => (
-              <div key={c.ville} className="bg-panel flex flex-col gap-3 p-8">
-                <span className="mono-label text-gold">{c.role}</span>
-                <h2 className="font-display text-[1.2rem]">{c.ville}</h2>
-                <p className="text-ivory-dim text-[0.92rem]">{c.adresse}</p>
-
-                {c.telephone && (
-                  <a
-                    href={`tel:${c.telephone.replace(/\s/g, "")}`}
-                    className="text-ivory hover:text-gold-bright text-[0.9rem]"
-                  >
-                    {c.telephone}
-                  </a>
-                )}
-                {c.email && (
-                  <a
-                    href={`mailto:${c.email}`}
-                    className="border-gold text-ivory w-fit border-b text-[0.88rem]"
-                  >
-                    {c.email}
-                  </a>
-                )}
-                {c.note && (
-                  <span className="text-emerald-bright mt-auto font-mono text-[0.64rem] tracking-[0.1em] uppercase">
-                    {c.note}
+              <div
+                key={c.ville}
+                className="executive-card rounded-clixa flex flex-col justify-between gap-4 p-8"
+              >
+                <div className="space-y-2">
+                  <span className="mono-label text-gold block text-[0.62rem] tracking-wider uppercase">
+                    {c.role}
                   </span>
-                )}
+                  <h2 className="font-display text-ivory text-[1.3rem] font-semibold">{c.ville}</h2>
+                  <p className="text-ivory-dim/90 text-[0.92rem] leading-relaxed">{c.adresse}</p>
+                </div>
+
+                <div className="border-line/60 space-y-2 border-t pt-4">
+                  {c.telephone && (
+                    <a
+                      href={`tel:${c.telephone.replace(/\s/g, "")}`}
+                      className="text-ivory hover:text-gold-bright flex items-center gap-2 font-mono text-[0.88rem] transition-colors"
+                    >
+                      <span>📞</span>
+                      <span>{c.telephone}</span>
+                    </a>
+                  )}
+                  {c.email && (
+                    <a
+                      href={`mailto:${c.email}`}
+                      className="text-gold-bright hover:text-gold flex items-center gap-2 text-[0.86rem] transition-colors"
+                    >
+                      <span>✉️</span>
+                      <span className="border-gold/40 border-b">{c.email}</span>
+                    </a>
+                  )}
+                  {c.note && (
+                    <span className="text-emerald-bright block pt-1 font-mono text-[0.66rem] tracking-[0.1em] uppercase">
+                      ✦ {c.note}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -110,29 +122,43 @@ export default async function Campus() {
       <section className="px-8 py-16">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Calendrier</span>
-            <h2 className="text-[clamp(1.5rem,2.8vw,2.1rem)]">
+            <span className="mono-label text-gold mb-3 block">Calendrier des sessions</span>
+            <h2 className="text-[clamp(1.5rem,2.8vw,2.1rem)] font-semibold">
               Les prochaines sessions en présentiel.
             </h2>
           </div>
 
           <div className="carte-grid">
-            {presentiel.map(({ session, programme }) => (
-              <Link
-                key={session.id}
-                href={`/formations/${programme.slug}`}
-                className="bg-panel hover:bg-panel-2 grid items-center gap-4 p-5 transition-colors sm:grid-cols-[1fr_1.4fr_auto_auto]"
-              >
-                <span className="font-display text-[0.95rem] whitespace-nowrap">
-                  {formatPeriode(session.debut, session.fin)}
-                </span>
-                <span className="text-ivory text-sm">{programme.titre}</span>
-                <span className="text-ivory-dim text-[0.82rem] whitespace-nowrap">
-                  {lieuSession(session)}
-                </span>
-                <PlacesBadge restantes={placesRestantes(session)} />
-              </Link>
-            ))}
+            {presentiel.length === 0 ? (
+              <div className="border-line/70 bg-panel/60 rounded-clixa border p-8 text-center backdrop-blur-sm">
+                <p className="font-display text-ivory mb-2 text-lg font-semibold">
+                  Toutes les sessions actuelles sont en classe virtuelle (Visio Live)
+                </p>
+                <p className="text-ivory-dim mx-auto max-w-[50ch] text-sm">
+                  Les prochaines dates en présentiel à Agadir, Abidjan et Dakar seront annoncées ici
+                  très prochainement.
+                </p>
+              </div>
+            ) : (
+              presentiel.map(({ session, programme }) => (
+                <Link
+                  key={session.id}
+                  href={`/formations/${programme.slug}`}
+                  className="executive-card group rounded-clixa grid items-center gap-4 p-5.5 transition-all sm:grid-cols-[1fr_1.4fr_auto_auto]"
+                >
+                  <span className="font-display text-ivory text-[0.95rem] font-semibold whitespace-nowrap">
+                    {formatPeriode(session.debut, session.fin)}
+                  </span>
+                  <span className="text-ivory group-hover:text-gold-bright text-sm font-medium transition-colors">
+                    {programme.titre}
+                  </span>
+                  <span className="text-ivory-dim font-mono text-[0.82rem] whitespace-nowrap">
+                    📍 {lieuSession(session)}
+                  </span>
+                  <PlacesBadge restantes={placesRestantes(session)} />
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </section>

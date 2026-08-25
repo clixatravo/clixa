@@ -146,9 +146,24 @@ export async function getAgenda(limite = 6): Promise<Session[]> {
 }
 
 /** Prix d'entrée d'un programme, toutes modalités confondues. */
-export async function prixMinimum(programmeSlug: string): Promise<number | undefined> {
-  const prix = (await getSessions(programmeSlug)).map((s) => s.prixCentimes);
-  return prix.length ? Math.min(...prix) : undefined;
+/**
+ * Le prix montré sur les cartes et les images de partage.
+ *
+ * Le plus élevé du barème, et non le comptant. C'est une décision de la
+ * direction : la vitrine annonce ce que coûte un parcours au rythme le plus
+ * courant, la fiche détaille les trois et montre l'écart.
+ *
+ * Il se déduit du barème plutôt que d'être écrit en dur : le jour où les
+ * montants changeront, la vitrine suivra sans qu'on y touche.
+ *
+ * ⚠️ Un visiteur voit donc 470 € sur la carte et « 423 € comptant » sur la
+ * fiche. C'est voulu — il découvre moins cher, jamais plus — mais les deux
+ * chiffres doivent rester cohérents entre eux : si le barème cesse un jour
+ * d'avoir un plan comptant moins cher, cette fonction n'a plus de raison d'être.
+ */
+export function prixAffiche(tarifs: Tarifs): number {
+  const totaux = tarifs.plans.map((p) => p.totalCentimes).filter((n) => n > 0);
+  return totaux.length ? Math.max(...totaux) : tarifs.prixComptantCentimes;
 }
 
 export async function modalites(programmeSlug: string): Promise<ModeDiffusion[]> {

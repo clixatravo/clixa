@@ -6,11 +6,11 @@ type Variante = "primaire" | "contour" | "fantome";
 
 const variantes: Record<Variante, string> = {
   primaire:
-    "bg-gold text-ink font-bold border border-gold px-6 py-3.5 text-center hover:bg-transparent hover:text-gold-bright transition-colors",
+    "shimmer-gold bg-gradient-to-r from-gold-bright via-gold to-gold-bright text-ink font-bold border border-gold px-6 py-3.5 text-center shadow-[0_4px_18px_-4px_rgba(201,162,76,0.3)] hover:shadow-[0_6px_24px_-2px_rgba(201,162,76,0.45)] hover:scale-[1.01] active:scale-[0.99] transition-all",
   contour:
-    "border border-line-strong text-ivory px-5 py-3 text-center hover:border-gold transition-colors",
+    "border border-line-strong bg-panel/50 backdrop-blur-sm text-ivory px-5 py-3 text-center hover:border-gold hover:bg-panel hover:text-gold-bright transition-all",
   fantome:
-    "border-b border-ivory-dim text-ivory-dim py-3.5 hover:text-ivory hover:border-ivory transition-colors",
+    "border-b border-ivory-dim text-ivory-dim py-3.5 hover:text-ivory hover:border-gold transition-colors inline-flex items-center gap-1.5",
 };
 
 interface Props {
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function Button({ href, variante = "primaire", className = "", children }: Props) {
-  const classes = `inline-block rounded-clixa text-sm ${variantes[variante]} ${className}`;
+  const classes = `inline-flex items-center justify-center rounded-clixa text-sm tracking-wide ${variantes[variante]} ${className}`;
 
   if (href) {
     return (

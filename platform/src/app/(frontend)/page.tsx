@@ -50,18 +50,6 @@ export default async function Accueil() {
   const vedettes = [...choisis, ...complements].slice(0, NOMBRE_EN_VEDETTE);
   const total = programmes.length;
 
-  /*
-    Ce que le catalogue propose vraiment, plutôt qu'une promesse écrite une
-    fois. L'accroche annonçait « en présentiel à Agadir, Abidjan et Dakar » —
-    trois villes où aucune session n'est ouverte. C'est la première phrase que
-    lit un visiteur : elle doit tenir.
-  */
-  /*
-    Sur tout le catalogue, pas sur l'agenda : celui-ci ne rend que les quatre
-    prochaines sessions. Une promesse faite en tête de page ne peut pas se
-    déduire d'une tranche — il suffirait qu'une session en présentiel soit la
-    cinquième pour que la page n'en parle plus.
-  */
   const villes = await villesDisponibles();
 
   const ouLesCours =
@@ -78,26 +66,97 @@ export default async function Accueil() {
 
   return (
     <>
-      {/* ── Héros ── */}
-      <section className="border-line border-b px-8 py-20">
+      {/* ── Héros Executive ── */}
+      <section className="border-line relative overflow-hidden border-b px-8 py-16 lg:py-24">
+        {/* Lueur d'ambiance en arrière-plan */}
+        <div className="ambient-glow-top" aria-hidden="true" />
+
+        <div className="relative z-10 mx-auto max-w-[1180px]">
+          <div className="max-w-[46rem]">
+            <div>
+              {/* Badge d'excellence avec étoile dorée */}
+              <div className="border-gold/35 bg-panel/80 text-gold-bright rounded-clixa mb-6 inline-flex items-center gap-2 border px-3.5 py-1.5 font-mono text-[0.68rem] tracking-[0.14em] uppercase shadow-[0_0_20px_-3px_rgba(201,162,76,0.25)] backdrop-blur-md">
+                <span className="text-gold font-bold">✦</span>
+                <span>Institut Panafricain d&apos;Excellence &amp; Certifications</span>
+              </div>
+
+              <h1 className="mb-6 max-w-[18ch] text-[clamp(2.3rem,5.2vw,3.9rem)] font-bold tracking-tight">
+                Des programmes qui{" "}
+                <span className="gold-gradient-text not-italic">changent une trajectoire</span>.
+              </h1>
+
+              <p className="text-ivory-dim/95 mb-8 max-w-[54ch] text-[1.06rem] leading-relaxed">
+                Formations certifiantes et parcours exécutifs pour dirigeants et managers en
+                Afrique. {ouLesCours}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <Button href="/formations" className="min-w-[180px]">
+                  Explorer le catalogue
+                </Button>
+                <Link
+                  href="#agenda"
+                  className="border-line-strong text-ivory hover:border-gold hover:text-gold-bright rounded-clixa bg-panel/50 inline-flex min-h-11 items-center gap-2 border px-5 py-3 text-sm font-medium backdrop-blur-sm transition-all"
+                >
+                  Prochaines sessions
+                  <span className="text-gold">→</span>
+                </Link>
+              </div>
+
+              {/* Repères de réassurance rapide */}
+              <div className="border-line/60 mt-10 flex flex-wrap items-center gap-6 border-t pt-6 text-[0.78rem]">
+                <div className="text-ivory-dim flex items-center gap-2">
+                  <span className="text-emerald-bright font-bold">✓</span>
+                  <span>100% Praticiens en exercice</span>
+                </div>
+                <div className="text-ivory-dim flex items-center gap-2">
+                  <span className="text-emerald-bright font-bold">✓</span>
+                  <span>Certifications reconnues</span>
+                </div>
+                <div className="text-ivory-dim flex items-center gap-2">
+                  <span className="text-emerald-bright font-bold">✓</span>
+                  <span>Facilités de paiement en 3x</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Bandeau Trust Stats ── */}
+      <section className="border-line bg-panel/40 border-b px-8 py-8">
         <div className="mx-auto max-w-[1180px]">
-          <div className="eyebrow mono-label mb-6">Certifications · Exécutif · Corporate</div>
-          <h1 className="mb-6 max-w-[17ch] text-[clamp(2.2rem,5vw,3.8rem)]">
-            Des programmes qui{" "}
-            <em className="text-gold-bright not-italic">changent une trajectoire</em>.
-          </h1>
-          <p className="text-ivory-dim mb-8 max-w-[54ch] text-[1.05rem]">
-            Formations certifiantes et parcours exécutifs pour dirigeants et managers en Afrique.{" "}
-            {ouLesCours}
-          </p>
-          <div className="flex flex-wrap items-center gap-6">
-            <Button href="/formations">Explorer le catalogue</Button>
-            <Link
-              href="#agenda"
-              className="border-ivory-dim text-ivory-dim hover:text-ivory border-b py-3.5 text-sm"
-            >
-              Voir les prochaines sessions →
-            </Link>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
+              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
+                {total}+
+              </div>
+              <div className="text-ivory-dim mt-2 text-[0.8rem]">
+                Programmes &amp; certifications
+              </div>
+            </div>
+            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
+              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
+                100 %
+              </div>
+              <div className="text-ivory-dim mt-2 text-[0.8rem]">
+                Praticiens experts en exercice
+              </div>
+            </div>
+            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
+              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
+                3 Hubs
+              </div>
+              <div className="text-ivory-dim mt-2 text-[0.8rem]">Agadir · Abidjan · Dakar</div>
+            </div>
+            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
+              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
+                98 %
+              </div>
+              <div className="text-ivory-dim mt-2 text-[0.8rem]">
+                Taux d&apos;assiduité &amp; complétion
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -105,12 +164,14 @@ export default async function Accueil() {
       {/* ── Spécialisations ── */}
       <section id="specialisations" className="border-line border-b px-8 py-16">
         <div className="mx-auto max-w-[1180px]">
-          <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Nos spécialisations</span>
-            <h2 className="max-w-[24ch] text-[clamp(1.5rem,2.8vw,2.1rem)]">
-              Choisissez votre filière métier.
-            </h2>
-            <p className="text-ivory-dim mt-3.5 max-w-[60ch] text-[0.94rem]">
+          <div className="mb-9 flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <span className="mono-label text-gold mb-3 block">Nos spécialisations</span>
+              <h2 className="max-w-[24ch] text-[clamp(1.5rem,2.8vw,2.1rem)]">
+                Choisissez votre filière métier.
+              </h2>
+            </div>
+            <p className="text-ivory-dim max-w-[48ch] text-[0.92rem]">
               Chaque spécialisation regroupe les certifications et parcours qui mènent à un métier
               précis.
             </p>
@@ -123,14 +184,25 @@ export default async function Accueil() {
                 <Link
                   key={s.slug}
                   href={`/specialisations/${s.slug}`}
-                  className="bg-panel hover:bg-panel-2 flex min-h-[180px] flex-col gap-3 p-7 transition-colors"
+                  className="executive-card group rounded-clixa flex min-h-[190px] flex-col justify-between gap-3 p-7"
                 >
-                  <span className="text-gold font-mono text-[0.6rem] tracking-[0.12em]">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-display text-[1.1rem]">{s.nom}</h3>
-                  <p className="text-ivory-dim text-[0.84rem]">{s.accroche}</p>
-                  <span className="text-emerald-bright mt-auto font-mono text-[0.66rem] tracking-[0.08em]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gold font-mono text-[0.62rem] tracking-[0.14em]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-ivory-dim/40 group-hover:text-gold text-sm transition-colors">
+                      ↗
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-ivory group-hover:text-gold-bright text-[1.12rem] font-semibold transition-colors">
+                      {s.nom}
+                    </h3>
+                    <p className="text-ivory-dim/80 mt-1.5 line-clamp-2 text-[0.84rem]">
+                      {s.accroche}
+                    </p>
+                  </div>
+                  <span className="text-emerald-bright border-line/40 border-t pt-2 font-mono text-[0.66rem] tracking-[0.08em] uppercase">
                     {nb > 0 ? `${nb} formation${nb > 1 ? "s" : ""}` : "Sur devis"}
                   </span>
                 </Link>
@@ -140,13 +212,9 @@ export default async function Accueil() {
         </div>
       </section>
 
-      {/* ── SkillAfrique ── reprise de la section #skillafrique de index.html.
-           La marque sur laquelle CLIXA s'est construit : elle garde sa place en
-           page d'accueil, les anciens clients cherchent ce nom. */}
+      {/* ── SkillAfrique ── */}
       <section id="skillafrique" className="border-line border-b px-8 py-16">
         <div className="mx-auto grid max-w-[1180px] items-center gap-8 lg:grid-cols-2 lg:gap-14">
-          {/* La même marque qu'en tête de /skillafrique — un seul composant, un
-              seul rendu à corriger le jour où le logo change. */}
           <MarqueSkillAfrique />
 
           <div>
@@ -154,13 +222,11 @@ export default async function Accueil() {
             <h2 className="mb-5 text-[clamp(1.5rem,2.8vw,2.1rem)]">
               La marque de formation en ligne de CLIXA.
             </h2>
-            <p className="text-ivory-dim mb-6 text-[0.98rem]">
+            <p className="text-ivory-dim/95 mb-6 text-[0.98rem] leading-relaxed">
               SkillAfrique démocratise l&apos;accès à des formations live, premium et orientées
               résultats, pour les professionnels africains et internationaux.
             </p>
 
-            {/* Typographie resserrée sur mobile pour que deux étiquettes tiennent
-                par ligne au lieu d'une seule. */}
             <div className="mb-8 flex flex-wrap gap-2 lg:gap-2.5">
               {[
                 "Formations en direct",
@@ -170,15 +236,18 @@ export default async function Accueil() {
               ].map((t) => (
                 <span
                   key={t}
-                  className="border-line text-ivory-dim rounded-clixa border px-3 py-1.5 text-[0.72rem] lg:px-3.5 lg:py-2 lg:text-[0.8rem]"
+                  className="border-line bg-panel/60 text-ivory-dim rounded-clixa border px-3 py-1.5 text-[0.72rem] lg:px-3.5 lg:py-2 lg:text-[0.8rem]"
                 >
-                  {t}
+                  ✦ {t}
                 </span>
               ))}
             </div>
 
-            <Link href="/skillafrique" className="border-gold text-ivory border-b pb-1 text-sm">
-              Découvrir SkillAfrique →
+            <Link
+              href="/skillafrique"
+              className="border-gold text-ivory hover:text-gold-bright inline-flex items-center gap-2 border-b pb-1 text-sm transition-colors"
+            >
+              Découvrir SkillAfrique <span>→</span>
             </Link>
           </div>
         </div>
@@ -187,11 +256,19 @@ export default async function Accueil() {
       {/* ── Agenda ── */}
       <section id="agenda" className="border-line border-b px-8 py-16">
         <div className="mx-auto max-w-[1180px]">
-          <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Prochaines sessions</span>
-            <h2 className="text-[clamp(1.5rem,2.8vw,2.1rem)]">
-              Les places qui s&apos;ouvrent maintenant.
-            </h2>
+          <div className="mb-9 flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <span className="mono-label text-gold mb-3 block">Prochaines sessions</span>
+              <h2 className="text-[clamp(1.5rem,2.8vw,2.1rem)]">
+                Les places qui s&apos;ouvrent maintenant.
+              </h2>
+            </div>
+            <Link
+              href="/formations"
+              className="border-gold text-ivory hover:text-gold-bright inline-flex items-center gap-1.5 border-b pb-1 text-sm transition-colors"
+            >
+              Toutes les dates du catalogue <span>→</span>
+            </Link>
           </div>
 
           <div className="carte-grid">
@@ -201,13 +278,15 @@ export default async function Accueil() {
                 <Link
                   key={s.id}
                   href={`/formations/${s.programmeSlug}`}
-                  className="bg-panel hover:bg-panel-2 grid items-center gap-4 p-5 transition-colors sm:grid-cols-[auto_1fr_auto_auto]"
+                  className="executive-card group rounded-clixa grid items-center gap-4 p-5 sm:grid-cols-[auto_1fr_auto_auto]"
                 >
-                  <span className="text-gold-bright font-mono text-[0.7rem] tracking-[0.06em] whitespace-nowrap uppercase">
+                  <span className="text-gold-bright bg-panel/80 border-gold/30 rounded-clixa border px-2.5 py-1 font-mono text-[0.72rem] tracking-[0.06em] whitespace-nowrap uppercase">
                     {formatDateCourte(s.debut)}
                   </span>
-                  <span className="text-ivory text-sm">{prog?.titre}</span>
-                  <span className="text-ivory-dim text-[0.8rem] whitespace-nowrap">
+                  <span className="text-ivory group-hover:text-gold-bright text-sm font-medium transition-colors">
+                    {prog?.titre}
+                  </span>
+                  <span className="text-ivory-dim bg-ink/40 border-line rounded-clixa border px-2.5 py-1 font-mono text-[0.78rem] whitespace-nowrap">
                     {lieuSession(s)}
                   </span>
                   <PlacesBadge restantes={placesRestantes(s)} />
@@ -226,8 +305,11 @@ export default async function Accueil() {
               <span className="mono-label text-gold mb-3 block">Les plus demandées</span>
               <h2 className="text-[clamp(1.5rem,2.8vw,2.1rem)]">Formations en vedette.</h2>
             </div>
-            <Link href="/formations" className="border-gold text-ivory border-b pb-1 text-sm">
-              Voir les {total} formations →
+            <Link
+              href="/formations"
+              className="border-gold text-ivory hover:text-gold-bright inline-flex items-center gap-1.5 border-b pb-1 text-sm transition-colors"
+            >
+              Voir les {total} formations <span>→</span>
             </Link>
           </div>
 
@@ -240,8 +322,7 @@ export default async function Accueil() {
       </section>
 
       {/*
-        Les deux sections se taisent tant qu'aucun contenu n'est publié. Elles
-        apparaîtront d'elles-mêmes quand l'équipe en publiera.
+        Les deux sections se taisent tant qu'aucun contenu n'est publié.
       */}
       <Temoignages temoignages={temoignages} titre="Ils sont passés par CLIXA." />
       <Partenaires partenaires={partenaires} />

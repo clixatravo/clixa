@@ -27,57 +27,50 @@ export function SessionsDisponibles({
 }) {
   if (sessions.length === 0) {
     return (
-      <p className="border-line bg-panel text-ivory-dim border p-6 text-sm">
-        Aucune session programmée pour le moment. Laissez-nous vos coordonnées : nous vous
-        préviendrons à l&apos;ouverture des prochaines dates.
-      </p>
+      <div className="border-line/70 bg-panel/60 text-ivory-dim rounded-clixa border p-6 text-sm backdrop-blur-sm">
+        <p className="font-display text-ivory mb-1 text-base">
+          Aucune session ouverte pour l&apos;instant
+        </p>
+        <p>
+          Laissez-nous vos coordonnées : nous vous préviendrons dès l&apos;ouverture de la prochaine
+          cohorte.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="hairline-grid">
+    <div className="space-y-3">
       {sessions.map((s) => {
         const restantes = placesRestantes(s);
         const complete = restantes === 0;
-
-        /*
-          Les dates de chaque séance, déduites de la période. La fiche annonçait
-          « 8 samedis » sans dire lesquels : le visiteur devait sortir un
-          calendrier pour savoir s'il serait libre. Rien ne s'affiche quand le
-          rythme n'est pas hebdomadaire — mieux vaut se taire qu'inventer.
-        */
         const seances = seancesHebdomadaires(s.debut, s.fin);
 
         return (
-          <div key={s.id} className="bg-panel hover:bg-panel-2 p-5 transition-colors">
-            <div className="grid items-center gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_0.8fr_auto_auto]">
-              <div className="font-display text-base">
-                {formatPeriode(s.debut, s.fin)}
-                {/*
-                Le fuseau n'a de sens qu'à distance. Sur une session en présentiel
-                à Agadir, la ville dit déjà l'heure : ajouter « UTC » brouillerait
-                au lieu de préciser.
-              */}
+          <div key={s.id} className="executive-card rounded-clixa p-5.5 transition-all">
+            <div className="grid items-center gap-4 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_0.8fr_auto_auto]">
+              <div>
+                <span className="font-display text-ivory block text-base font-semibold">
+                  {formatPeriode(s.debut, s.fin)}
+                </span>
                 {(() => {
                   const zone = s.mode === "presentiel" ? undefined : s.fuseau;
                   const bas = [s.cadence, zone && libelleFuseau(zone)].filter(Boolean);
                   return bas.length > 0 ? (
-                    <small className="font-body text-ivory-dim block text-[0.72rem]">
+                    <small className="font-body text-ivory-dim mt-0.5 block text-[0.74rem]">
                       {bas.join(" · ")}
-                      {/*
-                        L'horaire dans le fuseau du visiteur, quand il diffère.
-                        En présentiel la ville dit déjà l'heure : le convertir
-                        n'aurait pas de sens.
-                      */}
                       {zone && <HeureLocale debut={s.debut} fin={s.fin} />}
                     </small>
                   ) : null;
                 })()}
               </div>
 
-              <div className="text-ivory-dim text-sm">{lieuSession(s)}</div>
+              <div className="text-ivory-dim/90 flex items-center gap-1.5 text-sm font-medium">
+                <span className="text-gold text-xs">📍</span>
+                <span>{lieuSession(s)}</span>
+              </div>
 
-              <div className="text-emerald-bright font-mono text-[0.62rem] tracking-[0.1em] uppercase">
+              <div className="text-emerald-bright font-mono text-[0.64rem] tracking-[0.1em] uppercase">
                 {libelleMode[s.mode]}
               </div>
 
@@ -89,8 +82,10 @@ export function SessionsDisponibles({
                     ? "/contact"
                     : `/inscription?formation=${programmeSlug}&debut=${s.debut.slice(0, 10)}`
                 }
-                className={`rounded-clixa border px-4 py-2.5 text-center text-[0.76rem] whitespace-nowrap ${
-                  complete ? "border-line-strong text-ivory-dim" : "border-gold text-ivory"
+                className={`rounded-clixa border px-5 py-2.5 text-center text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-all ${
+                  complete
+                    ? "border-line-strong text-ivory-dim hover:border-gold"
+                    : "shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold bg-gradient-to-r hover:shadow-[0_0_15px_rgba(201,162,76,0.35)]"
                 }`}
               >
                 {complete ? "Liste d'attente" : "Réserver"}
@@ -98,15 +93,15 @@ export function SessionsDisponibles({
             </div>
 
             {seances && seances.length > 1 && (
-              <div className="border-line mt-4 border-t pt-3.5">
-                <span className="mono-label text-ivory-dim mb-2 block text-[0.58rem]">
-                  Les {seances.length} séances
+              <div className="border-line/40 mt-4 border-t pt-3">
+                <span className="mono-label text-gold mb-2 block text-[0.58rem] tracking-[0.12em]">
+                  Calendrier des {seances.length} séances
                 </span>
                 <ol className="flex flex-wrap gap-1.5">
                   {seances.map((jour) => (
                     <li
                       key={jour}
-                      className="border-line text-ivory-dim rounded-clixa border px-2 py-1 font-mono text-[0.66rem] tabular-nums"
+                      className="border-line bg-ink/60 text-ivory-dim/90 rounded-clixa border px-2.5 py-1 font-mono text-[0.68rem] tabular-nums"
                     >
                       {formatJourMois(jour)}
                     </li>

@@ -21,14 +21,22 @@ const liens = [
 
 export function SiteHeader() {
   return (
-    <header className="border-line bg-ink/85 sticky top-0 z-50 border-b backdrop-blur-md">
+    <header className="bg-ink/80 sticky top-0 z-50 border-b border-white/[0.08] backdrop-blur-xl transition-colors">
       {/* relative implicite via sticky : le panneau du menu mobile s'y ancre. */}
       <nav
         aria-label="Navigation principale"
-        className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-8 py-5"
+        className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-8 py-4.5"
       >
-        <Link href="/" className="font-display flex min-h-11 items-center text-xl font-bold">
-          CLIXA<span className="text-gold">.</span>
+        <Link
+          href="/"
+          className="font-display group flex min-h-11 items-center gap-2.5 text-xl font-bold tracking-tight"
+        >
+          <span className="border-gold/30 bg-panel text-gold rounded-clixa group-hover:border-gold flex size-7 items-center justify-center border font-mono text-xs font-bold transition-all group-hover:shadow-[0_0_12px_rgba(201,162,76,0.3)]">
+            C
+          </span>
+          <span>
+            CLIXA<span className="text-gold">.</span>
+          </span>
         </Link>
 
         <NavDesktop liens={liens} />
@@ -37,15 +45,8 @@ export function SiteHeader() {
           {/*
             Sélecteur de langue : l'interface existe, le routage par langue
             arrive avec SOC-02 / BE-06 quand le CMS multilingue est en place.
-
-            Il était coincé entre « Mon espace » et « Nous contacter ». Un mot
-            nu entre deux boutons casse la paire qu'ils forment, et se lit comme
-            une étiquette égarée plutôt que comme un réglage. Placé avant, sur
-            un filet, il termine la navigation au lieu d'interrompre les
-            actions — et la page finit sur son appel principal, pas sur un
-            repère gris.
           */}
-          <span className="mono-label text-ivory-dim border-line hidden border-r pr-4 sm:inline">
+          <span className="mono-label text-ivory-dim/80 border-line hidden border-r pr-4 sm:inline">
             FR
           </span>
           {/*
@@ -56,19 +57,12 @@ export function SiteHeader() {
           */}
           <Link
             href="/compte"
-            className="border-line-strong bg-panel text-ivory hover:border-gold hover:bg-panel-2 rounded-clixa group hidden min-h-11 items-center gap-2 border px-4 text-[0.82rem] tracking-wide transition-colors sm:inline-flex"
+            className="border-line-strong bg-panel/70 text-ivory hover:border-gold hover:bg-panel-2 rounded-clixa group hidden min-h-11 items-center gap-2 border px-4 text-[0.82rem] tracking-wide transition-all sm:inline-flex"
           >
-            {/*
-              Une silhouette plutôt qu'un mot seul : à côté d'un bouton doré,
-              du texte nu se lisait comme une étiquette et personne n'y voyait
-              un lien. Le contour vient de la même famille que le bouton de
-              retour du fil d'Ariane — c'est le second niveau d'action, sous
-              « Nous contacter » qui reste l'appel principal.
-            */}
             <svg
               aria-hidden="true"
               viewBox="0 0 16 16"
-              className="text-gold size-3.5 shrink-0"
+              className="text-gold size-3.5 shrink-0 transition-transform group-hover:scale-110"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.4"
@@ -80,7 +74,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/contact"
-            className="border-gold text-ivory hover:bg-gold hover:text-ink rounded-clixa hidden min-h-11 items-center border px-5 text-[0.82rem] tracking-wide transition-colors md:inline-flex"
+            className="border-gold/60 bg-gold/10 text-gold-bright hover:bg-gold hover:text-ink rounded-clixa hidden min-h-11 items-center border px-5 text-[0.82rem] font-semibold tracking-wide shadow-[0_0_14px_-2px_rgba(201,162,76,0.15)] transition-all hover:shadow-[0_0_20px_rgba(201,162,76,0.4)] md:inline-flex"
           >
             Nous contacter
           </Link>

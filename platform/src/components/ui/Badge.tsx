@@ -4,18 +4,31 @@ type Ton = "disponible" | "tension" | "complet" | "certification" | "neutre";
 
 const tons: Record<Ton, string> = {
   // DES-04 — l'émeraude porte le sens « disponible / validé »
-  disponible: "text-emerald-bright border-emerald bg-emerald/15",
-  tension: "text-gold-bright border-gold bg-gold/10",
-  complet: "text-ivory-dim border-line-strong",
-  certification: "text-ink bg-gold border-gold font-bold",
-  neutre: "text-ivory-dim border-line-strong",
+  disponible:
+    "text-emerald-bright border-emerald/50 bg-emerald/15 shadow-[0_0_12px_-2px_rgba(47,163,125,0.25)]",
+  tension:
+    "text-gold-bright border-gold/50 bg-gold/15 shadow-[0_0_12px_-2px_rgba(201,162,76,0.25)]",
+  complet: "text-ivory-dim/70 border-line bg-panel/50",
+  certification:
+    "text-ink bg-gradient-to-r from-gold-bright to-gold border-gold font-bold shadow-[0_2px_10px_-2px_rgba(201,162,76,0.35)]",
+  neutre: "text-ivory-dim border-line-strong bg-panel/40",
 };
 
 export function Badge({ ton = "neutre", children }: { ton?: Ton; children: ReactNode }) {
+  const isLive = ton === "disponible" || ton === "tension";
+
   return (
     <span
-      className={`rounded-clixa inline-block border px-2.5 py-1 font-mono text-[0.56rem] tracking-[0.1em] whitespace-nowrap uppercase ${tons[ton]}`}
+      className={`rounded-clixa inline-flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[0.62rem] tracking-[0.1em] whitespace-nowrap uppercase backdrop-blur-sm ${tons[ton]}`}
     >
+      {isLive && (
+        <span
+          className={`size-1.5 rounded-full ${
+            ton === "disponible" ? "bg-emerald-bright pulse-live" : "bg-gold-bright pulse-live"
+          }`}
+          aria-hidden="true"
+        />
+      )}
       {children}
     </span>
   );

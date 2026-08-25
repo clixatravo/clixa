@@ -88,22 +88,20 @@ export default async function Catalogue({ searchParams }: Props) {
       <section className="px-8 py-12">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Catalogue</span>
-            <h1 className="text-[clamp(1.5rem,2.8vw,2.1rem)]">
+            <span className="mono-label text-gold mb-3 block">Catalogue des parcours</span>
+            <h1 className="text-[clamp(1.8rem,3.2vw,2.4rem)] font-bold">
               {resultats.length} programme{resultats.length > 1 ? "s" : ""}, {specs.length}{" "}
               spécialisations.
             </h1>
           </div>
 
           {/* ── Filtres ── */}
-          <div className="border-line bg-panel mb-7 border p-6">
-            {/* Formulaire GET : la recherche fonctionne sans JavaScript et reste
-                dans l'URL, comme les autres filtres. Les champs cachés évitent
-                de perdre les filtres actifs à la soumission. */}
+          <div className="glass-panel rounded-clixa mb-8 p-6.5">
+            {/* Formulaire GET : la recherche fonctionne sans JavaScript */}
             <form
               action="/formations"
               method="get"
-              className="border-line flex flex-wrap gap-3 border-b pb-5"
+              className="border-line/60 flex flex-wrap gap-3 border-b pb-5"
             >
               {params.specialisation && (
                 <input type="hidden" name="specialisation" value={params.specialisation} />
@@ -114,36 +112,37 @@ export default async function Catalogue({ searchParams }: Props) {
               <label htmlFor="q" className="sr-only">
                 Rechercher une formation
               </label>
-              <input
-                id="q"
-                name="q"
-                type="search"
-                defaultValue={params.q ?? ""}
-                placeholder="Rechercher — votre métier, une compétence, un parcours…"
-                className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 flex-1 border px-4 text-[0.9rem]"
-              />
+              <div className="relative min-h-11 flex-1">
+                <span className="text-ivory-dim/60 pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm">
+                  🔍
+                </span>
+                <input
+                  id="q"
+                  name="q"
+                  type="search"
+                  defaultValue={params.q ?? ""}
+                  placeholder="Rechercher — votre métier, une compétence, un parcours…"
+                  className="border-line bg-ink/70 rounded-clixa text-ivory placeholder:text-ivory-dim/50 focus:border-gold focus:ring-gold min-h-11 w-full border pr-4 pl-11 text-[0.9rem] transition-all focus:ring-1"
+                />
+              </div>
               <button
                 type="submit"
-                className="bg-gold text-ink rounded-clixa border-gold min-h-11 border px-6 text-[0.85rem] font-bold"
+                className="shimmer-gold from-gold-bright via-gold to-gold-bright text-ink rounded-clixa border-gold hover:shadow-gold/20 min-h-11 cursor-pointer border bg-gradient-to-r px-6 text-[0.85rem] font-bold shadow-md transition-all"
               >
                 Rechercher
               </button>
             </form>
 
-            {/*
-              Le catalogue est fait de douze « Directeur X ». Quelqu'un qui
-              n'est pas encore directeur ne s'y reconnaît pas et s'en va. Les
-              fiches nomment pourtant son métier, dans le public visé : ces
-              liens le lui montrent, et la recherche sait désormais y répondre.
-            */}
             {metiers.length > 0 && (
               <div className="mt-4 flex items-center gap-x-3 gap-y-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
-                <span className="mono-label text-ivory-dim shrink-0 text-[0.62rem]">Vous êtes</span>
+                <span className="mono-label text-gold shrink-0 text-[0.62rem] tracking-wider">
+                  Vous êtes
+                </span>
                 {metiers.map((m) => (
                   <Link
                     key={m}
                     href={`/formations?q=${encodeURIComponent(m)}` as Route}
-                    className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa shrink-0 border px-2.5 py-1 text-[0.76rem] whitespace-nowrap transition-colors"
+                    className="border-line bg-ink/40 text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa shrink-0 border px-2.5 py-1 text-[0.76rem] whitespace-nowrap transition-colors"
                   >
                     {m}
                   </Link>
@@ -151,8 +150,10 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             )}
 
-            <div className="border-line flex flex-wrap items-baseline gap-3.5 border-b py-3">
-              <span className="mono-label text-ivory-dim w-full sm:w-[120px]">Spécialisation</span>
+            <div className="border-line/60 flex flex-wrap items-baseline gap-3.5 border-b py-3.5">
+              <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
+                Spécialisation
+              </span>
               <div className="flex flex-wrap gap-2">
                 <Link href={lien("specialisation")} className={chip(!params.specialisation)}>
                   Toutes
@@ -169,8 +170,10 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             </div>
 
-            <div className="border-line flex flex-wrap items-baseline gap-3.5 border-b py-3">
-              <span className="mono-label text-ivory-dim w-full sm:w-[120px]">Modalité</span>
+            <div className="border-line/60 flex flex-wrap items-baseline gap-3.5 border-b py-3.5">
+              <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
+                Modalité
+              </span>
               <div className="flex flex-wrap gap-2">
                 {MODES.map((m) => (
                   <Link key={m} href={lien("mode", m)} className={chip(actif("mode", m))}>
@@ -180,8 +183,10 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-baseline gap-3.5 py-3">
-              <span className="mono-label text-ivory-dim w-full sm:w-[120px]">Ville</span>
+            <div className="flex flex-wrap items-baseline gap-3.5 pt-3.5">
+              <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
+                Ville
+              </span>
               <div className="flex flex-wrap gap-2">
                 {villes.map((v) => (
                   <Link key={v} href={lien("ville", v)} className={chip(actif("ville", v))}>
@@ -192,20 +197,25 @@ export default async function Catalogue({ searchParams }: Props) {
             </div>
           </div>
 
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-            <span className="text-ivory-dim text-[0.86rem]">
-              <strong className="font-display text-gold-bright text-xl">{resultats.length}</strong>{" "}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <span className="text-ivory-dim text-[0.88rem]">
+              <strong className="font-display text-gold-bright text-xl font-bold">
+                {resultats.length}
+              </strong>{" "}
               formation{resultats.length > 1 ? "s" : ""} correspond
               {resultats.length > 1 ? "ent" : ""}
               {params.q && (
                 <>
                   {" à "}
-                  <span className="text-ivory">« {params.q} »</span>
+                  <span className="text-ivory font-medium">« {params.q} »</span>
                 </>
               )}
             </span>
             {aDesFiltres && (
-              <Link href="/formations" className="text-ivory-dim hover:text-gold text-[0.82rem]">
+              <Link
+                href="/formations"
+                className="text-gold-bright hover:text-gold font-mono text-[0.82rem] underline"
+              >
                 Réinitialiser les filtres
               </Link>
             )}
@@ -213,13 +223,18 @@ export default async function Catalogue({ searchParams }: Props) {
 
           {/* FE-12 — état vide */}
           {resultats.length === 0 ? (
-            <div className="border-line bg-panel border p-12 text-center">
-              <p className="font-display mb-3 text-xl">Aucune formation ne correspond.</p>
-              <p className="text-ivory-dim mx-auto mb-6 max-w-[46ch] text-sm">
+            <div className="border-line/70 bg-panel/70 rounded-clixa border p-12 text-center backdrop-blur-sm">
+              <p className="font-display text-ivory mb-3 text-xl font-semibold">
+                Aucune formation ne correspond.
+              </p>
+              <p className="text-ivory-dim mx-auto mb-6 max-w-[46ch] text-sm leading-relaxed">
                 Essayez d&apos;élargir votre recherche en retirant un filtre, ou dites-nous ce que
                 vous cherchez : nous ouvrons régulièrement de nouvelles sessions.
               </p>
-              <Link href="/formations" className="border-gold text-ivory border-b pb-1 text-sm">
+              <Link
+                href="/formations"
+                className="border-gold text-ivory hover:text-gold-bright border-b pb-1 text-sm transition-colors"
+              >
                 Réinitialiser les filtres
               </Link>
             </div>

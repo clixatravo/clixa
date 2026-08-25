@@ -7,7 +7,7 @@ import { jsonLdCourse } from "@/lib/seo";
 import { PlanDeCours } from "@/components/PlanDeCours";
 import { SessionsDisponibles } from "@/components/SessionsDisponibles";
 import { Temoignages } from "@/components/Temoignages";
-import { Badge } from "@/components/ui/Badge";
+import { Badge, PlacesBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { placesRestantes } from "@/lib/types";
 import {
@@ -81,18 +81,30 @@ export default async function FicheFormation({ params }: Props) {
       />
 
       {/* ── Héros ── */}
-      <section className="border-line border-b px-8 py-13">
-        <div className="mx-auto max-w-[1180px]">
+      <section className="border-line relative overflow-hidden border-b px-8 py-14 lg:py-18">
+        <div className="ambient-glow-top" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-[1180px]">
           <div className="eyebrow mono-label mb-5">{spec?.nom}</div>
-          <h1 className="mb-4 max-w-[20ch] text-[clamp(1.9rem,4vw,3rem)]">{programme.titre}</h1>
-          <p className="text-ivory-dim mb-6 max-w-[62ch] text-[1.02rem]">{programme.accroche}</p>
-          {programme.certification && <Badge ton="certification">{programme.certification}</Badge>}
+          <h1 className="mb-4 max-w-[20ch] text-[clamp(2.1rem,4.5vw,3.4rem)] font-bold tracking-tight">
+            {programme.titre}
+          </h1>
+          <p className="text-ivory-dim/95 mb-6 max-w-[62ch] text-[1.05rem] leading-relaxed">
+            {programme.accroche}
+          </p>
+          {programme.certification && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge ton="certification">Certification {programme.certification}</Badge>
+              <span className="text-ivory-dim font-mono text-xs">
+                ✦ Examen international reconnu
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
       {/* ── Faits saillants ── */}
       <div className="mx-auto max-w-[1180px] px-8 pt-8">
-        <div className="hairline-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="hairline-grid rounded-clixa grid-cols-2 overflow-hidden sm:grid-cols-3 lg:grid-cols-5">
           {[
             ["Durée", `${programme.dureeHeures} heures`],
             ["Rythme", programme.rythme],
@@ -100,23 +112,27 @@ export default async function FicheFormation({ params }: Props) {
             ["Niveau", NIVEAUX[programme.niveau]],
             ["Langue", programme.langue],
           ].map(([label, valeur]) => (
-            <div key={label} className="bg-panel p-4">
-              <span className="mono-label text-gold mb-1.5 block text-[0.58rem]">{label}</span>
-              <span className="text-ivory text-[0.92rem]">{valeur}</span>
+            <div key={label} className="bg-panel/70 p-4.5 backdrop-blur-sm">
+              <span className="mono-label text-gold mb-1.5 block text-[0.6rem] tracking-[0.14em]">
+                {label}
+              </span>
+              <span className="text-ivory text-[0.94rem] font-medium">{valeur}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Corps ── */}
-      <div className="mx-auto max-w-[1180px] px-8 py-11">
-        <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div className="mx-auto max-w-[1180px] px-8 py-12">
+        <div className="grid gap-12 lg:grid-cols-[1fr_360px]">
           <div>
             <Bloc titre="Objectifs de la formation">
               {programme.positionnement && (
-                <p className="text-gold-bright mb-3 text-[0.9rem]">{programme.positionnement}</p>
+                <p className="text-gold-bright bg-panel/40 border-gold rounded-r-clixa mb-3.5 border-l-2 p-4 text-[0.92rem] leading-relaxed font-medium">
+                  {programme.positionnement}
+                </p>
               )}
-              <p>{programme.objectifs}</p>
+              <p className="leading-relaxed">{programme.objectifs}</p>
             </Bloc>
 
             <Bloc titre="Public visé">
@@ -128,14 +144,14 @@ export default async function FicheFormation({ params }: Props) {
             </Bloc>
 
             <Bloc titre="Pré-requis">
-              <p>{programme.prerequis}</p>
+              <p className="leading-relaxed">{programme.prerequis}</p>
             </Bloc>
 
-            <Bloc titre="Plan de cours">
+            <Bloc titre="Plan de cours détaillé">
               <PlanDeCours modules={programme.modules} />
             </Bloc>
 
-            <Bloc titre="Sessions disponibles">
+            <Bloc titre="Sessions ouvertes aux inscriptions">
               <SessionsDisponibles sessions={sessions} programmeSlug={programme.slug} />
             </Bloc>
 
@@ -161,42 +177,23 @@ export default async function FicheFormation({ params }: Props) {
               <Liste items={programme.debouches} colonnes />
             </Bloc>
 
-            {/*
-              La mention n'est pas décorative : la fiche PMP doit rappeler que la
-              marque appartient au PMI et que les frais d'examen restent à la charge
-              du participant. On la sort du flux des rubriques pour ce qu'elle est —
-              une note de bas de fiche, lisible mais discrète.
-            */}
             {programme.mentionsLegales && (
-              <p className="border-line text-ivory-dim mt-9 border-t pt-6 text-[0.82rem] leading-relaxed">
+              <p className="border-line text-ivory-dim/75 mt-9 border-t pt-6 text-[0.82rem] leading-relaxed">
                 {programme.mentionsLegales}
               </p>
             )}
           </div>
 
-          {/* ── Colonne latérale ── */}
+          {/* ── Colonne latérale Sticky Executive ── */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <div className="bg-panel p-6">
-              {/*
-                Le tarif est celui du catalogue, pas celui de la session : les
-                douze parcours partagent le même barème. Les plans échelonnés
-                coûtent plus cher, et l'écart est montré — 423 € comptant contre
-                470 € en trois fois. Le taire pour « faire propre » reviendrait à
-                laisser le visiteur le découvrir au moment de payer.
-              */}
-              <div className="border-gold mb-6 border p-5">
-                {/*
-                  Chaque rythme est un lien : le choix part avec la demande au
-                  lieu de se rejouer au téléphone. Le premier plan sert de
-                  référence — les suivants affichent ce qu'ils coûtent en plus.
-                */}
+            <div className="glass-panel-gold rounded-clixa p-6.5 shadow-xl">
+              {/* Tarifs et plans */}
+              <div className="border-gold/35 bg-ink/60 rounded-clixa mb-6 border p-5">
+                <span className="mono-label text-gold mb-3 block text-[0.62rem] tracking-[0.14em]">
+                  Options de règlement
+                </span>
                 {tarifs.plans.map((plan, i) => {
                   const surcout = plan.totalCentimes - tarifs.prixComptantCentimes;
-                  /*
-                    Le rythme mène au tunnel quand une session est ouverte, au
-                    rappel sinon : proposer de réserver une place qui n'existe
-                    pas mène à une impasse.
-                  */
                   const cible = (
                     prochaine
                       ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}&plan=${plan.code}`
@@ -206,13 +203,13 @@ export default async function FicheFormation({ params }: Props) {
                     <Link
                       key={plan.code}
                       href={cible}
-                      className="border-line hover:bg-panel-2 block border-b py-3 transition-colors first:pt-0 last:border-b-0 last:pb-0"
+                      className="border-line/60 hover:bg-panel/70 block border-b py-3.5 transition-all first:pt-0 last:border-b-0 last:pb-0"
                     >
                       <div className="flex items-baseline justify-between gap-3">
                         <span
                           className={
                             i === 0
-                              ? "mono-label text-ivory-dim text-[0.6rem]"
+                              ? "mono-label text-ivory text-[0.65rem] font-semibold"
                               : "text-ivory-dim text-[0.82rem]"
                           }
                         >
@@ -221,8 +218,8 @@ export default async function FicheFormation({ params }: Props) {
                         <span
                           className={
                             i === 0
-                              ? "font-display text-gold-bright text-2xl"
-                              : "text-ivory font-mono text-[0.82rem] tabular-nums"
+                              ? "font-display text-gold-bright text-2xl font-bold"
+                              : "text-ivory font-mono text-[0.84rem] font-semibold tabular-nums"
                           }
                         >
                           {i === 0
@@ -230,10 +227,10 @@ export default async function FicheFormation({ params }: Props) {
                             : plan.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")}
                         </span>
                       </div>
-                      <div className="text-ivory-dim mt-0.5 text-[0.7rem]">
+                      <div className="text-ivory-dim/70 mt-1 text-[0.72rem]">
                         {i === 0
                           ? plan.conditions
-                          : `${formatPrix(plan.totalCentimes)} au total, soit ${formatPrix(surcout)} de plus · ${plan.conditions}`}
+                          : `${formatPrix(plan.totalCentimes)} au total (soit +${formatPrix(surcout)}) · ${plan.conditions}`}
                       </div>
                     </Link>
                   );
@@ -241,57 +238,55 @@ export default async function FicheFormation({ params }: Props) {
               </div>
 
               {prochaine && (
-                <div className="border-line mb-4 border-b pb-4">
-                  <span className="mono-label text-gold mb-2 block text-[0.58rem]">
-                    Prochaine session
-                  </span>
-                  <div className="text-ivory text-[0.94rem]">
+                <div className="border-line/60 bg-ink/40 rounded-clixa mb-6 border p-4">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="mono-label text-gold text-[0.58rem] tracking-[0.14em]">
+                      Prochaine rentrée
+                    </span>
+                    <PlacesBadge restantes={placesRestantes(prochaine)} />
+                  </div>
+                  <div className="text-ivory text-[0.95rem] font-semibold">
                     {formatPeriode(prochaine.debut, prochaine.fin)}
                   </div>
-                  <div className="text-ivory-dim mt-1 text-[0.78rem]">
-                    {lieuSession(prochaine)} · {placesRestantes(prochaine)} places restantes
+                  <div className="text-ivory-dim mt-1 font-mono text-[0.76rem]">
+                    {lieuSession(prochaine)}
                   </div>
                 </div>
               )}
 
-              <div className="mb-6 flex flex-col gap-2.5">
-                {/* FE-07 — transactionnel à partir de la phase 02 */}
-                {/*
-                  La réservation part vers le tunnel avec le parcours, la
-                  prochaine session ouverte et le rythme retenu. Sans session
-                  ouverte, il n'y a rien à réserver : on renvoie vers le rappel.
-                */}
+              <div className="mb-6 flex flex-col gap-3">
                 {prochaine ? (
                   <Button
                     href={
                       `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}` as Route
                     }
+                    className="w-full py-4 text-xs font-bold tracking-wider uppercase shadow-lg"
                   >
-                    Réserver ma place
+                    Réserver ma place en ligne
                   </Button>
                 ) : (
-                  <Button href="/contact">Être prévenu de la prochaine session</Button>
+                  <Button
+                    href="/contact"
+                    className="w-full py-4 text-xs font-bold tracking-wider uppercase"
+                  >
+                    Être prévenu de la prochaine session
+                  </Button>
                 )}
-                <Button href="/contact" variante="contour">
+                <Button href="/contact" variante="contour" className="w-full py-3.5 text-xs">
                   Être rappelé par un conseiller
                 </Button>
               </div>
 
-              {/*
-                Cette liste annonçait « paiement en 3 fois sans frais » et le
-                paiement par carte. Le barème réel dit l'inverse : trois fois
-                coûte 47 € de plus, et les règlements passent par Western Union,
-                Ria ou MoneyGram. On affiche ce qui est vrai.
-              */}
-              <ul className="border-line flex flex-col gap-2.5 border-t pt-4">
+              <ul className="border-line/60 flex flex-col gap-2.5 border-t pt-5">
                 {[
                   ...tarifs.moyensPaiement,
-                  "Support de cours inclus",
+                  "Support de cours & livrables inclus",
                   "Attestation de fin de formation",
+                  "Accompagnement live en direct",
                 ].map((t) => (
-                  <li key={t} className="text-ivory-dim relative pl-4.5 text-[0.8rem]">
-                    <span className="bg-emerald-bright absolute top-[0.6em] left-0 block h-px w-2" />
-                    {t}
+                  <li key={t} className="text-ivory-dim/90 flex items-center gap-2 text-[0.8rem]">
+                    <span className="text-emerald-bright font-bold">✓</span>
+                    <span>{t}</span>
                   </li>
                 ))}
               </ul>
@@ -315,20 +310,23 @@ function Bloc({
   dernier?: boolean;
 }) {
   return (
-    <section className={dernier ? "" : "border-line mb-9 border-b pb-9"}>
-      <h2 className="mb-4 text-[1.35rem]">{titre}</h2>
-      <div className="text-ivory-dim max-w-[66ch] text-[0.94rem]">{children}</div>
+    <section className={dernier ? "" : "border-line/60 mb-10 border-b pb-10"}>
+      <h2 className="font-display mb-4 text-[1.4rem] font-semibold">{titre}</h2>
+      <div className="text-ivory-dim max-w-[66ch] text-[0.95rem] leading-relaxed">{children}</div>
     </section>
   );
 }
 
 function Liste({ items, colonnes = false }: { items: string[]; colonnes?: boolean }) {
   return (
-    <ul className={colonnes ? "grid gap-2.5 sm:grid-cols-2 sm:gap-x-6" : "flex flex-col gap-2.5"}>
+    <ul className={colonnes ? "grid gap-3 sm:grid-cols-2 sm:gap-x-6" : "flex flex-col gap-3"}>
       {items.map((t) => (
-        <li key={t} className="text-ivory-dim relative pl-5 text-[0.92rem]">
-          <span className="bg-gold absolute top-[0.62em] left-0 block h-px w-2" />
-          {t}
+        <li
+          key={t}
+          className="text-ivory-dim/95 flex items-start gap-2.5 text-[0.92rem] leading-relaxed"
+        >
+          <span className="text-gold mt-1 shrink-0 text-xs font-bold">✦</span>
+          <span>{t}</span>
         </li>
       ))}
     </ul>

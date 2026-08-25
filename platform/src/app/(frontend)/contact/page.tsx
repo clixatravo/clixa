@@ -38,34 +38,35 @@ export default async function Contact({ searchParams }: Props) {
     <>
       <FilAriane items={[{ href: "/", label: "Accueil" }, { label: "Être rappelé" }]} />
 
-      <section className="px-8 py-16">
-        <div className="mx-auto max-w-[640px]">
+      <section className="relative overflow-hidden px-8 py-16 lg:py-20">
+        <div className="ambient-glow-top" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-[680px]">
           <div className="eyebrow mono-label mb-5">Un conseiller vous rappelle</div>
-          <h1 className="mb-5 text-[clamp(1.9rem,4vw,2.8rem)]">
-            Parlons de votre projet de formation.
+          <h1 className="mb-4 text-[clamp(2.1rem,4.4vw,3.2rem)] font-bold">
+            Parlons de votre projet de <span className="gold-gradient-text">formation</span>.
           </h1>
 
           {envoye ? (
-            <div className="border-emerald bg-emerald/10 rounded-clixa border p-8">
-              <p className="font-display text-ivory mb-3 text-[1.3rem]">
-                Votre demande est bien arrivée.
+            <div className="border-emerald/60 bg-emerald/15 rounded-clixa border p-8 shadow-xl backdrop-blur-sm">
+              <p className="font-display text-ivory mb-3 text-[1.35rem] font-semibold">
+                Votre demande est bien enregistrée.
               </p>
-              <p className="text-ivory-dim text-[0.95rem]">
-                Un conseiller vous rappelle sous 24 h ouvrées, sur le numéro WhatsApp que vous avez
-                indiqué. Inutile de renvoyer le formulaire.
+              <p className="text-ivory-dim/95 text-[0.96rem] leading-relaxed">
+                Un conseiller CLIXA vous rappelle sous 24 h ouvrées, sur le numéro WhatsApp que vous
+                avez indiqué. Inutile de renvoyer le formulaire.
               </p>
             </div>
           ) : (
-            <>
-              <p className="text-ivory-dim mb-10 text-[0.98rem]">
-                Renseignez vos coordonnées : nous revenons vers vous sous 24 h ouvrées pour préciser
-                le programme, les dates et les possibilités de financement.
+            <div className="glass-panel-gold rounded-clixa p-8 shadow-2xl sm:p-10">
+              <p className="text-ivory-dim/95 mb-8 text-[0.98rem] leading-relaxed">
+                Renseignez vos coordonnées : un conseiller pédagogique revient vers vous sous 24 h
+                ouvrées pour préciser le programme, les dates et les possibilités de financement.
               </p>
 
               {erreur && (
                 <p
                   role="alert"
-                  className="border-gold bg-gold/10 text-gold-bright rounded-clixa mb-8 border p-4 text-[0.9rem]"
+                  className="border-gold bg-gold/15 text-gold-bright rounded-clixa mb-8 border p-4 text-[0.9rem]"
                 >
                   {erreur === "champs"
                     ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
@@ -109,14 +110,17 @@ export default async function Contact({ searchParams }: Props) {
                 <Champ label="Pays" name="pays" autoComplete="country-name" requis />
 
                 <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label htmlFor="programme" className="mono-label text-ivory-dim text-[0.7rem]">
+                  <label
+                    htmlFor="programme"
+                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
+                  >
                     Formation qui vous intéresse
                   </label>
                   <select
                     id="programme"
                     name="programme"
                     defaultValue={programmePreselectionne ?? ""}
-                    className="border-line bg-panel rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
                   >
                     <option value="">Je ne sais pas encore</option>
                     {programmes.map((p) => (
@@ -127,20 +131,18 @@ export default async function Contact({ searchParams }: Props) {
                   </select>
                 </div>
 
-                {/*
-                  Le rythme arrive pré-rempli quand la personne l'a choisi sur la
-                  fiche. Les montants sont répétés ici : à ce stade elle a quitté
-                  la page des tarifs, et trois fois coûte 47 € de plus qu'une.
-                */}
                 <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label htmlFor="plan" className="mono-label text-ivory-dim text-[0.7rem]">
+                  <label
+                    htmlFor="plan"
+                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
+                  >
                     Rythme de paiement souhaité
                   </label>
                   <select
                     id="plan"
                     name="plan"
                     defaultValue={planChoisi ?? ""}
-                    className="border-line bg-panel rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
                   >
                     <option value="">À décider avec le conseiller</option>
                     {tarifs.plans.map((p) => (
@@ -155,31 +157,34 @@ export default async function Contact({ searchParams }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label htmlFor="message" className="mono-label text-ivory-dim text-[0.7rem]">
+                  <label
+                    htmlFor="message"
+                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
+                  >
                     Votre message (facultatif)
                   </label>
                   <textarea
                     id="message"
                     name="message"
                     rows={3}
-                    className="border-line bg-panel rounded-clixa text-ivory focus:border-gold min-h-20 resize-y border px-3.5 py-3 text-[0.95rem]"
+                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold min-h-24 resize-y border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
                   />
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="pt-2 sm:col-span-2">
                   <button
                     type="submit"
-                    className="bg-gold text-ink rounded-clixa border-gold hover:text-gold-bright w-full border px-6 py-3.5 text-sm font-bold transition-colors hover:bg-transparent sm:w-auto"
+                    className="shimmer-gold from-gold-bright via-gold to-gold-bright text-ink rounded-clixa border-gold w-full cursor-pointer border bg-gradient-to-r px-8 py-4 text-xs font-bold tracking-wider uppercase shadow-[0_4px_18px_rgba(201,162,76,0.35)] transition-all hover:shadow-[0_6px_24px_rgba(201,162,76,0.5)]"
                   >
-                    Envoyer ma demande
+                    Envoyer ma demande de rappel
                   </button>
-                  <p className="text-ivory-dim mt-4 text-[0.78rem]">
-                    Vos données servent uniquement à traiter votre demande. Elles ne sont ni
-                    revendues, ni utilisées à d&apos;autres fins.
+                  <p className="text-ivory-dim/70 mt-4 text-center text-[0.78rem]">
+                    Vos données servent uniquement à traiter votre demande. Aucune utilisation
+                    commerciale tierce.
                   </p>
                 </div>
               </form>
-            </>
+            </div>
           )}
         </div>
       </section>
@@ -202,7 +207,7 @@ function Champ({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={name} className="mono-label text-ivory-dim text-[0.7rem]">
+      <label htmlFor={name} className="mono-label text-ivory-dim text-[0.68rem] tracking-wider">
         {label} {requis && <span className="text-gold">*</span>}
       </label>
       <input
@@ -211,7 +216,7 @@ function Champ({
         type={type}
         autoComplete={autoComplete}
         required={requis}
-        className="border-line bg-panel rounded-clixa text-ivory focus:border-gold border px-3.5 py-3 text-[0.95rem]"
+        className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
       />
     </div>
   );

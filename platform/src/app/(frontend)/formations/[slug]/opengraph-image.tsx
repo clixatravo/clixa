@@ -1,6 +1,13 @@
 import { ImageResponse } from "next/og";
 import { CarteOG, tailleOG } from "@/lib/og";
-import { formatPrix, getProgramme, getSessions, libelleMode, prixMinimum } from "@/lib/catalogue";
+import {
+  formatPrix,
+  getProgramme,
+  getSessions,
+  getTarifs,
+  libelleMode,
+  prixAffiche,
+} from "@/lib/catalogue";
 
 export const alt = "Formation CLIXA Institute";
 export const size = tailleOG;
@@ -24,7 +31,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   }
 
   const modes = [...new Set((await getSessions(p.slug)).map((s) => s.mode))];
-  const prix = await prixMinimum(p.slug);
+  const prix = prixAffiche(await getTarifs());
 
   return new ImageResponse(
     <CarteOG
