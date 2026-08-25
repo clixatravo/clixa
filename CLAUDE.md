@@ -78,6 +78,20 @@ une page au nom de Payload. Trois choses seulement sont retouchées :
   et retoucher son élévation avait donné du texte encre sur gris sombre.
   Or sur encre, mesuré à 8,14:1.
 
+**Le tableau de bord dit ce qui attend** (`components/admin/Veille.tsx`). Celui
+de Payload est un sommaire : douze rectangles portant chacun le nom d'une
+collection, qui disent où aller mais jamais s'il faut y aller. Le bandeau
+au-dessus compte les transferts annoncés à vérifier, les échéances dépassées et
+les dossiers sans premier versement — et se tait, en toutes lettres, quand il
+n'y a rien.
+
+⚠️ **Un dossier n'y compte qu'une fois.** Ces trois états se chevauchent : un
+dossier peut être en retard *et* sans premier versement, annoncé *et* encore
+« demandé ». Trois filtres indépendants faisaient additionner quatre choses à
+faire pour trois dossiers, et l'une des lignes menait à relancer quelqu'un qui
+venait de payer. C'est une partition, par ordre d'urgence — ce qui attend de
+nous, puis ce qui est en retard, puis ce qui suit son cours.
+
 ⚠️ Un sélecteur inventé ne casse rien et ne fait rien — il ne correspond
 simplement à aucun élément. Vérifier qu'une classe existe avant de s'y fier :
 

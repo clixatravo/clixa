@@ -74,11 +74,20 @@ h3,
   opacity: 0.55;
 }
 
+/*
+  L'icône occupe une case étroite en tête de fil d'Ariane, à côté d'un texte de
+  taille normale. Rendue à 1,35 rem elle y arrivait comme une lettre égarée,
+  plus grande que ce qui l'entoure et posée trop haut. Elle s'aligne désormais
+  sur la ligne de base voisine.
+*/
 .clixa-icone {
+  display: inline-flex;
+  align-items: baseline;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 1;
+  font-size: 1rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
 }
 
 /* ── L'avis sous le formulaire de connexion ─────────────────────────────── */
@@ -117,4 +126,82 @@ h3,
 .btn--style-primary:not(:disabled):hover {
   background-color: var(--clixa-or-clair);
   color: var(--clixa-encre);
+}
+
+/* ── Ce qui attend l'équipe ─────────────────────────────────────────────── */
+
+.clixa-veille {
+  border-left: 2px solid var(--clixa-or);
+  padding: 0.15rem 0 0.15rem 1rem;
+  margin-bottom: 2.25rem;
+}
+
+.clixa-veille__titre {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  margin-bottom: 0.7rem;
+}
+
+.clixa-veille__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2.25rem;
+}
+
+.clixa-veille__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.clixa-veille__nombre {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--clixa-or);
+}
+
+.clixa-veille__quoi,
+.clixa-veille__calme {
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/*
+  L'horizon se lit après le reste : il informe, il ne demande rien. D'où le gris
+  et la petite taille — l'or est réservé à ce qui attend un geste.
+*/
+.clixa-veille__horizon {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+/* ── Les cartes du tableau de bord ──────────────────────────────────────── */
+
+/*
+  Payload les rend plates et sans réaction. Un filet qui s'éclaire au survol
+  suffit à dire qu'on peut cliquer — c'est la seule chose qui leur manquait.
+*/
+.card {
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.card--has-onclick:hover {
+  border-color: var(--clixa-or);
+}
+
+/* Le titre d'une carte nomme une collection : la romaine, comme les rubriques. */
+.card__title {
+  font-family: var(--font-serif);
 }
