@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielBilanRelances, courrielRelance } from "@/lib/courriel";
@@ -21,6 +22,23 @@ import { courrielBilanRelances, courrielRelance } from "@/lib/courriel";
  * Il faut donc quelqu'un pour appeler, et ce quelqu'un est le planificateur.
  */
 
+/**
+ * Compare le jeton reçu au secret, en temps constant.
+ *
+ * `!==` s'arrête au premier caractère qui diffère : le temps de réponse dit
+ * alors combien de caractères étaient justes, et un jeton se devine caractère
+ * par caractère. `timingSafeEqual` compare toujours toute la longueur.
+ *
+ * Elle exige deux tampons de même taille : on écarte donc les longueurs
+ * différentes d'abord, ce qui ne révèle rien de plus que la taille du secret.
+ */
+function jetonValide(recu: string | null, secret: string): boolean {
+  const attendu = Buffer.from(`Bearer ${secret}`);
+  const fourni = Buffer.from(recu ?? "");
+  if (fourni.length !== attendu.length) return false;
+  return timingSafeEqual(fourni, attendu);
+}
+
 /** On prévient trois jours avant, puis on relance tous les sept jours. */
 const JOURS_AVANT = 3;
 const JOURS_ENTRE_DEUX = 7;
@@ -29,16 +47,34 @@ const JOUR_MS = 86400000;
 
 export async function GET(request: Request) {
   /*
-    La route est publique par nature — le planificateur l'appelle depuis
-    l'extérieur. Le secret évite que n'importe qui déclenche une vague de
-    courriels en visitant l'adresse.
+    La route est joignable de l'extérieur par nature — c'est le planificateur qui
+    l'appelle. Le secret est donc la seule chose qui sépare le monde d'une vague
+    de courriels envoyée à tous les participants.
+
+    ── Pourquoi elle refuse quand le secret manque ────────────────────────────
+    La garde était écrite `if (secret) { ...vérifier... }` : sans `CRON_SECRET`,
+    elle ne s'exécutait pas et l'adresse répondait 200 à n'importe qui. Un
+    contrôle d'accès qui se désactive tout seul quand la configuration manque
+    fait exactement l'inverse de ce qu'on lui demande — et il le fait en silence,
+    au moment précis où l'on croit être protégé.
+
+    Elle refuse maintenant. Le planificateur de Vercel pose l'en-tête
+    `Authorization: Bearer $CRON_SECRET` de lui-même dès que la variable existe :
+    tant qu'elle manque, la tâche échoue visiblement plutôt que de laisser la
+    porte ouverte.
   */
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const fourni = request.headers.get("authorization");
-    if (fourni !== `Bearer ${secret}`) {
-      return Response.json({ erreur: "non autorisé" }, { status: 401 });
-    }
+
+  if (!secret) {
+    console.error(
+      "[relances] CRON_SECRET absent : la route refuse plutôt que de s'ouvrir. " +
+        "Définir la variable sur Vercel, puis redéployer.",
+    );
+    return Response.json({ erreur: "non configuré" }, { status: 503 });
+  }
+
+  if (!jetonValide(request.headers.get("authorization"), secret)) {
+    return Response.json({ erreur: "non autorisé" }, { status: 401 });
   }
 
   const payload = await getPayload({ config });
