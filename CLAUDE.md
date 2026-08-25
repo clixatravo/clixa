@@ -38,6 +38,31 @@ npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
 npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
 ```
 
+**Les parcours du site sont éprouvés par Playwright** (`INT-10`). Une série
+tient en une minute et remplace ce qu'on vérifiait à la main après chaque
+changement :
+
+```bash
+cd platform && npm run epreuves        # la série entière
+cd platform && npm run epreuves:voir   # la même, avec l'interface
+```
+
+- **Elles écrivent en base.** Les inscriptions créées portent une adresse en
+  `@epreuve.invalid` — domaine réservé, qui ne peut appartenir à personne — et
+  sont retirées en fin de série. `e2e/garde.ts` refuse de démarrer si
+  `DATABASE_URL` désigne l'hôte de production ; éprouvé en l'y pointant.
+- **Le ménage refait à la main ce que fait le crochet `recompter`** : une
+  suppression en SQL ne le déclenche pas, et le décompte de places resterait
+  gonflé. Les deux règles doivent rester identiques.
+- **Elles courent contre `next dev`**, pas contre un build — les deux écrivent
+  dans `.next`. `e2e/chauffe.ts` visite chaque page avant la première épreuve :
+  sans cela la compilation tombait dans le temps imparti, et la machine occupée
+  à compiler n'arrivait plus à lancer un navigateur. La première série a duré
+  une heure et demie et perdu douze épreuves ainsi.
+- **Pas encore en intégration continue** : le secret `DATABASE_URL` de GitHub
+  désigne une branche Neon que je n'ai pas vérifiée. Y brancher des épreuves qui
+  écrivent demande d'en être sûr.
+
 Deux scripts servent l'accès au back-office. Aucun adaptateur d'e-mail n'est
 configuré : le lien « Mot de passe oublié » de `/admin` ne mène nulle part, et
 ces scripts sont le seul recours quand quelqu'un perd son mot de passe.
@@ -258,8 +283,12 @@ Une requête qui échoue retombe sur l'ancienne comparaison de chaînes et le
 journalise : la recherche est un raffinement du catalogue, pas le catalogue.
 
 Reste côté développement : `BE-04` (tables LMS déclarées), `INT-06`
-(redirections), `INT-07` (perf 3G), `INT-10` (Playwright), `INT-11` (recette),
-`DES-07` (Storybook).
+(redirections), `INT-07` (perf 3G), `INT-11` (recette), `DES-07` (Storybook).
+
+`INT-07` n'a pas été traité, seulement mesuré : après le passage à Francfort et
+la mise en cache, `/formations` répond en 215 ms, le HTML pèse 9 à 14 Ko et le
+JavaScript 194 Ko. Rien d'évident à reprendre — ce qui n'est pas la même chose
+qu'un travail fait.
 
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.

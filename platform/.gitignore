@@ -20,3 +20,6 @@ tsconfig.tsbuildinfo
 # Médias versés localement (production : Cloudflare R2)
 public/medias/
 catalogue-reel.json
+test-results/
+playwright-report/
+.playwright/

@@ -1,0 +1,61 @@
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+/**
+ * Retirer ce que les épreuves ont écrit.
+ *
+ * Les inscriptions créées portent toutes une adresse en `@epreuve.invalid` —
+ * un domaine réservé, qui ne peut appartenir à personne. C'est à cette marque
+ * qu'on les reconnaît.
+ *
+ * ⚠️ La seconde requête refait à la main ce que fait le crochet `recompter`
+ * de `collections/Inscriptions.ts` : supprimer les lignes en SQL ne le
+ * déclenche pas, et le décompte de places resterait gonflé. Les deux règles
+ * doivent rester identiques — « toutes les inscriptions de la session qui ne
+ * sont pas annulées ».
+ *
+ * Passer par `payload run` déclencherait le vrai crochet, mais Payload met près
+ * d'une minute à démarrer contre Neon : à ce prix-là, personne ne lancerait les
+ * épreuves.
+ */
+export const MARQUE = "@epreuve.invalid";
+
+function adresseBase(): string | undefined {
+  const chemin = path.join(process.cwd(), ".env.local");
+  if (!existsSync(chemin)) return process.env.DATABASE_URL;
+  const ligne = readFileSync(chemin, "utf8")
+    .split("\n")
+    .find((l) => l.startsWith("DATABASE_URL="));
+  return ligne
+    ?.slice("DATABASE_URL=".length)
+    .trim()
+    .replace(/^["']|["']$/g, "");
+}
+
+export default function menage(): void {
+  const url = adresseBase();
+  if (!url) return;
+
+  try {
+    execFileSync(
+      "psql",
+      [
+        url,
+        "-q",
+        "-c",
+        `DELETE FROM inscriptions WHERE apprenant_email LIKE '%${MARQUE}';`,
+        "-c",
+        `UPDATE sessions s SET places_reservees = (
+           SELECT count(*) FROM inscriptions i
+           WHERE i.session_id = s.id AND i.statut <> 'annulee'
+         );`,
+      ],
+      { stdio: "pipe" },
+    );
+  } catch (e) {
+    // Sans psql sous la main, on le dit plutôt que d'échouer la suite : les
+    // épreuves ont déjà rendu leur verdict, le ménage n'en fait pas partie.
+    console.warn("[épreuves] ménage impossible :", (e as Error).message);
+  }
+}

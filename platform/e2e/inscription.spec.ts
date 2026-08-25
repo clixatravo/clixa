@@ -1,0 +1,123 @@
+import { test, expect, type Page } from "@playwright/test";
+import { MARQUE } from "./menage";
+
+/**
+ * Le tunnel : retenir une place, puis annoncer son transfert.
+ *
+ * C'est le chemin qui rapporte, et celui où une régression coûte le plus cher :
+ * une inscription perdue ne se rejoue pas. Une inscription a déjà été perdue
+ * ici, un décompte de places écrit hors transaction ayant fait annuler
+ * l'écriture sans que rien ne le dise.
+ */
+
+const PARCOURS = "directeur-audit-interne";
+
+/** Remplit le formulaire et rend la référence obtenue. */
+async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
+  await page.goto(`/inscription?formation=${PARCOURS}`);
+
+  await page.selectOption('select[name="plan"]', plan);
+  await page.fill('input[name="nom"]', "Épreuve Playwright");
+  await page.fill('input[name="email"]', `epreuve.${Date.now()}${MARQUE}`);
+  await page.fill('input[name="whatsapp"]', "+212600000000");
+  await page.fill('input[name="pays"]', "Maroc");
+
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/\/inscription\/CLX-/);
+
+  const reference = page.url().split("/").pop()!;
+  expect(reference, "la référence doit suivre le format CLX-XXXXX").toMatch(/^CLX-[A-Z0-9]{5}$/);
+  return reference;
+}
+
+test("retenir une place mène à un dossier qui porte sa référence", async ({ page }) => {
+  const reference = await retenirUnePlace(page, "P1");
+
+  await expect(page.getByText(reference, { exact: false }).first()).toBeVisible();
+  // Comptant : une seule échéance, au montant du barème.
+  await expect(page.getByText("Votre échéancier")).toBeVisible();
+
+  // Le dossier reste joignable par son adresse, sans compte — c'est la règle.
+  await page.context().clearCookies();
+  await page.goto(`/inscription/${reference}`);
+  await expect(page.getByText(reference, { exact: false }).first()).toBeVisible();
+});
+
+test("une place retenue est décomptée des places restantes", async ({ page, request }) => {
+  const avant = await placesReservees(request);
+  await retenirUnePlace(page, "P1");
+  const apres = await placesReservees(request);
+
+  // Le décompte a déjà été perdu une fois : compté hors de la transaction, il
+  // ne voyait pas la ligne qu'on venait d'écrire, et annulait l'écriture.
+  expect(apres, "la place retenue n'a pas été décomptée").toBe(avant + 1);
+});
+
+async function placesReservees(request: {
+  get: (u: string) => Promise<{ json: () => Promise<unknown> }>;
+}) {
+  const r = await request.get(`/api/sessions?limit=200&depth=0`);
+  const { docs } = (await r.json()) as { docs: { placesReservees?: number }[] };
+  return docs.reduce((t, s) => t + (s.placesReservees ?? 0), 0);
+}
+
+test.describe("Annoncer un transfert", () => {
+  test("une annonce à la fois, et dans l'ordre des échéances", async ({ page }) => {
+    await retenirUnePlace(page, "P3");
+    const formulaire = page.locator('form[action="/api/transfert"]');
+
+    await expect(formulaire, "le formulaire doit être offert dès l'arrivée").toBeVisible();
+
+    await page.selectOption('select[name="moyen"]', "western-union");
+    await page.fill('input[name="numero"]', "8471203954");
+    await page.click('form[action="/api/transfert"] button[type="submit"]');
+
+    await page.waitForURL(/annonce=ok/);
+    /*
+      Par son rôle, et non par son texte : « Nous vérifions le transfert » est
+      aussi la troisième étape des consignes, juste au-dessus. Viser la phrase
+      attrapait les deux.
+    */
+    await expect(page.getByRole("status")).toContainText("C'est noté");
+    await expect(page.getByText("en vérification").first()).toBeVisible();
+
+    /*
+      Le formulaire se retire. La première version cherchait la première
+      échéance « attendue » : l'échéance 1 passée en vérification, la 2 restait
+      attendue et un second envoi la marquait à son tour — alors qu'un seul
+      transfert avait été fait.
+    */
+    await expect(formulaire, "le formulaire doit se retirer après l'annonce").toHaveCount(0);
+  });
+
+  test("une annonce forcée sur un dossier déjà annoncé est refusée", async ({ page, request }) => {
+    const reference = await retenirUnePlace(page, "P3");
+
+    const annoncer = () =>
+      request.post("/api/transfert", {
+        form: { dossier: reference, moyen: "ria", numero: "123456" },
+        maxRedirects: 0,
+      });
+
+    expect((await annoncer()).headers()["location"]).toContain("annonce=ok");
+    // Sans passer par la page : la route doit refuser d'elle-même.
+    expect((await annoncer()).headers()["location"]).toContain("annonce=rien");
+  });
+
+  test("une référence inventée n'écrit rien et renvoie à l'accueil", async ({ request }) => {
+    const r = await request.post("/api/transfert", {
+      form: { dossier: "CLX-ZZZZZ", moyen: "ria", numero: "1" },
+      maxRedirects: 0,
+    });
+    expect(r.headers()["location"]).toMatch(/\/$/);
+  });
+
+  test("« espèces » n'est pas annonçable à distance", async ({ page, request }) => {
+    const reference = await retenirUnePlace(page, "P1");
+    const r = await request.post("/api/transfert", {
+      form: { dossier: reference, moyen: "especes", numero: "1" },
+      maxRedirects: 0,
+    });
+    expect(r.headers()["location"]).toContain("annonce=champs");
+  });
+});
