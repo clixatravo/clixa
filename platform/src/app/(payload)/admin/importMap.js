@@ -1,8 +1,14 @@
 import { EtiquetteModule as EtiquetteModule_daac07ce12c516f15166a33f2bef402c } from '@/collections/EtiquetteModule'
+import { Icone as Icone_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
+import { Logo as Logo_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
+import { AvantConnexion as AvantConnexion_253a9d27b39c5f55dc4a49ddc67bb636 } from '@/components/admin/AvantConnexion'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
   "@/collections/EtiquetteModule#EtiquetteModule": EtiquetteModule_daac07ce12c516f15166a33f2bef402c,
+  "@/components/admin/Marque#Icone": Icone_0fbc6ed2e61e66062cb101ebfccddc7b,
+  "@/components/admin/Marque#Logo": Logo_0fbc6ed2e61e66062cb101ebfccddc7b,
+  "@/components/admin/AvantConnexion#AvantConnexion": AvantConnexion_253a9d27b39c5f55dc4a49ddc67bb636,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

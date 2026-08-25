@@ -1,0 +1,120 @@
+/**
+ * La marque de CLIXA sur le back-office.
+ *
+ * ── Ce qu'on touche, et ce qu'on laisse ─────────────────────────────────────
+ * On ne refait pas le thème de Payload. Son échelle d'« élévation » — du fond
+ * au contraste maximal — porte le contraste de dizaines de composants qu'on ne
+ * peut pas tous éprouver ; la renverser pour obtenir un back-office sombre se
+ * paierait en textes illisibles trouvés un par un, des mois plus tard.
+ *
+ * On change ce qui identifie sans rien fragiliser : l'accent, les familles de
+ * caractères, et la marque. Le résultat tient dans les deux thèmes de Payload,
+ * clair comme sombre, que l'équipe choisit elle-même.
+ *
+ * ── Pourquoi l'or plutôt que le bleu ────────────────────────────────────────
+ * L'accent de Payload sert aux boutons d'action et aux liens. En or, chaque
+ * geste qui compte porte la couleur de la maison ; c'est le seul endroit où
+ * une couleur de marque se remarque sans gêner la lecture.
+ */
+
+:root {
+  --clixa-or: #c9a24c;
+  --clixa-or-clair: #e9cd84;
+  --clixa-encre: #080c18;
+  --clixa-ivoire: #f3efe4;
+
+  /* L'accent de Payload : boutons pleins, liens, états actifs. */
+  --theme-success-500: var(--clixa-or);
+  --theme-success-600: #b08d3f;
+  --theme-success-400: var(--clixa-or-clair);
+
+  --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), "Hoefler Text", Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/*
+  Les titres en romaine à empattements, comme sur le site. Le corps du texte
+  reste en linéale : c'est lui qu'on lit toute la journée dans un formulaire.
+*/
+h1,
+h2,
+h3,
+.nav-group__toggle {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+/* ── La marque ──────────────────────────────────────────────────────────── */
+
+.clixa-marque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.clixa-marque__mot {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 2.1rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.clixa-marque__point {
+  color: var(--clixa-or);
+}
+
+.clixa-marque__legende {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.clixa-icone {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+/* ── L'avis sous le formulaire de connexion ─────────────────────────────── */
+
+.clixa-avis {
+  border-left: 2px solid var(--clixa-or);
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/*
+  ── Le bouton principal ─────────────────────────────────────────────────────
+  Payload ne le peint pas avec son accent, contrairement à ce qu'on pourrait
+  croire, mais avec `--theme-elevation-800` — un gris sombre. Redéfinir l'accent
+  ne l'atteint donc pas, et retoucher son élévation a produit un texte encre sur
+  fond gris sombre : illisible. On lui donne la couleur directement.
+
+  L'or est clair : le texte doit être sombre. Ce couple ne dépend pas du thème
+  choisi, l'or ne changeant pas avec lui — la règle tient donc en clair comme
+  en sombre.
+*/
+.btn--style-primary,
+.btn--style-primary:not(:disabled):focus {
+  background-color: var(--clixa-or);
+  color: var(--clixa-encre);
+}
+
+.btn--style-primary .btn__content,
+.btn--style-primary .btn__label {
+  color: var(--clixa-encre);
+}
+
+.btn--style-primary:not(:disabled):hover {
+  background-color: var(--clixa-or-clair);
+  color: var(--clixa-encre);
+}

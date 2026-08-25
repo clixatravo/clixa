@@ -38,6 +38,19 @@ export default buildConfig({
     meta: {
       titleSuffix: "— CLIXA",
     },
+    /*
+      Le back-office porte la marque de la maison plutôt que celle de l'outil :
+      l'équipe s'y connecte tous les matins. Les deux thèmes de Payload restent
+      offerts — on ne choisit pas à sa place entre clair et sombre pour une
+      interface où l'on passe la journée à lire des formulaires.
+    */
+    components: {
+      graphics: {
+        Logo: "@/components/admin/Marque#Logo",
+        Icon: "@/components/admin/Marque#Icone",
+      },
+      beforeLogin: ["@/components/admin/AvantConnexion#AvantConnexion"],
+    },
   },
 
   collections: [

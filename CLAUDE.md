@@ -63,6 +63,28 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   désigne une branche Neon que je n'ai pas vérifiée. Y brancher des épreuves qui
   écrivent demande d'en être sûr.
 
+**Le back-office porte la marque de la maison** (`src/app/(payload)/clixa.css`,
+`components/admin/`). L'équipe s'y connecte tous les matins ; elle arrivait sur
+une page au nom de Payload. Trois choses seulement sont retouchées :
+
+- **L'accent passe à l'or**, et la marque remplace celle de l'outil.
+- **Le thème de Payload n'est pas refait.** Son échelle d'« élévation » porte le
+  contraste de dizaines de composants qu'on ne peut pas tous éprouver ; la
+  renverser pour obtenir un back-office sombre se paierait en textes illisibles
+  trouvés un par un. Les deux thèmes de Payload restent offerts, et l'équipe
+  choisit.
+- **Le bouton principal se peint directement.** Payload ne le rend pas avec son
+  accent mais avec `--theme-elevation-800` : redéfinir l'accent ne l'atteint pas,
+  et retoucher son élévation avait donné du texte encre sur gris sombre.
+  Or sur encre, mesuré à 8,14:1.
+
+⚠️ Un sélecteur inventé ne casse rien et ne fait rien — il ne correspond
+simplement à aucun élément. Vérifier qu'une classe existe avant de s'y fier :
+
+```bash
+grep -c "btn--style-primary" node_modules/@payloadcms/ui/dist/styles.css
+```
+
 Deux scripts servent l'accès au back-office. Aucun adaptateur d'e-mail n'est
 configuré : le lien « Mot de passe oublié » de `/admin` ne mène nulle part, et
 ces scripts sont le seul recours quand quelqu'un perd son mot de passe.
