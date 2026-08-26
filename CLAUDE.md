@@ -108,9 +108,11 @@ simplement à aucun élément. Vérifier qu'une classe existe avant de s'y fier 
 grep -c "btn--style-primary" node_modules/@payloadcms/ui/dist/styles.css
 ```
 
-Deux scripts servent l'accès au back-office. Aucun adaptateur d'e-mail n'est
-configuré : le lien « Mot de passe oublié » de `/admin` ne mène nulle part, et
-ces scripts sont le seul recours quand quelqu'un perd son mot de passe.
+Deux scripts servent l'accès au back-office. Ils étaient le seul recours tant
+qu'aucun expéditeur n'existait ; depuis le 26 août 2026 l'adaptateur Resend est
+configuré et le lien « Mot de passe oublié » de `/admin` devrait aboutir. Ce
+chemin-là n'a pas été éprouvé — le vérifier suppose de déclencher une
+réinitialisation sur un compte réel.
 
 ```bash
 npx payload run scripts/reinitialiser-mot-de-passe.ts <email>  # lien de réinit.
@@ -200,8 +202,15 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**70 tâches sur 86.** Le front public et le back-office sont complets, le site
-lit ses données depuis PostgreSQL, et l'ensemble tourne en production.
+**73 tâches sur 86.** Le front public et le back-office sont complets, le site
+lit ses données depuis PostgreSQL, et l'ensemble tourne en production sur
+`www.clixa.africa`, ouvert aux moteurs depuis le 26 août 2026.
+
+⚠️ **Ce qui reste n'est pas surtout du code.** Le tunnel d'inscription est
+complet jusqu'au moment où il faut dire *où envoyer l'argent* — et cette
+donnée-là n'existe pas encore. Voir « Points ouverts » avant d'ouvrir un
+chantier technique : le premier de ces points vaut plus que les quatre tâches
+de développement restantes.
 
 **Le catalogue en ligne est le vrai** depuis le 22 août 2026 : douze parcours
 transmis par la direction — onze directions d'entreprise et la préparation PMP —
@@ -213,16 +222,24 @@ Le barème vit dans un document à part (`Tarifs`) : les douze parcours partagen
 coûte plus cher, et l'écart est affiché sur la fiche plutôt que découvert au
 paiement. Chaque rythme est un lien vers le formulaire, choix déjà rempli.
 
+⚠️ **Le prix annoncé est le plus élevé des trois** (`prixAffiche`), pas le plus
+bas. Annoncer 423 € puis demander 470 € à qui règle en trois fois ferait
+découvrir l'écart au paiement — exactement ce que le tableau des rythmes existe
+pour éviter. Les trois montants restent affichés côte à côte sur la fiche ;
+c'est la vignette, la carte et l'image de partage qui portent le maximum.
+
 **La cohorte de septembre est ouverte** : douze sessions, samedi 19 septembre
 pour les parcours exécutifs et dimanche 20 pour la préparation PMP, huit
 séances hebdomadaires jusqu'au 7 et 8 novembre. Mode « visio » — les séances
 sont live à heure fixe ; « en ligne » afficherait « Accès permanent » et
 promettrait au visiteur de suivre à son rythme.
 
-⚠️ La capacité vaut 20, faute de chiffre dans les fiches. C'est elle qui produit
-le décompte de places montré au visiteur : premier réglage à revoir avec la
-direction. Le rythme des dix parcours autres que DAF et PMP est également une
-hypothèse — le catalogue Word ne documente que ces deux-là.
+La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
+(`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
+de places montré au visiteur.
+
+⚠️ Le rythme des dix parcours autres que DAF et PMP reste une hypothèse — le
+catalogue Word ne documente que ces deux-là.
 
 **Le présentiel reste en place, sans contenu pour l'instant.** Les douze
 parcours se donnent tous à distance, et le filtre par ville, la page `/campus`
@@ -274,8 +291,9 @@ L'effet ne s'observe pas en développement, où chaque page est recalculée à
 chaque requête.
 
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
-`MOD-01→07`, `BE-01,02,03,05,06,07,08,10,11,12,13`, `INT-02` (cache et invalidation), `INT-03,04,05`, **`INT-01`**,
-**`INT-08`** (le contenu réel).
+`MOD-01→07`, `BE-01,02,03,05,06,07,08,09,10,11,12,13,20`,
+`INT-02` (cache et invalidation), `INT-03,04,05`, `INT-10` (les épreuves),
+**`INT-01`**, **`INT-08`** (le contenu réel).
 
 **La phase 02 est ouverte.** Un visiteur retient sa place depuis la fiche,
 choisit son rythme de paiement et repart avec une référence de dossier. Deux
@@ -302,13 +320,23 @@ de temps.
 - La clef reste la référence du dossier, comme pour le consulter. Annoncer
   n'ouvre donc rien de plus que lire.
 
-⚠️ **Une adresse ne prouve rien tant qu'aucun courriel ne part.** Créer un
-compte rattachait tous les dossiers portant la même adresse : il suffisait de
-connaître l'adresse de quelqu'un pour voir son nom, son téléphone, son
-échéancier et la référence de son dossier — laquelle ouvre l'annonce de
-transfert. Le rattachement exige désormais **l'adresse et la référence**, celle
-que le participant a déjà reçue. Le jour où un expéditeur sera configuré,
-`auth.verify` de Payload fera ce travail à la source.
+⚠️ **Une adresse saisie n'est pas une adresse prouvée.** Créer un compte
+rattachait tous les dossiers portant la même adresse : il suffisait de connaître
+l'adresse de quelqu'un pour voir son nom, son téléphone, son échéancier et la
+référence de son dossier — laquelle ouvre l'annonce de transfert. Le
+rattachement exige désormais **l'adresse et la référence**, celle que le
+participant a déjà reçue.
+
+Un expéditeur existe depuis le 26 août 2026, mais `auth.verify` de Payload n'a
+pas été activé : le faire renverrait le contrôle à la source et rendrait la
+double exigence inutile. Tant qu'il ne l'est pas, ne pas retirer la référence
+en croyant simplifier.
+
+**Les relances sont une route publique fermée par un jeton** (`api/relances`,
+`CRON_SECRET`, comparé en temps constant). Elle refusait le service *quand le
+secret était absent* — c'est-à-dire qu'un oubli de configuration l'ouvrait à
+tout le monde. Elle répond maintenant 503 sans secret et 401 sans jeton valide :
+une garde qui s'efface quand on oublie de la régler n'est pas une garde.
 
 **La recherche du catalogue passe par PostgreSQL** depuis `BE-09`
 (`src/lib/recherche.ts`). Elle ne compare plus des chaînes : elle ramène les
@@ -335,6 +363,31 @@ Trois choses à savoir avant d'y toucher :
 Une requête qui échoue retombe sur l'ancienne comparaison de chaînes et le
 journalise : la recherche est un raffinement du catalogue, pas le catalogue.
 
+**Trois choses ajoutées le 26 août 2026**, autour du tunnel qui existait déjà :
+
+- **Chaque parcours a une plaquette PDF**
+  (`formations/[slug]/plaquette`, `@react-pdf/renderer`). Elle est *calculée à
+  partir du catalogue*, pas déposée en média : un tarif corrigé dans /admin
+  change le PDF sans que personne pense à le régénérer. C'est ce qu'un
+  prospect fait suivre à qui décide du budget.
+- **Un bouton WhatsApp dans la liste des inscriptions**
+  (`components/admin/BoutonWhatsapp.tsx`). ⚠️ Il refuse de construire un lien
+  quand le numéro n'a pas d'indicatif : `0689324243` est marocain pour qui le
+  lit, mais `wa.me` sans indicatif ouvre une conversation avec un inconnu —
+  ou avec personne. Un tiret affiché vaut mieux qu'un mauvais numéro composé.
+- **Le bandeau du tableau de bord compte les inscriptions de la semaine.**
+  Cinquième vignette, à côté des trois choses à faire — celles-là appellent un
+  geste, celle-ci dit seulement si le mois se remplit.
+
+**Les pages du CMS se rendent à la racine** (`[slug]/page.tsx`, `lib/pages.ts`,
+`components/BlocRendu.tsx` extrait de la page d'article). Le pied de page liste
+celles qui sont publiées : y ajouter une page suffit à la faire apparaître.
+`scripts/creer-pages-legales.ts` a déposé mentions légales et confidentialité
+**en brouillon** — elles portent seize « [À COMPLÉTER] » que seule la direction
+peut remplir (raison sociale, RC, ICE, directeur de publication, CNDP, durées
+de conservation, ville du tribunal). Publier avant de les remplir mettrait en
+ligne un document juridique à trous.
+
 Reste côté développement : `BE-04` (tables LMS déclarées), `INT-06`
 (redirections), `INT-07` (perf 3G), `INT-11` (recette), `DES-07` (Storybook).
 
@@ -346,31 +399,78 @@ qu'un travail fait.
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.
 
+## Le courriel
+
+Deux services, deux rôles, et il faut savoir lequel on touche :
+
+| | Sert à | Domaine | Réglé chez |
+|---|---|---|---|
+| **Zoho Mail** | le courrier que des humains lisent et écrivent | `clixa.africa` (MX) | Namecheap, « Custom MX » |
+| **Resend** | ce que le site envoie tout seul | `envoi.clixa.africa` | Namecheap, sous-domaine |
+
+**L'expédition automatique vit sur un sous-domaine, exprès.** Une inscription
+qui part en masse, un dossier signalé comme indésirable, et c'est la réputation
+de `envoi.clixa.africa` qui tombe — pas celle de `clixa.africa`, avec laquelle
+la direction écrit à ses clients. Les deux réputations sont séparées à la
+source ; les rassembler demanderait de tout refaire.
+
+⚠️ **Un domaine ne porte qu'un seul enregistrement SPF.** En ajouter un second
+n'additionne pas les expéditeurs autorisés : la vérification devient
+`permerror` et *les deux* services cessent de passer. C'est la raison d'être du
+sous-domaine — `clixa.africa` garde le SPF de Zoho, `envoi.clixa.africa` a le
+sien. Le jour où il faudra qu'un même domaine serve les deux, on fusionne les
+`include:` dans une seule ligne, jamais deux lignes.
+
+**Sans `RESEND_API_KEY`, l'adaptateur n'est pas branché du tout**
+(`payload.config.ts`) et Payload écrit les messages dans la console. C'est
+voulu à deux titres : le tunnel d'inscription tourne en développement sans
+qu'aucun message ne parte pour de vrai, et une clé absente en production
+n'empêche pas le site de démarrer. Trois variables vont ensemble —
+`RESEND_API_KEY`, `EMAIL_EXPEDITEUR` (qui doit appartenir au domaine vérifié)
+et `EMAIL_EQUIPE` (qui reçoit la copie interne).
+
+Le lien « Mot de passe oublié » de `/admin` passe par ce même adaptateur.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |
 |---|---|---|
-| Capacité réelle d'une cohorte | 20 par défaut, inventé | **la direction** |
-| Coordonnées du bénéficiaire | global `tarifs`, vides | **la direction** |
-| Domaine et clé Resend | aucun courriel ne part sans eux | **la direction** |
+| **Coordonnées du bénéficiaire** | global `tarifs`, vides | **la direction** |
+| Pages légales | déposées en brouillon, 16 « [À COMPLÉTER] » | **la direction** |
+| Témoignages et partenaires réels | 0 publié sur 6 et 5 ; les exemples sont dépubliés | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
-| Pages légales | collection `pages`, vide | `RIS-06` |
-| Témoignages et partenaires réels | affichés dès qu'ils sont publiés ; les exemples sont dépubliés | la direction |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
+
+**Le premier bloque tout le reste.** Un visiteur peut retenir sa place, choisir
+son rythme et recevoir sa référence — puis il arrive à « où envoyer le
+règlement » et n'y trouve rien. La page le dit plutôt que d'inventer, mais le
+tunnel s'arrête là.
+
+⚠️ Un article publié — « CLIXA ouvre un rythme régulier de sessions à Abidjan »,
+daté de novembre 2026 — annonce du présentiel dans trois villes où aucune
+session n'est ouverte. Signalé à la direction le 26 août 2026, maintenu par
+décision explicite. C'est la quatrième fois que ces villes reviennent sur le
+site sans qu'une session s'y donne ; les épreuves ne savent pas attraper cela.
 
 ## Déploiement
 
 - GitHub : `clixatravo/clixa` — CI verte sur chaque push. Les secrets
   `DATABASE_URL` et `PAYLOAD_SECRET` sont nécessaires à l'étape Build, qui
   interroge la base pour pré-générer les pages.
-- Vercel : projet `clixa`, **désindexé** tant que `NEXT_PUBLIC_SITE_ENV` ne
-  vaut pas `production`. Le back-office public est sur `/admin`.
+- Vercel : projet `clixa`. Le back-office public est sur `/admin`.
   **Root Directory : `platform`** — le dépôt a le site statique à sa racine ;
   sans ce réglage, le build ne trouve pas de `package.json`.
-  Trois URL mènent au même site : `clixa-institute.vercel.app` et
-  `clixa-zeta.vercel.app` sont des alias stables, `clixa-<hash>-cl-95af…`
-  change à chaque build et ne doit pas être partagée.
+- **Le site est ouvert aux moteurs** depuis le 26 août 2026 :
+  `NEXT_PUBLIC_SITE_ENV` vaut `production`, `robots.txt` autorise, et les pages
+  portent `index, follow`. Le remettre à autre chose referme tout — c'est le
+  seul interrupteur.
+- **`www.clixa.africa` fait foi.** L'apex y redirige (308), la balise canonique
+  et le plan du site l'annoncent. Les deux doivent rester d'accord : la balise
+  canonique désignait l'apex pendant que l'apex redirigeait vers `www`, et
+  Google se voyait renvoyé d'une adresse à l'autre.
+  `clixa-institute.vercel.app` et `clixa-zeta.vercel.app` restent des alias ;
+  `clixa-<hash>-cl-95af…` change à chaque build et ne doit pas être partagée.
 - **Les fonctions tournent à Francfort** (`regions` dans `platform/vercel.json`),
   parce que la base y est. Par défaut Vercel les place à Washington : chaque
   requête SQL traversait alors l'Atlantique deux fois, et `/formations` — qui
