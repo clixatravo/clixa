@@ -7,7 +7,7 @@
  * ses dates et ses prix — ce qui rend éligible aux résultats enrichis.
  */
 
-import type { Programme, Session } from "@/lib/types";
+import type { Programme, Session, Tarifs } from "@/lib/types";
 import type { Article } from "@/lib/blog";
 import { lieuSession } from "@/lib/catalogue";
 
@@ -70,7 +70,41 @@ function modeSchema(s: Session): string {
   return s.mode === "presentiel" ? "Onsite" : "Online";
 }
 
-export function jsonLdCourse(programme: Programme, sessions: Session[]) {
+/**
+ * Les prix annoncés au moteur sont ceux du barème, pas celui de la session.
+ *
+ * La fiche affiche les trois rythmes depuis `Tarifs` ; l'objet Course lisait,
+ * lui, `session.prixCentimes`. Google recevait donc 423 € — le comptant — quand
+ * la carte, la vignette et l'image de partage annoncent 470 €. Le visiteur
+ * découvrait l'écart en arrivant, ce que l'affichage des trois rythmes existe
+ * précisément pour éviter.
+ *
+ * Une fourchette dit la vérité qu'un montant unique ne peut pas dire : les deux
+ * bornes sont des prix réels, et laquelle s'applique dépend du rythme choisi.
+ */
+function offreAgregee(tarifs: Tarifs, url: string, place: boolean) {
+  // Dédupliqué : le comptant est aussi l'un des rythmes, et le compter deux fois
+  // annoncerait quatre offres là où le visiteur en voit trois.
+  const montants = [
+    ...new Set(
+      [tarifs.prixComptantCentimes, ...tarifs.plans.map((plan) => plan.totalCentimes)].filter(
+        (centimes) => centimes > 0,
+      ),
+    ),
+  ];
+
+  return {
+    "@type": "AggregateOffer",
+    lowPrice: (Math.min(...montants) / 100).toFixed(2),
+    highPrice: (Math.max(...montants) / 100).toFixed(2),
+    offerCount: montants.length,
+    priceCurrency: tarifs.devise,
+    availability: place ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+    url,
+  };
+}
+
+export function jsonLdCourse(programme: Programme, sessions: Session[], tarifs: Tarifs) {
   return {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -104,16 +138,11 @@ export function jsonLdCourse(programme: Programme, sessions: Session[]) {
             },
           }
         : { location: { "@type": "VirtualLocation", name: "Classe virtuelle" } }),
-      offers: {
-        "@type": "Offer",
-        price: (s.prixCentimes / 100).toFixed(2),
-        priceCurrency: s.devise,
-        availability:
-          s.capacite - s.placesReservees > 0
-            ? "https://schema.org/InStock"
-            : "https://schema.org/SoldOut",
-        url: `${SITE_URL}/formations/${programme.slug}`,
-      },
+      offers: offreAgregee(
+        tarifs,
+        `${SITE_URL}/formations/${programme.slug}`,
+        s.capacite - s.placesReservees > 0,
+      ),
     })),
   };
 }

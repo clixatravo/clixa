@@ -1,22 +1,11 @@
 import type { Payload } from "payload";
 
 /**
- * BE-16 — Les courriels que la plateforme envoie.
+ * BE-16 — Courriels exécutifs & transactionnels CLIXA Institute.
  *
- * ── Pourquoi si peu de mise en forme ────────────────────────────────────────
- * Un message transactionnel se lit dans une notification, souvent sur un
- * téléphone, souvent en diagonale. Le texte simple passe partout, ne finit pas
- * en spam pour cause d'images distantes, et reste lisible quand le client de
- * messagerie décide de tout dépouiller.
- *
- * ── Pourquoi un envoi qui n'échoue jamais ───────────────────────────────────
- * Un courriel qui ne part pas ne doit pas empêcher une inscription d'exister.
- * La place est retenue, le dossier est en base : c'est l'essentiel. On note
- * l'échec dans les journaux et on continue.
- *
- * Sans adaptateur configuré — pas de clé Resend — Payload écrit les messages
- * dans la console au lieu de les envoyer. Le tunnel fonctionne donc en
- * développement sans qu'aucun courriel ne parte pour de vrai.
+ * Chaque message part à la fois en texte brut (pour compatibilité universelle et anti-spam)
+ * et en HTML structuré haute définition avec l'identité de marque (Or & Encre),
+ * la signature de l'institut et les coordonnées complètes de contact.
  */
 
 /** Où arrivent les notifications internes. À défaut, personne n'est prévenu. */
@@ -39,29 +28,215 @@ export interface CourrielInscription {
   urlDossier: string;
 }
 
+/**
+ * Gabarit HTML universel CLIXA Institute.
+ * Rendu compatible Outlook, Gmail, Apple Mail, iOS et Android.
+ */
+export function gabaritHtmlEmail({
+  titre,
+  soustitre,
+  corpsHtml,
+  boutonTexte,
+  boutonLien,
+  badgeRef,
+}: {
+  titre: string;
+  soustitre?: string;
+  corpsHtml: string;
+  boutonTexte?: string;
+  boutonLien?: string;
+  badgeRef?: string;
+}): string {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${titre}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #080c18; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #f3efe4;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #080c18; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <!-- Container principal 600px -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #0f172a; border-radius: 12px; border: 1px solid rgba(201, 162, 76, 0.25); overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+          
+          <!-- En-tête Institutionnel -->
+          <tr>
+            <td style="background-color: #080c18; border-bottom: 2px solid #c9a24c; padding: 28px 32px; text-align: left;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td>
+                    <table border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="width: 38px; height: 38px; background-color: #111a33; border: 1px solid #c9a24c; border-radius: 6px; text-align: center; vertical-align: middle;">
+                          <span style="font-family: Georgia, serif; font-weight: bold; font-size: 18px; color: #c9a24c; line-height: 38px;">C</span>
+                        </td>
+                        <td style="padding-left: 14px;">
+                          <div style="font-family: Georgia, serif; font-size: 20px; font-weight: bold; letter-spacing: 0.05em; color: #f3efe4;">
+                            CLIXA<span style="color: #c9a24c;">.</span>
+                          </div>
+                          <div style="font-size: 10px; font-family: 'SF Mono', Menlo, Consolas, monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c; margin-top: 2px;">
+                            Executive Education · Afrique
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  ${
+                    badgeRef
+                      ? `<td align="right">
+                    <div style="display: inline-block; background-color: rgba(201, 162, 76, 0.1); border: 1px solid rgba(201, 162, 76, 0.35); border-radius: 4px; padding: 4px 10px; font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: #e9cd84; font-weight: bold;">
+                      ${badgeRef}
+                    </div>
+                  </td>`
+                      : ""
+                  }
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Corps du message -->
+          <tr>
+            <td style="padding: 36px 32px;">
+              <h1 style="margin: 0 0 8px 0; font-family: Georgia, serif; font-size: 24px; font-weight: bold; color: #ffffff; line-height: 1.3;">
+                ${titre}
+              </h1>
+              ${
+                soustitre
+                  ? `<div style="font-size: 14px; color: #b9b7ac; margin-bottom: 24px; line-height: 1.5;">${soustitre}</div>`
+                  : `<div style="margin-bottom: 20px;"></div>`
+              }
+
+              <!-- Contenu spécifique -->
+              <div style="font-size: 15px; line-height: 1.65; color: #e2e8f0;">
+                ${corpsHtml}
+              </div>
+
+              <!-- Bouton d'action principal -->
+              ${
+                boutonTexte && boutonLien
+                  ? `<div style="margin: 32px 0 20px 0; text-align: center;">
+                <a href="${boutonLien}" style="display: inline-block; background-color: #c9a24c; color: #080c18; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 6px; box-shadow: 0 4px 12px rgba(201, 162, 76, 0.35);">
+                  ${boutonTexte} &rarr;
+                </a>
+              </div>`
+                  : ""
+              }
+            </td>
+          </tr>
+
+          <!-- Bloc Signature & Canaux de Contact Officiels -->
+          <tr>
+            <td style="background-color: #0b1122; border-top: 1px solid rgba(243, 239, 228, 0.1); padding: 28px 32px;">
+              <div style="font-size: 11px; font-family: 'SF Mono', Menlo, monospace; color: #c9a24c; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; margin-bottom: 12px;">
+                ✦ Direction des Admissions & Relations Entreprises
+              </div>
+              
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 18px;">
+                <tr>
+                  <td style="font-size: 13px; color: #cbd5e1; line-height: 1.8;">
+                    <div><strong>💬 WhatsApp Admissions :</strong> <a href="https://wa.me/212661000000" style="color: #2fa37d; text-decoration: none; font-weight: bold;">+212 6 61 00 00 00</a></div>
+                    <div><strong>✉️ Courriel Officiel :</strong> <a href="mailto:contact@clixa.africa" style="color: #e9cd84; text-decoration: none;">contact@clixa.africa</a></div>
+                    <div><strong>🌐 Portail Officiel :</strong> <a href="https://clixa.africa" style="color: #e9cd84; text-decoration: none;">https://clixa.africa</a></div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Badges des Campus & Hubs -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px dashed rgba(243, 239, 228, 0.1); padding-top: 14px;">
+                <tr>
+                  <td style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
+                    <span style="color: #e9cd84; font-weight: bold;">Présence Panafricaine :</span> Agadir · Abidjan · Dakar · Classe Virtuelle
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Pied de page légal -->
+          <tr>
+            <td style="background-color: #060913; padding: 20px 32px; text-align: center; font-size: 11px; color: #64748b; line-height: 1.5;">
+              CLIXA Institute — Institut Panafricain de Formation Continue & Certifications Exécutives.<br>
+              Ce courriel vous a été adressé dans le cadre de votre démarche pédagogique officielle.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 async function envoyer(
   payload: Payload,
-  message: { to: string; subject: string; text: string },
+  message: { to: string; subject: string; text: string; html?: string },
 ): Promise<void> {
   try {
     await payload.sendEmail(message);
   } catch (e) {
-    // Voir l'en-tête : une inscription vaut mieux qu'un accusé de réception.
     payload.logger.error({ err: e, to: message.to }, "[courriel] envoi impossible");
   }
 }
 
-/** Au participant : sa référence, son échéancier, et où revenir. */
+/** Au participant : confirmation de place, récapitulatif du dossier et coordonnées de contact. */
 export async function courrielParticipant(payload: Payload, d: CourrielInscription): Promise<void> {
-  const lignes = d.echeances.map(
+  const lignesTexte = d.echeances.map(
     (e, i) =>
       `  ${i + 1}. ${EUROS.format(e.montant)}` +
       (e.dateLimite ? ` — à régler avant le ${JOUR.format(new Date(e.dateLimite))}` : ""),
   );
 
+  const echeancesHtml = d.echeances
+    .map(
+      (e, i) => `
+      <tr style="border-bottom: 1px solid rgba(243, 239, 228, 0.08);">
+        <td style="padding: 10px 12px; font-size: 13px; color: #e2e8f0;">Échéance ${i + 1}</td>
+        <td style="padding: 10px 12px; font-size: 13px; font-family: monospace; font-weight: bold; color: #e9cd84; text-align: right;">${EUROS.format(e.montant)}</td>
+        <td style="padding: 10px 12px; font-size: 12px; color: #94a3b8; text-align: right;">${e.dateLimite ? JOUR.format(new Date(e.dateLimite)) : "À la réservation"}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const corpsHtml = `
+    <p style="margin-top: 0;">Bonjour <strong>${d.apprenantNom}</strong>,</p>
+    <p>Nous vous confirmons que votre place a bien été retenue pour le parcours exécutif :</p>
+    
+    <!-- Boîte Récapitulatif -->
+    <div style="background-color: #111a33; border-left: 3px solid #c9a24c; border-radius: 4px; padding: 16px 20px; margin: 20px 0;">
+      <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 4px;">${d.programmeTitre}</div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 8px;">Session : <strong>${d.sessionLibelle}</strong></div>
+      <div style="font-size: 13px; color: #e9cd84;">Formule : <strong>${d.planLibelle} (${EUROS.format(d.montantTotal)})</strong></div>
+    </div>
+
+    <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin: 24px 0 10px 0;">Échéancier de règlement :</div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b1122; border-radius: 6px; border: 1px solid rgba(243, 239, 228, 0.1); margin-bottom: 24px;">
+      <thead>
+        <tr style="background-color: rgba(201, 162, 76, 0.1); border-bottom: 1px solid rgba(201, 162, 76, 0.2);">
+          <th style="padding: 8px 12px; text-align: left; font-size: 11px; font-family: monospace; text-transform: uppercase; color: #e9cd84;">Échéance</th>
+          <th style="padding: 8px 12px; text-align: right; font-size: 11px; font-family: monospace; text-transform: uppercase; color: #e9cd84;">Montant</th>
+          <th style="padding: 8px 12px; text-align: right; font-size: 11px; font-family: monospace; text-transform: uppercase; color: #e9cd84;">Date Limite</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${echeancesHtml}
+      </tbody>
+    </table>
+
+    <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 12px;">Étapes pour valider définitivement votre inscription :</div>
+    <ol style="margin: 0; padding-left: 20px; line-height: 1.8; color: #cbd5e1; font-size: 14px;">
+      <li>Effectuez le versement de la 1ère échéance (Western Union, Ria, MoneyGram ou virement bancaire).</li>
+      <li>Transmettez le numéro de transfert par <strong>WhatsApp</strong> à votre conseiller ou directement sur votre dossier en ligne.</li>
+      <li>Notre équipe valide votre admission et vous transmet vos accès d'apprentissage.</li>
+    </ol>
+  `;
+
   await envoyer(payload, {
     to: d.apprenantEmail,
-    subject: `Votre place est retenue — ${d.programmeTitre}`,
+    subject: `Place Retenue — ${d.programmeTitre} [Dossier ${d.reference}]`,
     text: [
       `Bonjour ${d.apprenantNom},`,
       "",
@@ -70,32 +245,50 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
       `Référence de votre dossier : ${d.reference}`,
       "",
       `Règlement choisi : ${d.planLibelle} — ${EUROS.format(d.montantTotal)} au total`,
-      ...lignes,
+      ...lignesTexte,
       "",
       "Ce qu'il reste à faire :",
       "  1. Envoyer la première échéance par Western Union, Ria ou MoneyGram.",
       `  2. Nous transmettre le numéro de transfert par WhatsApp, en citant ${d.reference}.`,
       "  3. Nous vérifions et confirmons votre place.",
       "",
-      "Votre dossier, à conserver :",
+      "Votre dossier en ligne :",
       d.urlDossier,
       "",
-      "À bientôt,",
-      "CLIXA Institute",
+      "Contact Admissions : contact@clixa.africa · https://clixa.africa",
+      "CLIXA Institute — Direction des Admissions",
     ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Votre place est retenue",
+      soustitre: `Dossier d'admission officiel · ${d.sessionLibelle}`,
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Accéder à mon dossier en ligne",
+      boutonLien: d.urlDossier,
+    }),
   });
 }
 
-/** À l'équipe : de quoi rappeler sans ouvrir le back-office. */
+/** À l'équipe : notification d'une nouvelle inscription. */
 export async function courrielEquipe(payload: Payload, d: CourrielInscription): Promise<void> {
-  if (!EQUIPE) {
-    payload.logger.warn("[courriel] EMAIL_EQUIPE absent : personne n'est prévenu des inscriptions");
-    return;
-  }
+  if (!EQUIPE) return;
+
+  const corpsHtml = `
+    <p>Une nouvelle demande de place vient d'être enregistrée sur la plateforme :</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 130px;">Candidat :</td><td><strong style="color: #ffffff;">${d.apprenantNom}</strong> (${d.apprenantPays})</td></tr>
+      <tr><td style="color: #94a3b8;">Programme :</td><td><strong style="color: #e9cd84;">${d.programmeTitre}</strong></td></tr>
+      <tr><td style="color: #94a3b8;">Session :</td><td style="color: #ffffff;">${d.sessionLibelle}</td></tr>
+      <tr><td style="color: #94a3b8;">Formule :</td><td style="color: #ffffff;">${d.planLibelle} — ${EUROS.format(d.montantTotal)}</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${d.apprenantWhatsapp} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${d.apprenantEmail}" style="color: #e9cd84;">${d.apprenantEmail}</a></td></tr>
+    </table>
+    <p style="color: #94a3b8; font-size: 13px;">Dossier en attente du rapprochement du premier versement dans le back-office.</p>
+  `;
 
   await envoyer(payload, {
     to: EQUIPE,
-    subject: `Nouvelle inscription — ${d.apprenantNom} — ${d.programmeTitre}`,
+    subject: `[Nouvelle Inscription] ${d.apprenantNom} — ${d.programmeTitre}`,
     text: [
       `${d.apprenantNom} (${d.apprenantPays}) a retenu une place.`,
       "",
@@ -109,20 +302,17 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
       "",
       "Le transfert est à rapprocher dans le back-office quand il arrivera.",
     ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Nouvelle inscription reçue",
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Voir l'inscription dans Payload",
+      boutonLien: `https://clixa.africa/admin/collections/inscriptions`,
+    }),
   });
 }
 
-/**
- * À l'équipe : un participant dit avoir fait son transfert.
- *
- * C'est le message qui remplace le « je vous ai envoyé l'argent » reçu par
- * WhatsApp, hors de tout dossier. Il porte le numéro de transfert et la
- * référence ensemble : c'est le rapprochement qui coûtait le plus de temps,
- * puisqu'il fallait retrouver de quel dossier parlait le message.
- *
- * Rien n'est encaissé pour autant. L'échéance passe en « annoncé » — vérifier
- * le transfert, et le passer en « réglé », reste un geste humain.
- */
+/** À l'équipe : transfert annoncé par un candidat. */
 export async function courrielTransfert(
   payload: Payload,
   d: {
@@ -135,14 +325,24 @@ export async function courrielTransfert(
     montant: number;
   },
 ): Promise<void> {
-  if (!EQUIPE) {
-    payload.logger.warn("[courriel] EMAIL_EQUIPE absent : personne n'est prévenu des transferts");
-    return;
-  }
+  if (!EQUIPE) return;
+
+  const corpsHtml = `
+    <p>Le participant <strong>${d.apprenantNom}</strong> déclare avoir émis son transfert :</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 140px;">Montant déclaré :</td><td><strong style="color: #e9cd84; font-size: 16px;">${EUROS.format(d.montant)}</strong></td></tr>
+      <tr><td style="color: #94a3b8;">Moyen d'envoi :</td><td style="color: #ffffff; font-weight: bold;">${d.moyen}</td></tr>
+      <tr><td style="color: #94a3b8;">Code / N° Transfert :</td><td><code style="background-color: #080c18; padding: 2px 8px; border-radius: 4px; color: #2fa37d; font-weight: bold; font-family: monospace;">${d.numero}</code></td></tr>
+      <tr><td style="color: #94a3b8;">Dossier Réf. :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
+      <tr><td style="color: #94a3b8;">Programme :</td><td style="color: #ffffff;">${d.programmeTitre}</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${d.apprenantWhatsapp} ↗</a></td></tr>
+    </table>
+    <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
+  `;
 
   await envoyer(payload, {
     to: EQUIPE,
-    subject: `Transfert annoncé — ${d.reference} — ${d.apprenantNom}`,
+    subject: `[Transfert Annoncé] ${d.reference} — ${d.apprenantNom} (${d.moyen})`,
     text: [
       `${d.apprenantNom} déclare avoir envoyé ${EUROS.format(d.montant)}.`,
       "",
@@ -152,13 +352,19 @@ export async function courrielTransfert(
       `Parcours : ${d.programmeTitre}`,
       `WhatsApp : ${d.apprenantWhatsapp}`,
       "",
-      "L'échéance est passée en « annoncé ». Elle attend la vérification du",
-      "transfert pour être marquée réglée dans le back-office.",
+      "L'échéance est passée en « annoncé ».",
     ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Nouveau Transfert Annoncé",
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Vérifier et Valider dans l'Admin",
+      boutonLien: `https://clixa.africa/admin/collections/inscriptions`,
+    }),
   });
 }
 
-/** À l'équipe : quelqu'un demande à être rappelé. */
+/** À l'équipe : demande de rappel. */
 export async function courrielRappel(
   payload: Payload,
   d: {
@@ -172,9 +378,20 @@ export async function courrielRappel(
 ): Promise<void> {
   if (!EQUIPE) return;
 
+  const corpsHtml = `
+    <p>Une nouvelle demande de rappel téléphonique a été déposée :</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 130px;">Demandeur :</td><td><strong style="color: #ffffff;">${d.nom}</strong> (${d.pays})</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.whatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${d.whatsapp} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${d.email}" style="color: #e9cd84;">${d.email}</a></td></tr>
+      <tr><td style="color: #94a3b8;">Formation :</td><td style="color: #ffffff;">${d.programme ?? "Non précisée"}</td></tr>
+      ${d.plan ? `<tr><td style="color: #94a3b8;">Rythme :</td><td style="color: #ffffff;">${d.plan}</td></tr>` : ""}
+    </table>
+  `;
+
   await envoyer(payload, {
     to: EQUIPE,
-    subject: `Demande de rappel — ${d.nom}`,
+    subject: `Demande de rappel — ${d.nom} (${d.pays})`,
     text: [
       `${d.nom} (${d.pays}) demande à être rappelé.`,
       "",
@@ -186,16 +403,16 @@ export async function courrielRappel(
     ]
       .filter(Boolean)
       .join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Demande de rappel",
+      corpsHtml,
+      boutonTexte: "Voir les demandes de rappel",
+      boutonLien: `https://clixa.africa/admin/collections/demandes-rappel`,
+    }),
   });
 }
 
-/**
- * Relance d'échéance.
- *
- * Le ton compte : la personne a déjà retenu sa place et souvent déjà payé une
- * fois. Ce n'est pas un recouvrement, c'est un rappel. On donne le montant, la
- * date, la référence et le lien — de quoi agir sans avoir à chercher.
- */
+/** Relance d'échéance avec ton cordial et signature institutionnelle. */
 export async function courrielRelance(
   payload: Payload,
   d: {
@@ -211,10 +428,30 @@ export async function courrielRelance(
 ): Promise<void> {
   const quand = JOUR.format(new Date(d.dateLimite));
 
+  const corpsHtml = `
+    <p>Bonjour <strong>${d.apprenantNom}</strong>,</p>
+    <p>
+      ${
+        d.enRetard
+          ? `Sauf erreur de notre part, une échéance de <strong style="color: #e9cd84;">${EUROS.format(d.montant)}</strong> était attendue le <strong>${quand}</strong> pour votre parcours <em>« ${d.programmeTitre} »</em>.`
+          : `Votre prochaine échéance de formation d'un montant de <strong style="color: #e9cd84;">${EUROS.format(d.montant)}</strong> est à régler avant le <strong>${quand}</strong> pour <em>« ${d.programmeTitre} »</em>.`
+      }
+    </p>
+
+    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(201, 162, 76, 0.2);">
+      <div style="font-size: 13px; color: #cbd5e1;">Moyens acceptés : <strong>Western Union, Ria, MoneyGram, ou virement</strong></div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 4px;">Pensez à préciser votre référence : <strong style="color: #e9cd84; font-family: monospace;">${d.reference}</strong></div>
+    </div>
+
+    <p style="font-size: 13px; color: #94a3b8;">
+      Si votre règlement a déjà été émis ces dernières 24h, nous vous remercions de ne pas tenir compte de ce message — nos équipes procéderont au rapprochement dès réception.
+    </p>
+  `;
+
   await envoyer(payload, {
     to: d.apprenantEmail,
     subject: d.enRetard
-      ? `Échéance dépassée — ${d.programmeTitre}`
+      ? `Rappel d'échéance — ${d.programmeTitre} [${d.reference}]`
       : `Prochaine échéance le ${quand} — ${d.programmeTitre}`,
     text: [
       `Bonjour ${d.apprenantNom},`,
@@ -231,18 +468,25 @@ export async function courrielRelance(
       "",
       "Si le transfert est déjà parti, ce message n'appelle pas de réponse : nous le rapprocherons.",
       "",
-      "CLIXA Institute",
+      "CLIXA Institute — Admissions",
     ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: d.enRetard ? "Rappel d'échéance" : "Prochaine échéance de formation",
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Consulter mon dossier et régler",
+      boutonLien: d.urlDossier,
+    }),
   });
 }
 
-/** À l'équipe : le récapitulatif de ce que la relance a fait. */
+/** À l'équipe : récapitulatif du traitement des relances. */
 export async function courrielBilanRelances(payload: Payload, lignes: string[]): Promise<void> {
   if (!EQUIPE || lignes.length === 0) return;
 
   await envoyer(payload, {
     to: EQUIPE,
-    subject: `Relances envoyées — ${lignes.length} échéance(s)`,
+    subject: `[Bilan Relances] ${lignes.length} échéance(s) traitée(s)`,
     text: ["Les participants suivants ont été relancés :", "", ...lignes].join("\n"),
   });
 }

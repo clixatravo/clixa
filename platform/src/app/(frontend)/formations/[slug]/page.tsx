@@ -67,7 +67,7 @@ export default async function FicheFormation({ params }: Props) {
   return (
     <>
       {/* INT-04 — Course + une CourseInstance par session, avec dates et prix */}
-      <JsonLd data={jsonLdCourse(programme, sessions)} />
+      <JsonLd data={jsonLdCourse(programme, sessions, tarifs)} />
 
       {/* ── Fil d'Ariane ── */}
       <FilAriane
