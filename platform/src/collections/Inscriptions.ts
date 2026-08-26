@@ -231,7 +231,22 @@ export const Inscriptions: CollectionConfig = {
               type: "text",
               label: "WhatsApp",
               required: true,
-              admin: { width: "50%", description: "Avec l'indicatif du pays." },
+              admin: {
+                width: "50%",
+                description: "Avec l'indicatif du pays.",
+                /*
+                  Dans la liste, la cellule devient un lien qui ouvre WhatsApp avec un
+                  message prérempli. C'est le geste que l'équipe répète le plus : sans
+                  lui, il faut ouvrir le dossier, copier le numéro, changer
+                  d'application, et écrire depuis le début.
+
+                  Le numéro reste affiché à côté : on doit pouvoir le lire et le
+                  recopier ailleurs sans passer par WhatsApp.
+                */
+                components: {
+                  Cell: "@/components/admin/BoutonWhatsapp#BoutonWhatsapp",
+                },
+              },
             },
             {
               name: "apprenantPays",
