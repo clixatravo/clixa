@@ -16,6 +16,7 @@ import {
   getProchaineSession,
   getProgramme,
   getProgrammes,
+  libelleNiveau,
   getSessions,
   getSpecialisation,
   libelleMode,
@@ -45,8 +46,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: { type: "website", url, title: p.titre, description: p.accroche },
   };
 }
-
-const NIVEAUX = { debutant: "Débutant", intermediaire: "Intermédiaire", avance: "Avancé" } as const;
 
 export default async function FicheFormation({ params }: Props) {
   const { slug } = await params;
@@ -109,7 +108,7 @@ export default async function FicheFormation({ params }: Props) {
             ["Durée", `${programme.dureeHeures} heures`],
             ["Rythme", programme.rythme],
             ["Modalité", [...parMode.keys()].map((m) => libelleMode[m as never]).join(" ou ")],
-            ["Niveau", NIVEAUX[programme.niveau]],
+            ["Niveau", libelleNiveau[programme.niveau]],
             ["Langue", programme.langue],
           ].map(([label, valeur]) => (
             <div key={label} className="bg-panel/70 p-4.5 backdrop-blur-sm">
@@ -275,6 +274,23 @@ export default async function FicheFormation({ params }: Props) {
                 <Button href="/contact" variante="contour" className="w-full py-3.5 text-xs">
                   Être rappelé par un conseiller
                 </Button>
+
+                {/*
+                  La plaquette, pour qui doit faire valider sa formation en interne. Un
+                  lien vers une page web ne s'attache pas à une demande adressée aux
+                  ressources humaines ; un document, si.
+
+                  Une balise <a> et non <Link> : le PDF n'est pas une page du site, il
+                  n'y a rien à précharger ni à naviguer côté client.
+                */}
+                <a
+                  href={`/formations/${programme.slug}/plaquette`}
+                  target="_blank"
+                  rel="noopener"
+                  className="border-line-strong text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa flex min-h-11 w-full items-center justify-center border text-[0.78rem] transition-colors"
+                >
+                  Télécharger la plaquette (PDF)
+                </a>
               </div>
 
               <ul className="border-line/60 flex flex-col gap-2.5 border-t pt-5">

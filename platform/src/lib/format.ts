@@ -8,7 +8,7 @@
  *
  * Ce fichier ne dépend que des types : il peut être importé de partout.
  */
-import type { ModeDiffusion, Session } from "@/lib/types";
+import type { ModeDiffusion, Session, Niveau } from "@/lib/types";
 
 const LOCALE = "fr-FR";
 
@@ -60,6 +60,16 @@ export function formatDuree(minutes: number): string {
 export function dureeModule(lecons: { dureeMinutes: number }[]): number {
   return lecons.reduce((t, l) => t + l.dureeMinutes, 0);
 }
+
+/**
+ * Le libellé d'un niveau. Il vivait dans la fiche, seule à l'afficher ; la
+ * plaquette PDF montrait le code brut — « avance » au lieu d'« Avancé ».
+ */
+export const libelleNiveau: Record<Niveau, string> = {
+  debutant: "Débutant",
+  intermediaire: "Intermédiaire",
+  avance: "Avancé",
+};
 
 export const libelleMode: Record<ModeDiffusion, string> = {
   presentiel: "Présentiel",
