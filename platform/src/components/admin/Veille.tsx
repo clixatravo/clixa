@@ -24,14 +24,29 @@ interface Echeance {
   dateLimite?: string | null;
 }
 
+function obtenirFiltresDates() {
+  const d = new Date();
+  const aujourdhui = d.toISOString().slice(0, 10);
+  const ilYASeptJours = new Date(d.getTime() - 7 * 86400000).toISOString();
+  return { aujourdhui, ilYASeptJours };
+}
+
 export async function Veille() {
   const payload = await getPayload({ config });
-  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const { aujourdhui, ilYASeptJours } = obtenirFiltresDates();
 
   // 1. Inscriptions vivantes
   const { docs: inscriptions } = await payload.find({
     collection: "inscriptions",
     limit: 500,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  const { totalDocs: inscriptionsSemaine } = await payload.find({
+    collection: "inscriptions",
+    where: { createdAt: { greater_than_equal: ilYASeptJours } },
+    limit: 0,
     depth: 0,
     overrideAccess: true,
   });
@@ -193,6 +208,19 @@ export async function Veille() {
               : "Aucune séance programmée"}
           </div>
           <span className="clixa-kpi__fleche">Gérer le planning →</span>
+        </Link>
+
+        {/* KPI 5 : Activité de la semaine */}
+        <Link href="/admin/collections/inscriptions" className="clixa-kpi">
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">📈</span>
+            <span className="clixa-kpi__tag">Activité</span>
+          </div>
+          <div className="clixa-kpi__valeur">{inscriptionsSemaine}</div>
+          <div className="clixa-kpi__libelle">
+            {inscriptionsSemaine > 1 ? "Inscriptions sur 7 jours" : "Inscription sur 7 jours"}
+          </div>
+          <span className="clixa-kpi__fleche">Voir les dossiers →</span>
         </Link>
       </div>
 
