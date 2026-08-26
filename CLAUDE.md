@@ -36,6 +36,7 @@ npx payload run scripts/verifier-roles.ts         # permissions, élévation
 npx payload run scripts/verifier-medias.ts        # variantes d'images
 npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
 npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
+npx payload run scripts/verifier-session.ts       # la connexion sans mot de passe
 ```
 
 **Les parcours du site sont éprouvés par Playwright** (`INT-10`). Une série
@@ -430,6 +431,60 @@ n'empêche pas le site de démarrer. Trois variables vont ensemble —
 et `EMAIL_EQUIPE` (qui reçoit la copie interne).
 
 Le lien « Mot de passe oublié » de `/admin` passe par ce même adaptateur.
+
+## La connexion Google
+
+Un participant revient sur son dossier trois fois dans l'année. Il a oublié le
+mot de passe qu'il s'était inventé, et l'espace participant n'offrait aucun lien
+pour le retrouver : l'équipe finissait par rechercher la référence à la main.
+Un compte Google, il l'a déjà.
+
+Deux variables l'activent — `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`. Sans
+elles **aucun bouton ne s'affiche** et les deux routes redirigent vers la
+connexion ordinaire avec un message : un bouton qui mène à une erreur vaut moins
+que pas de bouton.
+
+L'adresse de retour déclarée chez Google doit être exacte au caractère près :
+
+```
+https://www.clixa.africa/api/auth/google/retour
+http://localhost:3000/api/auth/google/retour
+```
+
+- **C'est `sub` qui identifie le compte, pas l'adresse.** Une adresse change, se
+  cède, se récupère après abandon ; l'identifiant Google ne se réattribue
+  jamais. L'adresse ne sert qu'une fois : reconnaître un compte ouvert plus tôt
+  au mot de passe et le rejoindre, plutôt que d'en créer un second. Deux comptes
+  pour une personne, c'est un dossier visible depuis l'un et invisible depuis
+  l'autre.
+- ⚠️ **`email_verified` est vérifié, et un faux fait refuser la connexion.** Un
+  compte Workspace mal configuré peut porter une adresse non confirmée ; lui
+  accorder ce que la référence de dossier protège reviendrait à rouvrir le trou
+  qu'on venait de fermer.
+- **Le rattachement est ici plus large qu'ailleurs, et c'est justifié.** Le
+  formulaire exige l'adresse *et* la référence, parce qu'une adresse saisie ne
+  prouve rien. Google atteste que la personne contrôle l'adresse : c'est
+  exactement la preuve qui manquait, et l'adresse seule suffit alors.
+- **La signature du jeton n'est pas vérifiée**, exprès. Il arrive de Google
+  directement, sur un canal TLS que nous ouvrons ; Google documente ce cas. La
+  vérification par clé publique sert à qui reçoit le jeton d'un tiers.
+- **L'état (`state`) n'est pas décoratif.** Sans lui, un tiers fabrique une
+  adresse de retour portant *son* code et fait atterrir le visiteur dans le
+  compte de l'attaquant, où il déposera ensuite ses informations.
+
+⚠️ **`lib/session.ts` refait à la main ce que fait `payload.login()`.** Celui-ci
+exige un mot de passe — c'est tout son objet — et quand Google a prouvé
+l'identité il n'y en a pas. On écrit donc la session, on signe le jeton, on pose
+le cookie, avec `getFieldsToSign`, `jwtSign` et `generatePayloadCookie`. Ces
+fonctions sont exportées mais rarement appelées de l'extérieur : une montée de
+version qui changerait la forme du jeton casserait la connexion **sans casser
+une seule compilation**. D'où `scripts/verifier-session.ts`, qui va jusqu'à
+demander à `payload.auth()` si le cookie authentifie vraiment.
+
+La session en base n'est pas décorative non plus : `useSessions` est actif sur
+`apprenants` (table `apprenants_sessions`), et un jeton dont le `sid` ne
+correspond à aucune ligne est rejeté. Signer sans écrire donnerait un cookie
+accepté par le navigateur et refusé à chaque requête.
 
 ## Points ouverts
 

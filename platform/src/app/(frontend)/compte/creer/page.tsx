@@ -5,6 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { ChampCompte, FormulaireCompte } from "@/components/FormulaireCompte";
 import { CadreCompte } from "@/components/CadreCompte";
+import { BoutonGoogle } from "@/components/BoutonGoogle";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
@@ -43,6 +44,8 @@ export default async function CreerCompte({
           </>
         }
       >
+        <BoutonGoogle libelle="S'inscrire avec Google" />
+
         <FormulaireCompte
           action="creation"
           erreur={erreur ? (MESSAGES[erreur] ?? MESSAGES.impossible) : undefined}

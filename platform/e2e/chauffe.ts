@@ -1,4 +1,4 @@
-import { CHEMINS } from "./chemins";
+import { CHEMINS, ROUTES } from "./chemins";
 
 /**
  * Faire compiler les pages avant de les chronométrer.
@@ -14,7 +14,7 @@ export default async function chauffer(): Promise<void> {
   const base = "http://localhost:3000";
   const debut = Date.now();
 
-  for (const chemin of CHEMINS) {
+  for (const chemin of [...CHEMINS, ...ROUTES]) {
     try {
       await fetch(base + chemin);
     } catch {
@@ -23,5 +23,7 @@ export default async function chauffer(): Promise<void> {
   }
 
   const secondes = Math.round((Date.now() - debut) / 1000);
-  console.log(`[épreuves] ${CHEMINS.length} pages compilées en ${secondes} s`);
+  console.log(
+    `[épreuves] ${CHEMINS.length} pages et ${ROUTES.length} routes compilées en ${secondes} s`,
+  );
 }

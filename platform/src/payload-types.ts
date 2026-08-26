@@ -672,6 +672,14 @@ export interface Apprenant {
   nom: string;
   telephone?: string | null;
   pays?: string | null;
+  /**
+   * Renseigné automatiquement à la première connexion Google.
+   */
+  googleId?: string | null;
+  /**
+   * Vraie quand Google a confirmé l'adresse.
+   */
+  emailVerifie?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1201,6 +1209,8 @@ export interface ApprenantsSelect<T extends boolean = true> {
   nom?: T;
   telephone?: T;
   pays?: T;
+  googleId?: T;
+  emailVerifie?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

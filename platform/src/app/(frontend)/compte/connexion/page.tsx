@@ -5,6 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { ChampCompte, FormulaireCompte } from "@/components/FormulaireCompte";
 import { CadreCompte } from "@/components/CadreCompte";
+import { BoutonGoogle } from "@/components/BoutonGoogle";
 
 export const metadata: Metadata = {
   title: "Se connecter",
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
 const MESSAGES: Record<string, string> = {
   champs: "Il manque l'adresse ou le mot de passe.",
   identifiants: "Adresse ou mot de passe incorrect.",
+  "google-absent": "La connexion Google n'est pas encore active. Utilisez votre mot de passe.",
+  "google-refus": "Connexion Google interrompue.",
+  "google-etat": "La connexion Google a expiré. Réessayez.",
+  "google-echange": "Google n'a pas confirmé la connexion. Réessayez.",
+  "google-non-verifie": "Google n'a pas confirmé cette adresse. Utilisez un mot de passe.",
 };
 
 export default async function Connexion({
@@ -42,6 +48,8 @@ export default async function Connexion({
           </>
         }
       >
+        <BoutonGoogle libelle="Continuer avec Google" />
+
         <FormulaireCompte
           action="connexion"
           erreur={erreur ? (MESSAGES[erreur] ?? MESSAGES.identifiants) : undefined}

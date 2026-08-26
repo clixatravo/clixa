@@ -85,5 +85,41 @@ export const Apprenants: CollectionConfig = {
         },
       ],
     },
+    {
+      /*
+        L'identifiant Google du participant, quand il s'est connecté ainsi.
+
+        C'est lui la clef du rattachement, jamais l'adresse : Google laisse
+        changer l'adresse d'un compte, et quelqu'un peut récupérer une adresse
+        abandonnée par un autre. L'identifiant, lui, ne se réattribue pas.
+
+        Vide pour qui s'est inscrit avec un mot de passe. Les deux chemins
+        mènent au même compte — voir `lib/google.ts`.
+      */
+      name: "googleId",
+      type: "text",
+      label: "Identifiant Google",
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        description: "Renseigné automatiquement à la première connexion Google.",
+      },
+    },
+    {
+      /*
+        Une adresse vérifiée par Google est une adresse prouvée — ce que le
+        formulaire, lui, ne prouve pas. C'est ce drapeau qui autorise à
+        rattacher un dossier sur la seule adresse, sans demander la référence.
+      */
+      name: "emailVerifie",
+      type: "checkbox",
+      label: "Adresse vérifiée",
+      defaultValue: false,
+      admin: {
+        readOnly: true,
+        description: "Vraie quand Google a confirmé l'adresse.",
+      },
+    },
   ],
 };
