@@ -1,6 +1,18 @@
 /**
- * Coordonnées officielles et liens vers les réseaux sociaux de CLIXA Institute.
- * Modifiez ces valeurs pour mettre à jour les liens sur tout le site.
+ * Coordonnées officielles et liens vers les réseaux sociaux.
+ *
+ * ⚠️ Ces adresses ont été vérifiées le 27 août 2026 en les ouvrant. Les deux
+ * premières versions avaient été devinées à partir du nom de la marque —
+ * `clixa-institute` et `clixa.institute` — et répondaient l'une 404, l'autre
+ * 400. Un lien mort en pied de page est plus coûteux qu'un lien absent : le
+ * visiteur qui le suit conclut que la structure n'existe plus.
+ *
+ * Ne pas déduire une adresse : l'ouvrir.
+ *
+ * ⚠️ Facebook et Instagram sont au nom de **SkillAfrique**, pas de CLIXA. Les
+ * deux marques sont liées — le site porte déjà une page `/skillafrique` — mais
+ * les intitulés le disent, faute de quoi le visiteur clique « Facebook » sous
+ * la marque CLIXA et arrive ailleurs sans comprendre pourquoi.
  */
 
 export const RESEAUX_CLIXA = {
@@ -11,14 +23,30 @@ export const RESEAUX_CLIXA = {
     description: "Échange direct avec un conseiller pédagogique",
   },
   linkedin: {
-    url: "https://www.linkedin.com/company/clixa-institute",
+    url: "https://www.linkedin.com/company/clixainstitute/",
     label: "LinkedIn",
+    titre: "Page LinkedIn de CLIXA Institute",
     description: "Actualités institutionnelles & réseau des alumni",
   },
   facebook: {
-    url: "https://www.facebook.com/clixa.institute",
+    /*
+      L'adresse canonique, pas le lien de partage.
+
+      La direction avait transmis `facebook.com/share/19JzLkmHWq/`. Un lien de
+      partage porte un jeton de suivi propre au partage et redirige vers la
+      page : le publier reviendrait à faire passer chaque visiteur par une
+      indirection qui peut cesser de fonctionner. Résolu une fois, ici.
+    */
+    url: "https://www.facebook.com/formationskillafrique",
     label: "Facebook",
+    titre: "Page Facebook de SkillAfrique",
     description: "Communauté & événements en direct",
+  },
+  instagram: {
+    url: "https://www.instagram.com/skillafrique",
+    label: "Instagram",
+    titre: "Compte Instagram de SkillAfrique",
+    description: "Coulisses des sessions et portraits de participants",
   },
   email: {
     url: "mailto:contact@clixa.africa",
