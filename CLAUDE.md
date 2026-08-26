@@ -302,6 +302,14 @@ de temps.
 - La clef reste la référence du dossier, comme pour le consulter. Annoncer
   n'ouvre donc rien de plus que lire.
 
+⚠️ **Une adresse ne prouve rien tant qu'aucun courriel ne part.** Créer un
+compte rattachait tous les dossiers portant la même adresse : il suffisait de
+connaître l'adresse de quelqu'un pour voir son nom, son téléphone, son
+échéancier et la référence de son dossier — laquelle ouvre l'annonce de
+transfert. Le rattachement exige désormais **l'adresse et la référence**, celle
+que le participant a déjà reçue. Le jour où un expéditeur sera configuré,
+`auth.verify` de Payload fera ce travail à la source.
+
 **La recherche du catalogue passe par PostgreSQL** depuis `BE-09`
 (`src/lib/recherche.ts`). Elle ne compare plus des chaînes : elle ramène les
 mots à leur racine, ce qui répare des recherches qui rendaient zéro alors que

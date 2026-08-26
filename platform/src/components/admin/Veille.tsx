@@ -1,29 +1,23 @@
 import React from "react";
+import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
 /**
- * Ce qui attend l'équipe, en tête du tableau de bord.
+ * Cockpit Exécutif en tête du tableau de bord Payload.
  *
- * ── Pourquoi ce bandeau ─────────────────────────────────────────────────────
- * Le tableau de bord de Payload est un sommaire : douze rectangles portant
- * chacun le nom d'une collection. Il dit où aller, jamais s'il faut y aller.
- * Or on ouvre un back-office le matin pour une seule raison — savoir ce qui a
- * bougé pendant la nuit.
- *
- * Les trois lignes retenues sont celles qui demandent un geste, pas celles qui
- * font un joli chiffre. Un transfert annoncé attend d'être vérifié ; une
- * échéance dépassée attend une relance ; une inscription sans premier versement
- * attend qu'on la suive. Le nombre de parcours au catalogue, lui, n'attend
- * personne : il n'est pas ici.
- *
- * ── Quand il n'y a rien ─────────────────────────────────────────────────────
- * On le dit en toutes lettres plutôt que d'aligner des zéros. Trois « 0 » se
- * lisent comme un compteur en panne ; « rien n'attend » se lit comme une
- * réponse.
+ * Présente les indicateurs critiques nécessitant une action immédiate
+ * (transferts annoncés, nouvelles demandes de rappel, échéances en retard),
+ * ainsi que la date de la prochaine rentrée et des raccourcis vers les flux clés.
  */
 
-const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+const JOUR = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
 
 interface Echeance {
   statut?: string | null;
@@ -32,33 +26,22 @@ interface Echeance {
 
 export async function Veille() {
   const payload = await getPayload({ config });
+  const aujourdhui = new Date().toISOString().slice(0, 10);
 
-  const { docs } = await payload.find({
+  // 1. Inscriptions vivantes
+  const { docs: inscriptions } = await payload.find({
     collection: "inscriptions",
     limit: 500,
     depth: 0,
     overrideAccess: true,
   });
 
-  const vivantes = docs.filter((d) => d.statut !== "annulee" && d.statut !== "terminee");
-  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const vivantes = inscriptions.filter((d) => d.statut !== "annulee" && d.statut !== "terminee");
 
-  /*
-    Un dossier ne compte qu'une fois, dans l'état qui appelle le geste le plus
-    pressant. Trois filtres indépendants faisaient additionner quatre choses à
-    faire pour trois dossiers : un même dossier peut être en retard ET sans
-    premier versement, ou annoncé ET encore « demandé ». Le total ne voulait
-    alors plus rien dire, et l'une des lignes menait à relancer quelqu'un qui
-    venait de payer.
-
-    L'ordre est celui de l'urgence : ce qui attend de nous d'abord, ce qui est
-    en retard ensuite, ce qui suit son cours en dernier.
-  */
   const echeancesDe = (d: (typeof vivantes)[number]) => (d.echeances ?? []) as Echeance[];
 
   let aVerifier = 0;
   let enRetard = 0;
-  let sansPremierVersement = 0;
 
   for (const dossier of vivantes) {
     const echeances = echeancesDe(dossier);
@@ -71,12 +54,19 @@ export async function Veille() {
       )
     ) {
       enRetard += 1;
-    } else if (dossier.statut === "demandee") {
-      sansPremierVersement += 1;
     }
   }
 
-  // La prochaine séance : ce qui fixe l'horizon de tout le reste.
+  // 2. Nouvelles demandes de rappel
+  const { totalDocs: nouvellesDemandes } = await payload.find({
+    collection: "demandes-rappel",
+    where: { statut: { equals: "nouvelle" } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  // 3. La prochaine session
   const { docs: sessions } = await payload.find({
     collection: "sessions",
     where: { debut: { greater_than_equal: aujourdhui } },
@@ -87,44 +77,117 @@ export async function Veille() {
   });
   const prochaine = sessions[0]?.debut;
 
-  const lignes = [
-    {
-      nombre: aVerifier,
-      quoi: "transfert annoncé, à vérifier",
-      pluriel: "transferts annoncés, à vérifier",
-    },
-    { nombre: enRetard, quoi: "échéance dépassée", pluriel: "échéances dépassées" },
-    {
-      nombre: sansPremierVersement,
-      quoi: "dossier sans premier versement",
-      pluriel: "dossiers sans premier versement",
-    },
-  ].filter((l) => l.nombre > 0);
+  const dateAujourdhui = JOUR.format(new Date());
+  const dateFormatee = dateAujourdhui.charAt(0).toUpperCase() + dateAujourdhui.slice(1);
+  const toutEstCalme = aVerifier === 0 && nouvellesDemandes === 0 && enRetard === 0;
 
   return (
-    <section className="clixa-veille">
-      <span className="clixa-veille__titre">Ce qui vous attend</span>
+    <section className="clixa-cockpit">
+      <div className="clixa-cockpit__header">
+        <div>
+          <span className="clixa-cockpit__badge">✦ CONSOLE DE PILOTAGE · CLIXA INSTITUTE</span>
+          <h2 className="clixa-cockpit__titre">{dateFormatee}</h2>
+        </div>
+        <div className="clixa-cockpit__actions">
+          <Link
+            href="/admin/collections/demandes-rappel"
+            className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--accent" : ""}`}
+          >
+            <span>Demandes ({nouvellesDemandes})</span>
+          </Link>
+          <Link href="/admin/collections/inscriptions" className="clixa-cockpit__btn">
+            <span>Inscriptions</span>
+          </Link>
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="clixa-cockpit__btn clixa-cockpit__btn--ghost"
+          >
+            <span>Site public ↗</span>
+          </a>
+        </div>
+      </div>
 
-      {lignes.length === 0 ? (
-        <p className="clixa-veille__calme">
-          Rien n&apos;attend de geste de votre part. Les dossiers en cours sont à jour.
-        </p>
-      ) : (
-        <ul className="clixa-veille__liste">
-          {lignes.map((l) => (
-            <li key={l.quoi} className="clixa-veille__item">
-              <span className="clixa-veille__nombre">{l.nombre}</span>
-              <span className="clixa-veille__quoi">{l.nombre > 1 ? l.pluriel : l.quoi}</span>
-            </li>
-          ))}
-        </ul>
+      {toutEstCalme && (
+        <div className="clixa-cockpit__calme-box">
+          <span className="clixa-cockpit__calme-icone">✓</span>
+          <span className="clixa-cockpit__calme-texte">
+            Tous les dossiers sont à jour. Aucun paiement ni relance en attente.
+          </span>
+        </div>
       )}
 
-      {prochaine && (
-        <p className="clixa-veille__horizon">
-          Prochaine séance le {JOUR.format(new Date(prochaine))}.
-        </p>
-      )}
+      <div className="clixa-cockpit__grille">
+        {/* KPI 1 : Paiements à vérifier */}
+        <Link
+          href="/admin/collections/inscriptions"
+          className={`clixa-kpi ${aVerifier > 0 ? "clixa-kpi--alerte-or" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">⚡</span>
+            <span className="clixa-kpi__tag">Paiements</span>
+          </div>
+          <div className="clixa-kpi__valeur">{aVerifier}</div>
+          <div className="clixa-kpi__libelle">
+            {aVerifier > 1 ? "Transferts à vérifier" : "Transfert à vérifier"}
+          </div>
+          <span className="clixa-kpi__fleche">Ouvrir les dossiers →</span>
+        </Link>
+
+        {/* KPI 2 : Demandes de rappel */}
+        <Link
+          href="/admin/collections/demandes-rappel"
+          className={`clixa-kpi ${nouvellesDemandes > 0 ? "clixa-kpi--alerte-vert" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">📞</span>
+            <span className="clixa-kpi__tag">Admissions</span>
+          </div>
+          <div className="clixa-kpi__valeur">{nouvellesDemandes}</div>
+          <div className="clixa-kpi__libelle">
+            {nouvellesDemandes > 1 ? "Nouvelles demandes" : "Nouvelle demande"}
+          </div>
+          <span className="clixa-kpi__fleche">Contacter les prospects →</span>
+        </Link>
+
+        {/* KPI 3 : Relances */}
+        <Link
+          href="/admin/collections/inscriptions"
+          className={`clixa-kpi ${enRetard > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">⚠️</span>
+            <span className="clixa-kpi__tag">Relances</span>
+          </div>
+          <div className="clixa-kpi__valeur">{enRetard}</div>
+          <div className="clixa-kpi__libelle">
+            {enRetard > 1 ? "Échéances en retard" : "Échéance en retard"}
+          </div>
+          <span className="clixa-kpi__fleche">Voir les échéances →</span>
+        </Link>
+
+        {/* KPI 4 : Prochaine rentrée */}
+        <Link href="/admin/collections/sessions" className="clixa-kpi">
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">🎓</span>
+            <span className="clixa-kpi__tag">Calendrier</span>
+          </div>
+          <div className="clixa-kpi__valeur-date">
+            {prochaine
+              ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
+                  new Date(prochaine),
+                )
+              : "—"}
+          </div>
+          <div className="clixa-kpi__libelle">
+            {prochaine
+              ? `Prochaine séance : ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(prochaine))}`
+              : "Aucune séance programmée"}
+          </div>
+          <span className="clixa-kpi__fleche">Gérer le planning →</span>
+        </Link>
+      </div>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { formatPrix, getTarifs } from "@/lib/catalogue";
@@ -273,8 +273,13 @@ export default async function Dossier({ params, searchParams }: Props) {
                 Retrouvez ce dossier et les suivants au même endroit, sans avoir à conserver la
                 référence.
               </p>
+              {/*
+                La référence voyage avec le lien : c'est elle qui rattachera ce
+                dossier au compte. Sans elle, le compte se crée quand même et la
+                page « mon espace » propose de le rattacher après coup.
+              */}
               <Link
-                href="/compte/creer"
+                href={`/compte/creer?dossier=${dossier.reference}` as Route}
                 className="border-gold text-ivory mt-3 inline-block border-b pb-1 text-[0.86rem]"
               >
                 Créer un accès →

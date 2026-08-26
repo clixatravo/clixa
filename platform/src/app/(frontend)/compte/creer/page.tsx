@@ -21,11 +21,11 @@ const MESSAGES: Record<string, string> = {
 export default async function CreerCompte({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string }>;
+  searchParams: Promise<{ erreur?: string; dossier?: string }>;
 }) {
   if (await participantConnecte()) redirect("/compte" as Route);
 
-  const { erreur } = await searchParams;
+  const { erreur, dossier } = await searchParams;
 
   return (
     <>
@@ -48,6 +48,12 @@ export default async function CreerCompte({
           erreur={erreur ? (MESSAGES[erreur] ?? MESSAGES.impossible) : undefined}
           libelleBouton="Créer mon compte"
         >
+          {/*
+            La référence du dossier d'où l'on vient, s'il y en a un. Champ caché
+            plutôt que visible : le participant l'a déjà donnée en arrivant ici,
+            la redemander serait lui faire recopier ce qu'il vient de lire.
+          */}
+          {dossier && <input type="hidden" name="dossier" value={dossier} />}
           <ChampCompte label="Nom complet" name="nom" autoComplete="name" />
           <ChampCompte label="Adresse e-mail" name="email" type="email" autoComplete="email" />
           <ChampCompte

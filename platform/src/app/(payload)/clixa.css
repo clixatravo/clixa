@@ -1,71 +1,119 @@
 /**
- * La marque de CLIXA sur le back-office.
- *
- * ── Ce qu'on touche, et ce qu'on laisse ─────────────────────────────────────
- * On ne refait pas le thème de Payload. Son échelle d'« élévation » — du fond
- * au contraste maximal — porte le contraste de dizaines de composants qu'on ne
- * peut pas tous éprouver ; la renverser pour obtenir un back-office sombre se
- * paierait en textes illisibles trouvés un par un, des mois plus tard.
- *
- * On change ce qui identifie sans rien fragiliser : l'accent, les familles de
- * caractères, et la marque. Le résultat tient dans les deux thèmes de Payload,
- * clair comme sombre, que l'équipe choisit elle-même.
- *
- * ── Pourquoi l'or plutôt que le bleu ────────────────────────────────────────
- * L'accent de Payload sert aux boutons d'action et aux liens. En or, chaque
- * geste qui compte porte la couleur de la maison ; c'est le seul endroit où
- * une couleur de marque se remarque sans gêner la lecture.
+ * Design System Back-office CLIXA Institute — Direction & Console.
  */
 
 :root {
   --clixa-or: #c9a24c;
   --clixa-or-clair: #e9cd84;
   --clixa-encre: #080c18;
+  --clixa-encre-card: #111a33;
+  --clixa-encre-card-hover: #161f3d;
   --clixa-ivoire: #f3efe4;
-
-  /*
-    `--theme-success-*` n'est PAS l'accent de la marque : chez Payload, il veut
-    dire « réussi ». Il colore les bandeaux « enregistré », les pastilles d'état,
-    l'anneau de mise au point d'un bouton radio, les zones de dépôt. Le teindre
-    en or disait « attention » là où l'interface dit « c'est fait » — et l'échelle
-    compte une dizaine de crans, dont deux seulement avaient été repeints : les
-    pastilles restaient bleues à côté de bandeaux dorés.
-
-    La marque se pose sur les boutons, ci-dessous, et nulle part ailleurs.
-  */
+  --clixa-ivoire-dim: #b9b7ac;
+  --clixa-emeraude: #1f7a5c;
+  --clixa-emeraude-clair: #2fa37d;
+  --clixa-rouge: #e05252;
 
   --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), "Hoefler Text", Georgia, serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-/*
-  Les titres en romaine à empattements, comme sur le site. Le corps du texte
-  reste en linéale : c'est lui qu'on lit toute la journée dans un formulaire.
-*/
+/* ── Typographie générale des titres ─────────────────────────────────────── */
 h1,
 h2,
 h3,
-.nav-group__toggle {
+.nav-group__toggle,
+.collection-list__header-title {
   font-family: var(--font-serif);
   letter-spacing: -0.01em;
 }
 
-/* ── La marque ──────────────────────────────────────────────────────────── */
+/* ── Top Bar & Fil d'Ariane (StepNav) ─────────────────────────────────────── */
+
+.app-header {
+  border-bottom: 1px solid rgba(243, 239, 228, 0.1) !important;
+}
+
+.step-nav {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+}
+
+.step-nav__home {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding-right: 0.15rem !important;
+  text-decoration: none !important;
+}
+
+.clixa-icone-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.clixa-admin-icon {
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.step-nav__home:hover .clixa-admin-icon {
+  transform: scale(1.08);
+}
+
+.step-nav span {
+  color: rgba(243, 239, 228, 0.3) !important;
+  font-size: 0.9rem !important;
+  font-weight: 300 !important;
+}
+
+.step-nav__last {
+  font-family: var(--font-serif) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: var(--clixa-ivoire) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ── La Marque / Logo Admin (Login Page) ─────────────────────────────────── */
 
 .clixa-marque {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
   align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.clixa-marque__monogramme {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(201, 162, 76, 0.1);
+  border: 1px solid rgba(201, 162, 76, 0.4);
+  box-shadow: 0 0 20px -4px rgba(201, 162, 76, 0.3);
+  flex-shrink: 0;
+}
+
+.clixa-marque__textes {
+  display: flex;
+  flex-direction: column;
 }
 
 .clixa-marque__mot {
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 2.1rem;
+  font-size: 1.75rem;
   letter-spacing: 0.02em;
-  line-height: 1;
+  line-height: 1.1;
+  color: var(--clixa-ivoire);
 }
 
 .clixa-marque__point {
@@ -75,154 +123,491 @@ h3,
 .clixa-marque__legende {
   font-family: var(--font-mono);
   font-size: 0.62rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.55;
+  color: var(--clixa-or);
+  opacity: 0.9;
+  margin-top: 0.2rem;
 }
 
-/*
-  L'icône occupe une case étroite en tête de fil d'Ariane, à côté d'un texte de
-  taille normale. Rendue à 1,35 rem elle y arrivait comme une lettre égarée,
-  plus grande que ce qui l'entoure et posée trop haut. Elle s'aligne désormais
-  sur la ligne de base voisine.
-*/
-.clixa-icone {
-  display: inline-flex;
-  align-items: baseline;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: 1rem;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-}
-
-/* ── L'avis sous le formulaire de connexion ─────────────────────────────── */
+/* ── L'avis avant connexion ────────────────────────────────────────────────── */
 
 .clixa-avis {
-  border-left: 2px solid var(--clixa-or);
-  padding: 0.75rem 0 0.75rem 0.85rem;
-  margin-bottom: 1.75rem;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  opacity: 0.8;
+  border: 1px solid rgba(201, 162, 76, 0.35);
+  background: rgba(201, 162, 76, 0.08);
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 2rem;
 }
 
-/*
-  ── Les boutons ─────────────────────────────────────────────────────────────
-  Payload donne à chaque style un jeu de variables locales — `--color`,
-  `--bg-color`, `--btn-border` et leurs équivalents au survol. On passe par
-  elles plutôt que de forcer `background` : la mise en page, l'état désactivé et
-  la mise au point restent ceux de l'outil, seule la couleur change.
-
-  Une première version peignait `background` en dur, et redéfinissait
-  `--theme-elevation-0` pour le texte : le bouton désactivé et le survol
-  échappaient à la règle, et le texte encre atterrissait sur le gris sombre
-  d'origine, illisible.
-*/
-
-/*
-  Le bouton principal — enregistrer, publier, créer. C'est le geste qui compte,
-  il porte la couleur de la maison. L'or est clair : il lui faut un texte
-  sombre. Le couple ne dépend pas du thème, l'or ne changeant pas avec lui.
-  Mesuré à 8,14:1, bien au-delà des 4,5 exigés.
-*/
-.btn--style-primary {
-  --color: var(--clixa-encre);
-  --bg-color: var(--clixa-or);
-  --hover-bg: var(--clixa-or-clair);
-  --hover-color: var(--clixa-encre);
+.clixa-avis__en-tete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
-/*
-  Le bouton secondaire — annuler, enregistrer un brouillon, revenir. Il reste
-  neutre au repos : deux boutons dorés côte à côte ne diraient plus lequel est
-  l'action principale. La marque n'apparaît qu'au survol, quand la main désigne.
-*/
-.btn--style-secondary {
-  --hover-color: var(--clixa-or);
-  --hover-btn-border: 1px solid var(--clixa-or);
+.clixa-avis__icone {
+  color: var(--clixa-or);
+  font-size: 0.85rem;
 }
 
-/*
-  Les styles discrets — `subtle` et `pill` — ne changent pas. Ils habillent des
-  commandes de service : filtrer une liste, replier une colonne. Les teinter
-  ferait de chaque réglage une action, et l'oeil ne saurait plus où se poser.
-*/
-
-/* ── Ce qui attend l'équipe ─────────────────────────────────────────────── */
-
-.clixa-veille {
-  border-left: 2px solid var(--clixa-or);
-  padding: 0.15rem 0 0.15rem 1rem;
-  margin-bottom: 2.25rem;
-}
-
-.clixa-veille__titre {
-  display: block;
+.clixa-avis__titre {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--clixa-or);
-  margin-bottom: 0.7rem;
+  font-weight: 600;
 }
 
-.clixa-veille__liste {
-  list-style: none;
+.clixa-avis__texte {
+  font-size: 0.84rem;
+  line-height: 1.55;
   margin: 0;
-  padding: 0;
+  color: rgba(243, 239, 228, 0.88);
+}
+
+/* ── Barre Latérale (Sidebar Nav) ────────────────────────────────────────── */
+
+.nav {
+  background: var(--clixa-encre) !important;
+  border-right: 1px solid rgba(243, 239, 228, 0.1) !important;
+}
+
+.nav__group {
+  margin-bottom: 1.25rem !important;
+}
+
+.nav-group__toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.45rem 0.85rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: var(--clixa-or) !important;
+  font-weight: 600 !important;
+  opacity: 0.95 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.nav-group__toggle:hover {
+  opacity: 1 !important;
+}
+
+.nav__link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 0.9rem !important;
+  margin: 2px 8px !important;
+  font-size: 0.88rem !important;
+  color: rgba(243, 239, 228, 0.7) !important;
+  border-radius: 3px !important;
+  text-decoration: none !important;
+  transition: all 0.16s ease !important;
+}
+
+.nav__link:hover {
+  color: #ffffff !important;
+  background: rgba(201, 162, 76, 0.08) !important;
+  padding-left: 1.05rem !important;
+}
+
+.nav__link.active {
+  color: var(--clixa-or-clair) !important;
+  background: rgba(201, 162, 76, 0.12) !important;
+  border-left: 2px solid var(--clixa-or) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Cockpit Exécutif (Dashboard Header) ─────────────────────────────────── */
+
+.clixa-cockpit {
+  margin-bottom: 2.75rem;
+  padding-bottom: 2.25rem;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.15);
+}
+
+.clixa-cockpit__header {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 2.25rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
-.clixa-veille__item {
-  display: flex;
-  align-items: baseline;
+.clixa-cockpit__eyebrow {
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  margin-bottom: 0.35rem;
 }
 
-.clixa-veille__nombre {
+.clixa-cockpit__point-live {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clixa-or);
+  box-shadow: 0 0 8px var(--clixa-or);
+}
+
+.clixa-cockpit__titre {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.clixa-cockpit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.clixa-cockpit__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  border-radius: 3px;
+  border: 1px solid rgba(243, 239, 228, 0.2);
+  color: var(--clixa-ivoire);
+  background: rgba(243, 239, 228, 0.05);
+  transition: all 0.2s ease;
+}
+
+.clixa-cockpit__btn:hover {
+  background: rgba(243, 239, 228, 0.12);
+  border-color: var(--clixa-or);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-cockpit__btn--accent {
+  background: rgba(201, 162, 76, 0.15);
+  border-color: rgba(201, 162, 76, 0.5);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-cockpit__btn--accent:hover {
+  background: var(--clixa-or);
+  color: var(--clixa-encre);
+}
+
+.clixa-cockpit__btn--ghost {
+  opacity: 0.75;
+}
+
+.clixa-cockpit__btn--ghost:hover {
+  opacity: 1;
+}
+
+/* Bannière calme */
+.clixa-cockpit__calme-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.15rem;
+  margin-bottom: 1.5rem;
+  background: rgba(31, 122, 92, 0.12);
+  border: 1px solid rgba(47, 163, 125, 0.35);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--clixa-ivoire);
+}
+
+.clixa-cockpit__calme-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--clixa-emeraude);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.clixa-cockpit__calme-texte {
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Grille des KPIs - 4 colonnes strictes */
+.clixa-cockpit__grille {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.15rem;
+}
+
+@media (max-width: 1100px) {
+  .clixa-cockpit__grille {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .clixa-cockpit__grille {
+    grid-template-columns: 1fr;
+  }
+}
+
+.clixa-kpi {
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  padding: 1.25rem;
+  border-radius: 4px;
+  background: rgba(17, 26, 51, 0.65);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  text-decoration: none !important;
+  color: inherit;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.clixa-kpi:hover {
+  transform: translateY(-2px);
+  background: rgba(22, 31, 61, 0.9);
+  border-color: var(--clixa-or);
+  box-shadow:
+    0 10px 28px -4px rgba(0, 0, 0, 0.45),
+    0 0 16px -4px rgba(201, 162, 76, 0.15);
+}
+
+.clixa-kpi__haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.clixa-kpi__tag {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  opacity: 0.9;
+}
+
+.clixa-kpi__indicateur {
+  font-size: 1.15rem;
+}
+
+.clixa-kpi__valeur {
   font-family: var(--font-serif);
-  font-size: 1.45rem;
+  font-size: 2.4rem;
   font-weight: 700;
   line-height: 1;
+  color: var(--clixa-ivoire);
+  margin-bottom: 0.4rem;
+}
+
+.clixa-kpi__valeur-date {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--clixa-or-clair);
+  margin-bottom: 0.4rem;
+}
+
+.clixa-kpi__libelle {
+  font-size: 0.84rem;
+  line-height: 1.35;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.clixa-kpi__fleche {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   color: var(--clixa-or);
+  margin-top: auto;
+  padding-top: 0.4rem;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
 }
 
-.clixa-veille__quoi,
-.clixa-veille__calme {
-  font-size: 0.88rem;
-  margin: 0;
+.clixa-kpi:hover .clixa-kpi__fleche {
+  transform: translateX(3px);
+  color: var(--clixa-or-clair);
 }
 
-/*
-  L'horizon se lit après le reste : il informe, il ne demande rien. D'où le gris
-  et la petite taille — l'or est réservé à ce qui attend un geste.
-*/
-.clixa-veille__horizon {
-  margin: 0.75rem 0 0;
-  font-size: 0.78rem;
-  opacity: 0.6;
+/* Variantes d'alertes KPIs */
+.clixa-kpi--alerte-or {
+  border-color: rgba(201, 162, 76, 0.45);
+  background: linear-gradient(135deg, rgba(201, 162, 76, 0.12) 0%, rgba(17, 26, 51, 0.7) 100%);
 }
 
-/* ── Les cartes du tableau de bord ──────────────────────────────────────── */
+.clixa-kpi--alerte-or .clixa-kpi__valeur {
+  color: var(--clixa-or-clair);
+}
 
-/*
-  Payload les rend plates et sans réaction. Un filet qui s'éclaire au survol
-  suffit à dire qu'on peut cliquer — c'est la seule chose qui leur manquait.
-*/
+.clixa-kpi--alerte-vert {
+  border-color: rgba(47, 163, 125, 0.45);
+  background: linear-gradient(135deg, rgba(31, 122, 92, 0.15) 0%, rgba(17, 26, 51, 0.7) 100%);
+}
+
+.clixa-kpi--alerte-vert .clixa-kpi__valeur {
+  color: var(--clixa-emeraude-clair);
+}
+
+.clixa-kpi--alerte-rouge {
+  border-color: rgba(224, 82, 82, 0.4);
+  background: linear-gradient(135deg, rgba(224, 82, 82, 0.12) 0%, rgba(17, 26, 51, 0.7) 100%);
+}
+
+.clixa-kpi--alerte-rouge .clixa-kpi__valeur {
+  color: var(--clixa-rouge);
+}
+
+/* ── Collections Dashboard (Groupes & Cartes) ────────────────────────────── */
+
+.collections__group {
+  margin-bottom: 2.5rem !important;
+}
+
+.collections__label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+  font-family: var(--font-serif) !important;
+  font-size: 1.45rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--clixa-ivoire) !important;
+  margin-bottom: 1rem !important;
+}
+
+.collections__label::before {
+  content: "✦";
+  color: var(--clixa-or);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+
+.collections__card-list {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 1rem !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 .card {
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 70px !important;
+  padding: 1rem 1.25rem !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(243, 239, 228, 0.12) !important;
+  background: rgba(17, 26, 51, 0.65) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card--has-onclick:hover {
-  border-color: var(--clixa-or);
+  border-color: rgba(201, 162, 76, 0.55) !important;
+  background: rgba(22, 31, 61, 0.9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow:
+    0 10px 24px -4px rgba(0, 0, 0, 0.45),
+    0 0 16px -4px rgba(201, 162, 76, 0.18) !important;
 }
 
-/* Le titre d'une carte nomme une collection : la romaine, comme les rubriques. */
 .card__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-serif) !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  letter-spacing: -0.01em !important;
+  color: var(--clixa-ivoire) !important;
+  transition: color 0.15s ease !important;
+}
+
+.card:hover .card__title {
+  color: var(--clixa-or-clair) !important;
+}
+
+.card__actions {
+  display: flex !important;
+  align-items: center !important;
+  z-index: 2 !important;
+}
+
+.card__actions .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  background: rgba(201, 162, 76, 0.1) !important;
+  border: 1px solid rgba(201, 162, 76, 0.35) !important;
+  color: var(--clixa-or-clair) !important;
+  font-size: 1.2rem !important;
+  line-height: 1 !important;
+  transition: all 0.18s ease !important;
+}
+
+.card__actions .btn:hover {
+  background: var(--clixa-or) !important;
+  color: var(--clixa-encre) !important;
+  border-color: var(--clixa-or) !important;
+  transform: scale(1.08) !important;
+}
+
+/* ── Les Boutons Payload ─────────────────────────────────────────────────── */
+
+.btn--style-primary {
+  --color: #080c18 !important;
+  --bg-color: #c9a24c !important;
+  --hover-bg: #e9cd84 !important;
+  --hover-color: #080c18 !important;
+  font-weight: 600 !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 10px rgba(201, 162, 76, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn--style-primary:hover {
+  box-shadow: 0 4px 16px rgba(201, 162, 76, 0.4) !important;
+}
+
+.btn--style-secondary {
+  border-radius: 3px !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn--style-secondary:hover {
+  --hover-color: var(--clixa-or) !important;
+  --hover-btn-border: 1px solid var(--clixa-or) !important;
+}
+
+/* ── Focus States ────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--clixa-or) !important;
+  outline-offset: 2px !important;
 }

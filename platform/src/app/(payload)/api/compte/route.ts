@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { fermerSession, ouvrirSession } from "@/lib/session-apprenant";
+import { fermerSession, ouvrirSession, participantConnecte } from "@/lib/session-apprenant";
 
 /**
  * BE-19 — Création, connexion et sortie d'un compte participant.
@@ -18,10 +18,86 @@ import { fermerSession, ouvrirSession } from "@/lib/session-apprenant";
 
 const LEURRE = "site_web";
 
+/**
+ * Rattache un dossier au compte qui vient d'être créé.
+ *
+ * Trois conditions, toutes nécessaires : une référence est fournie, le dossier
+ * existe, et son adresse est celle du compte. La dernière évite qu'une
+ * référence aperçue serve à s'attribuer le dossier d'un autre.
+ *
+ * Silencieuse en cas d'échec : le compte, lui, est bien créé, et le refuser
+ * parce qu'un rattachement n'a pas abouti serait pire que la page vide qu'on
+ * cherchait à éviter.
+ */
+async function rattacher(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  reference: string,
+  email: string,
+  compteId: number,
+): Promise<void> {
+  if (!/^[A-Z0-9-]{4,24}$/i.test(reference)) return;
+
+  const { docs } = await payload.find({
+    collection: "inscriptions",
+    where: { reference: { equals: reference.toUpperCase() } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  const dossier = docs[0];
+  if (!dossier || String(dossier.apprenantEmail).toLowerCase() !== email) return;
+
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: { apprenant: compteId },
+  });
+}
+
 export async function POST(request: Request) {
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
   const action = texte("action");
+
+  /*
+    Rattacher un dossier depuis « mon espace ». Sert à qui a créé son compte
+    ailleurs que depuis sa fiche de dossier — la référence n'avait alors pas
+    voyagé avec le lien.
+
+    Mêmes conditions que sur le compte tout neuf : la référence doit exister et
+    porter l'adresse du compte connecté. On ne dit pas laquelle des deux a
+    manqué, faute de quoi la page servirait à savoir quelles références existent.
+  */
+  if (action === "rattacher") {
+    const participant = await participantConnecte();
+    if (!participant) redirect("/compte/connexion" as Route);
+
+    const payloadClient = await getPayload({ config });
+    const avant = await payloadClient.count({
+      collection: "inscriptions",
+      where: { apprenant: { equals: participant.id } },
+      overrideAccess: true,
+    });
+
+    await rattacher(
+      payloadClient,
+      texte("dossier"),
+      participant.email.toLowerCase(),
+      Number(participant.id),
+    );
+
+    const apres = await payloadClient.count({
+      collection: "inscriptions",
+      where: { apprenant: { equals: participant.id } },
+      overrideAccess: true,
+    });
+
+    redirect(
+      (apres.totalDocs > avant.totalDocs ? "/compte" : "/compte?erreur=rattachement") as Route,
+    );
+  }
 
   if (action === "sortie") {
     await fermerSession();
@@ -57,25 +133,28 @@ export async function POST(request: Request) {
       });
 
       /*
-        Les dossiers déjà déposés avec cette adresse rejoignent le compte. Sans
-        cela, quelqu'un qui s'inscrit puis crée un compte trouverait une page
-        vide et croirait son inscription perdue.
+        ── Ce qu'une adresse ne prouve pas ───────────────────────────────────
+        Cette route rattachait au compte tous les dossiers portant la même
+        adresse. L'intention était juste — sans rattachement, qui s'est inscrit
+        puis crée un compte trouve une page vide et croit son inscription
+        perdue. Mais rien ne vérifiait que la personne détenait cette adresse :
+        aucun courriel de confirmation ne part, et il n'en partira pas tant
+        qu'aucun expéditeur n'est configuré.
+
+        Il suffisait donc de connaître l'adresse de quelqu'un — un format
+        d'entreprise se devine — et de créer un compte avec, pour voir son nom,
+        son téléphone, son pays, son échéancier et la référence de son dossier.
+        Cette référence ouvre à son tour l'annonce de transfert.
+
+        Le rattachement demande maintenant la référence, que le participant a
+        déjà : elle est dans son courriel et dans l'adresse de sa page. C'est la
+        clef qui laisse déjà consulter un dossier sans compte — on n'ouvre donc
+        rien de plus qu'avant, et l'adresse seule n'ouvre plus rien.
+
+        Le jour où un expéditeur sera en place, `auth.verify` de Payload fera ce
+        travail à la source, et ce détour n'aura plus lieu d'être.
       */
-      const { docs } = await payload.find({
-        collection: "inscriptions",
-        where: { apprenantEmail: { equals: email } },
-        limit: 100,
-        depth: 0,
-        overrideAccess: true,
-      });
-      for (const d of docs) {
-        await payload.update({
-          collection: "inscriptions",
-          id: d.id,
-          overrideAccess: true,
-          data: { apprenant: compte.id },
-        });
-      }
+      await rattacher(payload, texte("dossier"), email, compte.id);
     } catch (e) {
       // Adresse déjà prise, mot de passe refusé, base indisponible : on ne
       // distingue pas, pour ne rien apprendre à qui essaie des adresses.
