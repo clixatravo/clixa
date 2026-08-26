@@ -37,6 +37,7 @@ npx payload run scripts/verifier-medias.ts        # variantes d'images
 npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
 npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
 npx payload run scripts/verifier-session.ts       # la connexion sans mot de passe
+npx payload run scripts/verifier-google.ts        # une personne, un compte
 ```
 
 **Les parcours du site sont éprouvés par Playwright** (`INT-10`). Une série
@@ -485,6 +486,19 @@ La session en base n'est pas décorative non plus : `useSessions` est actif sur
 `apprenants` (table `apprenants_sessions`), et un jeton dont le `sid` ne
 correspond à aucune ligne est rejeté. Signer sans écrire donnerait un cookie
 accepté par le navigateur et refusé à chaque requête.
+
+**La règle « une personne, un compte » tient à deux choses**, pas une seule :
+la route cherche par `sub` puis par adresse avant de créer, et la base porte un
+index unique sur `google_id` comme sur `email`. `verifier-google.ts` éprouve les
+deux, y compris qu'un compte lié à Google garde son mot de passe d'origine —
+lier ne doit fermer aucune porte. Le cas ne s'est pas encore présenté en
+production : personne n'avait de compte avant l'arrivée de Google.
+
+⚠️ **`vercel env pull` n'écrit pas les valeurs chiffrées**, il met un
+substitut de onze caractères. Les lire pour vérifier une clé mène à conclure
+que toutes les clés du projet sont fausses — y compris celles qui font tourner
+le site. La seule vérification qui vaille est fonctionnelle : redéployer, puis
+regarder si le service accepte.
 
 ## Points ouverts
 
