@@ -541,9 +541,25 @@ ligne passait par `vercel --prod` à la main, et la production a fini par
 accuser trois commits de retard sans que rien ne le signale. Le dépôt est
 désormais connecté — un push sur `main` déploie.
 
-Les quatre variables d'environnement existent dans les trois environnements —
-Development, Preview et Production. Les aperçus de branche construisent donc
-sans réglage supplémentaire.
+Les variables existent dans les trois environnements — Development, Preview et
+Production — de sorte qu'un aperçu de branche construise sans réglage
+supplémentaire.
+
+| Variable | Sans elle |
+|---|---|
+| `DATABASE_URL` | rien ne démarre |
+| `PAYLOAD_SECRET` | rien ne démarre |
+| `NEXT_PUBLIC_SITE_URL` | liens absolus et balise canonique faux |
+| `NEXT_PUBLIC_SITE_ENV` | le site se referme aux moteurs |
+| `RESEND_API_KEY` | les courriels vont dans la console |
+| `EMAIL_EXPEDITEUR` · `EMAIL_EQUIPE` | expéditeur et copie interne manquants |
+| `CRON_SECRET` | `/api/relances` répond 503 |
+| `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` | aucun bouton Google n'est offert |
+
+⚠️ **`NEXT_PUBLIC_*` ne peut pas être « sensible » en Preview ni en Production.**
+Un `vercel env rm` qui réussit suivi d'un `add` qui échoue sur
+`invalid_visibility` laisse la variable *absente* — c'est ainsi que
+`NEXT_PUBLIC_SITE_URL` a disparu un moment. Poser `--no-sensitive --force`.
 
 **Deux branches Neon, depuis le 21 août 2026.** `production` sert le site
 public ; `dev` sert le poste de travail et les aperçus de branche. Modifier le
