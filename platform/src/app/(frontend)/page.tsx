@@ -13,6 +13,7 @@ import {
   getSpecialisations,
   getTemoignages,
   getPartenaires,
+  getTarifs,
   lieuSession,
   villesDisponibles,
 } from "@/lib/catalogue";
@@ -64,6 +65,28 @@ export default async function Accueil() {
     specs.map((s) => [s.slug, programmes.filter((p) => p.specialisation === s.slug).length]),
   );
 
+  /*
+    Les trois repères du héros, et les quatre chiffres du bandeau qui suit. Tous
+    déduits du catalogue : aucun n'est écrit à la main, aucun ne peut donc
+    survivre à ce qu'il décrit.
+
+    Le nombre de séances n'est annoncé que si les douze parcours s'accordent —
+    sinon la phrase serait vraie pour certains et fausse pour d'autres, et c'est
+    exactement le genre d'approximation qui a valu au site d'annoncer des
+    campus où aucune session n'existe.
+  */
+  const seances = [...new Set(programmes.map((p) => p.modules.length).filter((n) => n > 0))];
+  const tarifs = await getTarifs();
+  const rythmes = tarifs.plans.length;
+
+  const reperes = [
+    villes.length > 0 ? `En présentiel et à distance` : "À distance, en classe virtuelle",
+    ...(seances.length === 1 ? [`${seances[0]} séances par parcours`] : []),
+    ...(rythmes > 1 ? [`Paiement en 1, 2 ou ${rythmes} fois`] : []),
+  ];
+
+  const prochaineSeance = agenda[0]?.debut;
+
   return (
     <>
       {/* ── Héros Executive ── */}
@@ -77,7 +100,7 @@ export default async function Accueil() {
               {/* Badge d'excellence avec étoile dorée */}
               <div className="border-gold/35 bg-panel/80 text-gold-bright rounded-clixa mb-6 inline-flex items-center gap-2 border px-3.5 py-1.5 font-mono text-[0.68rem] tracking-[0.14em] uppercase shadow-[0_0_20px_-3px_rgba(201,162,76,0.25)] backdrop-blur-md">
                 <span className="text-gold font-bold">✦</span>
-                <span>Institut Panafricain d&apos;Excellence &amp; Certifications</span>
+                <span>Certifications · Exécutif · Corporate</span>
               </div>
 
               <h1 className="mb-6 max-w-[18ch] text-[clamp(2.3rem,5.2vw,3.9rem)] font-bold tracking-tight">
@@ -103,60 +126,61 @@ export default async function Accueil() {
                 </Link>
               </div>
 
-              {/* Repères de réassurance rapide */}
+              {/*
+                Trois repères, et chacun se vérifie dans la base.
+
+                Ils remplacent « 100 % praticiens en exercice », « certifications
+                reconnues » et « facilités de paiement en 3x ». Les deux premiers
+                n'étaient adossés à rien — le CMS ne porte aucune donnée sur les
+                intervenants, et « reconnues » ne dit pas par qui. Le troisième
+                était faux dans son sens courant : payer en trois fois coûte
+                47 € de plus que comptant. On le dit donc comme il est.
+              */}
               <div className="border-line/60 mt-10 flex flex-wrap items-center gap-6 border-t pt-6 text-[0.78rem]">
-                <div className="text-ivory-dim flex items-center gap-2">
-                  <span className="text-emerald-bright font-bold">✓</span>
-                  <span>100% Praticiens en exercice</span>
-                </div>
-                <div className="text-ivory-dim flex items-center gap-2">
-                  <span className="text-emerald-bright font-bold">✓</span>
-                  <span>Certifications reconnues</span>
-                </div>
-                <div className="text-ivory-dim flex items-center gap-2">
-                  <span className="text-emerald-bright font-bold">✓</span>
-                  <span>Facilités de paiement en 3x</span>
-                </div>
+                {reperes.map((r) => (
+                  <div key={r} className="text-ivory-dim flex items-center gap-2">
+                    <span className="text-emerald-bright font-bold">✓</span>
+                    <span>{r}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Bandeau Trust Stats ── */}
+      {/*
+        ── Le bandeau de chiffres ──────────────────────────────────────────
+        Il en portait quatre : « 12+ », « 100 % praticiens experts en
+        exercice », « 3 Hubs — Agadir · Abidjan · Dakar » et « 98 % taux
+        d'assiduité & complétion ».
+
+        Aucun ne tenait. Le catalogue compte douze parcours, pas « douze et
+        plus ». Le CMS ne porte rien sur les intervenants. Les douze sessions
+        sont toutes en classe virtuelle et aucune ville n'y figure — c'est la
+        troisième fois que ces trois villes reviennent sur le site sans qu'une
+        seule session s'y donne. Et un taux d'assiduité de 98 % supposait des
+        participants : la base en compte zéro, personne n'a encore suivi le
+        premier cours.
+
+        Les quatre qui les remplacent se déduisent tous du catalogue. Chacun
+        n'apparaît que s'il a une valeur à montrer : un chiffre absent vaut
+        mieux qu'un chiffre inventé.
+      */}
       <section className="border-line bg-panel/40 border-b px-8 py-8">
         <div className="mx-auto max-w-[1180px]">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
-            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
-              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
-                {total}+
-              </div>
-              <div className="text-ivory-dim mt-2 text-[0.8rem]">
-                Programmes &amp; certifications
-              </div>
-            </div>
-            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
-              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
-                100 %
-              </div>
-              <div className="text-ivory-dim mt-2 text-[0.8rem]">
-                Praticiens experts en exercice
-              </div>
-            </div>
-            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
-              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
-                3 Hubs
-              </div>
-              <div className="text-ivory-dim mt-2 text-[0.8rem]">Agadir · Abidjan · Dakar</div>
-            </div>
-            <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
-              <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
-                98 %
-              </div>
-              <div className="text-ivory-dim mt-2 text-[0.8rem]">
-                Taux d&apos;assiduité &amp; complétion
-              </div>
-            </div>
+            <Chiffre valeur={String(total)} legende="parcours au catalogue" />
+            <Chiffre valeur={String(specs.length)} legende="filières métier" />
+            {seances.length === 1 && (
+              <Chiffre valeur={String(seances[0])} legende="séances par parcours" />
+            )}
+            {prochaineSeance && (
+              <Chiffre
+                valeur={formatDateCourte(prochaineSeance)}
+                legende="première séance de la cohorte"
+              />
+            )}
           </div>
         </div>
       </section>
@@ -331,3 +355,21 @@ export default async function Accueil() {
 }
 
 /** Une ligne de la carte du héros : un nombre, ce qu'il compte. */
+
+/**
+ * Un chiffre du bandeau d'accueil.
+ *
+ * Volontairement sans logique : c'est l'appelant qui décide s'il y a quelque
+ * chose à montrer. Un composant qui inventerait un repli afficherait un jour
+ * ce repli comme s'il était vrai.
+ */
+function Chiffre({ valeur, legende }: { valeur: string; legende: string }) {
+  return (
+    <div className="border-line/60 bg-panel/60 rounded-clixa border p-5">
+      <div className="font-display text-gold-bright text-[1.8rem] leading-none font-bold">
+        {valeur}
+      </div>
+      <div className="text-ivory-dim mt-2 text-[0.8rem]">{legende}</div>
+    </div>
+  );
+}
