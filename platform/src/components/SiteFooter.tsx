@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { getPages } from "@/lib/pages";
+import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 
 /**
  * Les pages légales se lisent dans le CMS, elles ne sont pas écrites ici.
@@ -62,6 +63,11 @@ export async function SiteFooter() {
               <span>contact@clixa.africa</span>
               <span>→</span>
             </a>
+
+            {/* Barre des 3 logos réseaux sociaux (sans texte) */}
+            <div className="mt-5">
+              <ReseauxSociaux taille="normal" />
+            </div>
           </div>
 
           {colonnes.map((c) => (

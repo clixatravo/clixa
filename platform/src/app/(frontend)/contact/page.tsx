@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
 import { formatPrix, getProgrammes, getTarifs } from "@/lib/catalogue";
+import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 
 export const metadata: Metadata = {
   title: "Être rappelé",
@@ -186,6 +187,14 @@ export default async function Contact({ searchParams }: Props) {
               </form>
             </div>
           )}
+
+          {/* ── Logos officiels WhatsApp, LinkedIn, Facebook (purs logos cliquables) ── */}
+          <div className="mt-10 flex flex-col items-center justify-center gap-3">
+            <span className="mono-label text-ivory-dim/60 text-[0.68rem] tracking-widest uppercase">
+              Canaux officiels
+            </span>
+            <ReseauxSociaux taille="large" />
+          </div>
         </div>
       </section>
     </>

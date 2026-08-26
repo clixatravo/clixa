@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 
 /**
  * FE-13 / FE-14 — Navigation mobile.
@@ -155,6 +156,14 @@ export function MobileMenu({ liens }: { liens: readonly { href: Route; label: st
         >
           Nous contacter
         </Link>
+
+        {/* Canaux officiels & Réseaux Sociaux (purs logos cliquables) */}
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <span className="mono-label text-gold mb-3 block text-xs tracking-wider">
+            Réseaux officiels
+          </span>
+          <ReseauxSociaux taille="large" className="gap-3" />
+        </div>
       </div>
     </>
   );
