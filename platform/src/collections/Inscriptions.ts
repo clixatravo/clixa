@@ -65,7 +65,14 @@ export const Inscriptions: CollectionConfig = {
   labels: { singular: "Inscription", plural: "Inscriptions" },
   admin: {
     useAsTitle: "reference",
-    defaultColumns: ["reference", "apprenantNom", "session", "statut", "prochaineEcheance"],
+    defaultColumns: [
+      "reference",
+      "apprenantNom",
+      "apprenantWhatsapp",
+      "session",
+      "statut",
+      "prochaineEcheance",
+    ],
     group: "Admissions",
     description:
       "Une ligne par place demandée. Le paiement arrive par transfert : c'est ici qu'on le rapproche.",

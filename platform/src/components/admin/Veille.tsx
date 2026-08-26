@@ -66,13 +66,13 @@ export async function Veille() {
     overrideAccess: true,
   });
 
-  // 3. La prochaine session
+  // 3. Les prochaines sessions pour le planning et les jauges de remplissage
   const { docs: sessions } = await payload.find({
     collection: "sessions",
     where: { debut: { greater_than_equal: aujourdhui } },
     sort: "debut",
-    limit: 1,
-    depth: 0,
+    limit: 3,
+    depth: 1,
     overrideAccess: true,
   });
   const prochaine = sessions[0]?.debut;
@@ -85,10 +85,17 @@ export async function Veille() {
     <section className="clixa-cockpit">
       <div className="clixa-cockpit__header">
         <div>
-          <span className="clixa-cockpit__badge">✦ CONSOLE DE PILOTAGE · CLIXA INSTITUTE</span>
           <h2 className="clixa-cockpit__titre">{dateFormatee}</h2>
         </div>
         <div className="clixa-cockpit__actions">
+          <a
+            href="/api/admin/export-admissions"
+            download
+            className="clixa-cockpit__btn clixa-cockpit__btn--accent"
+            title="Télécharger le rapport complet des admissions au format CSV/Excel"
+          >
+            <span>📥 Exporter CSV</span>
+          </a>
           <Link
             href="/admin/collections/demandes-rappel"
             className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--accent" : ""}`}
@@ -188,6 +195,80 @@ export async function Veille() {
           <span className="clixa-kpi__fleche">Gérer le planning →</span>
         </Link>
       </div>
+
+      {/* Jauge de Remplissage des Promotions à venir */}
+      {sessions.length > 0 && (
+        <div className="clixa-jauges">
+          <div className="clixa-jauges__en-tete">
+            <span className="clixa-jauges__titre">✦ CAPACITÉ & REMPLISSAGE DES PROMOTIONS</span>
+            <Link href="/admin/collections/sessions" className="clixa-jauges__lien">
+              Gérer les sessions →
+            </Link>
+          </div>
+          <div className="clixa-jauges__liste">
+            {sessions.map((s) => {
+              const reservees = typeof s.placesReservees === "number" ? s.placesReservees : 0;
+              const max = typeof s.capacite === "number" && s.capacite > 0 ? s.capacite : 20;
+              const pct = Math.min(100, Math.round((reservees / max) * 100));
+              const progObj = s.programme && typeof s.programme === "object" ? s.programme : null;
+              const titre =
+                s.reference ||
+                (progObj && "titre" in progObj ? String(progObj.titre) : "Promotion");
+              const dateDebut = s.debut
+                ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
+                    new Date(s.debut),
+                  )
+                : "À venir";
+
+              const estComplet = pct >= 100;
+              const estBientotPlein = pct >= 75 && !estComplet;
+
+              return (
+                <div key={s.id} className="clixa-jauge-carte">
+                  <div className="clixa-jauge-carte__haut">
+                    <span className="clixa-jauge-carte__nom" title={titre}>
+                      {titre}
+                    </span>
+                    <span
+                      className={`clixa-jauge-carte__badge ${
+                        estComplet
+                          ? "clixa-jauge-carte__badge--complet"
+                          : estBientotPlein
+                            ? "clixa-jauge-carte__badge--alerte"
+                            : ""
+                      }`}
+                    >
+                      {estComplet
+                        ? "Complet"
+                        : estBientotPlein
+                          ? "Dernières places"
+                          : `${dateDebut}`}
+                    </span>
+                  </div>
+                  <div className="clixa-jauge-carte__chiffres">
+                    <span>
+                      <strong>{reservees}</strong> / {max} places
+                    </span>
+                    <span className="clixa-jauge-carte__pct">{pct}%</span>
+                  </div>
+                  <div className="clixa-jauge-carte__barre-fond">
+                    <div
+                      className={`clixa-jauge-carte__barre-remplie ${
+                        estComplet
+                          ? "clixa-jauge-carte__barre-remplie--rouge"
+                          : estBientotPlein
+                            ? "clixa-jauge-carte__barre-remplie--or"
+                            : ""
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

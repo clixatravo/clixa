@@ -21,9 +21,9 @@ export const DemandesRappel: CollectionConfig = {
   labels: { singular: "Demande de rappel", plural: "Demandes de rappel" },
   admin: {
     useAsTitle: "nom",
-    defaultColumns: ["nom", "programme", "statut", "createdAt"],
+    defaultColumns: ["nom", "programme", "whatsapp", "statut", "createdAt"],
     group: "Admissions",
-    description: "Les demandes déposées depuis le site.",
+    description: "Les demandes déposées depuis le site avec accès direct WhatsApp.",
   },
   access: {
     // Formulaire public : le dépôt est ouvert.
@@ -52,9 +52,12 @@ export const DemandesRappel: CollectionConfig = {
         {
           name: "whatsapp",
           type: "text",
-          label: "WhatsApp",
+          label: "WhatsApp / Téléphone",
           required: true,
-          admin: { width: "50%" },
+          admin: {
+            width: "50%",
+            description: "Format international avec indicatif (ex: +212612345678).",
+          },
         },
         { name: "pays", type: "text", label: "Pays", required: true, admin: { width: "50%" } },
       ],

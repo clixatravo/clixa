@@ -49,7 +49,6 @@ export default buildConfig({
         Logo: "@/components/admin/Marque#Logo",
         Icon: "@/components/admin/Marque#Icone",
       },
-      beforeLogin: ["@/components/admin/AvantConnexion#AvantConnexion"],
       /*
         Le tableau de bord de Payload dit où aller, jamais s'il faut y aller.
         Ce bandeau le dit — et se tait quand il n'y a rien.

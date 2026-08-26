@@ -32,20 +32,46 @@ h3,
 /* ── Top Bar & Fil d'Ariane (StepNav) ─────────────────────────────────────── */
 
 .app-header {
+  background: #080c18 !important;
   border-bottom: 1px solid rgba(243, 239, 228, 0.1) !important;
+}
+
+.app-header__bg,
+.app-header__gradient-placeholder,
+.step-nav::after {
+  display: none !important;
+  background: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .step-nav {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.6rem !important;
+  gap: 0.75rem !important;
+  overflow: visible !important;
 }
 
 .step-nav__home {
   display: inline-flex !important;
   align-items: center !important;
-  padding-right: 0.15rem !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
   text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.step-nav__home:hover,
+.step-nav__home:focus-visible,
+.step-nav a:hover,
+.step-nav a:focus-visible {
+  text-decoration: none !important;
+  outline: none !important;
 }
 
 .clixa-icone-wrap {
@@ -53,6 +79,7 @@ h3,
   align-items: center;
   justify-content: center;
   vertical-align: middle;
+  line-height: 1;
 }
 
 .clixa-admin-icon {
@@ -66,17 +93,157 @@ h3,
 }
 
 .step-nav span {
-  color: rgba(243, 239, 228, 0.3) !important;
-  font-size: 0.9rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: none !important;
+  overflow: visible !important;
+  color: rgba(243, 239, 228, 0.35) !important;
+  font-size: 0.85rem !important;
   font-weight: 300 !important;
 }
 
-.step-nav__last {
+.step-nav__last,
+.dashboard-breadcrumb-select {
   font-family: var(--font-serif) !important;
   font-size: 0.95rem !important;
   font-weight: 600 !important;
   color: var(--clixa-ivoire) !important;
   letter-spacing: -0.01em !important;
+}
+
+/* ── Sélecteur de Langue (Localizer : Français / Anglais) ──────────────────── */
+
+.app-header__localizer.localizer {
+  position: absolute !important;
+  top: 50% !important;
+  right: calc(var(--gutter-h, 25px) + 52px) !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  z-index: 10 !important;
+}
+
+.localizer-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  padding: 0.32rem 0.85rem !important;
+  background: rgba(17, 26, 51, 0.85) !important;
+  border: 1px solid rgba(243, 239, 228, 0.18) !important;
+  border-radius: 9999px !important;
+  color: var(--clixa-ivoire) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.04em !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  margin-right: 0.5rem !important;
+}
+
+.localizer-button::before {
+  content: "🌐";
+  font-size: 0.76rem;
+  margin-right: 0.15rem;
+}
+
+.localizer-button__label {
+  display: none !important;
+}
+
+.localizer-button__current {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  font-weight: 600 !important;
+  color: var(--clixa-ivoire) !important;
+}
+
+.localizer-button:hover {
+  background: rgba(22, 31, 61, 0.95) !important;
+  border-color: var(--clixa-or) !important;
+  color: var(--clixa-or-clair) !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    0 0 12px -2px rgba(201, 162, 76, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+.localizer-button:hover .localizer-button__current {
+  color: var(--clixa-or-clair) !important;
+}
+
+.localizer-button__chevron {
+  width: 11px !important;
+  height: 11px !important;
+  stroke: var(--clixa-or) !important;
+  transition: transform 0.2s ease !important;
+}
+
+.localizer-button:hover .localizer-button__chevron {
+  transform: translateY(1px);
+}
+
+/* ── Menu contextuel & Dropdowns (Popups) ─────────────────────────────────── */
+
+.popup__content {
+  background: #111a33 !important;
+  border: 1px solid rgba(201, 162, 76, 0.35) !important;
+  border-radius: 6px !important;
+  box-shadow:
+    0 16px 36px -4px rgba(0, 0, 0, 0.65),
+    0 0 20px -2px rgba(201, 162, 76, 0.15) !important;
+  padding: 0.45rem !important;
+  color: var(--clixa-ivoire) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.popup__caret {
+  border-bottom-color: #111a33 !important;
+}
+
+.popup-button-list__button {
+  border-radius: 4px !important;
+  padding: 0.5rem 0.85rem !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.76rem !important;
+  letter-spacing: 0.04em !important;
+  color: rgba(243, 239, 228, 0.85) !important;
+  transition: all 0.16s ease !important;
+}
+
+.popup-button-list__button:hover {
+  background: rgba(201, 162, 76, 0.15) !important;
+  color: var(--clixa-or-clair) !important;
+  padding-left: 1.05rem !important;
+}
+
+.popup-button-list__button--selected {
+  background: rgba(201, 162, 76, 0.2) !important;
+  color: var(--clixa-or-clair) !important;
+  font-weight: 600 !important;
+  border-left: 2px solid var(--clixa-or) !important;
+}
+
+/* ── Avatar utilisateur ─────────────────────────────────────────────────── */
+
+.app-header__account {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid rgba(201, 162, 76, 0.35) !important;
+  background: rgba(201, 162, 76, 0.08) !important;
+  padding: 2px !important;
+  transition: all 0.2s ease !important;
+  margin-left: 1.25rem !important;
+}
+
+.app-header__account:hover {
+  border-color: var(--clixa-or) !important;
+  box-shadow: 0 0 14px rgba(201, 162, 76, 0.4) !important;
+  transform: scale(1.06) !important;
 }
 
 /* ── La Marque / Logo Admin (Login Page) ─────────────────────────────────── */
@@ -130,44 +297,6 @@ h3,
   margin-top: 0.2rem;
 }
 
-/* ── L'avis avant connexion ────────────────────────────────────────────────── */
-
-.clixa-avis {
-  border: 1px solid rgba(201, 162, 76, 0.35);
-  background: rgba(201, 162, 76, 0.08);
-  border-radius: 4px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.clixa-avis__en-tete {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.4rem;
-}
-
-.clixa-avis__icone {
-  color: var(--clixa-or);
-  font-size: 0.85rem;
-}
-
-.clixa-avis__titre {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--clixa-or);
-  font-weight: 600;
-}
-
-.clixa-avis__texte {
-  font-size: 0.84rem;
-  line-height: 1.55;
-  margin: 0;
-  color: rgba(243, 239, 228, 0.88);
-}
-
 /* ── Barre Latérale (Sidebar Nav) ────────────────────────────────────────── */
 
 .nav {
@@ -176,14 +305,14 @@ h3,
 }
 
 .nav__group {
-  margin-bottom: 1.25rem !important;
+  margin-bottom: 1.5rem !important;
 }
 
 .nav-group__toggle {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 0.45rem 0.85rem !important;
+  padding: 0.45rem 1rem !important;
   font-family: var(--font-mono) !important;
   font-size: 0.65rem !important;
   letter-spacing: 0.16em !important;
@@ -201,10 +330,10 @@ h3,
 .nav__link {
   display: flex !important;
   align-items: center !important;
-  padding: 0.5rem 0.9rem !important;
+  padding: 0.55rem 1rem !important;
   margin: 2px 8px !important;
   font-size: 0.88rem !important;
-  color: rgba(243, 239, 228, 0.7) !important;
+  color: rgba(243, 239, 228, 0.72) !important;
   border-radius: 3px !important;
   text-decoration: none !important;
   transition: all 0.16s ease !important;
@@ -213,7 +342,7 @@ h3,
 .nav__link:hover {
   color: #ffffff !important;
   background: rgba(201, 162, 76, 0.08) !important;
-  padding-left: 1.05rem !important;
+  padding-left: 1.15rem !important;
 }
 
 .nav__link.active {
@@ -482,7 +611,7 @@ h3,
 /* ── Collections Dashboard (Groupes & Cartes) ────────────────────────────── */
 
 .collections__group {
-  margin-bottom: 2.5rem !important;
+  margin-bottom: 2.75rem !important;
 }
 
 .collections__label {
@@ -494,7 +623,7 @@ h3,
   font-weight: 600 !important;
   letter-spacing: -0.01em !important;
   color: var(--clixa-ivoire) !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.1rem !important;
 }
 
 .collections__label::before {
@@ -518,18 +647,18 @@ h3,
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  min-height: 70px !important;
-  padding: 1rem 1.25rem !important;
+  min-height: 72px !important;
+  padding: 1.1rem 1.25rem !important;
   border-radius: 4px !important;
   border: 1px solid rgba(243, 239, 228, 0.12) !important;
-  background: rgba(17, 26, 51, 0.65) !important;
+  background: #111a33 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card--has-onclick:hover {
   border-color: rgba(201, 162, 76, 0.55) !important;
-  background: rgba(22, 31, 61, 0.9) !important;
+  background: #161f3d !important;
   transform: translateY(-2px) !important;
   box-shadow:
     0 10px 24px -4px rgba(0, 0, 0, 0.45),
@@ -563,17 +692,17 @@ h3,
   height: 32px !important;
   padding: 0 !important;
   border-radius: 4px !important;
-  background: rgba(201, 162, 76, 0.1) !important;
+  background: rgba(201, 162, 76, 0.12) !important;
   border: 1px solid rgba(201, 162, 76, 0.35) !important;
   color: var(--clixa-or-clair) !important;
-  font-size: 1.2rem !important;
+  font-size: 1.25rem !important;
   line-height: 1 !important;
   transition: all 0.18s ease !important;
 }
 
 .card__actions .btn:hover {
   background: var(--clixa-or) !important;
-  color: var(--clixa-encre) !important;
+  color: #080c18 !important;
   border-color: var(--clixa-or) !important;
   transform: scale(1.08) !important;
 }
@@ -603,6 +732,321 @@ h3,
 .btn--style-secondary:hover {
   --hover-color: var(--clixa-or) !important;
   --hover-btn-border: 1px solid var(--clixa-or) !important;
+}
+
+/* ── Jauges de Capacité des Sessions (Cockpit) ───────────────────────────── */
+
+.clixa-jauges {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(243, 239, 228, 0.1);
+}
+
+.clixa-jauges__en-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.clixa-jauges__titre {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  font-weight: 600;
+}
+
+.clixa-jauges__lien {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--clixa-or);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.clixa-jauges__lien:hover {
+  color: var(--clixa-or-clair);
+  text-decoration: underline;
+}
+
+.clixa-jauges__liste {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.clixa-jauge-carte {
+  background: rgba(17, 26, 51, 0.7);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 4px;
+  padding: 1rem 1.15rem;
+  transition: all 0.2s ease;
+}
+
+.clixa-jauge-carte:hover {
+  background: rgba(22, 31, 61, 0.9);
+  border-color: rgba(201, 162, 76, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+}
+
+.clixa-jauge-carte__haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.clixa-jauge-carte__nom {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--clixa-ivoire);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clixa-jauge-carte__badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(47, 163, 125, 0.15);
+  color: var(--clixa-emeraude-clair);
+  border: 1px solid rgba(47, 163, 125, 0.35);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.clixa-jauge-carte__badge--alerte {
+  background: rgba(201, 162, 76, 0.15);
+  color: var(--clixa-or-clair);
+  border-color: rgba(201, 162, 76, 0.4);
+}
+
+.clixa-jauge-carte__badge--complet {
+  background: rgba(224, 82, 82, 0.15);
+  color: var(--clixa-rouge);
+  border-color: rgba(224, 82, 82, 0.4);
+}
+
+.clixa-jauge-carte__chiffres {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: rgba(243, 239, 228, 0.75);
+  margin-bottom: 0.45rem;
+}
+
+.clixa-jauge-carte__chiffres strong {
+  color: var(--clixa-ivoire);
+}
+
+.clixa-jauge-carte__pct {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--clixa-or-clair);
+}
+
+.clixa-jauge-carte__barre-fond {
+  width: 100%;
+  height: 6px;
+  background: rgba(243, 239, 228, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.clixa-jauge-carte__barre-remplie {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #1f7a5c 0%, #2fa37d 100%);
+  transition: width 0.4s ease;
+}
+
+.clixa-jauge-carte__barre-remplie--or {
+  background: linear-gradient(90deg, #c9a24c 0%, #e9cd84 100%);
+}
+
+.clixa-jauge-carte__barre-remplie--rouge {
+  background: linear-gradient(90deg, #e05252 0%, #ff7878 100%);
+}
+
+/* ── Tableaux de Collections Payload (Styles Exécutifs) ──────────────────── */
+
+.table {
+  background: transparent !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.table th {
+  font-family: var(--font-mono) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--clixa-or) !important;
+  background: rgba(17, 26, 51, 0.9) !important;
+  border-bottom: 1px solid rgba(201, 162, 76, 0.25) !important;
+  padding: 0.85rem 1rem !important;
+}
+
+.table td {
+  padding: 0.85rem 1rem !important;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.07) !important;
+  font-size: 0.88rem !important;
+  color: rgba(243, 239, 228, 0.88) !important;
+  transition: background 0.15s ease !important;
+}
+
+.table tr:hover td {
+  background: rgba(201, 162, 76, 0.05) !important;
+}
+
+.cell-reference,
+.cell-createdAt,
+.cell-prochaineEcheance,
+.cell-debut,
+.cell-capacite,
+.cell-placesReservees {
+  font-family: var(--font-mono) !important;
+  font-size: 0.8rem !important;
+}
+
+.cell-reference a {
+  color: var(--clixa-or-clair) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+.cell-reference a:hover {
+  text-decoration: underline !important;
+}
+
+.cell-whatsapp a,
+.cell-apprenantWhatsapp a {
+  color: var(--clixa-emeraude-clair) !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* ── Barre de recherche & Filtres (List Controls) ────────────────────────── */
+
+.list-controls {
+  background: rgba(17, 26, 51, 0.6) !important;
+  border: 1px solid rgba(243, 239, 228, 0.1) !important;
+  border-radius: 4px !important;
+  padding: 0.75rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.search-filter__input {
+  background: #080c18 !important;
+  border: 1px solid rgba(243, 239, 228, 0.15) !important;
+  border-radius: 3px !important;
+  color: var(--clixa-ivoire) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.88rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.search-filter__input:focus {
+  border-color: var(--clixa-or) !important;
+  box-shadow: 0 0 10px rgba(201, 162, 76, 0.3) !important;
+}
+
+/* ── En-tête Fixe de Document (Doc Controls) ─────────────────────────────── */
+
+.doc-controls {
+  background: rgba(8, 12, 24, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(201, 162, 76, 0.25) !important;
+}
+
+/* ── Formulaires & Champs d'Édition ───────────────────────────────────────── */
+
+.field-type input[type="text"],
+.field-type input[type="email"],
+.field-type input[type="password"],
+.field-type input[type="number"],
+.field-type textarea,
+.field-type select {
+  background: #080c18 !important;
+  border: 1px solid rgba(243, 239, 228, 0.15) !important;
+  border-radius: 3px !important;
+  color: var(--clixa-ivoire) !important;
+  transition: all 0.2s ease !important;
+}
+
+.field-type input:focus,
+.field-type textarea:focus,
+.field-type select:focus {
+  border-color: var(--clixa-or) !important;
+  box-shadow: 0 0 10px rgba(201, 162, 76, 0.25) !important;
+  outline: none !important;
+}
+
+.field-type label {
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--clixa-or) !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.4rem !important;
+}
+
+.collapsible {
+  border: 1px solid rgba(243, 239, 228, 0.12) !important;
+  border-radius: 4px !important;
+  background: rgba(17, 26, 51, 0.5) !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.collapsible__toggle-wrap {
+  background: rgba(17, 26, 51, 0.85) !important;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.08) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+/* ── Pagination ─────────────────────────────────────────────────────────── */
+
+.paginator {
+  font-family: var(--font-mono) !important;
+  font-size: 0.78rem !important;
+}
+
+.paginator__page.paginator__page--is-active {
+  background: var(--clixa-or) !important;
+  color: #080c18 !important;
+  font-weight: 700 !important;
+  border-radius: 3px !important;
+}
+
+/* ── Page de Connexion / Auth (.template-minimal) ────────────────────────── */
+
+.template-minimal {
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(201, 162, 76, 0.08) 0%,
+    #080c18 60%
+  ) !important;
+}
+
+.template-minimal__wrap {
+  background: rgba(17, 26, 51, 0.85) !important;
+  border: 1px solid rgba(201, 162, 76, 0.3) !important;
+  border-radius: 6px !important;
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.75),
+    0 0 24px -4px rgba(201, 162, 76, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  padding: 2.5rem !important;
 }
 
 /* ── Focus States ────────────────────────────────────────────────────────── */

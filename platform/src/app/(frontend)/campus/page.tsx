@@ -18,7 +18,7 @@ const campus = [
     role: "Siège social",
     adresse: "N° 1525, Bureau n° 5, Hay Essalam",
     telephone: "+212 6 69 30 34 67",
-    email: "contact@clixa-institute.org",
+    email: "contact@clixa.africa",
     note: null,
   },
   {

@@ -70,7 +70,7 @@ export default async function Contact({ searchParams }: Props) {
                 >
                   {erreur === "champs"
                     ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
-                    : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à contact@clixa-institute.org."}
+                    : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à contact@clixa.africa."}
                 </p>
               )}
 

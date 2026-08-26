@@ -79,7 +79,7 @@ export async function GET(request: Request) {
 
   const payload = await getPayload({ config });
   const maintenant = Date.now();
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://clixa-institute.vercel.app";
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa";
 
   const { docs } = await payload.find({
     collection: "inscriptions",

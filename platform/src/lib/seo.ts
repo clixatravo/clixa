@@ -11,7 +11,13 @@ import type { Programme, Session } from "@/lib/types";
 import type { Article } from "@/lib/blog";
 import { lieuSession } from "@/lib/catalogue";
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://clixa-institute.org").replace(
+/*
+  Le repli ne sert que si la variable manque — ce qui ne devrait pas arriver,
+  les trois environnements la portant. Il désignait l'ancien domaine ; le jour
+  où il servirait, il ferait annoncer au site une adresse qui n'est plus la
+  sienne, dans sa balise canonique et son plan de site.
+*/
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa").replace(
   /\/$/,
   "",
 );
@@ -41,7 +47,7 @@ export const organisation = {
     changerait d'URL à chaque construction, et Google la reprendrait à zéro.
   */
   logo: `${SITE_URL}/logo-clixa.png`,
-  email: "contact@clixa-institute.org",
+  email: "contact@clixa.africa",
   telephone: "+212669303467",
   address: {
     "@type": "PostalAddress",

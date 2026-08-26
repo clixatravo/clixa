@@ -557,7 +557,7 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Les demandes déposées depuis le site.
+ * Les demandes déposées depuis le site avec accès direct WhatsApp.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "demandes-rappel".
@@ -566,6 +566,9 @@ export interface DemandesRappel {
   id: number;
   nom: string;
   email: string;
+  /**
+   * Format international avec indicatif (ex: +212612345678).
+   */
   whatsapp: string;
   pays: string;
   /**

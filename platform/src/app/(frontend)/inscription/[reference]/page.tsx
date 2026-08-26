@@ -66,7 +66,18 @@ export default async function Dossier({ params, searchParams }: Props) {
 
       <section className="px-8 py-13">
         <div className="mx-auto max-w-[820px]">
-          <span className="mono-label text-gold mb-3 block">Place retenue</span>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-4">
+            <span className="mono-label text-gold block">Place retenue</span>
+            <a
+              href={`/api/attestation/${dossier.reference}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-gold/40 hover:border-gold bg-ink-panel/90 text-gold-bright hover:bg-gold hover:text-ink inline-flex items-center gap-2 rounded-lg border px-3.5 py-1.5 font-mono text-xs font-semibold shadow-sm transition-all"
+            >
+              <span>📄 Attestation d&apos;admission (PDF)</span>
+              <span>↗</span>
+            </a>
+          </div>
           <h1 className="mb-2 text-[clamp(1.5rem,2.8vw,2.1rem)]">{dossier.programmeTitre}</h1>
           <p className="text-ivory-dim mb-8 text-[0.95rem]">
             {dossier.sessionDetail} · dossier{" "}

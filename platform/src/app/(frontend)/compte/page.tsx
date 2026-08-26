@@ -163,12 +163,23 @@ export default async function Compte({
                     ))}
                   </div>
 
-                  <Link
-                    href={`/inscription/${d.reference}` as Route}
-                    className="border-gold mt-5 inline-block border-b pb-1 text-[0.84rem]"
-                  >
-                    Voir le dossier {d.reference} →
-                  </Link>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                    <Link
+                      href={`/inscription/${d.reference}` as Route}
+                      className="border-gold text-ivory hover:text-gold-bright inline-block border-b pb-0.5 text-[0.84rem]"
+                    >
+                      Voir le dossier {d.reference} →
+                    </Link>
+                    <a
+                      href={`/api/attestation/${d.reference}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border-gold/30 hover:border-gold bg-ink/70 hover:bg-gold hover:text-ink text-gold inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-[11px] font-semibold transition-all"
+                    >
+                      <span>📄 Attestation</span>
+                      <span>↗</span>
+                    </a>
+                  </div>
                 </article>
               ))}
             </div>

@@ -48,10 +48,10 @@ export function SiteFooter() {
               dirigeants et certifier les compétences clés.
             </p>
             <a
-              href="mailto:contact@clixa-institute.org"
+              href="mailto:contact@clixa.africa"
               className="text-gold-bright hover:text-gold mt-4 inline-flex items-center gap-1.5 py-0.5 text-[0.84rem] transition-colors"
             >
-              <span>contact@clixa-institute.org</span>
+              <span>contact@clixa.africa</span>
               <span>→</span>
             </a>
           </div>
