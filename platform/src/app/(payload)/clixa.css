@@ -484,10 +484,14 @@ h3,
   opacity: 0.9;
 }
 
-/* Grille des KPIs - 4 colonnes strictes */
+/*
+  Grille des KPIs — cinq colonnes depuis l'ajout de l'activité de la semaine.
+  À quatre, la cinquième carte restait seule sur une deuxième ligne, et un
+  chiffre isolé se lit comme une remarque plutôt que comme un indicateur.
+*/
 .clixa-cockpit__grille {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.15rem;
 }
 
