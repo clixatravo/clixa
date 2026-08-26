@@ -1,10 +1,16 @@
 import Link from "next/link";
+import type { Route } from "next";
+import { getPages } from "@/lib/pages";
 
 /**
- * Les pages légales (mentions, confidentialité, CGV) ne sont pas liées ici : les
- * modèles existants du site statique portent encore des champs « [à compléter] »
- * et un avertissement explicite. Elles seront intégrées quand RIS-06 sera livré
- * côté client. `typedRoutes` empêche de toute façon un lien vers une route absente.
+ * Les pages légales se lisent dans le CMS, elles ne sont pas écrites ici.
+ *
+ * Une liste tenue à la main aurait le défaut qu'on a déjà payé trois fois sur ce
+ * site : elle survit à ce qu'elle décrit. Un lien vers une page dépubliée mène
+ * au vide, et une page publiée que personne n'a pensé à lier reste introuvable.
+ *
+ * Ici, la barre du bas montre les pages publiées, et rien d'autre. Tant que la
+ * direction n'en publie aucune, elle n'affiche pas de rubrique vide.
  */
 const colonnes = [
   {
@@ -26,7 +32,9 @@ const colonnes = [
   },
 ] as const;
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const pages = await getPages();
+
   return (
     <footer className="bg-ink/95 border-t border-white/[0.08]">
       <div className="mx-auto max-w-[1180px] px-8 py-16">
@@ -76,9 +84,20 @@ export function SiteFooter() {
         </div>
 
         <div className="border-line/60 mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
-          <span className="text-ivory-dim/70 text-[0.78rem]">
-            © {new Date().getFullYear()} CLIXA Institute — Tous droits réservés
-          </span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="text-ivory-dim/70 text-[0.78rem]">
+              © {new Date().getFullYear()} CLIXA Institute — Tous droits réservés
+            </span>
+            {pages.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/${p.slug}` as Route}
+                className="text-ivory-dim/70 hover:text-ivory text-[0.78rem] transition-colors"
+              >
+                {p.titre}
+              </Link>
+            ))}
+          </div>
           <div className="text-ivory-dim flex items-center gap-2 font-mono text-[0.66rem] tracking-wider uppercase">
             <span className="bg-gold inline-block size-1.5 rounded-full" />
             <span>Agadir · Abidjan · Dakar</span>

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getProgrammes, getSpecialisations, getSessions } from "@/lib/catalogue";
 import { getArticles } from "@/lib/blog";
+import { getPages } from "@/lib/pages";
 import { SITE_URL } from "@/lib/seo";
 
 /**
@@ -81,5 +82,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...statiques, ...programmes, ...specialisations, ...articles];
+  /*
+    Les pages libres du CMS — mentions légales, confidentialité. Elles se
+    déduisent, comme les fiches : une liste écrite ici oublierait la prochaine.
+    Priorité basse : on veut qu'elles soient trouvables, pas qu'elles concurrencent
+    le catalogue.
+  */
+  const libres: MetadataRoute.Sitemap = (await getPages()).map((p) => ({
+    url: `${SITE_URL}/${p.slug}`,
+    lastModified: p.miseAJour ? new Date(p.miseAJour) : maintenant,
+    changeFrequency: "yearly",
+    priority: 0.2,
+  }));
+
+  return [...statiques, ...programmes, ...specialisations, ...articles, ...libres];
 }

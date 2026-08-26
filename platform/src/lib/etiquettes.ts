@@ -12,6 +12,7 @@
  */
 export const ETIQUETTE_CATALOGUE = "catalogue";
 export const ETIQUETTE_TARIFS = "tarifs";
+export const ETIQUETTE_PAGES = "pages";
 
 /**
  * Plafond de fraîcheur, en secondes.

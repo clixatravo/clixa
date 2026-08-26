@@ -1,4 +1,5 @@
 import type { Metadata, Route } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
@@ -99,9 +100,9 @@ export default async function Inscription({ searchParams }: Props) {
           {sessions.length === 0 ? (
             <p className="border-line bg-panel border p-6 text-[0.95rem]">
               Aucune session n&apos;est ouverte pour ce parcours.{" "}
-              <a href="/contact" className="border-gold border-b">
+              <Link href="/contact" className="border-gold border-b">
                 Laissez-nous vos coordonnées
-              </a>{" "}
+              </Link>{" "}
               : nous vous préviendrons à l&apos;ouverture de la prochaine.
             </p>
           ) : (

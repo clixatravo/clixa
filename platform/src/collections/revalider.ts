@@ -1,5 +1,5 @@
 import { revalidatePath, revalidateTag } from "next/cache";
-import { ETIQUETTE_CATALOGUE, ETIQUETTE_TARIFS } from "@/lib/etiquettes";
+import { ETIQUETTE_CATALOGUE, ETIQUETTE_PAGES, ETIQUETTE_TARIFS } from "@/lib/etiquettes";
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
@@ -142,5 +142,18 @@ export const revaliderTarifs: GlobalAfterChangeHook = async ({ doc, req }) => {
   });
   for (const p of docs) if (p.slug) chemins.add(`/formations/${p.slug}`);
   rafraichir([...chemins], "barème", [ETIQUETTE_TARIFS]);
+  return doc;
+};
+
+/**
+ * Une page libre — mentions légales, confidentialité — touche sa propre adresse
+ * et le plan du site, dont la liste change avec elle.
+ */
+export const revaliderPage: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
+  const chemins = new Set(["/sitemap.xml"]);
+  for (const d of [doc, previousDoc]) {
+    if (d?.slug) chemins.add(`/${d.slug}`);
+  }
+  rafraichir([...chemins], `page « ${doc?.titre ?? "?"} »`, [ETIQUETTE_PAGES]);
   return doc;
 };

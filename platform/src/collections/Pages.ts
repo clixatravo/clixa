@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { revaliderPage } from "./revalider";
 import { lecturePubliee, reserveA } from "@/access/roles";
 import { auMoinsUnEnFrancais, requisEnFrancais } from "@/collections/champs";
 
@@ -17,6 +18,9 @@ import { auMoinsUnEnFrancais, requisEnFrancais } from "@/collections/champs";
  * gabarits de code : leur mise en page est trop spécifique pour un éditeur.
  */
 export const Pages: CollectionConfig = {
+  hooks: {
+    afterChange: [revaliderPage],
+  },
   slug: "pages",
   labels: { singular: "Page", plural: "Pages" },
   admin: {
