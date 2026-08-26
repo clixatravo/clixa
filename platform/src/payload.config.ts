@@ -35,6 +35,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 export default buildConfig({
   admin: {
     user: Utilisateurs.slug,
+    theme: "dark",
     meta: {
       titleSuffix: "— CLIXA",
     },

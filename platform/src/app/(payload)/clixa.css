@@ -2,7 +2,14 @@
  * Design System Back-office CLIXA Institute — Direction & Console.
  */
 
-:root {
+:root,
+html,
+html[data-theme="light"],
+html[data-theme="dark"],
+body {
+  color-scheme: dark !important;
+  background-color: #080c18 !important;
+  color: #f3efe4 !important;
   --clixa-or: #c9a24c;
   --clixa-or-clair: #e9cd84;
   --clixa-encre: #080c18;

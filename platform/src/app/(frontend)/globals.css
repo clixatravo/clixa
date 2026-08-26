@@ -43,10 +43,14 @@
 
 @layer base {
   html {
+    color-scheme: dark;
     scroll-behavior: smooth;
+    background-color: var(--color-ink);
+    color: var(--color-ivory);
   }
 
   body {
+    color-scheme: dark;
     background-color: var(--color-ink);
     color: var(--color-ivory);
     font-family: var(--font-body);
