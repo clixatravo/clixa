@@ -65,7 +65,8 @@ const SUITE = { duree: "0.46s", distance: "14px" };
   basse avance le déclenchement d'un dixième de hauteur d'écran — le bloc est
   posé au moment où on arrive dessus.
 */
-const MARGE = "0px 0px 10% 0px";
+const MARGE_BASSE = 0.1;
+const MARGE = `0px 0px ${MARGE_BASSE * 100}% 0px`;
 
 /*
   `useLayoutEffect` avertit lorsqu'il est évalué au rendu serveur, où la
@@ -97,7 +98,19 @@ export function Apparitions() {
       l'observateur le déclarerait « entré » toutes sections confondues, dans le
       même millième de seconde.
     */
-    const dejaVisibles = sections.filter((s) => s.getBoundingClientRect().top < window.innerHeight);
+    /*
+      La première fournée épouse la marge de l'observateur, pas le bord de
+      l'écran.
+
+      Les deux se réglaient séparément : sur un écran large, la section qui
+      suit le premier écran tombait juste sous le bord — donc hors de la
+      fournée — mais dans la marge de dix pour cent, donc levée aussitôt par
+      l'observateur, sans délai. Elle montait en même temps que la première
+      ligne du titre. Même règle des deux côtés, et elle prend son rang dans la
+      cascade.
+    */
+    const horizon = window.innerHeight * (1 + MARGE_BASSE);
+    const dejaVisibles = sections.filter((s) => s.getBoundingClientRect().top < horizon);
 
     /*
       La première section monte par morceaux, pas d'un bloc.
