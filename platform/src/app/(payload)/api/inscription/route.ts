@@ -1,3 +1,4 @@
+import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
@@ -32,6 +33,24 @@ const PLANS = ["P1", "P2", "P3"] as const;
 const SEMAINES_AVANT_SEANCE = [0, 4, 6];
 
 export async function POST(request: Request) {
+  /*
+    Vingt par minute et par adresse.
+
+    ⚠️ Le plafond est large exprès. Beaucoup de visiteurs partagent une même
+    adresse — un bureau, une école, l'essentiel du trafic mobile derrière le
+    NAT d'un opérateur : serrer fermerait la porte à une salle entière pendant
+    qu'un seul s'inscrit.
+
+    Quarante n'est pas un chiffre rond choisi au hasard : la série d'épreuves,
+    qui n'est jamais qu'un visiteur très pressé, en consomme une quinzaine par
+    passage. Une limite qu'un usage légitime frôle est une limite mal réglée.
+    Quarante par minute et par adresse arrête une boucle sans jamais croiser
+    quelqu'un.
+  */
+  if (!cadenceOk("inscription", appelant(request), 40, 60_000)) {
+    return tropVite(60);
+  }
+
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 

@@ -463,6 +463,49 @@ qu'un travail fait.
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.
 
+## Ce qu'un audit a corrigé
+
+Quatre défauts réels, trouvés en relisant le code contre une liste de contrôle
+classique. `e2e/securite.spec.ts` les garde.
+
+⚠️ **La référence de dossier est une clef, pas un numéro d'ordre.** Elle ouvre
+la fiche du participant — nom, adresse, téléphone, échéancier — et l'annonce de
+transfert. Elle était tirée par `Math.random()` sur cinq caractères en base 36 :
+un générateur non cryptographique, dont l'état interne se reconstitue à partir
+de quelques sorties, pour soixante millions de combinaisons. Elle vient
+maintenant de `randomBytes`, sur huit symboles d'un alphabet de trente-deux
+sans I, O, 0 ni 1 — quarante bits, et une référence qui se dicte au téléphone.
+Les références déjà émises restent valables.
+
+⚠️ **L'attestation servait du HTML non échappé.** Le nom vient du formulaire
+public et était interpolé tel quel dans un document `text/html` : une balise
+dans le nom s'exécutait chez qui ouvrait l'attestation, avec l'origine du site
+— l'équipe, la plupart du temps, puisque c'est elle qui les consulte.
+
+⚠️ **Les dépôts acceptaient le SVG**, qui est un document XML et accepte
+`<script>`. Servi depuis `/medias/`, il s'exécuterait avec les droits du site.
+Les trois formats matriciels restent ; un plafond de 5 Mo est vérifié en
+crochet, parce que la limite de 4,5 Mo de Vercel n'existe pas en développement
+et n'appartient pas au logiciel.
+
+**Les routes publiques ont un frein** (`lib/cadence.ts`) : inscription 40 par
+minute et par adresse, compte 30, transfert et attestation 20, rappel 10.
+
+- ⚠️ **Le compte est tenu en mémoire, dans l'instance qui répond.** Vercel en
+  démarre plusieurs : un assaillant réparti verra un plafond plus haut. Ce frein
+  arrête une boucle, pas une attaque distribuée — qui se traite au réseau.
+- ⚠️ **Les plafonds sont larges exprès.** Beaucoup de visiteurs partagent une
+  adresse — un bureau, une école, l'essentiel du trafic mobile derrière le NAT
+  d'un opérateur. La série d'épreuves, qui n'est qu'un visiteur très pressé, en
+  consomme une quinzaine par passage : une limite qu'un usage légitime frôle est
+  une limite mal réglée.
+
+Ce que l'audit a trouvé sain : l'injection (le SQL de la recherche passe par les
+paramètres liés de drizzle, et les termes de préfixe sont réduits à `[a-z0-9]`
+avant), les accès par collection, les secrets hors du dépôt, l'absence de trace
+d'erreur ou de secret renvoyée au client, et `/api/apercu`, qui demande une
+session.
+
 ## Le courriel
 
 Deux services, deux rôles, et il faut savoir lequel on touche :

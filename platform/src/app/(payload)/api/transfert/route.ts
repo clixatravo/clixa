@@ -1,3 +1,4 @@
+import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
@@ -57,6 +58,18 @@ const estMoyen = (v: string): v is Moyen => v in MOYENS;
 type Echeance = NonNullable<Inscription["echeances"]>[number];
 
 export async function POST(request: Request) {
+  /*
+    Cette route accepte une référence de dossier et rien d'autre.
+
+    L'énumération n'est plus la menace : depuis que la référence est tirée sur
+    quarante bits, il y a mille milliards de combinaisons et le nombre s'en
+    charge. La cadence reste pour ce qu'elle sait faire — empêcher qu'on
+    martèle la route, et qu'une boucle occupe la base.
+  */
+  if (!cadenceOk("transfert", appelant(request), 20, 60_000)) {
+    return tropVite(60);
+  }
+
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 

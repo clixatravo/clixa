@@ -22,11 +22,25 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.fill('input[name="whatsapp"]', "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
 
-  await page.click('button[type="submit"]');
+  /*
+    On surveille la réponse plutôt que la seule adresse : quand la place n'est
+    pas retenue, `waitForURL` expire au bout de trente secondes sans dire
+    pourquoi — un 429, un 303 vers une erreur de champ et un plantage se
+    ressemblent tous depuis la barre d'adresse.
+  */
+  const [reponse] = await Promise.all([
+    page.waitForResponse((r) => r.url().includes("/api/inscription")),
+    page.click('button[type="submit"]'),
+  ]);
+  expect(reponse.status(), `l'inscription a répondu ${reponse.status()} au lieu de rediriger`).toBe(
+    303,
+  );
   await page.waitForURL(/\/inscription\/CLX-/);
 
   const reference = page.url().split("/").pop()!;
-  expect(reference, "la référence doit suivre le format CLX-XXXXX").toMatch(/^CLX-[A-Z0-9]{5}$/);
+  expect(reference, "la référence doit suivre le format attendu").toMatch(
+    /^CLX-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/,
+  );
   return reference;
 }
 

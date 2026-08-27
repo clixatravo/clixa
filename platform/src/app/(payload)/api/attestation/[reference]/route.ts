@@ -1,3 +1,4 @@
+import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
@@ -5,7 +6,34 @@ interface Params {
   params: Promise<{ reference: string }>;
 }
 
-export async function GET(_request: Request, { params }: Params) {
+/**
+ * Échapper avant d'écrire dans le document.
+ *
+ * ⚠️ Cette route sert du `text/html` construit par interpolation, et la moitié
+ * des valeurs vient du formulaire public : le nom, l'adresse, le numéro, le
+ * pays. Un nom contenant une balise `<script>` s'exécutait donc chez qui
+ * ouvrait l'attestation — l'équipe, la plupart du temps — avec l'origine du
+ * site. La référence protège l'accès au document, pas son contenu.
+ *
+ * Les cinq caractères qui suffisent : au-delà, on réécrit un moteur de gabarit.
+ */
+function echapper(valeur: unknown): string {
+  return String(valeur ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function GET(request: Request, { params }: Params) {
+  /*
+    Même clef, même frein que l'annonce de transfert : l'attestation s'ouvre
+    sur la seule référence et affiche les coordonnées du participant. La laisser
+    sans cadence rouvrirait par la porte du document ce que l'autre route ferme.
+  */
+  if (!cadenceOk("attestation", appelant(request), 20, 60_000)) return tropVite(60);
+
   const { reference } = await params;
   const refNorm = (reference ?? "").toUpperCase();
 
@@ -45,7 +73,7 @@ export async function GET(_request: Request, { params }: Params) {
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Attestation d'Admission — ${refNorm} — CLIXA Institute</title>
+  <title>Attestation d'Admission — ${echapper(refNorm)} — CLIXA Institute</title>
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -193,9 +221,9 @@ export async function GET(_request: Request, { params }: Params) {
       <div class="brand-sub">Executive Institute of Technology & Management</div>
     </div>
     <div class="doc-meta">
-      <div><strong>RÉFÉRENCE :</strong> ${ins.reference}</div>
-      <div><strong>DATE D'ÉMISSION :</strong> ${dateDoc}</div>
-      <div><strong>STATUT :</strong> <span class="badge">${ins.statut}</span></div>
+      <div><strong>RÉFÉRENCE :</strong> ${echapper(ins.reference)}</div>
+      <div><strong>DATE D'ÉMISSION :</strong> ${echapper(dateDoc)}</div>
+      <div><strong>STATUT :</strong> <span class="badge">${echapper(ins.statut)}</span></div>
     </div>
   </div>
 
@@ -208,19 +236,19 @@ export async function GET(_request: Request, { params }: Params) {
     <div class="info-grid">
       <div>
         <div class="info-label">Participant (Nom complet)</div>
-        <div class="info-valeur">${ins.apprenantNom}</div>
+        <div class="info-valeur">${echapper(ins.apprenantNom)}</div>
       </div>
       <div>
         <div class="info-label">Adresse E-mail</div>
-        <div class="info-valeur">${ins.apprenantEmail}</div>
+        <div class="info-valeur">${echapper(ins.apprenantEmail)}</div>
       </div>
       <div>
         <div class="info-label">WhatsApp / Téléphone</div>
-        <div class="info-valeur">${ins.apprenantWhatsapp}</div>
+        <div class="info-valeur">${echapper(ins.apprenantWhatsapp)}</div>
       </div>
       <div>
         <div class="info-label">Pays de résidence</div>
-        <div class="info-valeur">${ins.apprenantPays || "—"}</div>
+        <div class="info-valeur">${echapper(ins.apprenantPays || "—")}</div>
       </div>
     </div>
   </div>
@@ -229,11 +257,11 @@ export async function GET(_request: Request, { params }: Params) {
     <div class="info-grid">
       <div style="grid-column: 1 / -1;">
         <div class="info-label">Programme / Promotion</div>
-        <div class="info-valeur" style="font-size: 15px; color: #080c18;">${sessionTitre}</div>
+        <div class="info-valeur" style="font-size: 15px; color: #080c18;">${echapper(sessionTitre)}</div>
       </div>
       <div>
         <div class="info-label">Date de démarrage</div>
-        <div class="info-valeur">${dateDebut}</div>
+        <div class="info-valeur">${echapper(dateDebut)}</div>
       </div>
       <div>
         <div class="info-label">Règlement enregistré</div>
@@ -258,7 +286,7 @@ export async function GET(_request: Request, { params }: Params) {
   </div>
 
   <div class="footer">
-    CLIXA Institute — Campus Casablanca & Hubs Régionaux Panafricains — Document certifié et vérifiable sous la référence ${ins.reference}
+    CLIXA Institute — Campus Casablanca & Hubs Régionaux Panafricains — Document certifié et vérifiable sous la référence ${echapper(ins.reference)}
   </div>
 </body>
 </html>`;

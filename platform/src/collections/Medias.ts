@@ -1,3 +1,4 @@
+import { APIError } from "payload";
 import path from "path";
 import { fileURLToPath } from "url";
 import type { CollectionConfig } from "payload";
@@ -25,6 +26,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
  * (prévue dans la stack) se fait en ajoutant un adaptateur : les collections et
  * les composants ne changent pas.
  */
+const PLAFOND = 5 * 1024 * 1024;
+
 export const Medias: CollectionConfig = {
   slug: "medias",
   labels: { singular: "Média", plural: "Médias" },
@@ -42,9 +45,42 @@ export const Medias: CollectionConfig = {
     update: connecte,
     delete: connecte,
   },
+  hooks: {
+    /*
+      Cinq mégaoctets, vérifiés à l'entrée.
+
+      Vercel refuse déjà les corps de requête au-delà de 4,5 Mo, ce qui borne
+      la question en production ; mais ce plafond-là n'existe pas en
+      développement, et une limite qui dépend de l'hébergeur n'est pas une
+      limite du logiciel. Au-delà, c'est une photo brute qu'on n'a pas préparée
+      — et le redimensionnement occupe la fonction le temps de la lire.
+    */
+    beforeValidate: [
+      ({ req }) => {
+        const fichier = req.file;
+        if (fichier && fichier.size > PLAFOND) {
+          throw new APIError(
+            `Ce fichier pèse ${Math.round(fichier.size / 1024 / 1024)} Mo. Le maximum est de ${PLAFOND / 1024 / 1024} Mo.`,
+            413,
+          );
+        }
+      },
+    ],
+  },
   upload: {
     staticDir: path.resolve(dirname, "../../public/medias"),
-    mimeTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml"],
+    /*
+      ⚠️ Pas de SVG.
+
+      Un SVG est un document XML : il accepte `<script>` et des gestionnaires
+      d'événements. Servi depuis `/medias/`, donc depuis notre propre origine,
+      il s'exécuterait avec les droits du site pour qui l'ouvre — l'équipe, la
+      plupart du temps, puisque c'est elle qui verse les fichiers. Les trois
+      formats matriciels couvrent tout ce que le contenu demande ; l'enseigne,
+      elle, vit dans `public/` et ne passe pas par ici.
+    */
+    mimeTypes: ["image/png", "image/jpeg", "image/webp"],
+
     formatOptions: {
       format: "webp",
       options: { quality: 82 },

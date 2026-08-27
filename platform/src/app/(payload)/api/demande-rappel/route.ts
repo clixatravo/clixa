@@ -1,3 +1,4 @@
+import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
@@ -20,6 +21,14 @@ import { courrielRappel } from "@/lib/courriel";
 const LEURRE = "site_web";
 
 export async function POST(request: Request) {
+  /*
+    Une demande de rappel part vers une boîte que l'équipe relève à la main :
+    la noyer sous un millier de messages la rend inutilisable.
+  */
+  if (!cadenceOk("rappel", appelant(request), 10, 60_000)) {
+    return tropVite(60);
+  }
+
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 

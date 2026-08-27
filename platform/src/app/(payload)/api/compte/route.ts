@@ -1,3 +1,4 @@
+import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
@@ -57,6 +58,16 @@ async function rattacher(
 }
 
 export async function POST(request: Request) {
+  /*
+    Le verrou de Payload compte les échecs de connexion sur un compte donné ; il
+    ne voit pas celui qui essaie cent adresses différentes, ni celui qui ouvre
+    des comptes à la chaîne. Cette cadence-ci regarde l'appelant — largement,
+    pour la même raison qu'ailleurs : une adresse peut porter tout un bureau.
+  */
+  if (!cadenceOk("compte", appelant(request), 30, 60_000)) {
+    return tropVite(60);
+  }
+
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
   const action = texte("action");
