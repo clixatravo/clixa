@@ -65,6 +65,9 @@ const SUITE = { duree: "0.46s", distance: "14px" };
   basse avance le déclenchement d'un dixième de hauteur d'écran — le bloc est
   posé au moment où on arrive dessus.
 */
+/* Le temps que la mise en page se stabilise après le montage. */
+const REPLI = 250;
+
 const MARGE_BASSE = 0.1;
 const MARGE = `0px 0px ${MARGE_BASSE * 100}% 0px`;
 
@@ -143,12 +146,46 @@ export function Apparitions() {
     const aObserver = sections.filter((s) => !dejaVisibles.includes(s));
     if (aObserver.length === 0) return;
 
+    /*
+      La cascade se poursuit un instant après le montage.
+
+      L'horizon est mesuré une fois, mais la page bouge encore juste après :
+      une police qui finit de charger décale les blocs de quelques pixels, et
+      une section qui était sous l'horizon passe au-dessus. L'observateur la
+      lève alors sans délai — elle monte en même temps que la première ligne du
+      titre. Observé sur le plus petit téléphone, où la marge d'erreur est la
+      plus courte.
+
+      Pendant ce court moment, une levée prend donc le rang suivant dans la
+      cascade au lieu de partir tout de suite. Passé ce délai, plus rien n'est
+      échelonné : ce qui vient ensuite vient du défilement, et doit répondre
+      sans attendre.
+    */
+    /*
+      Un drapeau qui s'éteint tout seul, plutôt qu'une horloge relue.
+
+      Mesurer le temps écoulé depuis la première levée serait faux : si
+      personne ne défile pendant dix secondes, cette première levée n'a rien
+      d'initial et n'a pas à être retardée. Le repli s'ouvre au montage et se
+      referme seul.
+    */
+    let enPhaseInitiale = true;
+    const finDuRepli = setTimeout(() => {
+      enPhaseInitiale = false;
+    }, REPLI);
+    let rang = aLever.length;
+
     const observateur = new IntersectionObserver(
       (entrees) => {
         for (const e of entrees) {
           if (!e.isIntersecting) continue;
-          lever(e.target as HTMLElement);
-          observateur.unobserve(e.target);
+          const bloc = e.target as HTMLElement;
+          if (enPhaseInitiale) {
+            bloc.style.setProperty("--delai", `${rang * ECHELON}ms`);
+            rang += 1;
+          }
+          lever(bloc);
+          observateur.unobserve(bloc);
         }
       },
       // Le seuil tombe à zéro : c'est la marge qui décide désormais du moment,
@@ -159,7 +196,10 @@ export function Apparitions() {
     );
 
     aObserver.forEach((s) => observateur.observe(s));
-    return () => observateur.disconnect();
+    return () => {
+      clearTimeout(finDuRepli);
+      observateur.disconnect();
+    };
     // Rejoué à chaque page : la navigation interne remplace le contenu de
     // `main` sans remonter ce composant.
   }, [chemin]);
