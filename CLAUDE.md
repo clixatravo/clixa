@@ -204,7 +204,7 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**73 tâches sur 86.** Le front public et le back-office sont complets, le site
+**74 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production sur
 `www.clixa.africa`, ouvert aux moteurs depuis le 26 août 2026.
 
@@ -294,7 +294,7 @@ chaque requête.
 
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
 `MOD-01→07`, `BE-01,02,03,05,06,07,08,09,10,11,12,13,20`,
-`INT-02` (cache et invalidation), `INT-03,04,05`, `INT-10` (les épreuves),
+`INT-02` (cache et invalidation), `INT-03,04,05,06`, `INT-10` (les épreuves),
 **`INT-01`**, **`INT-08`** (le contenu réel).
 
 **La phase 02 est ouverte.** Un visiteur retient sa place depuis la fiche,
@@ -390,8 +390,32 @@ peut remplir (raison sociale, RC, ICE, directeur de publication, CNDP, durées
 de conservation, ville du tribunal). Publier avant de les remplir mettrait en
 ligne un document juridique à trous.
 
-Reste côté développement : `BE-04` (tables LMS déclarées), `INT-06`
-(redirections), `INT-07` (perf 3G), `INT-11` (recette), `DES-07` (Storybook).
+**Les redirections vivent dans `next.config.ts`**, pas dans `vercel.json` :
+le fichier de la plateforme ne s'applique pas en développement, et une
+redirection qu'on ne peut pas éprouver localement se découvre cassée en
+production. `e2e/redirections.spec.ts` les suit une par une — une redirection
+absente ne casse ni type ni compilation, elle ressemble à un 404 ordinaire.
+
+Deux familles, chacune tirée d'un fait constaté. L'héritage du site statique
+(`index.html`, `mentions-legales.html`, `politique-confidentialite.html` sont
+encore à la racine du dépôt) part en 308 : ces adresses ne reviendront pas.
+Les intitulés du menu qui ne sont pas leur adresse — « Mon espace » pour
+`/compte`, « Nous contacter » pour `/contact` — aussi, parce qu'on dicte de
+mémoire ce qu'on a lu. Le singulier `/formation` part en 307 : c'est une faute
+de frappe, pas une ancienne adresse, et rien ne justifie de l'inscrire chez les
+moteurs.
+
+⚠️ **Les deux cibles légales répondent 404 aujourd'hui** — les pages sont en
+brouillon. La redirection est écrite d'avance et servira le jour de leur
+publication ; l'inverse aurait voulu qu'on y repense ce jour-là.
+
+⚠️ **`/inscription` sans formation mène au catalogue, mais une formation
+nommée et inconnue reste un 404.** Le premier cas est quelqu'un qui veut
+s'inscrire et n'a pas encore choisi ; le second est une adresse qui désigne
+ce qui n'existe pas. Une redirection trop large avalerait les deux.
+
+Reste côté développement : `BE-04` (tables LMS déclarées), `INT-07` (perf 3G),
+`INT-11` (recette), `DES-07` (Storybook).
 
 `INT-07` n'a pas été traité, seulement mesuré : après le passage à Francfort et
 la mise en cache, `/formations` répond en 215 ms, le HTML pèse 9 à 14 Ko et le

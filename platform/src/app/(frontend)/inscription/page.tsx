@@ -1,6 +1,6 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
@@ -47,7 +47,16 @@ const MESSAGES: Record<string, string> = {
 export default async function Inscription({ searchParams }: Props) {
   const { formation, debut, plan: planDemande, erreur } = await searchParams;
 
-  if (!formation) notFound();
+  /*
+    Sans formation choisie, la page n'a rien à inscrire — mais un 404 renvoyait
+    à un mur quelqu'un qui voulait précisément s'inscrire. Le catalogue est la
+    seule suite possible : c'est là qu'on choisit.
+
+    Une formation *nommée mais inconnue* reste un 404, elle : l'adresse
+    désigne quelque chose qui n'existe pas, et le dire vaut mieux que de faire
+    atterrir ailleurs sans explication.
+  */
+  if (!formation) redirect("/formations" as Route);
   const programme = await getProgramme(formation);
   if (!programme) notFound();
 
