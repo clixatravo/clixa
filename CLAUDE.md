@@ -803,7 +803,21 @@ seule sur le site public ; ce n'est plus le cas.
 Un champ ajouté au modèle veut donc dire : **d'abord la base, ensuite le
 push**. Dans l'autre sens le build échoue — il interroge la base pour
 pré-générer les pages, et cherche une colonne qui n'existe pas encore. Deux
-déploiements ont été perdus ainsi le 22 août 2026.
+déploiements ont été perdus ainsi le 22 août 2026, sept autres le 27.
+
+⚠️ **La panne est silencieuse.** Un déploiement qui échoue ne remplace pas
+celui qui sert : le site reste debout, répond 200 partout, et la recette elle
+aussi passe — elle interroge le dernier build valide. Rien ne signale que les
+poussées ne sortent plus. Le 27 août, deux heures de travail sont restées à
+quai avant qu'on s'en aperçoive, et l'indice n'est venu ni du site ni des
+épreuves mais d'un fichier de `public/` qui répondait 404.
+
+Après un changement de modèle, regarder l'état du déploiement, pas seulement
+celui du site :
+
+```bash
+npx vercel ls clixa --scope cl-95af | head -6
+```
 
 Pousser le schéma sur la production revient à faire tourner n'importe quel
 script en pointant `DATABASE_URL` sur elle : hors production, Payload pousse
