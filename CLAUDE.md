@@ -40,6 +40,22 @@ npx payload run scripts/verifier-session.ts       # la connexion sans mot de pas
 npx payload run scripts/verifier-google.ts        # une personne, un compte
 ```
 
+**La production se contrôle en une commande** (`INT-11`). Les épreuves
+Playwright regardent le code en développement ; la recette regarde le site en
+ligne tel qu'il répond — avec son domaine, ses redirections, son cache et ses
+en-têtes. Deux questions différentes : « le code est-il juste » et « le site en
+ligne est-il celui qu'on croit ».
+
+```bash
+cd platform && npm run recette                    # la production
+cd platform && npm run recette http://localhost:3000
+```
+
+Elle suit les 31 adresses du plan du site, les sept redirections, ce qu'un
+moteur lit (indexabilité, canonique, fourchette de prix), les douze plaquettes,
+et quatre gardes — jeton des relances, retour Google forgé, destination
+interne, cadence. Elle sort en 1 au moindre manque.
+
 **Les parcours du site sont éprouvés par Playwright** (`INT-10`). Une série
 tient en une minute et remplace ce qu'on vérifiait à la main après chaque
 changement :
@@ -206,7 +222,7 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**74 tâches sur 86.** Le front public et le back-office sont complets, le site
+**75 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production sur
 `www.clixa.africa`, ouvert aux moteurs depuis le 26 août 2026.
 
@@ -297,6 +313,7 @@ chaque requête.
 Fait : `MAQ-01→10`, `FE-01→14`, `DES` (sauf Storybook), `SOC` (sauf monorepo),
 `MOD-01→07`, `BE-01,02,03,05,06,07,08,09,10,11,12,13,20`,
 `INT-02` (cache et invalidation), `INT-03,04,05,06`, `INT-10` (les épreuves),
+`INT-11` (la recette),
 **`INT-01`**, **`INT-08`** (le contenu réel).
 
 **La phase 02 est ouverte.** Un visiteur retient sa place depuis la fiche,
@@ -453,7 +470,7 @@ s'inscrire et n'a pas encore choisi ; le second est une adresse qui désigne
 ce qui n'existe pas. Une redirection trop large avalerait les deux.
 
 Reste côté développement : `BE-04` (tables LMS déclarées), `INT-07` (perf 3G),
-`INT-11` (recette), `DES-07` (Storybook).
+`DES-07` (Storybook).
 
 `INT-07` n'a pas été traité, seulement mesuré : après le passage à Francfort et
 la mise en cache, `/formations` répond en 215 ms, le HTML pèse 9 à 14 Ko et le
@@ -766,7 +783,20 @@ que la chaîne de connexion eut circulé en clair. Les anciens ne donnent plus
 accès — vérifié.
 
 Chaque branche Neon porte son propre mot de passe : régénérer celui de `dev`
-laisse `production` intacte. Une régénération se répercute à la main sur
+laisse `production` intacte. Celui de `dev` a été régénéré le 27 août 2026,
+après qu'il eut paru dans une sortie de terminal.
+
+⚠️ **Une rotation se propage à quatre endroits**, et le quatrième s'oublie :
+`platform/.env.local`, les variables Vercel *Development* et *Preview*, et le
+secret GitHub `DATABASE_URL` — que l'intégration continue lit à chaque build.
+Un commit vide suffit à l'éprouver ; sans lui, une rotation qui casse la
+compilation ne se découvre qu'au prochain push, trop tard pour en connaître la
+cause.
+
+⚠️ **Ne jamais faire transiter le nouveau mot de passe par une capture d'écran
+ni par un message.** Le télécharger depuis Neon, le laisser dans un fichier, et
+ne désigner que le fichier : un script le recopie sans que sa valeur paraisse
+nulle part. Une régénération se répercute à la main sur
 `.env.local`, les variables Vercel (Development, Preview, Production) et le
 secret GitHub `DATABASE_URL`.
 
