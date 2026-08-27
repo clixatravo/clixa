@@ -472,10 +472,27 @@ ce qui n'existe pas. Une redirection trop large avalerait les deux.
 Reste côté développement : `BE-04` (tables LMS déclarées), `INT-07` (perf 3G),
 `DES-07` (Storybook).
 
-`INT-07` n'a pas été traité, seulement mesuré : après le passage à Francfort et
-la mise en cache, `/formations` répond en 215 ms, le HTML pèse 9 à 14 Ko et le
-JavaScript 194 Ko. Rien d'évident à reprendre — ce qui n'est pas la même chose
-qu'un travail fait.
+`INT-07` a été mesuré sur 3G lente (400 kbit/s, 400 ms de latence), pas
+seulement en conditions de bureau. Le premier affichage arrive à 4,2 s sur
+l'accueil, 2,7 s sur une fiche — au-dessus des 2,5 s qui font une bonne note.
+
+⚠️ **Ce sont les polices, et rien d'autre** : 80 Ko sur 86 transférés. 36 Ko
+pour Fraunces, 24 pour Manrope, 2 × 10 pour la chasse fixe. Le HTML pèse moins
+de 1 Ko compressé et le JavaScript ne bloque pas le premier rendu.
+
+⚠️ **Retirer une graisse n'allège rien.** Fraunces et Manrope sont des polices
+variables : un seul fichier porte tout l'intervalle, et demander trois graisses
+ou onze télécharge le même octet. Mesuré avant et après — identique. La liste
+déclarée ne dit donc que ce qu'on emploie, elle ne pèse pas.
+
+Le seul retrait qui se mesurerait est une famille de moins : la chasse fixe
+coûte 20 Ko pour des étiquettes en petites capitales. C'est une décision de
+dessin.
+
+⚠️ Ces étiquettes emploient `font-semibold` et `font-bold` alors que seules les
+graisses 400 et 500 sont chargées : le navigateur épaissit lui-même, ce qui se
+voit. Trois issues — charger la 600 (+10 Ko), ramener ces classes à 500, ou
+l'accepter. Aucune n'est neutre, aucune n'a été tranchée.
 
 Reste côté client : `CAD-01→08`, `RIS-01→08`, `MOD-08`, et les dates des
 prochaines cohortes.

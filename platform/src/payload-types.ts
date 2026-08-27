@@ -286,6 +286,14 @@ export interface Programme {
           | {
               titre?: string | null;
               dureeMinutes: number;
+              /**
+               * Réservé au LMS. Non renseigné cette année.
+               */
+              objectif?: string | null;
+              /**
+               * Réservé au LMS : vidéo, support, quiz.
+               */
+              contenuId?: string | null;
               id?: string | null;
             }[]
           | null;
@@ -939,6 +947,8 @@ export interface ProgrammesSelect<T extends boolean = true> {
           | {
               titre?: T;
               dureeMinutes?: T;
+              objectif?: T;
+              contenuId?: T;
               id?: T;
             };
         id?: T;

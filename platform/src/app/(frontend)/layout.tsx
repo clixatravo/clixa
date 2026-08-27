@@ -12,16 +12,37 @@ import "./globals.css";
  * DES-02 — Les trois familles sont auto-hébergées par next/font : aucun appel à un
  * CDN de polices, donc pas de repli silencieux et pas de requête tierce.
  */
+/*
+  INT-07 — ce que pèsent les polices, et ce qui n'y change rien.
+
+  Mesuré sur 3G lente : 80 Ko de polices sur 86 transférés. Ce sont elles, et
+  rien d'autre, qui tiennent le premier affichage — 36 Ko pour Fraunces, 24 Ko
+  pour Manrope, 2 × 10 Ko pour la chasse fixe.
+
+  ⚠️ Retirer une graisse ne fait pas maigrir Fraunces ni Manrope : ce sont des
+  polices variables, un seul fichier porte tout l'intervalle. Demander trois
+  graisses ou onze télécharge le même octet. Mesuré avant et après — aucun
+  changement. La liste ci-dessous ne sert donc qu'à dire ce qu'on emploie
+  vraiment ; la 300 de Fraunces et la 800 de Manrope ne servaient nulle part.
+
+  Ce qui allègerait vraiment : une famille de moins. La chasse fixe coûte 20 Ko
+  pour des étiquettes en petites capitales — c'est le seul retrait qui se
+  mesurerait, et c'est une décision de dessin, pas de code.
+
+  ⚠️ Avant d'en retirer une : `font-medium` vaut 500, `font-semibold` 600,
+  `font-bold` 700, et la 400 sert de graisse de corps sans qu'aucune classe ne
+  la nomme.
+*/
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "500", "600", "700"],
+  weight: ["500", "600", "700"],
   variable: "--font-fraunces",
   display: "swap",
 });
 
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-manrope",
   display: "swap",
 });

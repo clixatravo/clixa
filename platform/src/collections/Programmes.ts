@@ -383,6 +383,43 @@ export const Programmes: CollectionConfig = {
                         },
                       ],
                     },
+                    /*
+                      BE-04 — les deux colonnes que le LMS remplira.
+
+                      `lib/types.ts` les annonce depuis le début : « les champs
+                      optionnels existent dans le schéma et restent vides ».
+                      C'était faux — ils n'existaient que dans l'interface
+                      TypeScript, et la base n'en portait aucune trace. Le
+                      contrat et le schéma disent maintenant la même chose.
+
+                      Ils sont masqués dans l'administration : personne n'a de
+                      quoi les remplir cette année (décision A), et deux champs
+                      vides sous chaque leçon feraient hésiter l'équipe à chaque
+                      saisie. Le jour du LMS, il suffira de retirer `hidden`.
+
+                      Les déclarer maintenant évite surtout la friction connue :
+                      une colonne ajoutée plus tard demande de pousser le schéma
+                      en production *avant* le code, sous peine de build cassé.
+                    */
+                    {
+                      name: "objectif",
+                      type: "text",
+                      label: "Objectif de la leçon",
+                      localized: true,
+                      admin: {
+                        hidden: true,
+                        description: "Réservé au LMS. Non renseigné cette année.",
+                      },
+                    },
+                    {
+                      name: "contenuId",
+                      type: "text",
+                      label: "Contenu rattaché",
+                      admin: {
+                        hidden: true,
+                        description: "Réservé au LMS : vidéo, support, quiz.",
+                      },
+                    },
                   ],
                 },
               ],
