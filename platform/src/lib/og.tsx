@@ -28,7 +28,7 @@ export const tailleOG = { width: 1200, height: 630 };
 */
 const DOSSIER = join(process.cwd(), "src", "assets", "fonts");
 let polices: Promise<
-  { name: string; data: ArrayBuffer; weight: 400 | 600; style: "normal" }[]
+  { name: string; data: ArrayBuffer; weight: 400 | 600; style: "normal" }[] | undefined
 > | null = null;
 
 /*
@@ -63,7 +63,12 @@ export function policesOG() {
       return null;
     })
     .then((lues) => {
-      if (!lues) return [];
+      /*
+        ⚠️ `undefined`, pas un tableau vide. Satori refuse de composer sans la
+        moindre police — « No fonts are loaded » — et l'image reviendrait en
+        500. Omettre l'option le laisse prendre la sienne.
+      */
+      if (!lues) return undefined;
       const [fraunces, manrope] = lues;
       return [
         {
