@@ -71,7 +71,7 @@ export default async function Compte({
               <input type="hidden" name="action" value="sortie" />
               <button
                 type="submit"
-                className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa min-h-9 border px-4 text-[0.82rem] transition-colors"
+                className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa min-h-11 border px-4 text-[0.82rem] transition-colors sm:min-h-9"
               >
                 Se déconnecter
               </button>
