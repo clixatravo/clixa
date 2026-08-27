@@ -16,20 +16,6 @@ interface ReseauxSociauxProps {
 
 const RESEAUX = [
   {
-    cle: "whatsapp",
-    lien: RESEAUX_CLIXA.whatsapp.url,
-    titre: `${RESEAUX_CLIXA.whatsapp.label} (${RESEAUX_CLIXA.whatsapp.numeroAffiche})`,
-    aria: "Contacter les admissions sur WhatsApp",
-    libelle: "WhatsApp",
-    // WhatsApp est un moyen de nous joindre, pas un compte à suivre : il garde
-    // le vert de l'action plutôt que le gris des autres.
-    style:
-      "border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 hover:text-emerald-bright hover:shadow-[0_4px_16px_rgba(47,163,125,0.35)]",
-    trace: true,
-    chemin:
-      "M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21 M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1",
-  },
-  {
     cle: "linkedin",
     lien: RESEAUX_CLIXA.linkedin.url,
     titre: RESEAUX_CLIXA.linkedin.titre,
