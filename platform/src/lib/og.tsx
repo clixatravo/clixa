@@ -1,6 +1,5 @@
 import type { ReactElement } from "react";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { SITE_URL } from "@/lib/seo";
 
 export const tailleOG = { width: 1200, height: 630 };
 
@@ -26,40 +25,46 @@ export const tailleOG = { width: 1200, height: 630 };
   Chargés une seule fois par instance. Quatre routes composent ces images ;
   relire un demi-mégaoctet à chacune serait payé à chaque partage.
 */
-const DOSSIER = join(process.cwd(), "src", "assets", "fonts");
+/*
+  Les polices de la marque, pour les images de partage.
+
+  ⚠️ Servies depuis `public/`, et non lues sur le disque.
+
+  La version précédente lisait les fichiers avec `readFile` et un chemin
+  construit sur `process.cwd()`. Elle marchait sur le poste de travail et se
+  taisait en production : les cartes y paraissaient dans la police du moteur,
+  sans erreur, sans trace. Le répertoire courant d'une fonction déployée n'est
+  pas celui du dépôt, et `new URL(..., import.meta.url)` ne résout rien ici
+  non plus. Un fichier de `public/` est servi par la plateforme : il n'y a plus
+  de chemin à deviner ni de traçage à espérer.
+
+  ⚠️ Des instances statiques, pas les fichiers variables. Satori ne sait pas
+  lire une police à axes : nourri du Fraunces variable — quatre axes — comme du
+  Manrope variable, il échoue sur une table qu'il croit trouver et l'image
+  revient en 500. Les instances servies par Google pour un navigateur ancien
+  font 39 Ko chacune, contre 360 et 165.
+
+  Sous licence ouverte (SIL OFL). Elles sont téléchargées par le serveur qui
+  dessine l'image, pas par le visiteur qui lit la page.
+
+  Chargées une seule fois par instance — quatre routes composent ces images.
+*/
 let polices: Promise<
   { name: string; data: ArrayBuffer; weight: 400 | 600; style: "normal" }[] | undefined
 > | null = null;
 
-/*
-  Satori veut un ArrayBuffer, pas le Buffer que rend `readFile`.
+async function lire(nom: string): Promise<ArrayBuffer> {
+  const r = await fetch(`${SITE_URL}/polices/${nom}`);
+  if (!r.ok) throw new Error(`${nom} : ${r.status}`);
+  return r.arrayBuffer();
+}
 
-  Un Buffer de Node est une vue sur un tampon partagé, souvent plus grand que
-  le fichier : le passer tel quel fait lire au moteur de police des octets qui
-  ne sont pas les siens, et il échoue sur une table qu'il croit trouver là.
-  `slice` détache la portion exacte.
-*/
-const detacher = (b: Buffer): ArrayBuffer =>
-  b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
-
-/*
-  ⚠️ En cas d'échec, on dessine sans les polices plutôt que de renvoyer 500.
-
-  Une image de partage absente casse l'aperçu d'un lien ; une image dans la
-  mauvaise police est seulement moins belle. Mais l'échec est journalisé avec
-  le chemin cherché : sans cela, la dégradation est silencieuse et personne ne
-  saura jamais pourquoi les cartes ont changé d'allure.
-*/
 export function policesOG() {
-  polices ??= Promise.all([
-    readFile(join(DOSSIER, "Fraunces.woff")),
-    readFile(join(DOSSIER, "Manrope.woff")),
-  ])
+  polices ??= Promise.all([lire("Fraunces.woff"), lire("Manrope.woff")])
     .catch((e: unknown) => {
-      console.error(
-        `[og] polices introuvables sous ${DOSSIER} (cwd=${process.cwd()}) :`,
-        e instanceof Error ? e.message : e,
-      );
+      // Dessiner sans les polices plutôt que rendre 500 : une image absente
+      // casse l'aperçu d'un lien, une image moins belle ne casse rien.
+      console.error("[og] polices illisibles :", e instanceof Error ? e.message : e);
       return null;
     })
     .then((lues) => {
@@ -71,18 +76,8 @@ export function policesOG() {
       if (!lues) return undefined;
       const [fraunces, manrope] = lues;
       return [
-        {
-          name: "Fraunces",
-          data: detacher(fraunces),
-          weight: 600 as const,
-          style: "normal" as const,
-        },
-        {
-          name: "Manrope",
-          data: detacher(manrope),
-          weight: 400 as const,
-          style: "normal" as const,
-        },
+        { name: "Fraunces", data: fraunces, weight: 600 as const, style: "normal" as const },
+        { name: "Manrope", data: manrope, weight: 400 as const, style: "normal" as const },
       ];
     });
   return polices;
