@@ -35,7 +35,37 @@ import { usePathname } from "next/navigation";
  */
 
 const CIBLES = "main section";
-const ECHELON = 90;
+
+/*
+  Réglages du premier écran — l'arrivée.
+
+  70 ms entre deux blocs : assez pour qu'on suive une suite, trop peu pour
+  qu'on attende le suivant. À 90 ms, le dernier partait à 360 ms et finissait
+  au-delà de la seconde ; on avait le temps de se demander si la page était
+  terminée.
+*/
+const ECHELON = 70;
+const ARRIVEE = { duree: "0.62s", distance: "18px" };
+
+/*
+  Réglages des sections suivantes — l'accompagnement.
+
+  Plus court et plus près : elles ne s'annoncent pas, elles suivent un
+  défilement déjà lancé. Leur mouvement doit finir avant que le regard ne les
+  ait rejointes, sans quoi le site paraît freiner le lecteur.
+*/
+const SUITE = { duree: "0.46s", distance: "14px" };
+
+/*
+  Déclencher juste avant l'entrée dans l'écran, pas après.
+
+  Avec un seuil seul, un bloc atteint par un défilement rapide commence à
+  monter alors qu'on l'a déjà sous les yeux : il paraît en retard sur le geste,
+  et c'est le symptôme qui trahit une animation ajoutée après coup. La marge
+  basse avance le déclenchement d'un dixième de hauteur d'écran — le bloc est
+  posé au moment où on arrive dessus.
+*/
+const MARGE = "0px 0px 10% 0px";
 
 /*
   `useLayoutEffect` avertit lorsqu'il est évalué au rendu serveur, où la
@@ -57,7 +87,10 @@ export function Apparitions() {
     racine.classList.add("apparitions");
     // En attente : masqué, sans animation. Le tour venu, l'attribut change et
     // l'animation part de sa première image.
-    sections.forEach((s) => s.setAttribute("data-attente", ""));
+    sections.forEach((s) => {
+      s.setAttribute("data-attente", "");
+      regler(s, SUITE);
+    });
 
     /*
       Le premier écran ne passe pas par l'observateur : il est déjà visible, et
@@ -82,6 +115,7 @@ export function Apparitions() {
       premiere!.removeAttribute("data-attente");
       morceaux.forEach((m, i) => {
         m.setAttribute("data-attente", "");
+        regler(m, ARRIVEE);
         m.style.setProperty("--delai", `${i * ECHELON}ms`);
       });
     }
@@ -104,9 +138,11 @@ export function Apparitions() {
           observateur.unobserve(e.target);
         }
       },
-      // 12 % : assez pour que le bloc soit franchement engagé dans l'écran, pas
-      // assez pour qu'on l'ait lu avant qu'il paraisse.
-      { threshold: 0.12 },
+      // Le seuil tombe à zéro : c'est la marge qui décide désormais du moment,
+      // et un seuil en pourcentage du bloc retarderait les plus grands d'entre
+      // eux — une section haute de deux écrans n'atteint jamais 12 % de sa
+      // propre hauteur avant d'occuper la moitié du champ.
+      { threshold: 0, rootMargin: MARGE },
     );
 
     aObserver.forEach((s) => observateur.observe(s));
@@ -116,6 +152,12 @@ export function Apparitions() {
   }, [chemin]);
 
   return null;
+}
+
+/** Pose la durée et la course d'un bloc. */
+function regler(element: HTMLElement, r: { duree: string; distance: string }): void {
+  element.style.setProperty("--duree", r.duree);
+  element.style.setProperty("--distance", r.distance);
 }
 
 /**

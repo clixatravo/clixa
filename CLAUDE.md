@@ -405,6 +405,15 @@ atteint. L'effet vient du site statique, avec deux différences qui comptent :
 - **L'effet se rejoue à chaque page** (`usePathname`), et le masquage se fait
   avant la peinture (`useLayoutEffect`) : sinon la page suivante paraîtrait en
   entier avant de s'effacer pour remonter — un clignotement à chaque lien.
+- **Deux régimes.** Le premier écran est l'arrivée : 18 px de course, 620 ms,
+  échelonnés de 70 ms — tout est posé à 900 ms. Les sections suivantes
+  accompagnent un défilement déjà lancé : 14 px, 460 ms, sans échelon. Leur
+  donner la durée du titre d'accueil donnait l'impression d'un site qui traîne.
+- **Le déclenchement précède l'entrée dans l'écran** (`rootMargin` de 10 %,
+  seuil zéro). Avec un seuil en pourcentage du bloc, une section haute de deux
+  écrans n'atteignait jamais 12 % d'elle-même avant d'occuper la moitié du
+  champ : elle montait alors qu'on l'avait déjà lue, ce qui trahit une
+  animation ajoutée après coup.
 
 `e2e/apparitions.spec.ts` garde la porte : cinq épreuves, dont une sans
 JavaScript et une en mouvement réduit, parce qu'une animation ratée ne casse

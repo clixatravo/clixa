@@ -326,14 +326,19 @@
   séparaient les deux. Une animation part de sa première image, quoi qu'il
   arrive avant.
 
-  La courbe est franche au départ et s'apaise à l'arrivée : le bloc a l'air de
-  se poser, pas de glisser. 24 px, comme l'original — au-delà, le mouvement se
-  remarque plus que le contenu.
+  ── Deux régimes, un seul mouvement ────────────────────────────────────────
+  Le premier écran est l'arrivée : on lui laisse un peu de course et de durée,
+  parce que c'est le moment où le visiteur découvre. Les sections suivantes
+  n'ont plus rien à annoncer — elles accompagnent un défilement déjà lancé, et
+  doivent être plus brèves que lui. Une section qui met le même temps que le
+  titre d'accueil donne l'impression d'un site qui traîne.
+
+  La distance et la durée passent donc par des variables, réglées au montage.
 */
 @keyframes clixa-monter {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translate3d(0, var(--distance, 14px), 0);
   }
   to {
     opacity: 1;
@@ -346,8 +351,13 @@
   opacity: 0;
 }
 
+/*
+  La courbe démarre franchement et s'apaise longuement : le bloc a l'air de se
+  poser. Une courbe symétrique le ferait glisser, ce qui se remarque davantage
+  que le contenu.
+*/
 .apparitions [data-apparait] {
-  animation: clixa-monter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: clixa-monter var(--duree, 0.5s) cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--delai, 0ms);
 }
 
