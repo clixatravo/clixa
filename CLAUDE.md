@@ -469,6 +469,21 @@ nommée et inconnue reste un 404.** Le premier cas est quelqu'un qui veut
 s'inscrire et n'a pas encore choisi ; le second est une adresse qui désigne
 ce qui n'existe pas. Une redirection trop large avalerait les deux.
 
+**Les images de partage portent les polices de la marque** (`src/lib/og.tsx`).
+C'est la seule chose que voient les gens qui n'ont pas encore cliqué — un lien
+posé dans WhatsApp ou LinkedIn — et elle paraissait dans la police par défaut du
+moteur.
+
+⚠️ **Des instances statiques, jamais les fichiers variables.** Satori ne sait
+pas lire une police à axes : nourri du Fraunces variable comme du Manrope
+variable, il échoue sur une table qu'il croit trouver et l'image revient en 500.
+Les instances servies par Google pour un navigateur ancien font 39 Ko chacune,
+contre 360 et 165 — dix fois moins, et elles se lisent. Elles sont lues au
+serveur et ne partent jamais chez le visiteur.
+
+⚠️ **Le Buffer de `readFile` est détaché avant d'être passé.** C'est une vue sur
+un tampon partagé, souvent plus grand que le fichier.
+
 **L'atelier des composants** (`DES-07`, `.storybook/`). Il ne remplace pas les
 épreuves : celles-ci suivent des parcours entiers, l'atelier montre une pièce
 isolée dans ses états — dont ceux qu'aucune page n'affiche aujourd'hui, comme
@@ -695,7 +710,6 @@ regarder si le service accepte.
 | Pages légales | déposées en brouillon, 16 « [À COMPLÉTER] » | **la direction** |
 | Témoignages et partenaires réels | 0 publié sur 6 et 5 ; les exemples sont dépubliés | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
-| Polices des images de partage | `src/lib/og.tsx` | fichiers `.ttf` |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 
 **Le premier bloque tout le reste.** Un visiteur peut retenir sa place, choisir

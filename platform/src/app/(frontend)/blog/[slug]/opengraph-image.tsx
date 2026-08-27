@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { CarteOG, tailleOG } from "@/lib/og";
+import { CarteOG, tailleOG, policesOG } from "@/lib/og";
 import { formatDateArticle, getArticle, nomCategorie } from "@/lib/blog";
 
 export const alt = "Article — CLIXA Institute";
@@ -11,7 +11,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const a = await getArticle(slug);
 
   if (!a) {
-    return new ImageResponse(<CarteOG etiquette="Blog" titre="CLIXA Institute" />, size);
+    return new ImageResponse(<CarteOG etiquette="Blog" titre="CLIXA Institute" />, { ...size, fonts: await policesOG() });
   }
 
   return new ImageResponse(
@@ -21,6 +21,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       titre={a.titre}
       piedGauche={a.auteur}
     />,
-    size,
+    { ...size, fonts: await policesOG() },
   );
 }

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { CarteOG, tailleOG } from "@/lib/og";
+import { CarteOG, tailleOG, policesOG } from "@/lib/og";
 import {
   formatPrix,
   getProgramme,
@@ -26,7 +26,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   if (!p) {
     return new ImageResponse(
       <CarteOG etiquette="CLIXA Institute" titre="Formations certifiantes en Afrique" />,
-      size,
+      { ...size, fonts: await policesOG() },
     );
   }
 
@@ -50,6 +50,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         ) : undefined
       }
     />,
-    size,
+    { ...size, fonts: await policesOG() },
   );
 }

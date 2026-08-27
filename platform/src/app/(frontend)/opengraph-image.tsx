@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { villesDisponibles } from "@/lib/catalogue";
-import { CarteOG, tailleOG } from "@/lib/og";
+import { CarteOG, tailleOG, policesOG } from "@/lib/og";
 
 export const alt = "CLIXA Institute — Formations certifiantes et parcours exécutifs en Afrique";
 export const size = tailleOG;
@@ -27,6 +27,6 @@ export default async function Image() {
       titre="Des programmes qui changent une trajectoire."
       piedGauche={villes.length > 0 ? "Présentiel et classe virtuelle" : "À distance, en direct"}
     />,
-    size,
+    { ...size, fonts: await policesOG() },
   );
 }
