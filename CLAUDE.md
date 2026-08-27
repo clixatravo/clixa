@@ -392,11 +392,23 @@ atteint. L'effet vient du site statique, avec deux différences qui comptent :
   feuille de style seule. C'est le défaut de l'original : `opacity: 0` écrit en
   dur, et le jour où le script échoue il ne reste rien à lire. Ici, pas de
   script, pas de masquage — la page est simplement entière.
-- **L'effet ne se rejoue pas en navigation interne.** Le composant s'installe
-  une fois ; rejouer à chaque lien ferait clignoter le contenu et donnerait au
-  site l'air plus lent qu'il n'est. `e2e/apparitions.spec.ts` garde la porte :
-  cinq épreuves, dont une sans JavaScript et une en mouvement réduit, parce
-  qu'une animation ratée ne casse rien — elle laisse la page vide.
+- **Une animation, pas une transition.** Une transition ne démarre que depuis
+  une valeur que le navigateur a déjà arrêtée. En navigation interne, huit
+  millisecondes séparaient le masquage de la levée : il fondait les deux en un
+  seul changement et rien ne bougeait. Une animation part de sa première image,
+  quoi qu'il arrive avant. Deux attributs, donc : `data-attente` masque sans
+  animer, `data-apparait` anime.
+- ⚠️ **Le mouvement réduit est traité dans le même bloc**, pas laissé à la règle
+  générale de fin de fichier — mesuré, celle-ci ne l'emportait pas, et les blocs
+  les plus retardés restaient transparents le temps de leur délai. Sur une page
+  entière, cela s'appelle une page blanche.
+- **L'effet se rejoue à chaque page** (`usePathname`), et le masquage se fait
+  avant la peinture (`useLayoutEffect`) : sinon la page suivante paraîtrait en
+  entier avant de s'effacer pour remonter — un clignotement à chaque lien.
+
+`e2e/apparitions.spec.ts` garde la porte : cinq épreuves, dont une sans
+JavaScript et une en mouvement réduit, parce qu'une animation ratée ne casse
+rien — elle laisse la page vide.
 
 **Les pages du CMS se rendent à la racine** (`[slug]/page.tsx`, `lib/pages.ts`,
 `components/BlocRendu.tsx` extrait de la page d'article). Le pied de page liste

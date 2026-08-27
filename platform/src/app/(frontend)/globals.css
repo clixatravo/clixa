@@ -319,22 +319,54 @@
   Mettre `opacity: 0` sans cette garde rendrait le site blanc le jour où le
   script échoue — c'est le défaut du site statique dont l'effet est repris.
 
+  ⚠️ Une animation, pas une transition. Une transition ne démarre que depuis une
+  valeur que le navigateur a déjà arrêtée : masquer puis démasquer dans la même
+  fournée le laisse fondre les deux changements en un seul, et rien ne bouge.
+  C'est ce qui se passait en navigation interne, où huit millisecondes
+  séparaient les deux. Une animation part de sa première image, quoi qu'il
+  arrive avant.
+
   La courbe est franche au départ et s'apaise à l'arrivée : le bloc a l'air de
   se poser, pas de glisser. 24 px, comme l'original — au-delà, le mouvement se
   remarque plus que le contenu.
 */
-.apparitions [data-apparait] {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.7s ease,
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: var(--delai, 0ms);
-  will-change: opacity, transform;
+@keyframes clixa-monter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.apparitions [data-apparait].est-la {
-  opacity: 1;
-  transform: none;
-  will-change: auto;
+/* En attente de son tour : sous l'écran, pas encore atteint par le défilement. */
+.apparitions [data-attente] {
+  opacity: 0;
+}
+
+.apparitions [data-apparait] {
+  animation: clixa-monter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delai, 0ms);
+}
+
+/*
+  ⚠️ Le mouvement réduit se traite ici, pas ailleurs.
+
+  La règle générale de fin de fichier ramène toutes les durées à 0,001 ms, mais
+  elle ne l'emportait pas sur celle-ci : mesuré, un visiteur ayant demandé le
+  calme voyait encore l'animation complète, et les blocs les plus retardés
+  restaient transparents le temps de leur délai. Sur une page entière, cela
+  s'appelle une page blanche.
+
+  Ici la question ne se pose plus : ni attente, ni animation, tout est là.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .apparitions [data-attente],
+  .apparitions [data-apparait] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

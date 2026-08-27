@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * L'entrée en scène : le site se pose devant le visiteur au lieu d'être déjà là.
@@ -14,6 +15,13 @@ import { useEffect } from "react";
  * navigateur qui refuse le JavaScript : la page reste lisible, simplement sans
  * l'effet. L'original mettait `opacity:0` dans la feuille de style — le jour où
  * son script échoue, il ne reste rien à lire.
+ *
+ * ── L'effet se rejoue à chaque page, avant que le navigateur ne peigne ─────
+ * `useLayoutEffect` et non `useEffect` : le second s'exécute *après* le rendu.
+ * En navigation interne, la page suivante serait donc apparue en entier, puis
+ * se serait effacée pour remonter — un clignotement à chaque lien, qui donne au
+ * site l'air plus lent qu'il n'est. Masquer avant la peinture supprime cet
+ * aller-retour : le visiteur ne voit que l'arrivée.
  *
  * ── Ce qui est déjà à l'écran monte tout de suite, en cascade ───────────────
  * Un observateur ne sert qu'à ce qui arrive par le défilement. Le premier écran
@@ -29,8 +37,17 @@ import { useEffect } from "react";
 const CIBLES = "main section";
 const ECHELON = 90;
 
+/*
+  `useLayoutEffect` avertit lorsqu'il est évalué au rendu serveur, où la
+  disposition n'existe pas. Ce composant ne rend rien et n'agit qu'au
+  navigateur ; on prend l'un ou l'autre selon l'endroit où l'on tourne.
+*/
+const surLaMiseEnPage = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 export function Apparitions() {
-  useEffect(() => {
+  const chemin = usePathname();
+
+  surLaMiseEnPage(() => {
     const racine = document.documentElement;
     const sections = [...document.querySelectorAll<HTMLElement>(CIBLES)].filter(
       (s) => !s.hasAttribute("data-sans-apparition"),
@@ -38,7 +55,9 @@ export function Apparitions() {
     if (sections.length === 0) return;
 
     racine.classList.add("apparitions");
-    sections.forEach((s) => s.setAttribute("data-apparait", ""));
+    // En attente : masqué, sans animation. Le tour venu, l'attribut change et
+    // l'animation part de sa première image.
+    sections.forEach((s) => s.setAttribute("data-attente", ""));
 
     /*
       Le premier écran ne passe pas par l'observateur : il est déjà visible, et
@@ -60,9 +79,9 @@ export function Apparitions() {
     const morceaux = premiere ? enfantsSignifiants(premiere) : [];
 
     if (morceaux.length > 1) {
-      premiere!.removeAttribute("data-apparait");
+      premiere!.removeAttribute("data-attente");
       morceaux.forEach((m, i) => {
-        m.setAttribute("data-apparait", "");
+        m.setAttribute("data-attente", "");
         m.style.setProperty("--delai", `${i * ECHELON}ms`);
       });
     }
@@ -72,12 +91,7 @@ export function Apparitions() {
       .filter((s) => s !== premiere)
       .forEach((s, i) => s.style.setProperty("--delai", `${(morceaux.length + i) * ECHELON}ms`));
 
-    // Deux images successives avant de lever le voile : la première applique
-    // l'état masqué, la seconde le transition. Sans cela le navigateur regroupe
-    // les deux et rien ne bouge.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => aLever.forEach((e) => e.classList.add("est-la")));
-    });
+    aLever.forEach(lever);
 
     const aObserver = sections.filter((s) => !dejaVisibles.includes(s));
     if (aObserver.length === 0) return;
@@ -86,7 +100,7 @@ export function Apparitions() {
       (entrees) => {
         for (const e of entrees) {
           if (!e.isIntersecting) continue;
-          e.target.classList.add("est-la");
+          lever(e.target as HTMLElement);
           observateur.unobserve(e.target);
         }
       },
@@ -97,9 +111,22 @@ export function Apparitions() {
 
     aObserver.forEach((s) => observateur.observe(s));
     return () => observateur.disconnect();
-  }, []);
+    // Rejoué à chaque page : la navigation interne remplace le contenu de
+    // `main` sans remonter ce composant.
+  }, [chemin]);
 
   return null;
+}
+
+/**
+ * Faire paraître : l'attente cède la place à l'animation.
+ *
+ * Le changement d'attribut suffit — l'animation démarre d'elle-même, à sa
+ * première image, sans dépendre de ce que le navigateur avait retenu avant.
+ */
+function lever(element: HTMLElement): void {
+  element.removeAttribute("data-attente");
+  element.setAttribute("data-apparait", "");
 }
 
 /**

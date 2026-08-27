@@ -35,14 +35,15 @@ test.describe("Apparitions", () => {
     // Le temps de la transition la plus lente, plus le dernier échelon.
     await page.waitForTimeout(1600);
 
-    const invisibles = await page.evaluate(
-      () =>
-        [...document.querySelectorAll("[data-apparait]")].filter(
-          (e) => Number(getComputedStyle(e).opacity) < 0.95,
-        ).length,
-    );
+    const restants = await page.evaluate(() => ({
+      enAttente: document.querySelectorAll("[data-attente]").length,
+      transparents: [...document.querySelectorAll("main section")].filter(
+        (e) => Number(getComputedStyle(e).opacity) < 0.95,
+      ).length,
+    }));
 
-    expect(invisibles, "aucun bloc ne doit rester transparent").toBe(0);
+    expect(restants.enAttente, "aucun bloc ne doit rester en attente").toBe(0);
+    expect(restants.transparents, "aucun bloc ne doit rester transparent").toBe(0);
   });
 
   /*
@@ -77,20 +78,23 @@ test.describe("Apparitions", () => {
 
   /*
     ── Le cas qui rendrait une page blanche ─────────────────────────────────
-    Le composant s'installe une fois, au chargement. En navigation interne, il
-    ne se remonte pas : les sections de la page suivante ne sont donc jamais
-    marquées, et paraissent immédiatement. C'est voulu — rejouer l'effet à
-    chaque lien ferait clignoter le contenu à chaque clic, et donnerait au site
-    l'air d'être plus lent qu'il n'est.
+    L'effet se rejoue à chaque page. Le danger n'est donc plus qu'il manque,
+    mais qu'il reste en chemin : une page d'arrivée masquée est une page
+    blanche, et rien dans la compilation ne le signalerait.
 
-    L'épreuve garde la porte : si un jour le marquage se rejoue sans que la
-    levée suive, la page d'arrivée resterait vide.
+    Deux mesures, donc : la page suivante est bien mise en scène — sinon le
+    rejeu ne fonctionne pas — et elle finit entière.
   */
-  test("après une navigation interne, rien n'est masqué", async ({ page }) => {
+  test("une navigation interne rejoue l'effet, puis la page est entière", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Explorer le catalogue" }).click();
     await page.waitForURL(/\/formations/);
 
+    const marquees = await page.evaluate(() => document.querySelectorAll("[data-apparait]").length);
+    expect(marquees, "la page d'arrivée doit être mise en scène").toBeGreaterThan(0);
+
+    // Le temps de la transition la plus lente, plus le dernier échelon.
+    await page.waitForTimeout(1600);
     const invisibles = await page.evaluate(
       () =>
         [...document.querySelectorAll("main section")].filter(
@@ -98,7 +102,8 @@ test.describe("Apparitions", () => {
         ).length,
     );
 
-    expect(invisibles, "la page d'arrivée doit être entière").toBe(0);
+    expect(invisibles, "la page d'arrivée doit finir entière").toBe(0);
+    expect(await page.evaluate(() => document.querySelectorAll("[data-attente]").length)).toBe(0);
     await expect(page.locator("h1")).toBeVisible();
   });
 
