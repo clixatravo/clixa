@@ -1,3 +1,4 @@
+import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
@@ -79,6 +80,31 @@ export async function POST(request: Request) {
 
   if (!formation) redirect("/formations" as Route);
   if (!nom || !email || !whatsapp || !pays) echec("champs");
+
+  /*
+    Bornes des champs libres.
+
+    Ils n'étaient vérifiés que sur un point : ne pas être vides. Rien
+    n'empêchait d'en envoyer un mégaoctet — qui partait en base, dans le
+    tableau de bord et dans les deux courriels qu'une inscription déclenche.
+    On refuse plutôt que de tronquer : un nom coupé donnerait un dossier au
+    nom de quelqu'un d'autre, sans que personne le sache.
+  */
+  if (
+    !tientDans(nom, LONGUEURS.nom) ||
+    !tientDans(whatsapp, LONGUEURS.telephone) ||
+    !tientDans(pays, LONGUEURS.pays) ||
+    !tientDans(texte("organisation"), LONGUEURS.organisation)
+  ) {
+    echec("champs");
+  }
+
+  /*
+    L'adresse sert à envoyer la confirmation et à rattacher le dossier à un
+    compte : une adresse malformée fait un dossier que son titulaire ne peut
+    plus retrouver, et un courriel qui part dans le vide.
+  */
+  if (!emailPlausible(email)) echec("champs");
 
   const payload = await getPayload({ config });
 

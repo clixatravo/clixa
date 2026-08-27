@@ -187,6 +187,9 @@ export const Inscriptions: CollectionConfig = {
         },
         {
           name: "statut",
+          // Le tableau de bord et le recompte des places filtrent là-dessus,
+          // ce dernier à chaque écriture.
+          index: true,
           type: "select",
           label: "Statut",
           required: true,
@@ -253,6 +256,9 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               name: "apprenantEmail",
+              // Interrogée à chaque connexion Google, qui rattache les dossiers
+              // portant l'adresse confirmée.
+              index: true,
               type: "email",
               label: "E-mail",
               required: true,

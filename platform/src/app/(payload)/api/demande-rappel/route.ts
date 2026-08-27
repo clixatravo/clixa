@@ -1,3 +1,4 @@
+import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
@@ -43,6 +44,18 @@ export async function POST(request: Request) {
   const pays = texte("pays");
 
   if (!nom || !email || !whatsapp || !pays) {
+    redirect("/contact?erreur=champs" as Route);
+  }
+
+  // Mêmes bornes qu'à l'inscription : ces valeurs partent dans un courriel que
+  // l'équipe relève à la main, et dans une fiche qu'elle ouvre.
+  if (
+    !tientDans(nom, LONGUEURS.nom) ||
+    !tientDans(whatsapp, LONGUEURS.telephone) ||
+    !tientDans(pays, LONGUEURS.pays) ||
+    !tientDans(texte("message"), LONGUEURS.message) ||
+    !emailPlausible(email)
+  ) {
     redirect("/contact?erreur=champs" as Route);
   }
 

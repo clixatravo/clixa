@@ -500,11 +500,41 @@ minute et par adresse, compte 30, transfert et attestation 20, rappel 10.
   consomme une quinzaine par passage : une limite qu'un usage légitime frôle est
   une limite mal réglée.
 
+⚠️ **Sans `csrf`, la garde de Payload s'efface au lieu de refuser.** Son
+extraction de jeton dit : « si la liste est vide **ou** si l'origine y figure,
+on accepte le cookie ». Liste vide voulait donc dire *n'importe quelle origine*
+— une page tierce pouvait faire une requête créditée et Payload honorait la
+session. Le `SameSite: Lax` du cookie l'empêchait côté navigateur, mais une
+protection qui ne tient qu'au défaut d'une autre couche est une chance, pas une
+garde. `csrf`, `cors` et `serverURL` sont maintenant posés sur
+`NEXT_PUBLIC_SITE_URL`. Vérifié : le même cookie passe depuis l'origine du site
+et est refusé depuis une autre.
+
+**Les champs libres ont des bornes** (`lib/saisie.ts`). Ils n'étaient vérifiés
+que sur un point : ne pas être vides. On refuse plutôt que de tronquer — un nom
+coupé donnerait un dossier au nom de quelqu'un d'autre. L'adresse est vérifiée
+grossièrement, exprès : la seule vérification qui prouve une adresse est d'y
+écrire, et toute expression plus fine se met à refuser des adresses valides.
+
+⚠️ **`sslmode=verify-full`, pas `require`.** Le pilote `pg` traite aujourd'hui
+`require` comme `verify-full` — le certificat est donc vérifié — mais il
+prévient que sa prochaine version majeure adoptera les sémantiques libpq, plus
+faibles : le chiffrement resterait, la vérification tomberait, sans qu'une
+ligne change chez nous. Écrire `verify-full` ne change rien aujourd'hui et
+protège de cette bascule. ⚠️ `psql` cherche alors son autorité dans
+`~/.postgresql/`, qui n'existe sur aucune machine : `PGSSLROOTCERT=system` le
+renvoie au magasin du système (`e2e/menage.ts` le pose).
+
+**Deux colonnes ont reçu un index** — `inscriptions.apprenant_email`, que la
+connexion Google interroge à chaque rattachement, et `inscriptions.statut`, que
+le recompte des places lit à chaque écriture.
+
 Ce que l'audit a trouvé sain : l'injection (le SQL de la recherche passe par les
 paramètres liés de drizzle, et les termes de préfixe sont réduits à `[a-z0-9]`
-avant), les accès par collection, les secrets hors du dépôt, l'absence de trace
-d'erreur ou de secret renvoyée au client, et `/api/apercu`, qui demande une
-session.
+avant), les accès par collection, les clefs étrangères et leurs règles de
+suppression, le chiffrement imposé côté serveur par Neon, les secrets hors du
+dépôt, l'absence de trace d'erreur ou de secret renvoyée au client, et
+`/api/apercu`, qui demande une session.
 
 ## Le courriel
 

@@ -32,7 +32,39 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
  *
  * Les collections du catalogue arrivent en BE-02.
  */
+/*
+  L'origine du site, celle qui a le droit de porter un cookie de session.
+
+  ⚠️ Sans `csrf`, la garde de Payload s'efface au lieu de refuser.
+
+  Son extraction de jeton dit, mot pour mot :
+  « si la liste est vide OU si l'origine y figure, on accepte le cookie ».
+  Liste vide veut donc dire : n'importe quelle origine. Une page hébergée
+  ailleurs pouvait faire une requête créditée vers l'API et Payload honorait la
+  session du visiteur. Le `SameSite: Lax` du cookie empêchait l'essentiel côté
+  navigateur — mais une protection qui ne tient qu'au réglage par défaut d'une
+  autre couche n'est pas une protection, c'est une chance. Même défaut que
+  `/api/relances`, qui refusait le service seulement quand le secret était
+  présent.
+
+  `serverURL` sert aussi les liens que Payload compose lui-même — celui de
+  « mot de passe oublié », notamment, qui pointait sur rien.
+*/
+const ORIGINE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export default buildConfig({
+  serverURL: ORIGINE,
+  /*
+    Les origines autorisées à présenter un cookie. La liste est explicite : y
+    ajouter un aperçu de branche demande d'y penser, ce qui est le but.
+  */
+  csrf: [ORIGINE],
+  /*
+    Aucune origine tierce ne lit l'API depuis un navigateur. Le site est servi
+    par le même domaine que Payload ; le jour où une application séparée devra
+    l'interroger, c'est ici qu'on l'autorisera, nommément.
+  */
+  cors: [ORIGINE],
   admin: {
     user: Utilisateurs.slug,
     theme: "dark",

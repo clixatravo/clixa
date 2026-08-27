@@ -63,7 +63,18 @@ export default function menage(): void {
            WHERE i.session_id = s.id AND i.statut <> 'annulee'
          );`,
       ],
-      { stdio: "pipe" },
+      {
+        stdio: "pipe",
+        /*
+          `psql` cherche son autorité de certification dans `~/.postgresql/`,
+          qui n'existe sur aucune machine de développeur. Depuis que la chaîne
+          de connexion demande `verify-full`, il refusait donc de se connecter
+          et le ménage échouait en silence — les dossiers d'épreuve
+          s'accumulaient. `system` le renvoie au magasin du système, celui que
+          le navigateur et le pilote Node utilisent déjà.
+        */
+        env: { ...process.env, PGSSLROOTCERT: "system" },
+      },
     );
   } catch (e) {
     // Sans psql sous la main, on le dit plutôt que d'échouer la suite : les

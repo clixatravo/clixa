@@ -1,3 +1,4 @@
+import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
@@ -122,12 +123,16 @@ export async function POST(request: Request) {
   const retour = action === "creation" ? "/compte/creer" : "/compte/connexion";
 
   if (!email || !motDePasse) redirect(`${retour}?erreur=champs` as Route);
+  // Une adresse qui n'en est pas une donne un compte auquel on n'écrira jamais.
+  if (!emailPlausible(email)) redirect(`${retour}?erreur=champs` as Route);
 
   const payload = await getPayload({ config });
 
   if (action === "creation") {
     const nom = texte("nom");
-    if (!nom) redirect("/compte/creer?erreur=champs" as Route);
+    if (!nom || !tientDans(nom, LONGUEURS.nom)) {
+      redirect("/compte/creer?erreur=champs" as Route);
+    }
     if (motDePasse.length < 8) redirect("/compte/creer?erreur=court" as Route);
 
     try {
