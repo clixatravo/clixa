@@ -43,7 +43,13 @@ export default async function Compte({
     <>
       <FilAriane items={[{ label: "Accueil", href: "/" }, { label: "Mon espace" }]} />
 
-      <section className="px-8 py-13">
+      {/*
+        Marges resserrées sur téléphone, comme sur les pages de connexion :
+        32 px de chaque côté d'un écran de 375 en laissent 311 au contenu, et
+        cette page porte des références, des montants et des dates qui ne
+        gagnent rien à être serrés.
+      */}
+      <section className="px-5 py-8 sm:px-8 sm:py-13">
         <div className="mx-auto max-w-[900px]">
           {erreur === "rattachement" && (
             <p
@@ -90,7 +96,21 @@ export default async function Compte({
                 elle, n'est connue que de qui l'a reçue — et elle ouvre déjà le
                 dossier sans compte, donc elle n'accorde rien de neuf.
               */}
-              <form action="/api/compte" method="POST" className="mt-5 flex flex-wrap gap-3">
+              {/*
+                Empilés et pleine largeur sur téléphone, côte à côte ensuite.
+
+                Le champ portait une largeur fixe de 11 rem : sur un écran de
+                375 il occupait moins de la moitié de la ligne, le bouton se
+                serrait à côté, et l'ensemble avait l'air d'une rangée conçue
+                pour un écran large qu'on aurait pliée. Une référence de
+                dossier se saisit au pouce, souvent en la recopiant d'un
+                courriel — autant lui donner toute la place.
+              */}
+              <form
+                action="/api/compte"
+                method="POST"
+                className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
+              >
                 <input type="hidden" name="action" value="rattacher" />
                 <label htmlFor="dossier" className="sr-only">
                   Référence du dossier
@@ -101,11 +121,11 @@ export default async function Compte({
                   required
                   maxLength={24}
                   placeholder="CLX-XXXXX"
-                  className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-[11rem] border px-3.5 font-mono text-[0.9rem]"
+                  className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full border px-3.5 font-mono text-[0.9rem] sm:w-[11rem]"
                 />
                 <button
                   type="submit"
-                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-5 text-[0.86rem] font-semibold transition-colors"
+                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 w-full px-5 text-[0.86rem] font-semibold transition-colors sm:w-auto"
                 >
                   Rattacher
                 </button>
@@ -142,9 +162,19 @@ export default async function Compte({
                     {prochaineEtape(d)}
                   </p>
 
-                  <div className="border-line flex flex-wrap gap-x-6 gap-y-2 border-t pt-4">
+                  {/*
+                    Une échéance par ligne sur téléphone, montant à gauche et
+                    date à droite ; en rangée au-delà.
+
+                    `flex-wrap` seul donnait un échéancier illisible : la
+                    première échéance prenait toute la largeur — sa date est la
+                    plus longue — et les deux suivantes se serraient côte à
+                    côte. Trois versements se lisent de haut en bas, comme un
+                    calendrier, pas en paquets décidés par la largeur du texte.
+                  */}
+                  <div className="border-line flex flex-col gap-2 border-t pt-4 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
                     {d.echeances.map((e, i) => (
-                      <div key={i}>
+                      <div key={i} className="flex items-baseline justify-between gap-3 sm:block">
                         <div
                           className={`font-mono text-[0.86rem] tabular-nums ${
                             e.statut === "regle" ? "text-emerald-bright" : "text-ivory"

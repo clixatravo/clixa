@@ -46,6 +46,18 @@ export default function menage(): void {
         "-c",
         `DELETE FROM inscriptions WHERE apprenant_email LIKE '%${MARQUE}';`,
         "-c",
+        /*
+          Les comptes participants aussi, depuis que `espace.spec.ts` en ouvre
+          pour atteindre `/compte` — cette page réclame une session, et il n'y
+          a pas d'autre façon d'y entrer.
+
+          Leurs sessions partent avec eux : `apprenants_sessions` est déclarée
+          en cascade par Payload. Sans cette ligne, chaque série laissait un
+          compte de plus, et la table finissait par ne contenir que des
+          fantômes d'épreuves.
+        */
+        `DELETE FROM apprenants WHERE email LIKE '%${MARQUE}';`,
+        "-c",
         `UPDATE sessions s SET places_reservees = (
            SELECT count(*) FROM inscriptions i
            WHERE i.session_id = s.id AND i.statut <> 'annulee'

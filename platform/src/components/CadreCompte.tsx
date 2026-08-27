@@ -29,8 +29,17 @@ export function CadreCompte({
   bas: ReactNode;
 }) {
   return (
-    <section className="px-8 py-13">
-      <div className="mx-auto grid max-w-[1000px] gap-12 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-16">
+    /*
+      Les marges se resserrent sur téléphone, et là seulement.
+
+      `px-8 py-13` coûtait 64 px de largeur sur un écran de 375 — pour deux
+      champs de saisie — et repoussait le bouton « Se connecter » au bord de
+      l'écran utile : on ne voyait pas le formulaire entier d'un coup, ce qui
+      d'une page de connexion fait une corvée. Au-dessus de `sm`, la
+      respiration d'origine est intacte.
+    */
+    <section className="px-5 py-8 sm:px-8 sm:py-13">
+      <div className="mx-auto grid max-w-[1000px] gap-10 sm:gap-12 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-16">
         {/*
           Le formulaire d'abord dans le document : c'est ce qu'on est venu faire.
 
@@ -42,7 +51,7 @@ export function CadreCompte({
         <div className="w-full max-w-[440px]">
           <span className="mono-label text-gold mb-3 block">Mon espace</span>
           <h1 className="mb-3 text-[clamp(1.4rem,2.6vw,1.9rem)]">{titre}</h1>
-          <p className="text-ivory-dim mb-8 text-[0.92rem]">{intro}</p>
+          <p className="text-ivory-dim mb-6 text-[0.92rem] sm:mb-8">{intro}</p>
           {children}
           <p className="text-ivory-dim mt-6 text-[0.86rem]">{bas}</p>
         </div>

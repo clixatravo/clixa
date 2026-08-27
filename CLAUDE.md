@@ -51,7 +51,9 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
 
 - **Elles écrivent en base.** Les inscriptions créées portent une adresse en
   `@epreuve.invalid` — domaine réservé, qui ne peut appartenir à personne — et
-  sont retirées en fin de série. `e2e/garde.ts` refuse de démarrer si
+  sont retirées en fin de série, avec les comptes participants du même domaine
+  qu'ouvre `espace.spec.ts` (`/compte` réclame une session : il n'y a pas
+  d'autre façon d'y entrer). `e2e/garde.ts` refuse de démarrer si
   `DATABASE_URL` désigne l'hôte de production ; éprouvé en l'y pointant.
 - **Le ménage refait à la main ce que fait le crochet `recompter`** : une
   suppression en SQL ne le déclenche pas, et le décompte de places resterait
