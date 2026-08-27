@@ -42,19 +42,44 @@ let polices: Promise<
 const detacher = (b: Buffer): ArrayBuffer =>
   b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 
+/*
+  ⚠️ En cas d'échec, on dessine sans les polices plutôt que de renvoyer 500.
+
+  Une image de partage absente casse l'aperçu d'un lien ; une image dans la
+  mauvaise police est seulement moins belle. Mais l'échec est journalisé avec
+  le chemin cherché : sans cela, la dégradation est silencieuse et personne ne
+  saura jamais pourquoi les cartes ont changé d'allure.
+*/
 export function policesOG() {
   polices ??= Promise.all([
     readFile(join(DOSSIER, "Fraunces.woff")),
     readFile(join(DOSSIER, "Manrope.woff")),
-  ]).then(([fraunces, manrope]) => [
-    {
-      name: "Fraunces",
-      data: detacher(fraunces),
-      weight: 600 as const,
-      style: "normal" as const,
-    },
-    { name: "Manrope", data: detacher(manrope), weight: 400 as const, style: "normal" as const },
-  ]);
+  ])
+    .catch((e: unknown) => {
+      console.error(
+        `[og] polices introuvables sous ${DOSSIER} (cwd=${process.cwd()}) :`,
+        e instanceof Error ? e.message : e,
+      );
+      return null;
+    })
+    .then((lues) => {
+      if (!lues) return [];
+      const [fraunces, manrope] = lues;
+      return [
+        {
+          name: "Fraunces",
+          data: detacher(fraunces),
+          weight: 600 as const,
+          style: "normal" as const,
+        },
+        {
+          name: "Manrope",
+          data: detacher(manrope),
+          weight: 400 as const,
+          style: "normal" as const,
+        },
+      ];
+    });
   return polices;
 }
 
