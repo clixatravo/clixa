@@ -222,7 +222,7 @@ durée. `objectif` et `contenuId` existent dans le schéma et restent vides.
 
 ## Où en est le projet
 
-**75 tâches sur 86.** Le front public et le back-office sont complets, le site
+**78 tâches sur 86.** Le front public et le back-office sont complets, le site
 lit ses données depuis PostgreSQL, et l'ensemble tourne en production sur
 `www.clixa.africa`, ouvert aux moteurs depuis le 26 août 2026.
 
@@ -469,8 +469,26 @@ nommée et inconnue reste un 404.** Le premier cas est quelqu'un qui veut
 s'inscrire et n'a pas encore choisi ; le second est une adresse qui désigne
 ce qui n'existe pas. Une redirection trop large avalerait les deux.
 
-Reste côté développement : `BE-04` (tables LMS déclarées), `INT-07` (perf 3G),
-`DES-07` (Storybook).
+**L'atelier des composants** (`DES-07`, `.storybook/`). Il ne remplace pas les
+épreuves : celles-ci suivent des parcours entiers, l'atelier montre une pièce
+isolée dans ses états — dont ceux qu'aucune page n'affiche aujourd'hui, comme
+une session complète ou une dernière place.
+
+```bash
+cd platform && npm run atelier            # sur le port 6006
+cd platform && npm run atelier:construire
+```
+
+Les histoires vivent à côté de ce qu'elles montrent (`*.stories.tsx`) : une
+pièce déplacée emporte sa démonstration.
+
+⚠️ **Il n'est pas branché à l'intégration continue.** Le construire ajoute une
+minute à chaque poussée pour vérifier ce qu'aucune épreuve ne vérifie : que
+l'atelier compile. Le jour où l'on y comparera des états d'une version à
+l'autre, il aura sa place dans la chaîne — pas avant.
+
+Reste côté développement : rien. `BE-04`, `INT-07` et `DES-07` sont traités ;
+ce que `INT-07` laisse ouvert est une décision de dessin, notée plus haut.
 
 `INT-07` a été mesuré sur 3G lente (400 kbit/s, 400 ms de latence), pas
 seulement en conditions de bureau. Le premier affichage arrive à 4,2 s sur

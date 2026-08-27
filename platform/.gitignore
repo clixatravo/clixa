@@ -23,3 +23,4 @@ catalogue-reel.json
 test-results/
 playwright-report/
 .playwright/
+storybook-static/
