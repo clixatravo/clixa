@@ -11,7 +11,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const a = await getArticle(slug);
 
   if (!a) {
-    return new ImageResponse(<CarteOG etiquette="Blog" titre="CLIXA Institute" />, { ...size, fonts: await policesOG() });
+    return new ImageResponse(<CarteOG etiquette="Blog" titre="CLIXA Institute" />, {
+      ...size,
+      fonts: await policesOG(),
+    });
   }
 
   return new ImageResponse(
