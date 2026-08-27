@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@/components/Analytics";
+import { Apparitions } from "@/components/Apparitions";
 import { SITE_URL, estProduction, jsonLdOrganisation } from "@/lib/seo";
 import "./globals.css";
 
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteFooter />
         </div>
         <Analytics />
+        <Apparitions />
       </body>
     </html>
   );

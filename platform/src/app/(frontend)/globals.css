@@ -310,3 +310,31 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+  L'entrée en scène — voir `components/Apparitions.tsx`.
+
+  ⚠️ Tout est conditionné à `.apparitions`, posée par le script au montage.
+  Sans lui, aucun sélecteur ne s'applique et la page reste entièrement lisible.
+  Mettre `opacity: 0` sans cette garde rendrait le site blanc le jour où le
+  script échoue — c'est le défaut du site statique dont l'effet est repris.
+
+  La courbe est franche au départ et s'apaise à l'arrivée : le bloc a l'air de
+  se poser, pas de glisser. 24 px, comme l'original — au-delà, le mouvement se
+  remarque plus que le contenu.
+*/
+.apparitions [data-apparait] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delai, 0ms);
+  will-change: opacity, transform;
+}
+
+.apparitions [data-apparait].est-la {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}

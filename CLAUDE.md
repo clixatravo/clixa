@@ -383,6 +383,21 @@ journalise : la recherche est un raffinement du catalogue, pas le catalogue.
   Cinquième vignette, à côté des trois choses à faire — celles-là appellent un
   geste, celle-ci dit seulement si le mois se remplit.
 
+**Le site entre en scène** (`components/Apparitions.tsx`). Le premier écran
+monte par morceaux — mention, titre, promesse, boutons — échelonnés de 90 ms ;
+les sections suivantes montent de 24 px en fondu quand le défilement les
+atteint. L'effet vient du site statique, avec deux différences qui comptent :
+
+- ⚠️ **L'état masqué dépend d'une classe posée par le script**, jamais de la
+  feuille de style seule. C'est le défaut de l'original : `opacity: 0` écrit en
+  dur, et le jour où le script échoue il ne reste rien à lire. Ici, pas de
+  script, pas de masquage — la page est simplement entière.
+- **L'effet ne se rejoue pas en navigation interne.** Le composant s'installe
+  une fois ; rejouer à chaque lien ferait clignoter le contenu et donnerait au
+  site l'air plus lent qu'il n'est. `e2e/apparitions.spec.ts` garde la porte :
+  cinq épreuves, dont une sans JavaScript et une en mouvement réduit, parce
+  qu'une animation ratée ne casse rien — elle laisse la page vide.
+
 **Les pages du CMS se rendent à la racine** (`[slug]/page.tsx`, `lib/pages.ts`,
 `components/BlocRendu.tsx` extrait de la page d'article). Le pied de page liste
 celles qui sont publiées : y ajouter une page suffit à la faire apparaître.
