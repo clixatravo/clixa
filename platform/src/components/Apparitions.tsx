@@ -169,6 +169,16 @@ export function Apparitions() {
       d'initial et n'a pas à être retardée. Le repli s'ouvre au montage et se
       referme seul.
     */
+    /*
+      L'observateur d'une page ne parle plus une fois qu'on l'a quittée.
+
+      Au changement de page, il lui arrive de délivrer une dernière fournée
+      pendant que React remplace le contenu : une section de la page qu'on
+      quitte se met alors à monter au moment où elle disparaît. Observé sur le
+      plus petit téléphone, où la moindre bascule de mise en page fait entrer
+      un bloc dans l'horizon.
+    */
+    let vivant = true;
     let enPhaseInitiale = true;
     const finDuRepli = setTimeout(() => {
       enPhaseInitiale = false;
@@ -177,6 +187,7 @@ export function Apparitions() {
 
     const observateur = new IntersectionObserver(
       (entrees) => {
+        if (!vivant) return;
         for (const e of entrees) {
           if (!e.isIntersecting) continue;
           const bloc = e.target as HTMLElement;
@@ -197,6 +208,7 @@ export function Apparitions() {
 
     aObserver.forEach((s) => observateur.observe(s));
     return () => {
+      vivant = false;
       clearTimeout(finDuRepli);
       observateur.disconnect();
     };
