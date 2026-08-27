@@ -45,7 +45,7 @@ const RESEAUX = [
     cle: "facebook",
     lien: RESEAUX_CLIXA.facebook.url,
     titre: RESEAUX_CLIXA.facebook.titre,
-    aria: "Rejoindre SkillAfrique sur Facebook",
+    aria: "Rejoindre CLIXA sur Facebook",
     libelle: "Facebook",
     style:
       "bg-panel/70 text-ivory/80 border-white/10 hover:border-[#1877f2]/70 hover:bg-[#1877f2]/15 hover:text-[#60a5fa] hover:shadow-[0_4px_16px_rgba(24,119,242,0.3)]",
@@ -57,7 +57,7 @@ const RESEAUX = [
     cle: "instagram",
     lien: RESEAUX_CLIXA.instagram.url,
     titre: RESEAUX_CLIXA.instagram.titre,
-    aria: "Suivre SkillAfrique sur Instagram",
+    aria: "Suivre CLIXA sur Instagram",
     libelle: "Instagram",
     style:
       "bg-panel/70 text-ivory/80 border-white/10 hover:border-[#e1306c]/70 hover:bg-[#e1306c]/15 hover:text-[#f472b6] hover:shadow-[0_4px_16px_rgba(225,48,108,0.3)]",

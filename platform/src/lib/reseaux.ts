@@ -9,10 +9,10 @@
  *
  * Ne pas déduire une adresse : l'ouvrir.
  *
- * ⚠️ Facebook et Instagram sont au nom de **SkillAfrique**, pas de CLIXA. Les
- * deux marques sont liées — le site porte déjà une page `/skillafrique` — mais
- * les intitulés le disent, faute de quoi le visiteur clique « Facebook » sous
- * la marque CLIXA et arrive ailleurs sans comprendre pourquoi.
+ * Facebook et Instagram portent le nom SkillAfrique : c'est la même maison,
+ * CLIXA en est issue. Les intitulés ne distinguent donc pas les deux — décision
+ * de la direction, le 27 août 2026. Ne pas les « corriger » en croyant repérer
+ * une incohérence de marque.
  */
 
 export const RESEAUX_CLIXA = {
@@ -39,13 +39,13 @@ export const RESEAUX_CLIXA = {
     */
     url: "https://www.facebook.com/formationskillafrique",
     label: "Facebook",
-    titre: "Page Facebook de SkillAfrique",
+    titre: "Page Facebook",
     description: "Communauté & événements en direct",
   },
   instagram: {
     url: "https://www.instagram.com/skillafrique",
     label: "Instagram",
-    titre: "Compte Instagram de SkillAfrique",
+    titre: "Compte Instagram",
     description: "Coulisses des sessions et portraits de participants",
   },
   email: {
