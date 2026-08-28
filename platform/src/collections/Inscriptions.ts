@@ -1,3 +1,4 @@
+import { occupeUnePlace } from "@/lib/places";
 import { randomBytes } from "crypto";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
@@ -49,14 +50,6 @@ import { connecte, reserveA } from "@/access/roles";
  * `req` est passé aux deux appels — sans lui ils tournent hors de la
  * transaction en cours et ne voient pas le dossier qu'on vient d'écrire.
  */
-/**
- * Les états qui occupent réellement une place.
- *
- * ⚠️ `e2e/menage.ts` refait ce calcul à la main, une suppression en SQL ne
- * déclenchant pas le crochet. Les deux règles doivent rester identiques.
- */
-const PLACES_PRISES = ["confirmee", "payee", "terminee"] as const;
-
 async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
   const ids = new Set<number>();
   for (const d of docs) {
@@ -68,9 +61,12 @@ async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
   for (const id of ids) {
     const vivantes = await req.payload.count({
       collection: "inscriptions",
-      // Confirmée, payée, terminée : trois états qui supposent un versement
-      // reçu. « Demandée » n'en suppose aucun, « annulée » plus aucun.
-      where: { and: [{ session: { equals: id } }, { statut: { in: PLACES_PRISES } }] },
+      /*
+        La règle vit dans `lib/places.ts`, partagée avec la tâche quotidienne.
+        Ici elle s'applique quand quelqu'un agit ; là-bas, quand le temps
+        passe — et le temps, lui, n'écrit rien.
+      */
+      where: { and: [{ session: { equals: id } }, occupeUnePlace()] },
       overrideAccess: true,
       req,
     });

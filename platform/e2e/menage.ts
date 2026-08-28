@@ -67,7 +67,10 @@ export default function menage(): void {
         `UPDATE sessions s SET places_reservees = (
            SELECT count(*) FROM inscriptions i
            WHERE i.session_id = s.id
-             AND i.statut IN ('confirmee', 'payee', 'terminee')
+             AND (
+               i.statut IN ('confirmee', 'payee', 'terminee')
+               OR (i.statut = 'demandee' AND i.created_at > now() - interval '7 days')
+             )
          );`,
       ],
       {

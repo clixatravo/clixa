@@ -58,26 +58,24 @@ test("retenir une place mène à un dossier qui porte sa référence", async ({ 
 });
 
 /*
-  ── S'inscrire ne prend pas de place ─────────────────────────────────────────
-  Une place se prend en payant. Elle se prenait auparavant à l'inscription, et
-  l'intention était bonne : protéger celui qui vient de s'inscrire pendant qu'il
-  organise son transfert. Mais un transfert international prend des jours, et
-  beaucoup ne viennent jamais — la session affichait complet en comptant des
-  gens qui n'avaient rien versé.
+  ── La place est tenue, puis rendue ──────────────────────────────────────────
+  Une inscription retient sa place sept jours sans versement : assez pour qu'un
+  transfert international parte et arrive. Passé ce délai elle la rend, et
+  c'est la tâche quotidienne qui repasse — le temps, lui, n'écrit rien.
 
-  L'épreuve ne peut pas aller jusqu'au versement : le marquer réglé demande le
-  back-office. Elle vérifie donc ce qu'elle peut, et c'est le point qui vient de
-  changer.
+  L'épreuve vérifie le premier moment, le seul qu'elle puisse provoquer.
+  L'expiration se joue sur sept jours ; la faire tenir dans une série
+  demanderait de mentir sur une date, et l'on n'éprouverait plus que le
+  mensonge.
 */
-test("retenir une place n'entame pas le décompte tant que rien n'est versé", async ({
-  page,
-  request,
-}) => {
+test("retenir une place la décompte immédiatement", async ({ page, request }) => {
   const avant = await placesReservees(request);
   await retenirUnePlace(page, "P1");
   const apres = await placesReservees(request);
 
-  expect(apres, "un dossier « demandée » ne retient aucune place").toBe(avant);
+  // Le décompte a déjà été perdu une fois : compté hors de la transaction, il
+  // ne voyait pas la ligne qu'on venait d'écrire, et annulait l'écriture.
+  expect(apres, "la place retenue n'a pas été décomptée").toBe(avant + 1);
 });
 
 async function placesReservees(request: {

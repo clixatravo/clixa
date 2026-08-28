@@ -38,6 +38,8 @@ npx payload run scripts/verifier-brouillons.ts    # visibilité des brouillons
 npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
 npx payload run scripts/verifier-session.ts       # la connexion sans mot de passe
 npx payload run scripts/verifier-google.ts        # une personne, un compte
+npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
+npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 ```
 
 **La production se contrôle en une commande** (`INT-11`). Les épreuves
@@ -266,18 +268,31 @@ La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
 de places montré au visiteur.
 
-⚠️ **Une place se prend en payant, pas en s'inscrivant** (depuis le 28 août
-2026). Seuls les états `confirmee`, `payee` et `terminee` occupent une place ;
-un dossier `demandee` n'en retient aucune. Auparavant il en retenait une —
-l'intention était de protéger celui qui vient de s'inscrire pendant qu'il
-organise son transfert, mais un transfert international prend des jours et
-beaucoup ne viennent jamais : la session affichait complet en comptant des
-gens qui n'avaient rien versé.
+**Une place est tenue sept jours, puis rendue** (`src/lib/places.ts`, depuis le
+28 août 2026). Une inscription la retient aussitôt — assez pour qu'un transfert
+international parte et arrive, week-end compris — et la rend si rien n'est
+versé. Un versement reçu (`confirmee`, `payee`, `terminee`) la retient sans
+limite.
 
-Le revers est réel et assumé : deux personnes peuvent régler la dernière place.
-À trente places, sur des transferts de plusieurs jours, c'est moins probable —
-et moins coûteux — qu'un catalogue qui se ferme tout seul. Si cela arrive,
-c'est un appel à passer, pas une inscription perdue.
+Sans ce délai, une session affichait complet en comptant des gens qui
+n'avaient rien versé et ne viendraient jamais ; sans la tenue initiale, deux
+personnes pouvaient régler la même dernière place pendant que leurs virements
+voyageaient.
+
+⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
+aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche
+quotidienne (`api/relances`, 8 h) qui repasse et recompte — le seul endroit du
+système où quelque chose change sans que personne ait agi. Le décompte peut
+donc être en retard d'au plus une journée, ce qui est sans conséquence pour des
+places réservées à des semaines de distance.
+
+⚠️ **La règle est écrite trois fois** : le crochet `recompter`, la tâche
+quotidienne, et le SQL de `e2e/menage.ts` — une suppression directe ne
+déclenchant aucun crochet. Les deux premières partagent `lib/places.ts` ; la
+troisième doit être changée à la main, en même temps.
+
+`scripts/verifier-places.ts` éprouve la dawra entière : la place est prise, elle
+reste prise après vieillissement, la tâche la rend, le décompte revient juste.
 
 ⚠️ Le rythme des dix parcours autres que DAF et PMP reste une hypothèse — le
 catalogue Word ne documente que ces deux-là.

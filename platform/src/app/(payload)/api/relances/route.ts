@@ -1,3 +1,4 @@
+import { rendreLesPlacesExpirees } from "@/lib/places";
 import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -145,6 +146,18 @@ export async function GET(request: Request) {
     });
   }
 
+  /*
+    ── Rendre les places que le temps a libérées ─────────────────────────────
+    Une inscription tient sa place sept jours sans versement. Passé ce délai
+    elle la rend — mais le temps n'écrit rien : sans repasser, une place
+    expirée resterait retenue jusqu'à ce qu'un hasard touche à sa session.
+
+    On recompte donc chaque session en cours, une fois par jour. C'est le seul
+    endroit du système où quelque chose change parce qu'un délai s'est écoulé
+    et non parce que quelqu'un a agi.
+  */
+  const rendues = await rendreLesPlacesExpirees(payload);
+
   await courrielBilanRelances(payload, bilan);
 
   payload.logger.info(
@@ -155,5 +168,6 @@ export async function GET(request: Request) {
     dossiers: docs.length,
     echeancesExaminees: examinees,
     relances: bilan.length,
+    placesRendues: rendues,
   });
 }
