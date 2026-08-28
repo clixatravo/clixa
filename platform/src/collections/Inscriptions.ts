@@ -180,7 +180,26 @@ export const Inscriptions: CollectionConfig = {
           .sort();
         data.prochaineEcheance = dues[0] ?? null;
 
-        // Un dossier entièrement réglé l'est aussi au niveau du dossier.
+        /*
+          ── L'argent reçu se lit sur le dossier, pas seulement sur la ligne ───
+          Le statut du dossier et celui de ses échéances vivaient séparément :
+          on pouvait marquer un acompte « réglé » et laisser le dossier
+          « demandée ». C'était sans conséquence tant qu'une inscription
+          retenait sa place indéfiniment ; depuis qu'elle ne la tient que sept
+          jours, cela rendait au catalogue la place de quelqu'un qui avait payé.
+          La tâche quotidienne ne lit que le statut du dossier — et elle avait
+          raison de le croire suffisant.
+
+          Deux passages, dans cet ordre : un acompte reçu confirme, tout régler
+          solde. Le second l'emporte, sinon un dossier entièrement payé
+          redescendrait à « confirmée » au prochain enregistrement.
+
+          ⚠️ On ne redescend jamais un statut : « annulée » et « terminée » ne
+          sont pas des états qu'un calcul doit défaire.
+        */
+        const regle = echeances.some((e) => e.statut === "regle");
+        if (regle && data.statut === "demandee") data.statut = "confirmee";
+
         if (echeances.length > 0 && echeances.every((e) => e.statut === "regle")) {
           if (data.statut === "confirmee" || data.statut === "demandee") data.statut = "payee";
         }

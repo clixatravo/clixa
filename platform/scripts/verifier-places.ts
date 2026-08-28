@@ -36,7 +36,7 @@ const compter = async () => {
   return (s as { placesReservees?: number }).placesReservees ?? 0;
 };
 
-const creer = async (jours: number, nom: string) => {
+const creer = async (jours: number, nom: string, acompte = false) => {
   const d = await payload.create({
     collection: "inscriptions",
     overrideAccess: true,
@@ -48,7 +48,7 @@ const creer = async (jours: number, nom: string) => {
       apprenantWhatsapp: "+212600000000",
       apprenantPays: "Maroc",
       planPaiement: "P1",
-      echeances: [{ montant: 423, statut: "attendu" }],
+      echeances: [{ montant: 423, statut: acompte ? "regle" : "attendu" }],
     } as never,
   });
   aSupprimer.push(d.id);
@@ -88,6 +88,27 @@ try {
   const rendues = await rendreLesPlacesExpirees(payload);
   dire("la tâche quotidienne rend la place périmée", rendues >= 1);
   dire("le décompte revient à la vérité", (await compter()) === apresFraiche);
+
+  /*
+    ── Le cas qui a coûté une place à quelqu'un qui avait payé ───────────────
+    Un acompte marqué « réglé » laissait le dossier en « demandée » : rien ne
+    faisait le lien entre l'argent reçu et l'état du dossier. Passé sept jours,
+    la tâche quotidienne rendait sa place — la tâche ne lit que le statut du
+    dossier, et jusque-là elle avait raison de s'en contenter.
+
+    L'épreuve vieillit le dossier de dix jours, bien au-delà du délai : s'il
+    tient encore sa place, c'est que l'acompte l'a confirmé.
+  */
+  const avantAcompte = await compter();
+  await creer(10, "Épreuve Acompte", true);
+  dire(
+    "un acompte reçu confirme le dossier et retient sa place",
+    (await compter()) === avantAcompte + 1,
+  );
+  dire(
+    "et la tâche quotidienne ne la lui reprend pas",
+    (await rendreLesPlacesExpirees(payload), (await compter()) === avantAcompte + 1),
+  );
 } finally {
   for (const id of aSupprimer) {
     await payload.delete({ collection: "inscriptions", id, overrideAccess: true });

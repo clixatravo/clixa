@@ -279,6 +279,15 @@ n'avaient rien versé et ne viendraient jamais ; sans la tenue initiale, deux
 personnes pouvaient régler la même dernière place pendant que leurs virements
 voyageaient.
 
+⚠️ **Un acompte reçu confirme le dossier**, et c'est ce qui protège la place.
+Le statut du dossier et celui de ses échéances vivaient séparément : on pouvait
+marquer un acompte « réglé » et laisser le dossier « demandée ». Sans
+conséquence tant qu'une inscription retenait sa place indéfiniment ; depuis les
+sept jours, cela rendait au catalogue la place de quelqu'un qui avait payé. La
+tâche quotidienne ne lit que le statut du dossier — et jusque-là elle avait
+raison de s'en contenter. Le crochet fait donc deux passages, dans cet ordre :
+un acompte confirme, tout régler solde.
+
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche
 quotidienne (`api/relances`, 8 h) qui repasse et recompte — le seul endroit du
