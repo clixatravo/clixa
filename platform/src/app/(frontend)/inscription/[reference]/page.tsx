@@ -5,6 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { formatPrix, getTarifs } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
+import { finDeLaTenue } from "@/lib/places";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,6 +32,16 @@ const JOUR = new Intl.DateTimeFormat("fr-FR", {
   year: "numeric",
   timeZone: "UTC",
 });
+
+/**
+ * Hors du composant, exprès : `Date.now()` appelé pendant le rendu est refusé
+ * — le rendu doit être pur, et l'heure ne l'est pas. La page se rend à chaque
+ * requête (un dossier n'est pas mis en cache), donc la date lue est la bonne.
+ */
+function verifierTenueExpiree(tenueJusquau?: Date): boolean {
+  if (!tenueJusquau) return false;
+  return tenueJusquau.getTime() < Date.now();
+}
 
 /**
  * FE-18 — Le dossier d'inscription.
@@ -61,6 +72,21 @@ export default async function Dossier({ params, searchParams }: Props) {
   const aAnnoncer =
     dossier.statut !== "annulee" && dossier.statut !== "terminee" && enCours?.statut === "attendu";
 
+  /*
+    ── Une place tenue a un terme, et il se lit ──────────────────────────────
+    Tant qu'aucun versement n'est parvenu, la place est tenue sept jours puis
+    rendue au catalogue. Le dire n'est pas une précaution juridique : c'est la
+    seule chose qui distingue « prenez le temps » de « vous avez jusqu'au ».
+    Qui lit « place retenue » sans terme organise son transfert à son rythme et
+    découvre la session complète — sans avoir jamais été prévenu.
+
+    Un versement reçu retient la place sans limite : on ne montre alors aucune
+    date, parce qu'il n'y en a plus.
+  */
+  const tenueProvisoire = dossier.statut === "demandee" && Boolean(dossier.depuis);
+  const tenueJusquau = tenueProvisoire ? finDeLaTenue(dossier.depuis!) : undefined;
+  const tenueExpiree = verifierTenueExpiree(tenueJusquau);
+
   return (
     <>
       <FilAriane items={[{ label: "Votre dossier" }]} />
@@ -68,7 +94,9 @@ export default async function Dossier({ params, searchParams }: Props) {
       <section className="px-8 py-13">
         <div className="mx-auto max-w-[820px]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-4">
-            <span className="mono-label text-gold block">Place retenue</span>
+            <span className="mono-label text-gold block">
+              {tenueExpiree ? "Place à confirmer" : "Place retenue"}
+            </span>
             <a
               href={`/api/attestation/${dossier.reference}`}
               target="_blank"
@@ -93,6 +121,29 @@ export default async function Dossier({ params, searchParams }: Props) {
               }`}
             >
               {RETOUR_ANNONCE[annonce] ?? RETOUR_ANNONCE.champs}
+            </p>
+          )}
+
+          {tenueJusquau && (
+            <p
+              className={`bg-panel mb-8 border-l-2 p-4 text-[0.9rem] leading-relaxed ${
+                tenueExpiree ? "border-gold text-ivory" : "border-line text-ivory-dim"
+              }`}
+            >
+              {tenueExpiree ? (
+                <>
+                  Le délai de sept jours est passé et votre place est repartie au catalogue. Elle
+                  vous est rendue dès réception de votre premier versement, si la session n&apos;est
+                  pas complète — écrivez-nous plutôt que d&apos;attendre.
+                </>
+              ) : (
+                <>
+                  Votre place vous est tenue jusqu&apos;au{" "}
+                  <strong className="text-ivory">{JOUR.format(tenueJusquau)}</strong> — le temps
+                  qu&apos;un transfert parte et arrive. Passé cette date, sans versement reçu, elle
+                  repart au catalogue. Un premier versement la retient définitivement.
+                </>
+              )}
             </p>
           )}
 

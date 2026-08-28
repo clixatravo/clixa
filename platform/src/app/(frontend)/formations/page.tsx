@@ -1,5 +1,6 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ProgrammeCard } from "@/components/ProgrammeCard";
 import { FilAriane } from "@/components/FilAriane";
 import type { ModeDiffusion } from "@/lib/types";
@@ -87,12 +88,43 @@ export default async function Catalogue({ searchParams }: Props) {
 
       <section className="px-8 py-12">
         <div className="mx-auto max-w-[1180px]">
-          <div className="mb-9">
-            <span className="mono-label text-gold mb-3 block">Catalogue des parcours</span>
-            <h1 className="text-[clamp(1.8rem,3.2vw,2.4rem)] font-bold">
-              {resultats.length} programme{resultats.length > 1 ? "s" : ""}, {specs.length}{" "}
-              spécialisations.
-            </h1>
+          {/* ── En-tête Catalogue avec Visuel Officiel ── */}
+          <div className="border-gold/30 bg-panel/75 rounded-clixa mb-10 overflow-hidden border p-6 shadow-2xl backdrop-blur-md sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10">
+            <div className="max-w-[42rem]">
+              <span className="mono-label text-gold mb-3 block text-xs tracking-widest uppercase">
+                ✦ Catalogue Officiel 2026
+              </span>
+              <h1 className="text-[clamp(1.8rem,3.2vw,2.4rem)] font-bold">
+                {resultats.length} programme{resultats.length > 1 ? "s" : ""}, {specs.length}{" "}
+                spécialisations.
+              </h1>
+              <p className="text-ivory-dim/90 mt-3 text-[0.94rem] leading-relaxed">
+                Formations exécutives certifiantes et masterclasses pour cadres dirigeants.
+                Modalités adaptées aux professionnels en poste au Maroc, en Côte d&apos;Ivoire, au
+                Sénégal et en classe virtuelle.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/contact"
+                  className="shimmer-gold from-gold-bright via-gold to-gold-bright text-ink rounded-clixa border-gold inline-flex items-center gap-2 border bg-gradient-to-r px-5 py-2.5 font-mono text-xs font-bold tracking-wider uppercase shadow-md transition-all hover:shadow-[0_0_18px_rgba(201,162,76,0.4)]"
+                >
+                  <span>Être conseillé sur un parcours</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-6 shrink-0 lg:mt-0 lg:max-w-[280px]">
+              <div className="border-gold/40 rounded-clixa group bg-ink relative aspect-[4/3] w-full overflow-hidden border shadow-xl">
+                <Image
+                  src="/images/marketing/catalogue-executive-clixa.jpg"
+                  alt="Brochure Officielle CLIXA"
+                  width={560}
+                  height={420}
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+            </div>
           </div>
 
           {/* ── Filtres ── */}

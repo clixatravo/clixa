@@ -17,11 +17,25 @@ import type { Payload, Where } from "payload";
  * déclenchant aucun crochet. Les trois formulations doivent rester d'accord.
  */
 
-const JOURS_DE_GRACE = 7;
+export const JOURS_DE_GRACE = 7;
 
 /** La limite en deçà de laquelle un dossier « demandée » tient encore sa place. */
 export function limiteDeGrace(): string {
   return new Date(Date.now() - JOURS_DE_GRACE * 86_400_000).toISOString();
+}
+
+/**
+ * Jusqu'à quand la place d'un dossier non réglé est tenue.
+ *
+ * ⚠️ Le participant doit pouvoir lire cette date. Retenir une place sans dire
+ * qu'elle expire, c'est promettre plus qu'on ne tient : qui lit « place
+ * retenue » et prend trois semaines pour organiser son transfert la trouverait
+ * rendue, sans avoir jamais été prévenu. La page du dossier et le courriel de
+ * confirmation l'annoncent donc tous les deux, à partir d'ici.
+ */
+export function finDeLaTenue(depuis: Date | string): Date {
+  const debut = typeof depuis === "string" ? new Date(depuis) : depuis;
+  return new Date(debut.getTime() + JOURS_DE_GRACE * 86_400_000);
 }
 
 /** La condition, telle que Payload l'attend. */

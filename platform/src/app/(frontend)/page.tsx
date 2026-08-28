@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ProgrammeCard } from "@/components/ProgrammeCard";
 import { Temoignages } from "@/components/Temoignages";
 import { Partenaires } from "@/components/Partenaires";
@@ -341,6 +342,140 @@ export default async function Accueil() {
             {vedettes.map((p) => (
               <ProgrammeCard key={p.slug} programme={p} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Galerie & Immersion Exécutive ── */}
+      <section className="border-line bg-panel/30 border-t border-b px-8 py-16 lg:py-20">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="mb-12 text-center">
+            <span className="mono-label text-gold mb-3 block text-xs tracking-widest">
+              ✦ Immersion &amp; Standard d&apos;Excellence
+            </span>
+            <h2 className="text-[clamp(1.6rem,3vw,2.4rem)] font-bold">
+              Au cœur de l&apos;Institut <span className="gold-gradient-text">CLIXA</span>.
+            </h2>
+            <p className="text-ivory-dim/80 mx-auto mt-3 max-w-[62ch] text-[0.94rem] leading-relaxed">
+              De la salle de conseil exécutive à la délivrance des diplômes officiels : découvrez
+              les standards pédagogiques panafricains.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Carte 1 : Catalogue Exécutif */}
+            <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
+              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+                <Image
+                  src="/images/marketing/catalogue-executive-clixa.jpg"
+                  alt="Catalogue Exécutif et Brochure Officielle CLIXA Institute"
+                  width={600}
+                  height={450}
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className="border-gold/40 bg-ink/80 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider uppercase backdrop-blur-md">
+                    Brochure Officielle
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
+                    Le Catalogue Exécutif
+                  </h3>
+                  <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
+                    Syllabus complets des 12 filières d&apos;excellence, plans de cours et modalités
+                    de financement entreprise.
+                  </p>
+                </div>
+                <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
+                  <Link
+                    href="/formations"
+                    className="text-gold-bright hover:text-gold inline-flex items-center gap-1 font-mono text-xs transition-colors"
+                  >
+                    <span>Consulter les programmes</span>
+                    <span>→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Carte 2 : Séminaire Exécutif */}
+            <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
+              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+                <Image
+                  src="/images/marketing/seminaire-executif-clixa-v2.jpg"
+                  alt="Séminaire Exécutif et Masterclass Dirigeants CLIXA Institute"
+                  width={600}
+                  height={450}
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className="border-emerald/40 bg-ink/80 text-emerald-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider uppercase backdrop-blur-md">
+                    Masterclasses &amp; Hubs
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
+                    Séminaires &amp; Salle de Conseil
+                  </h3>
+                  <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
+                    Des cohortes de cadres et directeurs d&apos;Afrique formés par des praticiens en
+                    exercice en présentiel et en ligne.
+                  </p>
+                </div>
+                <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
+                  <Link
+                    href="/campus"
+                    className="text-gold-bright hover:text-gold inline-flex items-center gap-1 font-mono text-xs transition-colors"
+                  >
+                    <span>Découvrir nos campus</span>
+                    <span>→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Carte 3 : Certification Diplômante */}
+            <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
+              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+                <Image
+                  src="/images/marketing/certification-diplome-clixa.jpg"
+                  alt="Diplôme Officiel et Certification Exécutive CLIXA"
+                  width={600}
+                  height={450}
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className="bg-ink/80 rounded-clixa border border-[#0077b5]/40 px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider text-[#38bdf8] uppercase backdrop-blur-md">
+                    Double Certification
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
+                    Diplôme &amp; Reconnaissance
+                  </h3>
+                  <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
+                    Délivrance de titres certifiants avec médaillon officiel pour valoriser votre
+                    trajectoire professionnelle et vos appels d&apos;offres.
+                  </p>
+                </div>
+                <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
+                  <Link
+                    href="/contact"
+                    className="text-gold-bright hover:text-gold inline-flex items-center gap-1 font-mono text-xs transition-colors"
+                  >
+                    <span>Demander une admission</span>
+                    <span>→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
