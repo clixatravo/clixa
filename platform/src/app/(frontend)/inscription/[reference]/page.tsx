@@ -1,3 +1,4 @@
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
@@ -173,12 +174,36 @@ export default async function Dossier({ params, searchParams }: Props) {
               ne sont pas saisies, on le dit plutôt que d'afficher un cadre vide
               qui laisserait croire à un oubli du participant.
             */
-            <p className="border-line bg-panel border p-6 text-[0.92rem]">
-              Nous vous transmettons les coordonnées de transfert par WhatsApp, au numéro que vous
-              avez indiqué à l&apos;inscription. Votre dossier{" "}
-              <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
-              enregistré : vous n&apos;avez rien à écrire de votre côté.
-            </p>
+            <div className="border-line bg-panel border p-6">
+              <p className="text-[0.92rem]">
+                Nous vous transmettons les coordonnées de transfert par WhatsApp, au numéro que vous
+                avez indiqué à l&apos;inscription. Votre dossier{" "}
+                <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
+                enregistré : vous n&apos;avez rien à écrire de votre côté.
+              </p>
+
+              {/*
+                ── Ne pas laisser le participant devant une porte close ──────
+                Il vient de retenir sa place et arrive à « où envoyer
+                l'argent » : lui dire d'attendre qu'on le rappelle est exact,
+                mais c'est un cul-de-sac. Le bouton ouvre la conversation avec
+                sa référence déjà écrite — ce qui lui évite de la retrouver, et
+                à l'équipe de deviner de quel dossier on lui parle.
+
+                Il disparaîtra de lui-même le jour où les coordonnées seront
+                saisies : cette branche ne s'affiche que sans elles.
+              */}
+              <a
+                href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
+                  `Bonjour, je souhaite recevoir les coordonnées de transfert pour mon dossier ${dossier.reference}.`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
+              >
+                Demander les coordonnées sur WhatsApp
+              </a>
+            </div>
           )}
 
           {/*
