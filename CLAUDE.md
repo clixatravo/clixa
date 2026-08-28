@@ -439,11 +439,19 @@ rien — elle laisse la page vide.
 **Les pages du CMS se rendent à la racine** (`[slug]/page.tsx`, `lib/pages.ts`,
 `components/BlocRendu.tsx` extrait de la page d'article). Le pied de page liste
 celles qui sont publiées : y ajouter une page suffit à la faire apparaître.
-`scripts/creer-pages-legales.ts` a déposé mentions légales et confidentialité
-**en brouillon** — elles portent seize « [À COMPLÉTER] » que seule la direction
-peut remplir (raison sociale, RC, ICE, directeur de publication, CNDP, durées
-de conservation, ville du tribunal). Publier avant de les remplir mettrait en
-ligne un document juridique à trous.
+`scripts/creer-pages-legales.ts` les a déposées **en brouillon** ;
+`completer-pages-legales.ts` les remplit à mesure, et se rejoue sans dommage.
+
+L'identité de la société vient d'une facture officielle, pas d'une déduction :
+**CLIXA SARLAU**, RC d'Agadir **67759**, ICE **003917718000017**, IF
+**71921918**, siège N° 1525, Bureau n° 5, Hay Essalam, Agadir.
+
+⚠️ La facture porte encore `clixa-institute.org` — c'est l'ancien domaine. Le
+site vit sur `clixa.africa`, et c'est celui-là qui est écrit.
+
+Trois mentions manquent encore, et aucune ne s'invente : le **capital social**,
+le **directeur de la publication** (nom et qualité), le **récépissé CNDP**.
+Publier avant de les avoir mettrait en ligne un document juridique à trous.
 
 **Les redirections vivent dans `next.config.ts`**, pas dans `vercel.json` :
 le fichier de la plateforme ne s'applique pas en développement, et une
@@ -707,7 +715,7 @@ regarder si le service accepte.
 | Sujet | Où | Attend |
 |---|---|---|
 | **Coordonnées du bénéficiaire** | global `tarifs`, vides | **la direction** |
-| Pages légales | déposées en brouillon, 16 « [À COMPLÉTER] » | **la direction** |
+| Pages légales | brouillon, 3 mentions manquantes | **la direction** |
 | Témoignages et partenaires réels | 0 publié sur 6 et 5 ; les exemples sont dépubliés | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |

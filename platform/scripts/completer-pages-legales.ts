@@ -28,7 +28,44 @@ interface Retouche {
   pourquoi: string;
 }
 
+/*
+  ── L'identité de la société ────────────────────────────────────────────────
+  Relevée sur une facture officielle transmise par la direction le 27 août
+  2026, pas déduite. Les mentions légales engagent : une seule de ces valeurs
+  inventée ferait de la page un faux.
+
+  ⚠️ L'adresse et le domaine de la facture — clixa-institute.org — sont ceux
+  d'avant. Le site vit sur clixa.africa, et c'est celui-là qu'on écrit.
+*/
+const SOCIETE = {
+  nom: "CLIXA SARLAU",
+  forme: "société à responsabilité limitée à associé unique de droit marocain",
+  rc: "67759",
+  villeRc: "Agadir",
+  ice: "003917718000017",
+  if: "71921918",
+  siege: "N° 1525, Bureau n° 5, Hay Essalam, Agadir, Maroc",
+};
+
 const RETOUCHES: Retouche[] = [
+  {
+    page: "mentions-legales",
+    cherche: "Le présent site est édité par",
+    ecrit:
+      `Le présent site est édité par ${SOCIETE.nom}, ${SOCIETE.forme} au capital de ` +
+      `[À COMPLÉTER : montant du capital social], immatriculée au registre du commerce ` +
+      `d'${SOCIETE.villeRc} sous le numéro ${SOCIETE.rc}, ICE ${SOCIETE.ice}, identifiant ` +
+      `fiscal ${SOCIETE.if}. Siège social : ${SOCIETE.siege}.`,
+    pourquoi: "raison sociale, forme, RC, ICE et IF — relevés sur la facture",
+  },
+  {
+    page: "confidentialite",
+    cherche: "Le responsable du traitement est",
+    ecrit:
+      `Le responsable du traitement est ${SOCIETE.nom}, dont le siège est situé ` +
+      `${SOCIETE.siege}. Pour toute question relative à vos données : contact@clixa.africa.`,
+    pourquoi: "le responsable est nommé",
+  },
   {
     page: "mentions-legales",
     cherche: "Les présentes mentions sont régies par le droit marocain",
@@ -144,8 +181,8 @@ for (const r of RETOUCHES) {
 console.log(`\n${faites} paragraphe(s) mis à jour, ${introuvables} page(s) manquante(s).`);
 console.log(`
 ⚠️ Ce qui reste vide ne peut pas être écrit sans la direction :
-   raison sociale · forme juridique · capital · ville et numéro du registre
-   du commerce · ICE · directeur de la publication · récépissé CNDP.
+   le montant du capital social · le nom et la qualité du directeur de la
+   publication · le numéro de récépissé de la déclaration CNDP.
 
 ⚠️ Les durées de conservation viennent d'être écrites. Elles engagent la
    société vis-à-vis des personnes inscrites : à relire avant publication.
