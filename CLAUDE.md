@@ -79,9 +79,17 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   sans cela la compilation tombait dans le temps imparti, et la machine occupée
   à compiler n'arrivait plus à lancer un navigateur. La première série a duré
   une heure et demie et perdu douze épreuves ainsi.
-- **Pas encore en intégration continue** : le secret `DATABASE_URL` de GitHub
-  désigne une branche Neon que je n'ai pas vérifiée. Y brancher des épreuves qui
-  écrivent demande d'en être sûr.
+- **Elles tournent en intégration continue** depuis le 27 août 2026, dans une
+  tâche à part du build : un parcours cassé et une compilation cassée ne se
+  lisent pas de la même manière. Le secret `DATABASE_URL` de GitHub désigne la
+  branche `dev` — vérifié le jour où il a été posé. Le rapport n'est conservé
+  qu'en cas d'échec.
+
+⚠️ **L'intégration continue ne voit pas le retard de schéma sur la production.**
+Elle construit contre `dev`, où le champ vient d'être ajouté ; Vercel construit
+contre la production, où il manque. Le 27 août, CI était verte pendant que sept
+déploiements échouaient. C'est pourquoi il faut regarder l'état du déploiement,
+et pas celui de la CI, après un changement de modèle.
 
 **Le back-office porte la marque de la maison** (`src/app/(payload)/clixa.css`,
 `components/admin/`). L'équipe s'y connecte tous les matins ; elle arrivait sur

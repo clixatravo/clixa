@@ -71,3 +71,60 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           NEXT_PUBLIC_SITE_ENV: preview
+
+  # ── Les parcours, joués pour de vrai ──────────────────────────────────────
+  #
+  # Cinquante-neuf épreuves qui ouvrent des comptes, retiennent des places et
+  # annoncent des transferts. Elles ne tournaient que sur le poste de travail,
+  # c'est-à-dire quand on y pensait.
+  #
+  # ⚠️ Elles écrivent dans la branche `dev`, jamais dans la production : c'est
+  # ce que désigne le secret DATABASE_URL, vérifié le 27 août 2026. En plus de
+  # cela, `e2e/garde.ts` refuse de démarrer si l'hôte est celui de la
+  # production — la protection ne tient donc pas au seul réglage du secret.
+  #
+  # Les données créées portent une adresse en @epreuve.invalid et sont retirées
+  # en fin de série. Une série interrompue peut en laisser : la suivante les
+  # emporte, le ménage effaçant par marque et non par exécution.
+  #
+  # Tâche séparée du build : un parcours cassé et une compilation cassée ne se
+  # lisent pas de la même manière, et on veut savoir laquelle des deux.
+  epreuves:
+    name: Parcours (Playwright)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Installer le navigateur
+        run: npx playwright install --with-deps chromium
+
+      - name: Jouer les parcours
+        run: npm run epreuves
+        env:
+          CI: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          NEXT_PUBLIC_SITE_ENV: preview
+
+      # Le rapport ne sert qu'en cas d'échec : c'est là qu'on veut la capture
+      # d'écran et la trace, pas dans les vingt exécutions qui passent.
+      - name: Conserver le rapport en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-epreuves
+          path: platform/playwright-report
+          retention-days: 7
