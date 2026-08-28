@@ -153,9 +153,8 @@ export async function POST(request: Request) {
         Cette route rattachait au compte tous les dossiers portant la même
         adresse. L'intention était juste — sans rattachement, qui s'est inscrit
         puis crée un compte trouve une page vide et croit son inscription
-        perdue. Mais rien ne vérifiait que la personne détenait cette adresse :
-        aucun courriel de confirmation ne part, et il n'en partira pas tant
-        qu'aucun expéditeur n'est configuré.
+        perdue. Mais rien ne vérifiait alors que la personne détenait cette
+        adresse : `auth.verify` n'était pas actif, faute d'expéditeur.
 
         Il suffisait donc de connaître l'adresse de quelqu'un — un format
         d'entreprise se devine — et de créer un compte avec, pour voir son nom,
@@ -167,8 +166,12 @@ export async function POST(request: Request) {
         clef qui laisse déjà consulter un dossier sans compte — on n'ouvre donc
         rien de plus qu'avant, et l'adresse seule n'ouvre plus rien.
 
-        Le jour où un expéditeur sera en place, `auth.verify` de Payload fera ce
-        travail à la source, et ce détour n'aura plus lieu d'être.
+        ⚠️ `auth.verify` est actif depuis le 27 août 2026, et l'adresse est
+        donc prouvée à la source — mais la référence reste exigée ici. Les deux
+        ne disent pas la même chose : une confirmation prouve qu'on relève cette
+        boîte, pas qu'on est le titulaire du dossier qui porte cette adresse.
+        La retirer rouvrirait le trou d'un cran, pour ne rien épargner à
+        personne : le participant a sa référence sous les yeux.
       */
       await rattacher(payload, texte("dossier"), email, compte.id);
 
