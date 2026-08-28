@@ -640,6 +640,29 @@ dépôt, l'absence de trace d'erreur ou de secret renvoyée au client, et
 
 ## Le courriel
 
+**Les gabarits se regardent, ils ne se relisent pas.** Un client de messagerie
+ne rend pas le HTML comme un navigateur, et ce qu'un participant reçoit après
+avoir retenu sa place est la première chose qu'il lit de nous.
+
+```bash
+cd platform && npx payload run scripts/apercu-courriel.ts   # écrit dans apercus/
+```
+
+Ce que ce coup d'œil a trouvé, et qu'aucune épreuve ne pouvait voir :
+
+- ⚠️ **Le numéro d'admissions était faux** — un numéro d'attente, dans chaque
+  courriel envoyé. Il vient maintenant de `lib/reseaux.ts`, comme partout
+  ailleurs : deux copies finissent toujours par diverger.
+- **Six adresses pointaient sur l'apex**, qui redirige. Le canonique est `www`.
+- **La référence se coupait en deux dans l'en-tête** — « CLX- » d'un côté, le
+  reste de l'autre — depuis qu'elle compte huit symboles. Une référence à
+  moitié lisible se recopie de travers.
+
+⚠️ Deux mentions restent à trancher par la direction : « Présence
+panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », dont
+l'équivalent a été retiré du site faute de pouvoir l'étayer.
+
+
 Deux services, deux rôles, et il faut savoir lequel on touche :
 
 | | Sert à | Domaine | Réglé chez |

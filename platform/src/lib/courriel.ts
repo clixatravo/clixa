@@ -1,3 +1,4 @@
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import type { Payload } from "payload";
 
 /**
@@ -86,7 +87,11 @@ export function gabaritHtmlEmail({
                   ${
                     badgeRef
                       ? `<td align="right">
-                    <div style="display: inline-block; background-color: rgba(201, 162, 76, 0.1); border: 1px solid rgba(201, 162, 76, 0.35); border-radius: 4px; padding: 4px 10px; font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: #e9cd84; font-weight: bold;">
+                    <!-- La référence tient sur une ligne : depuis qu'elle compte huit
+                         symboles au lieu de cinq, elle se coupait en deux dans l'en-tête
+                         — « CLX- » d'un côté, le reste de l'autre. Une référence à moitié
+                         lisible est une référence qu'on recopie de travers. -->
+                    <div style="display: inline-block; background-color: rgba(201, 162, 76, 0.1); border: 1px solid rgba(201, 162, 76, 0.35); border-radius: 4px; padding: 4px 10px; font-family: 'SF Mono', Menlo, monospace; font-size: 11px; color: #e9cd84; font-weight: bold; white-space: nowrap;">
                       ${badgeRef}
                     </div>
                   </td>`
@@ -137,9 +142,9 @@ export function gabaritHtmlEmail({
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 18px;">
                 <tr>
                   <td style="font-size: 13px; color: #cbd5e1; line-height: 1.8;">
-                    <div><strong>💬 WhatsApp Admissions :</strong> <a href="https://wa.me/212661000000" style="color: #2fa37d; text-decoration: none; font-weight: bold;">+212 6 61 00 00 00</a></div>
+                    <div><strong>💬 WhatsApp Admissions :</strong> <a href="${RESEAUX_CLIXA.whatsapp.url}" style="color: #2fa37d; text-decoration: none; font-weight: bold;">${RESEAUX_CLIXA.whatsapp.numeroAffiche}</a></div>
                     <div><strong>✉️ Courriel Officiel :</strong> <a href="mailto:contact@clixa.africa" style="color: #e9cd84; text-decoration: none;">contact@clixa.africa</a></div>
-                    <div><strong>🌐 Portail Officiel :</strong> <a href="https://clixa.africa" style="color: #e9cd84; text-decoration: none;">https://clixa.africa</a></div>
+                    <div><strong>🌐 Portail Officiel :</strong> <a href="https://www.clixa.africa" style="color: #e9cd84; text-decoration: none;">https://www.clixa.africa</a></div>
                   </td>
                 </tr>
               </table>
@@ -255,7 +260,7 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
       "Votre dossier en ligne :",
       d.urlDossier,
       "",
-      "Contact Admissions : contact@clixa.africa · https://clixa.africa",
+      "Contact Admissions : contact@clixa.africa · https://www.clixa.africa",
       "CLIXA Institute — Direction des Admissions",
     ].join("\n"),
     html: gabaritHtmlEmail({
@@ -307,7 +312,7 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
       badgeRef: d.reference,
       corpsHtml,
       boutonTexte: "Voir l'inscription dans Payload",
-      boutonLien: `https://clixa.africa/admin/collections/inscriptions`,
+      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions`,
     }),
   });
 }
@@ -359,7 +364,7 @@ export async function courrielTransfert(
       badgeRef: d.reference,
       corpsHtml,
       boutonTexte: "Vérifier et Valider dans l'Admin",
-      boutonLien: `https://clixa.africa/admin/collections/inscriptions`,
+      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions`,
     }),
   });
 }
@@ -407,7 +412,7 @@ export async function courrielRappel(
       titre: "Demande de rappel",
       corpsHtml,
       boutonTexte: "Voir les demandes de rappel",
-      boutonLien: `https://clixa.africa/admin/collections/demandes-rappel`,
+      boutonLien: `https://www.clixa.africa/admin/collections/demandes-rappel`,
     }),
   });
 }
