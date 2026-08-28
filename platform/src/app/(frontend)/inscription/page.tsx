@@ -221,6 +221,38 @@ export default async function Inscription({ searchParams }: Props) {
                   </select>
                 </div>
 
+                {/*
+                  ── Ce qu'on lui enverra, pas ce qu'il paiera ici ───────────
+                  Aucun règlement ne se fait sur le site : la direction ne veut
+                  pas de passerelle, et il n'y en a pas. Ce choix décide
+                  seulement de ce que l'équipe lui adresse par courriel — un
+                  lien bancaire, un RIB, ou des coordonnées de transfert.
+
+                  Le dire au moment de l'inscription évite l'aller-retour qui
+                  coûtait le plus de temps : sans lui, l'équipe envoyait des
+                  coordonnées de transfert à quelqu'un qui voulait payer par
+                  carte, et attendait sa réponse pour le découvrir.
+                */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label htmlFor="moyen" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Comment souhaitez-vous régler
+                  </label>
+                  <select
+                    id="moyen"
+                    name="moyen"
+                    defaultValue="transfert"
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
+                  >
+                    <option value="carte">Carte bancaire</option>
+                    <option value="virement">Virement bancaire</option>
+                    <option value="transfert">Western Union · Ria · MoneyGram</option>
+                  </select>
+                  <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
+                    Rien ne se paie sur ce site. Nous vous envoyons par courriel de quoi régler — un
+                    lien bancaire, un RIB ou les coordonnées de transfert, selon votre choix.
+                  </p>
+                </div>
+
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="payeur" className="mono-label text-ivory-dim text-[0.7rem]">
                     Qui règle

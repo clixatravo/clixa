@@ -35,7 +35,31 @@ export interface CourrielInscription {
    * jours. Calculé par l'appelant, à partir de `finDeLaTenue`.
    */
   tenueJusquau?: string;
+  /** Ce que le participant a demandé à recevoir pour régler. */
+  moyenSouhaite?: "carte" | "virement" | "transfert";
 }
+
+/**
+ * Ce que l'équipe doit lui envoyer, dit dans les deux sens.
+ *
+ * Au participant : ce qu'il va recevoir, pour qu'il attende la bonne chose.
+ * À l'équipe : ce qu'elle doit préparer, pour qu'elle n'ait pas à rouvrir le
+ * dossier — c'est l'aller-retour qui coûtait le plus de temps.
+ */
+const ATTENDU = {
+  carte: {
+    participant: "un lien de paiement bancaire sécurisé",
+    equipe: "Envoyer le LIEN DE PAIEMENT bancaire",
+  },
+  virement: {
+    participant: "notre RIB, avec le motif à indiquer",
+    equipe: "Envoyer le RIB",
+  },
+  transfert: {
+    participant: "les coordonnées du bénéficiaire (Western Union, Ria ou MoneyGram)",
+    equipe: "Envoyer les COORDONNÉES DE TRANSFERT",
+  },
+} as const;
 
 /**
  * Gabarit HTML universel CLIXA Institute.
@@ -278,10 +302,15 @@ ${
 
     <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 12px;">Étapes pour valider définitivement votre inscription :</div>
     <ol style="margin: 0; padding-left: 20px; line-height: 1.8; color: #cbd5e1; font-size: 14px;">
-      <li>Effectuez le versement de la 1ère échéance (Western Union, Ria, MoneyGram ou virement bancaire).</li>
-      <li>Transmettez le numéro de transfert par <strong>WhatsApp</strong> à votre conseiller ou directement sur votre dossier en ligne.</li>
-      <li>Notre équipe valide votre admission et vous transmet vos accès d'apprentissage.</li>
+      <li>Vous allez recevoir de notre part, par courriel, <strong>${ATTENDU[d.moyenSouhaite ?? "transfert"].participant}</strong>.</li>
+      <li>Effectuez le versement de la 1<sup>re</sup> échéance.</li>
+      <li>Indiquez-nous la référence du versement depuis votre dossier en ligne.</li>
+      <li>Notre équipe vérifie, confirme votre place et vous transmet vos accès.</li>
     </ol>
+
+    <p style="margin: 20px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 13px; color: #cbd5e1;">
+      <strong style="color: #ffffff;">Comment reconnaître nos messages.</strong> Aucun règlement ne se fait sur notre site, et nous ne vous demanderons jamais vos identifiants bancaires par courriel ni par téléphone. La date à laquelle nous vous avons envoyé de quoi régler est inscrite sur la page de votre dossier : si un message vous réclame un paiement sans y correspondre, ne le suivez pas et écrivez-nous.
+    </p>
   `;
 
   await envoyer(payload, {
@@ -340,7 +369,13 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
       <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
       <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
     </table>
-    <p style="color: #94a3b8; font-size: 13px;">Dossier en attente du rapprochement du premier versement dans le back-office.</p>
+    <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 15px; color: #ffffff;">
+      <strong>À faire maintenant : ${ATTENDU[d.moyenSouhaite ?? "transfert"].equipe}</strong> à
+      <a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a>,
+      puis renseigner la date d'envoi sur le dossier — c'est elle que le participant voit,
+      et c'est ce qui lui permet de reconnaître notre message d'un hameçonnage.
+    </p>
+    <p style="color: #94a3b8; font-size: 13px;">Ensuite : rapprocher le premier versement dans le back-office.</p>
   `;
 
   await envoyer(payload, {
@@ -348,6 +383,8 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
     subject: `[Nouvelle Inscription] ${d.apprenantNom} — ${d.programmeTitre}`,
     text: [
       `${d.apprenantNom} (${d.apprenantPays}) a retenu une place.`,
+      `À FAIRE : ${ATTENDU[d.moyenSouhaite ?? "transfert"].equipe} à ${d.apprenantEmail},`,
+      "puis renseigner la date d'envoi sur le dossier.",
       "",
       `Parcours : ${d.programmeTitre}`,
       `Session : ${d.sessionLibelle}`,

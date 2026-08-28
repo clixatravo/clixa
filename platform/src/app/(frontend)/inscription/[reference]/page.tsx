@@ -38,6 +38,22 @@ const JOUR = new Intl.DateTimeFormat("fr-FR", {
  * — le rendu doit être pur, et l'heure ne l'est pas. La page se rend à chaque
  * requête (un dossier n'est pas mis en cache), donc la date lue est la bonne.
  */
+/**
+ * Ce que le participant a demandé, dit dans sa langue à lui.
+ *
+ * `choix` se lit après « vous avez choisi de régler », `envoi` après « nous
+ * vous envoyons » : deux tournures pour un même choix, plutôt qu'une phrase
+ * unique qui sonnerait de travers dans l'un des deux cas.
+ */
+const ATTENDU = {
+  carte: { choix: "par carte bancaire", envoi: "un lien de paiement sécurisé" },
+  virement: { choix: "par virement bancaire", envoi: "notre RIB et le motif à indiquer" },
+  transfert: {
+    choix: "par Western Union, Ria ou MoneyGram",
+    envoi: "les coordonnées du bénéficiaire",
+  },
+} as const;
+
 function verifierTenueExpiree(tenueJusquau?: Date): boolean {
   if (!tenueJusquau) return false;
   return tenueJusquau.getTime() < Date.now();
@@ -227,22 +243,62 @@ export default async function Dossier({ params, searchParams }: Props) {
             */
             <div className="border-line bg-panel border p-6">
               <p className="text-[0.92rem]">
-                Nous vous transmettons les coordonnées de transfert par WhatsApp, au numéro que vous
-                avez indiqué à l&apos;inscription. Votre dossier{" "}
+                Vous avez choisi de régler {ATTENDU[dossier.moyenSouhaite ?? "transfert"].choix}.
+                Nous vous envoyons {ATTENDU[dossier.moyenSouhaite ?? "transfert"].envoi} par
+                courriel, à l&apos;adresse indiquée à l&apos;inscription. Votre dossier{" "}
                 <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
                 enregistré : vous n&apos;avez rien à écrire de votre côté.
               </p>
 
               {/*
-                ── Ne pas laisser le participant devant une porte close ──────
-                Il vient de retenir sa place et arrive à « où envoyer
-                l'argent » : lui dire d'attendre qu'on le rappelle est exact,
-                mais c'est un cul-de-sac. Le bouton ouvre la conversation avec
-                sa référence déjà écrite — ce qui lui évite de la retrouver, et
-                à l'équipe de deviner de quel dossier on lui parle.
+                ── La seule vérification qu'on puisse lui offrir ─────────────
+                Un lien bancaire reçu par courriel ressemble trait pour trait à
+                un hameçonnage, et le participant n'a aucun moyen de distinguer
+                le nôtre d'un autre. La direction ne veut pas du lien sur le
+                site — c'est son choix, et il tient. Mais la *date* d'envoi ne
+                coûte rien à publier et ne donne rien à personne : elle
+                s'affiche sur une page qu'il a ouverte avec sa propre référence.
+                Un message qui ne correspond à aucune date affichée n'est pas
+                de nous.
+              */}
+              <p
+                className={`mt-4 border-l-2 py-2 pl-4 text-[0.86rem] leading-relaxed ${
+                  dossier.coordonneesEnvoyeesLe
+                    ? "border-emerald-bright text-ivory"
+                    : "border-line text-ivory-dim"
+                }`}
+              >
+                {dossier.coordonneesEnvoyeesLe ? (
+                  <>
+                    Envoyé le{" "}
+                    <strong className="text-ivory">
+                      {JOUR.format(new Date(dossier.coordonneesEnvoyeesLe))}
+                    </strong>
+                    . Si un message vous réclame un paiement sans correspondre à cette date, il ne
+                    vient pas de nous : ne le suivez pas, écrivez-nous.
+                  </>
+                ) : (
+                  <>
+                    Rien ne vous a encore été envoyé. Quand ce sera fait, la date apparaîtra ici —
+                    c&apos;est ce qui vous permettra de reconnaître notre message. Nous ne vous
+                    demanderons jamais vos identifiants bancaires, et aucun règlement ne se fait sur
+                    ce site.
+                  </>
+                )}
+              </p>
 
-                Il disparaîtra de lui-même le jour où les coordonnées seront
-                saisies : cette branche ne s'affiche que sans elles.
+              {/*
+                ── Une porte de sortie, pas le chemin principal ──────────────
+                Ce qu'il attend arrive par courriel : c'est écrit au-dessus, et
+                c'est la décision de la direction. Le bouton n'est plus là pour
+                réclamer des coordonnées mais pour poser une question — le
+                courriel tarde, l'adresse était fausse, le lien ne s'ouvre pas.
+                Il ouvre la conversation avec la référence déjà écrite, ce qui
+                évite à l'équipe de deviner de quel dossier on lui parle.
+
+                ⚠️ Son intitulé disait « Demander les coordonnées sur
+                WhatsApp », ce qui contredisait la phrase juste au-dessus et
+                invitait à faire circuler un RIB par messagerie.
               */}
               <a
                 href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
@@ -252,7 +308,7 @@ export default async function Dossier({ params, searchParams }: Props) {
                 rel="noopener noreferrer"
                 className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
               >
-                Demander les coordonnées sur WhatsApp
+                Nous écrire sur WhatsApp
               </a>
             </div>
           )}

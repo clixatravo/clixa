@@ -375,6 +375,34 @@ paiement : les règlements passent par Western Union, Ria et MoneyGram, qui sont
 des services de transfert, pas des passerelles. L'équipe rapproche le versement
 depuis le back-office, et le décompte de places se recalcule à chaque écriture.
 
+**Le participant choisit comment régler, et rien ne se paie sur le site**
+(`moyenSouhaite`, depuis le 28 août 2026). Trois choix au formulaire — carte
+bancaire, virement, transfert — et l'équipe lui envoie **par courriel** ce qui
+correspond : un lien de paiement bancaire, le RIB, ou les coordonnées du
+bénéficiaire. Décision de la direction, motivée par la sécurité : aucune
+passerelle, aucune donnée bancaire ne traverse le site.
+
+Le choix est demandé à l'inscription parce que l'aller-retour coûtait le plus
+de temps — sans lui, l'équipe envoyait des coordonnées de transfert à quelqu'un
+qui voulait payer par carte, et l'apprenait à la réponse.
+
+⚠️ **Un lien bancaire dans un courriel ressemble à un hameçonnage**, et le
+participant n'a aucun moyen de distinguer le nôtre d'un autre. Le lien ne peut
+pas vivre sur le site — c'est la décision, et elle tient. Mais la *date*
+d'envoi ne donne rien à personne : `coordonneesEnvoyeesLe`, renseigné par
+l'équipe, s'affiche sur la page du dossier, qu'il ouvre avec sa propre
+référence. Un message qui ne correspond à aucune date affichée n'est pas de
+nous, et les deux courriels le disent.
+
+⚠️ **`moyenSouhaite` n'est pas le `moyen` d'une échéance.** Le second dit par
+quoi l'argent est arrivé, renseigné après coup ; le premier dit ce que le
+participant a demandé, avant qu'aucun argent n'existe. Les confondre ferait
+écraser sa demande par le premier versement.
+
+Le bouton WhatsApp de la page disait « Demander les coordonnées sur WhatsApp » :
+il contredisait la phrase au-dessus et invitait à faire circuler un RIB par
+messagerie. Il dit « Nous écrire ».
+
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et
 rien ne l'écrivait : la page demandait d'envoyer le numéro « par WhatsApp »,

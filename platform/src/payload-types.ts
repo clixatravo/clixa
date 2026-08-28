@@ -637,6 +637,14 @@ export interface Inscription {
   payeurEmail?: string | null;
   planPaiement: 'P1' | 'P2' | 'P3';
   /**
+   * Ce que le participant a demandé à recevoir.
+   */
+  moyenSouhaite: 'carte' | 'virement' | 'transfert';
+  /**
+   * À renseigner après l'envoi — le participant voit cette date.
+   */
+  coordonneesEnvoyeesLe?: string | null;
+  /**
    * Figé à l'inscription : un barème qui change ne rouvre pas un dossier.
    */
   montantTotal?: number | null;
@@ -1195,6 +1203,8 @@ export interface InscriptionsSelect<T extends boolean = true> {
   payeurNom?: T;
   payeurEmail?: T;
   planPaiement?: T;
+  moyenSouhaite?: T;
+  coordonneesEnvoyeesLe?: T;
   montantTotal?: T;
   devise?: T;
   echeances?:

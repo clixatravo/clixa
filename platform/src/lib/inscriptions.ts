@@ -43,6 +43,10 @@ export interface Dossier {
    * `finDeLaTenue` dans `lib/places.ts`.
    */
   depuis?: string;
+  /** Ce que le participant a demandé à recevoir pour régler. */
+  moyenSouhaite?: "carte" | "virement" | "transfert";
+  /** Le jour où l'équipe le lui a envoyé — affiché au participant, exprès. */
+  coordonneesEnvoyeesLe?: string;
   echeances: EcheanceDossier[];
 }
 
@@ -90,6 +94,8 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     sessionDetail: sansLeParcours(session?.reference, programme?.titre),
     ...(session?.debut ? { sessionDebut: session.debut } : {}),
     ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
+    ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
+    ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
       ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),
@@ -131,6 +137,10 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       sessionDetail: sansLeParcours(session?.reference, programme?.titre),
       ...(session?.debut ? { sessionDebut: session.debut } : {}),
       ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
+      ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
+      ...(d.coordonneesEnvoyeesLe
+        ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) }
+        : {}),
       echeances: (d.echeances ?? []).map((e) => ({
         montantCentimes: Math.round((e.montant ?? 0) * 100),
         ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),

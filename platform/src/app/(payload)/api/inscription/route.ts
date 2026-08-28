@@ -73,6 +73,13 @@ export async function POST(request: Request) {
   const whatsapp = texte("whatsapp");
   const pays = texte("pays");
   const plan = PLANS.find((p) => p === texte("plan")) ?? "P1";
+  /*
+    Le choix vient d'un `<select>`, mais rien n'oblige un client à s'y tenir :
+    on ne retient que les trois valeurs connues. Un moyen inventé retomberait
+    sinon en base et l'équipe ne saurait pas quoi envoyer.
+  */
+  const MOYENS = ["carte", "virement", "transfert"] as const;
+  const moyen = MOYENS.find((m) => m === texte("moyen")) ?? "transfert";
 
   const echec = (cause: string) =>
     redirect(
@@ -176,6 +183,7 @@ export async function POST(request: Request) {
         ...(texte("organisation") ? { payeurNom: texte("organisation") } : {}),
         ...(participant ? { apprenant: Number(participant.id) } : {}),
         planPaiement: plan,
+        moyenSouhaite: moyen,
         montantTotal: barème?.total ?? tarifs.prixComptant ?? 0,
         devise: tarifs.devise ?? "EUR",
         echeances,
@@ -219,6 +227,7 @@ export async function POST(request: Request) {
     urlDossier: `${site}/inscription/${reference}`,
     // Le dossier vient d'être créé : la tenue court à partir de maintenant.
     tenueJusquau: finDeLaTenue(new Date()).toISOString(),
+    moyenSouhaite: moyen,
   };
 
   await courrielParticipant(payload, details);

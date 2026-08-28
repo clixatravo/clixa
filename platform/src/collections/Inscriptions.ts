@@ -128,6 +128,7 @@ export const Inscriptions: CollectionConfig = {
       "apprenantWhatsapp",
       "session",
       "statut",
+      "moyenSouhaite",
       "prochaineEcheance",
     ],
     group: "Admissions",
@@ -402,6 +403,59 @@ export const Inscriptions: CollectionConfig = {
                 { label: "En trois fois", value: "P3" },
               ],
               admin: { width: "35%" },
+            },
+            {
+              /*
+                ── Ce que le participant a demandé, pas ce qu'il a fait ──────
+                Le `moyen` porté par chaque échéance dit par quoi l'argent est
+                arrivé : l'équipe le renseigne après coup. Celui-ci dit ce que
+                le participant a choisi au moment de s'inscrire, avant qu'aucun
+                argent n'existe. Les confondre ferait écraser sa demande par le
+                premier versement, et l'équipe ne saurait plus quoi lui envoyer
+                pour le suivant.
+
+                Aucun paiement ne se fait sur le site : le choix décide
+                seulement de ce qu'on lui adresse par courriel — un lien
+                bancaire, un RIB, ou des coordonnées de transfert.
+              */
+              name: "moyenSouhaite",
+              type: "select",
+              label: "Règlement souhaité",
+              required: true,
+              defaultValue: "transfert",
+              options: [
+                { label: "Carte bancaire — lien de paiement à envoyer", value: "carte" },
+                { label: "Virement bancaire — RIB à envoyer", value: "virement" },
+                {
+                  label: "Western Union · Ria · MoneyGram — coordonnées à envoyer",
+                  value: "transfert",
+                },
+              ],
+              admin: {
+                width: "35%",
+                description: "Ce que le participant a demandé à recevoir.",
+              },
+            },
+            {
+              /*
+                Le jour où l'équipe lui a envoyé de quoi payer.
+                
+                ⚠️ Ce n'est pas une trace pour nous : c'est ce que la page de
+                son dossier lui affiche. Un lien bancaire reçu par courriel
+                ressemble trait pour trait à un hameçonnage — le participant n'a
+                aucun moyen de distinguer le nôtre d'un autre. Retrouver la même
+                date sur une page qu'il a ouverte avec sa propre référence est
+                la seule vérification qu'on puisse lui offrir sans mettre le
+                lien en ligne, ce que la direction ne veut pas.
+              */
+              name: "coordonneesEnvoyeesLe",
+              type: "date",
+              label: "Coordonnées envoyées le",
+              admin: {
+                width: "30%",
+                description: "À renseigner après l'envoi — le participant voit cette date.",
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
             },
             {
               name: "montantTotal",
