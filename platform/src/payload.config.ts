@@ -125,7 +125,29 @@ export default buildConfig({
   sharp,
 
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL },
+    /*
+      ⚠️ Sans délais, une connexion morte fait attendre sans fin.
+
+      Neon suspend le calcul après quelques minutes sans requête. La socket
+      reste dans la réserve, le serveur ne répond plus, et le pilote attend —
+      indéfiniment, faute de limite. Observé en local : une page a mis onze
+      minutes et quarante-huit secondes à ne pas se charger. En production, la
+      durée maximale d'une fonction masque le problème sans le régler.
+
+      `idleTimeoutMillis` ferme la socket avant que Neon ne la coupe ;
+      `connectionTimeoutMillis` renonce plutôt que d'attendre une connexion qui
+      ne viendra pas.
+
+      ⚠️ Pas de `statement_timeout` : Payload interroge le schéma au démarrage,
+      ce qui prend près d'une minute contre Neon. Une limite par requête
+      tuerait chaque script au lancement.
+    */
+    pool: {
+      connectionString: process.env.DATABASE_URL,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+    },
   }),
 
   /**

@@ -89,7 +89,24 @@ export async function SiteFooter() {
           ))}
         </div>
 
-        <div className="border-line/60 mt-14 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+        {/*
+          ── L'identité légale, visible ──────────────────────────────────────
+          C'est ce que porte le bas des factures de la société, et ce qu'un
+          visiteur cherche quand il se demande à qui il confie son argent : une
+          raison sociale, un registre, un identifiant. Les mentions légales le
+          diront aussi — elles attendent trois informations que seule la
+          direction possède — mais rien n'oblige à faire attendre celles-ci.
+
+          En chasse fixe et en petit : on ne les lit pas, on vérifie qu'elles
+          sont là.
+        */}
+        <p className="border-line/60 text-ivory-dim/60 mt-14 border-t pt-6 font-mono text-[0.7rem] tracking-wide">
+          CLIXA SARLAU — RC Agadir 67759 — ICE 003917718000017 — IF 71921918
+          <span className="mx-2 opacity-40">·</span>
+          N° 1525, Bureau n° 5, Hay Essalam, Agadir, Maroc
+        </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="text-ivory-dim/70 text-[0.78rem]">
               © {new Date().getFullYear()} CLIXA Institute — Tous droits réservés

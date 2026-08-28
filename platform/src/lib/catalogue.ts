@@ -252,7 +252,24 @@ export async function filtrerProgrammes(f: FiltresCatalogue): Promise<Programme[
       Journalisé plutôt qu'avalé : sans cette trace, une régression de la
       requête resterait invisible, le catalogue paraissant simplement moins bon.
     */
-    console.error("BE-09 — recherche PostgreSQL indisponible, repli en mémoire :", erreur);
+    /*
+      ⚠️ La cause, pas l'objet entier.
+
+      Journaliser l'erreur telle quelle recopie la requête ET ses paramètres —
+      dont le catalogue complet sérialisé, une quinzaine de kilo-octets. Une
+      coupure de connexion, que Neon produit en sortant de veille, remplissait
+      ainsi le journal de la description des douze parcours. On garde ce qui
+      permet de décider : le motif, et ce qui était cherché.
+    */
+    const motif =
+      erreur instanceof Error
+        ? erreur.cause instanceof Error
+          ? erreur.cause.message
+          : erreur.message
+        : String(erreur);
+    console.error(
+      `BE-09 — recherche PostgreSQL indisponible (« ${q} »), repli en mémoire : ${motif}`,
+    );
 
     const termes = aplatir(q).split(/\s+/).filter(Boolean);
     return retenus.filter((p) => {

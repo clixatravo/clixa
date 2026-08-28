@@ -826,6 +826,20 @@ données y étaient complètes dès la première seconde, sans réimporter quoi 
 ce soit. Elle ne se resynchronise pas toute seule — quand `production` aura du
 vrai contenu, il faudra recréer `dev` pour la remettre à niveau.
 
+⚠️ **La réserve de connexions a des délais, et ils ne sont pas décoratifs.**
+Neon suspend le calcul après quelques minutes sans requête ; la socket reste
+dans la réserve, le serveur ne répond plus, et le pilote attend — sans limite,
+faute d'en avoir une. Mesuré : une page a mis onze minutes et quarante-huit
+secondes à ne pas se charger, et une série d'épreuves est passée de deux
+minutes à une heure avec sept échecs. `idleTimeoutMillis` ferme la socket avant
+que Neon ne la coupe, `connectionTimeoutMillis` renonce plutôt que d'attendre.
+En production, la durée maximale d'une fonction masquait le problème sans le
+régler.
+
+⚠️ **Pas de `statement_timeout`** : Payload interroge le schéma au démarrage,
+ce qui prend près d'une minute contre Neon. Une limite par requête tuerait
+chaque script au lancement.
+
 ⚠️ Utiliser l'adresse **directe**, pas celle en `-pooler` : Payload interroge
 le schéma au démarrage, ce que le pooler gère mal.
 
