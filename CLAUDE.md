@@ -500,6 +500,25 @@ serveur et ne partent jamais chez le visiteur.
 ⚠️ **Le Buffer de `readFile` est détaché avant d'être passé.** C'est une vue sur
 un tampon partagé, souvent plus grand que le fichier.
 
+**Le site a été passé au crible de l'accessibilité** le 27 août 2026 — titres,
+repères, noms accessibles, navigation au clavier, contrastes. Un seul défaut :
+le catalogue passait du `h1` aux douze cartes en `h3`, sans rien entre les
+deux. Qui parcourt une page en sautant de titre en titre ne savait pas qu'une
+liste commençait. Un `h2` invisible l'annonce désormais — le `h1` dit déjà le
+compte, le répéter à l'écran n'apprendrait rien.
+
+⚠️ **Les épreuves du catalogue visaient « h2 ou h3 »**, ce qui marchait tant
+qu'aucun `h2` n'existait. Elles visent les cartes (`main h3`), ce qu'elles
+voulaient dire depuis le début.
+
+Le reste tenait déjà : un `h1` par page, les quatre repères, le saut au contenu
+à la première tabulation, une mise au point visible partout, et aucun contraste
+sous le seuil. `e2e/acces.spec.ts` garde ces acquis.
+
+⚠️ Un contraste mesuré à 1:1 sur le bouton doré est un faux positif : le fond
+est un dégradé, et une mesure qui ne lit que `background-color` remonte au
+panneau. Le rapport réel est de l'ordre de 8:1.
+
 **L'atelier des composants** (`DES-07`, `.storybook/`). Il ne remplace pas les
 épreuves : celles-ci suivent des parcours entiers, l'atelier montre une pièce
 isolée dans ses états — dont ceux qu'aucune page n'affiche aujourd'hui, comme

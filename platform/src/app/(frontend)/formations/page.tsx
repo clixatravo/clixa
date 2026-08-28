@@ -239,11 +239,29 @@ export default async function Catalogue({ searchParams }: Props) {
               </Link>
             </div>
           ) : (
-            <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
-              {resultats.map((p) => (
-                <ProgrammeCard key={p.slug} programme={p} />
-              ))}
-            </div>
+            <>
+              {/*
+                Un titre pour la liste, entendu et non vu.
+
+                Les cartes portent un h3 — juste, puisqu'ailleurs elles vivent
+                sous le h2 d'une section. Ici il n'y avait rien entre elles et
+                le h1 : qui parcourt la page en sautant de titre en titre, ce
+                que fait un lecteur d'écran, passait du titre de page aux douze
+                parcours sans savoir qu'une liste commençait.
+
+                Il reste invisible : le h1 annonce déjà le compte, et le
+                répéter à l'écran n'apprendrait rien à personne.
+              */}
+              <h2 className="sr-only">
+                {resultats.length} parcours {resultats.length > 1 ? "correspondent" : "correspond"}{" "}
+                à votre recherche
+              </h2>
+              <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
+                {resultats.map((p) => (
+                  <ProgrammeCard key={p.slug} programme={p} />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </section>
