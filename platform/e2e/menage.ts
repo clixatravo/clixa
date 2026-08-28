@@ -21,7 +21,7 @@ import path from "node:path";
  */
 export const MARQUE = "@epreuve.invalid";
 
-function adresseBase(): string | undefined {
+export function adresseBase(): string | undefined {
   const chemin = path.join(process.cwd(), ".env.local");
   if (!existsSync(chemin)) return process.env.DATABASE_URL;
   const ligne = readFileSync(chemin, "utf8")

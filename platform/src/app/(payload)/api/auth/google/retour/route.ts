@@ -115,6 +115,14 @@ export async function GET(request: Request) {
           nom: personne.nom || personne.email.split("@")[0] || "Participant",
           googleId: personne.googleId,
           emailVerifie: true,
+          /*
+            ⚠️ Vérifié d'office. La collection exige désormais une confirmation
+            par courriel avant qu'un compte serve — mais Google vient
+            précisément d'attester que la personne contrôle cette adresse.
+            Sans cette ligne, on lui enverrait un lien pour prouver ce qu'elle
+            vient de prouver, et sa connexion échouerait entre-temps.
+          */
+          _verified: true,
         },
       });
     }

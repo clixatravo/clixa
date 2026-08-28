@@ -1,3 +1,4 @@
+import { echapper, gabaritHtmlEmail } from "@/lib/courriel";
 import type { CollectionConfig } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 
@@ -30,6 +31,44 @@ export const Apprenants: CollectionConfig = {
     tokenExpiration: 60 * 60 * 24 * 30,
     maxLoginAttempts: 10,
     lockTime: 10 * 60 * 1000,
+
+    /*
+      ── L'adresse doit être prouvée avant que le compte serve ───────────────
+      Sans cela, un compte s'ouvre avec n'importe quelle adresse : celle d'un
+      autre, ou aucune. C'est ce qui obligeait à réclamer aussi la référence du
+      dossier pour rattacher quoi que ce soit — une précaution qui compensait
+      l'absence de preuve.
+
+      Le contrôle revient à sa place : Payload envoie un lien, et le compte
+      reste inutilisable tant qu'il n'est pas suivi. Un robot qui remplit le
+      formulaire n'obtient rien.
+
+      ⚠️ Les comptes ouverts par Google sont créés vérifiés — Google atteste
+      déjà que la personne contrôle l'adresse, et lui redemander une preuve
+      qu'il vient de fournir n'aurait aucun sens. Voir `api/auth/google/retour`.
+    */
+    verify: {
+      generateEmailSubject: () => "Confirmez votre adresse — CLIXA Institute",
+      generateEmailHTML: ({ token, user }) =>
+        gabaritHtmlEmail({
+          titre: "Confirmez votre adresse",
+          soustitre: "Une dernière étape avant d'accéder à votre espace",
+          corpsHtml: `
+            <p style="margin: 0 0 16px 0;">Bonjour ${echapper((user as { nom?: string })?.nom ?? "")},</p>
+            <p style="margin: 0 0 16px 0;">
+              Votre accès est presque prêt. Il ne manque qu'une confirmation : elle
+              nous assure que cette adresse est bien la vôtre, et c'est elle qui
+              vous permettra de retrouver vos dossiers.
+            </p>
+            <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 13px;">
+              Si vous n'avez pas demandé d'accès, ce message ne vous concerne pas :
+              sans confirmation, rien ne s'ouvre.
+            </p>
+          `,
+          boutonTexte: "Confirmer mon adresse",
+          boutonLien: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/compte/confirmer?token=${token}`,
+        }),
+    },
   },
   admin: {
     useAsTitle: "email",

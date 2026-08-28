@@ -356,10 +356,33 @@ référence de son dossier — laquelle ouvre l'annonce de transfert. Le
 rattachement exige désormais **l'adresse et la référence**, celle que le
 participant a déjà reçue.
 
-Un expéditeur existe depuis le 26 août 2026, mais `auth.verify` de Payload n'a
-pas été activé : le faire renverrait le contrôle à la source et rendrait la
-double exigence inutile. Tant qu'il ne l'est pas, ne pas retirer la référence
-en croyant simplifier.
+**`auth.verify` est activé depuis le 27 août 2026.** Un compte ouvert par le
+formulaire naît inutilisable : Payload envoie un lien, et rien ne s'ouvre avant
+qu'il soit suivi. C'est ce qui arrête un robot — remplir le formulaire ne donne
+plus rien, il faut relever une boîte aux lettres — et c'est enfin une preuve
+d'adresse à la source.
+
+- ⚠️ **Les comptes Google naissent `_verified: true`.** Google atteste déjà que
+  la personne contrôle l'adresse ; lui redemander la preuve qu'elle vient de
+  fournir bloquerait sa connexion. Les deux comptes qui existaient avant
+  l'activation ont été confirmés à la main, pour la même raison — sans quoi ils
+  se seraient retrouvés dehors.
+- **La double exigence reste** pour le rattachement par formulaire : elle ne
+  coûte rien, et une confirmation prouve l'adresse, pas la possession du
+  dossier.
+- ⚠️ **La connexion échoue de la même façon qu'un mauvais mot de passe**, et
+  c'est voulu : distinguer apprendrait à qui essaie quelles adresses existent.
+  La page de connexion porte donc une phrase visible de tous — « vous venez de
+  créer un accès ? confirmez d'abord » — qui remet le bon visiteur sur la voie
+  sans rien dire à personne.
+
+⚠️ **Un script ou `curl` ne peut pas éprouver une session** depuis que `csrf`
+est réglé : l'extraction de jeton refuse une requête sans `Origin` **et** sans
+`Sec-Fetch-Site`, ce qu'aucun navigateur ne produit mais que tout script fait.
+Les scripts de vérification posent donc `Sec-Fetch-Site: same-origin`. Sans
+cela, on conclut qu'une session valide n'authentifie pas — j'y ai perdu une
+heure, en cherchant le défaut dans la confirmation d'adresse qui venait d'être
+activée.
 
 **Les relances sont une route publique fermée par un jeton** (`api/relances`,
 `CRON_SECRET`, comparé en temps constant). Elle refusait le service *quand le

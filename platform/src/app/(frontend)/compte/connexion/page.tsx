@@ -50,6 +50,22 @@ export default async function Connexion({
       >
         <BoutonGoogle libelle="Continuer avec Google" />
 
+        {/*
+          ── Dire ce qui manque sans dire à qui ────────────────────────────
+          Un compte non confirmé échoue à la connexion comme un mauvais mot de
+          passe : Payload ne distingue pas, et c'est voulu — distinguer
+          apprendrait à qui essaie quelles adresses existent.
+
+          Mais quelqu'un qui vient de créer un accès et à qui l'on répond
+          « identifiants incorrects » cherche son erreur là où elle n'est pas.
+          Cette phrase le remet sur la voie, et n'apprend rien à personne
+          d'autre : elle est affichée à tout le monde, tout le temps.
+        */}
+        <p className="text-ivory-dim/70 mb-6 text-[0.82rem] leading-relaxed">
+          Vous venez de créer un accès ? Confirmez d&apos;abord votre adresse avec le lien reçu par
+          courriel.
+        </p>
+
         <FormulaireCompte
           action="connexion"
           erreur={erreur ? (MESSAGES[erreur] ?? MESSAGES.identifiants) : undefined}

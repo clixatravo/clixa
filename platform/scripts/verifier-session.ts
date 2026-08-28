@@ -16,6 +16,17 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { ouvrirSession } from "../src/lib/session.js";
 
+/*
+  ⚠️ `Sec-Fetch-Site` : sans lui, la garde CSRF refuse le cookie.
+
+  Depuis que `csrf` est réglé, l'extraction de jeton de Payload rejette une
+  requête sans Origin ET sans Sec-Fetch-Site — le cas d'un script ou de curl,
+  jamais celui d'un navigateur, qui envoie toujours l'un des deux. Sans cette
+  en-tête, ces épreuves concluraient qu'une session valide n'authentifie pas,
+  et l'on chercherait le défaut là où il n'est pas. J'y ai perdu une heure.
+*/
+const COMME_UN_NAVIGATEUR = { "Sec-Fetch-Site": "same-origin" };
+
 const payload = await getPayload({ config });
 const email = `session-${Date.now()}@epreuve.invalid`;
 let compteId: number | string | undefined;
@@ -30,7 +41,19 @@ try {
   const compte = await payload.create({
     collection: "apprenants",
     overrideAccess: true,
-    data: { email, password: crypto.randomUUID(), nom: "Épreuve Session", emailVerifie: true },
+    /*
+      Confirmé d'office : ce script éprouve la mécanique de session, pas la
+      confirmation d'adresse. Depuis que celle-ci est exigée, un compte créé
+      sans elle ne peut pas s'authentifier — et l'épreuve échouerait pour une
+      raison qui n'est pas la sienne.
+    */
+    data: {
+      email,
+      password: crypto.randomUUID(),
+      nom: "Épreuve Session",
+      emailVerifie: true,
+      _verified: true,
+    } as never,
   });
   compteId = compte.id;
 
@@ -55,7 +78,7 @@ try {
 
   // L'épreuve qui compte : le cookie authentifie-t-il vraiment ?
   const jeton = cookie.split(";")[0] ?? "";
-  const entetes = new Headers({ cookie: jeton });
+  const entetes = new Headers({ cookie: jeton, ...COMME_UN_NAVIGATEUR });
   const { user } = await payload.auth({ headers: entetes });
 
   verifier("le cookie authentifie", Boolean(user));

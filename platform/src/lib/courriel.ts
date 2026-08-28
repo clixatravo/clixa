@@ -33,6 +33,35 @@ export interface CourrielInscription {
  * Gabarit HTML universel CLIXA Institute.
  * Rendu compatible Outlook, Gmail, Apple Mail, iOS et Android.
  */
+/**
+ * Échapper avant d'écrire dans un document HTML.
+ *
+ * ⚠️ La moitié de ce que portent ces courriels vient du formulaire public : le
+ * nom, l'adresse, le numéro, le pays. Interpolés tels quels, ils permettaient
+ * d'y glisser une balise — un lien, une image, un bloc entier — dans un message
+ * que l'équipe ouvre en confiance parce qu'il vient de son propre site.
+ *
+ * Un client de messagerie n'exécute pas de script, mais il rend le HTML : ce
+ * n'est donc pas une exécution de code, c'est une falsification de contenu.
+ * Elle suffit à faire cliquer quelqu'un.
+ *
+ * Les cinq caractères qui comptent ; au-delà, on réécrit un moteur de gabarit.
+ */
+/*
+  ⚠️ Ne s'applique qu'au HTML. La version texte d'un courriel — et son sujet —
+  ne sont pas rendus : y échapper afficherait « &#39; » à la place d'une
+  apostrophe. Les deux versions portent les mêmes valeurs et demandent des
+  traitements opposés.
+*/
+export function echapper(valeur: unknown): string {
+  return String(valeur ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function gabaritHtmlEmail({
   titre,
   soustitre,
@@ -207,7 +236,7 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
     .join("");
 
   const corpsHtml = `
-    <p style="margin-top: 0;">Bonjour <strong>${d.apprenantNom}</strong>,</p>
+    <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
     <p>Nous vous confirmons que votre place a bien été retenue pour le parcours exécutif :</p>
     
     <!-- Boîte Récapitulatif -->
@@ -281,12 +310,12 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
   const corpsHtml = `
     <p>Une nouvelle demande de place vient d'être enregistrée sur la plateforme :</p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
-      <tr><td style="color: #94a3b8; width: 130px;">Candidat :</td><td><strong style="color: #ffffff;">${d.apprenantNom}</strong> (${d.apprenantPays})</td></tr>
+      <tr><td style="color: #94a3b8; width: 130px;">Candidat :</td><td><strong style="color: #ffffff;">${echapper(d.apprenantNom)}</strong> (${echapper(d.apprenantPays)})</td></tr>
       <tr><td style="color: #94a3b8;">Programme :</td><td><strong style="color: #e9cd84;">${d.programmeTitre}</strong></td></tr>
       <tr><td style="color: #94a3b8;">Session :</td><td style="color: #ffffff;">${d.sessionLibelle}</td></tr>
       <tr><td style="color: #94a3b8;">Formule :</td><td style="color: #ffffff;">${d.planLibelle} — ${EUROS.format(d.montantTotal)}</td></tr>
-      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${d.apprenantWhatsapp} ↗</a></td></tr>
-      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${d.apprenantEmail}" style="color: #e9cd84;">${d.apprenantEmail}</a></td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
     </table>
     <p style="color: #94a3b8; font-size: 13px;">Dossier en attente du rapprochement du premier versement dans le back-office.</p>
   `;
@@ -333,14 +362,14 @@ export async function courrielTransfert(
   if (!EQUIPE) return;
 
   const corpsHtml = `
-    <p>Le participant <strong>${d.apprenantNom}</strong> déclare avoir émis son transfert :</p>
+    <p>Le participant <strong>${echapper(d.apprenantNom)}</strong> déclare avoir émis son transfert :</p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
       <tr><td style="color: #94a3b8; width: 140px;">Montant déclaré :</td><td><strong style="color: #e9cd84; font-size: 16px;">${EUROS.format(d.montant)}</strong></td></tr>
-      <tr><td style="color: #94a3b8;">Moyen d'envoi :</td><td style="color: #ffffff; font-weight: bold;">${d.moyen}</td></tr>
-      <tr><td style="color: #94a3b8;">Code / N° Transfert :</td><td><code style="background-color: #080c18; padding: 2px 8px; border-radius: 4px; color: #2fa37d; font-weight: bold; font-family: monospace;">${d.numero}</code></td></tr>
+      <tr><td style="color: #94a3b8;">Moyen d'envoi :</td><td style="color: #ffffff; font-weight: bold;">${echapper(d.moyen)}</td></tr>
+      <tr><td style="color: #94a3b8;">Code / N° Transfert :</td><td><code style="background-color: #080c18; padding: 2px 8px; border-radius: 4px; color: #2fa37d; font-weight: bold; font-family: monospace;">${echapper(d.numero)}</code></td></tr>
       <tr><td style="color: #94a3b8;">Dossier Réf. :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
       <tr><td style="color: #94a3b8;">Programme :</td><td style="color: #ffffff;">${d.programmeTitre}</td></tr>
-      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${d.apprenantWhatsapp} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
     </table>
     <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
   `;
@@ -386,9 +415,9 @@ export async function courrielRappel(
   const corpsHtml = `
     <p>Une nouvelle demande de rappel téléphonique a été déposée :</p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
-      <tr><td style="color: #94a3b8; width: 130px;">Demandeur :</td><td><strong style="color: #ffffff;">${d.nom}</strong> (${d.pays})</td></tr>
-      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.whatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${d.whatsapp} ↗</a></td></tr>
-      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${d.email}" style="color: #e9cd84;">${d.email}</a></td></tr>
+      <tr><td style="color: #94a3b8; width: 130px;">Demandeur :</td><td><strong style="color: #ffffff;">${echapper(d.nom)}</strong> (${echapper(d.pays)})</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.whatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.whatsapp)} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.email)}" style="color: #e9cd84;">${echapper(d.email)}</a></td></tr>
       <tr><td style="color: #94a3b8;">Formation :</td><td style="color: #ffffff;">${d.programme ?? "Non précisée"}</td></tr>
       ${d.plan ? `<tr><td style="color: #94a3b8;">Rythme :</td><td style="color: #ffffff;">${d.plan}</td></tr>` : ""}
     </table>
@@ -434,7 +463,7 @@ export async function courrielRelance(
   const quand = JOUR.format(new Date(d.dateLimite));
 
   const corpsHtml = `
-    <p>Bonjour <strong>${d.apprenantNom}</strong>,</p>
+    <p>Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
     <p>
       ${
         d.enRetard

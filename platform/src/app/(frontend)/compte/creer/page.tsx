@@ -22,11 +22,49 @@ const MESSAGES: Record<string, string> = {
 export default async function CreerCompte({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string; dossier?: string }>;
+  searchParams: Promise<{ erreur?: string; dossier?: string; envoye?: string }>;
 }) {
   if (await participantConnecte()) redirect("/compte" as Route);
 
-  const { erreur, dossier } = await searchParams;
+  const { erreur, dossier, envoye } = await searchParams;
+
+  /*
+    ── Le compte existe, mais il n'ouvre encore rien ─────────────────────────
+    On ne connecte pas dans la foulée : Payload vient d'envoyer un lien, et le
+    compte reste inutilisable tant qu'il n'est pas suivi. C'est ce qui arrête
+    un robot — remplir le formulaire ne donne rien, il faut relever une boîte
+    aux lettres — et c'est aussi ce qui prouve enfin l'adresse.
+
+    On réaffiche donc une page, pas le formulaire : le remontrer laisserait
+    croire que rien ne s'est passé, et ferait recommencer.
+  */
+  if (envoye) {
+    return (
+      <>
+        <FilAriane items={[{ label: "Accueil", href: "/" }, { label: "Créer un accès" }]} />
+        <section className="px-5 py-8 sm:px-8 sm:py-13">
+          <div className="mx-auto max-w-[46rem]">
+            <span className="mono-label text-gold mb-3 block">Mon espace</span>
+            <h1 className="mb-4 text-[clamp(1.4rem,2.6vw,1.9rem)]">Vérifiez votre boîte</h1>
+            <p className="text-ivory-dim mb-6 text-[0.95rem] leading-relaxed">
+              Un message vient de partir à l&apos;adresse que vous avez indiquée. Il contient un
+              lien à suivre : c&apos;est lui qui ouvre votre accès.
+            </p>
+            <p className="text-ivory-dim/80 mb-8 text-[0.88rem] leading-relaxed">
+              Rien n&apos;arrive au bout de quelques minutes ? Regardez dans les indésirables — un
+              premier message d&apos;un domaine qu&apos;on ne connaît pas y atterrit souvent.
+            </p>
+            <Link
+              href={"/compte/connexion" as Route}
+              className="border-line text-ivory hover:border-gold rounded-clixa inline-flex min-h-11 items-center border px-5 text-[0.9rem] transition-colors"
+            >
+              Aller à la connexion
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
 
   return (
     <>

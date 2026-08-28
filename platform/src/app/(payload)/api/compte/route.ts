@@ -171,7 +171,22 @@ export async function POST(request: Request) {
         travail à la source, et ce détour n'aura plus lieu d'être.
       */
       await rattacher(payload, texte("dossier"), email, compte.id);
+
+      /*
+        ── On ne connecte pas : on attend la confirmation ────────────────────
+        Payload vient d'envoyer un lien, et le compte reste inutilisable tant
+        qu'il n'est pas suivi. Tenter `login` ici échouerait — et l'échec
+        s'afficherait comme « identifiants incorrects », ce qui est faux et
+        décourageant.
+
+        C'est aussi ce qui arrête un robot : remplir le formulaire ne donne
+        plus rien, il faut relever une boîte aux lettres.
+      */
+      redirect("/compte/creer?envoye=1" as Route);
     } catch (e) {
+      // `redirect` lève : on le laisse passer, sinon la création réussie
+      // finirait dans la branche d'erreur ci-dessous.
+      if (e && typeof e === "object" && "digest" in e) throw e;
       // Adresse déjà prise, mot de passe refusé, base indisponible : on ne
       // distingue pas, pour ne rien apprendre à qui essaie des adresses.
       payload.logger.error({ err: e }, "[compte] création impossible");

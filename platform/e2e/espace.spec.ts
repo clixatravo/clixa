@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import { MARQUE } from "./menage";
+import { execFileSync } from "node:child_process";
+import { MARQUE, adresseBase } from "./menage";
 
 /**
  * « Mon espace » sur téléphone.
@@ -10,6 +11,48 @@ import { MARQUE } from "./menage";
  * page qu'on lit le plus souvent depuis un téléphone — on y revient pour savoir
  * ce qu'on doit, et quand.
  */
+
+/*
+  Ouvrir un accès de bout en bout, confirmation comprise.
+
+  Depuis que la collection exige une adresse confirmée, créer un compte ne
+  connecte plus : Payload envoie un lien, et rien ne s'ouvre avant qu'il soit
+  suivi. C'est le comportement voulu — il arrête un robot — mais il fallait
+  apprendre aux épreuves à faire ce qu'un participant fait : relever sa boîte.
+
+  Le jeton se lit en base, faute de boîte aux lettres. C'est le seul raccourci ;
+  tout le reste du parcours est celui d'un visiteur.
+*/
+async function ouvrirUnAcces(page: Page, email: string, nom: string): Promise<void> {
+  await page.goto("/compte/creer");
+  await page.fill('input[name="nom"]', nom);
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="motDePasse"]', MOT_DE_PASSE);
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/envoye=1/);
+
+  const jeton = execFileSync(
+    "psql",
+    [
+      adresseBase() ?? "",
+      "-Atc",
+      `SELECT _verificationtoken FROM apprenants WHERE email = '${email}';`,
+    ],
+    { encoding: "utf8", env: { ...process.env, PGSSLROOTCERT: "system" } },
+  ).trim();
+  expect(jeton, "Payload doit avoir émis un jeton de confirmation").toBeTruthy();
+
+  await page.goto(`/compte/confirmer?token=${jeton}`);
+  await expect(page.getByText("Votre adresse est confirmée")).toBeVisible();
+
+  await page.goto("/compte/connexion");
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="motDePasse"]', MOT_DE_PASSE);
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/\/compte$/);
+}
+
+const MOT_DE_PASSE = "epreuve-espace-2026";
 
 const PARCOURS = "directeur-administratif-et-financier";
 
@@ -29,12 +72,7 @@ async function espaceAvecDossier(page: Page): Promise<string> {
 
   // Le compte se crée avec la même adresse, puis réclame son dossier par sa
   // référence — la double exigence que le formulaire impose.
-  await page.goto("/compte/creer");
-  await page.fill('input[name="nom"]', "Épreuve Espace");
-  await page.fill('input[name="email"]', email);
-  await page.fill('input[name="motDePasse"]', "epreuve-espace-2026");
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/compte/);
+  await ouvrirUnAcces(page, email, "Épreuve Espace");
 
   /*
     Le compte tout neuf ne voit rien : depuis qu'une adresse saisie ne suffit
@@ -66,12 +104,7 @@ test.describe("Mon espace sur téléphone", () => {
     compte sans dossier — d'où un compte ouvert seul, sans inscription.
   */
   test("le champ de rattachement prend toute la largeur", async ({ page }) => {
-    await page.goto("/compte/creer");
-    await page.fill('input[name="nom"]', "Épreuve Rattachement");
-    await page.fill('input[name="email"]', `rattachement.${Date.now()}${MARQUE}`);
-    await page.fill('input[name="motDePasse"]', "epreuve-espace-2026");
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/compte/);
+    await ouvrirUnAcces(page, `rattachement.${Date.now()}${MARQUE}`, "Épreuve Rattachement");
 
     const champ = page.locator('input[name="dossier"]');
     // Deux formulaires vivent sur cette page — la déconnexion en est un.

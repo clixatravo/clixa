@@ -25,7 +25,7 @@ try {
   const ancien = await payload.create({
     collection: "apprenants",
     overrideAccess: true,
-    data: { email, password: "un-mot-de-passe-choisi", nom: "Ancien Compte" },
+    data: { email, password: "un-mot-de-passe-choisi", nom: "Ancien Compte", _verified: true },
   });
   id = ancien.id;
   dire("le compte au mot de passe existe, sans identifiant Google", !ancien.googleId);
