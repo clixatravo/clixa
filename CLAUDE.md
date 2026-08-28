@@ -286,7 +286,14 @@ système où quelque chose change sans que personne ait agi. Le décompte peut
 donc être en retard d'au plus une journée, ce qui est sans conséquence pour des
 places réservées à des semaines de distance.
 
-⚠️ **La règle est écrite trois fois** : le crochet `recompter`, la tâche
+⚠️ **Le terme se lit, il ne se devine pas.** « Place retenue » sans durée
+promet plus que le système ne tient. Trois endroits l'annoncent : le formulaire
+d'inscription (avant), la page du dossier (après, avec la date), et le courriel
+de confirmation — dont l'objet est justement « Place retenue ». Passé le délai,
+la page change de ton plutôt que de se taire : elle dit que la place est
+repartie et invite à écrire, au lieu d'afficher une date périmée.
+
+⚠️ La règle est écrite trois fois : le crochet `recompter`, la tâche
 quotidienne, et le SQL de `e2e/menage.ts` — une suppression directe ne
 déclenchant aucun crochet. Les deux premières partagent `lib/places.ts` ; la
 troisième doit être changée à la main, en même temps.

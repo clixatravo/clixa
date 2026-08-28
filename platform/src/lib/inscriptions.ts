@@ -35,6 +35,14 @@ export interface Dossier {
   sessionDetail: string;
   /** Début de la session, pour dire quand le parcours commence. */
   sessionDebut?: string;
+  /**
+   * Quand le dossier a été déposé — c'est de là que court la tenue de la place.
+   *
+   * ⚠️ Sans cette date, la page ne peut pas dire jusqu'à quand la place est
+   * tenue, et « place retenue » devient une promesse sans terme. Voir
+   * `finDeLaTenue` dans `lib/places.ts`.
+   */
+  depuis?: string;
   echeances: EcheanceDossier[];
 }
 
@@ -81,6 +89,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     sessionLibelle: session?.reference ?? "Session",
     sessionDetail: sansLeParcours(session?.reference, programme?.titre),
     ...(session?.debut ? { sessionDebut: session.debut } : {}),
+    ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
       ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),
@@ -121,6 +130,7 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       sessionLibelle: session?.reference ?? "Session",
       sessionDetail: sansLeParcours(session?.reference, programme?.titre),
       ...(session?.debut ? { sessionDebut: session.debut } : {}),
+      ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
       echeances: (d.echeances ?? []).map((e) => ({
         montantCentimes: Math.round((e.montant ?? 0) * 100),
         ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),

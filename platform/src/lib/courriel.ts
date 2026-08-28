@@ -27,6 +27,14 @@ export interface CourrielInscription {
   montantTotal: number;
   echeances: { montant: number; dateLimite?: string }[];
   urlDossier: string;
+  /**
+   * Jusqu'à quand la place est tenue sans versement.
+   *
+   * ⚠️ Ce courriel a pour objet « Place retenue ». Sans terme écrit, il promet
+   * plus que le système ne tient : la place repart au catalogue au bout de sept
+   * jours. Calculé par l'appelant, à partir de `finDeLaTenue`.
+   */
+  tenueJusquau?: string;
 }
 
 /**
@@ -245,6 +253,14 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
       <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 8px;">Session : <strong>${d.sessionLibelle}</strong></div>
       <div style="font-size: 13px; color: #e9cd84;">Formule : <strong>${d.planLibelle} (${EUROS.format(d.montantTotal)})</strong></div>
     </div>
+${
+  d.tenueJusquau
+    ? `
+    <p style="margin: 0 0 20px 0; font-size: 14px; color: #cbd5e1;">
+      Cette place vous est tenue jusqu'au <strong style="color: #ffffff;">${JOUR.format(new Date(d.tenueJusquau))}</strong> — le temps qu'un transfert parte et arrive. Passé cette date, sans versement reçu, elle repart au catalogue. Votre premier versement la retient définitivement.
+    </p>`
+    : ""
+}
 
     <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin: 24px 0 10px 0;">Échéancier de règlement :</div>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b1122; border-radius: 6px; border: 1px solid rgba(243, 239, 228, 0.1); margin-bottom: 24px;">
@@ -275,6 +291,13 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
       `Bonjour ${d.apprenantNom},`,
       "",
       `Votre place est retenue pour « ${d.programmeTitre} ».`,
+      ...(d.tenueJusquau
+        ? [
+            `Elle vous est tenue jusqu'au ${JOUR.format(new Date(d.tenueJusquau))} : passé cette`,
+            "date, sans versement reçu, elle repart au catalogue. Votre premier versement la",
+            "retient définitivement.",
+          ]
+        : []),
       `Session : ${d.sessionLibelle}`,
       `Référence de votre dossier : ${d.reference}`,
       "",

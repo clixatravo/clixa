@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
+import { finDeLaTenue } from "@/lib/places";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -216,6 +217,8 @@ export async function POST(request: Request) {
     montantTotal: barème?.total ?? 0,
     echeances: echeances.map((e) => ({ montant: e.montant, dateLimite: e.dateLimite })),
     urlDossier: `${site}/inscription/${reference}`,
+    // Le dossier vient d'être créé : la tenue court à partir de maintenant.
+    tenueJusquau: finDeLaTenue(new Date()).toISOString(),
   };
 
   await courrielParticipant(payload, details);

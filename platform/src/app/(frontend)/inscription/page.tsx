@@ -92,9 +92,17 @@ export default async function Inscription({ searchParams }: Props) {
             </p>
           )}
 
+          {/*
+            Le terme est dit ici plutôt que découvert plus tard : « retenue dès
+            l'envoi » sans durée laisse croire que la place attend indéfiniment.
+            Sept jours, c'est le temps d'un transfert international — assez pour
+            ne presser personne, assez court pour qu'une session ne se ferme pas
+            sur des dossiers que rien ne suivra.
+          */}
           <p className="text-ivory-dim mb-9 max-w-[62ch] text-[0.98rem]">
-            Votre place est retenue dès l&apos;envoi de ce formulaire. Le règlement se fait ensuite
-            par transfert — les consignes s&apos;affichent à l&apos;étape suivante.
+            Votre place est retenue dès l&apos;envoi de ce formulaire, et tenue sept jours — le
+            temps d&apos;un transfert. Le règlement se fait ensuite par transfert : les consignes
+            s&apos;affichent à l&apos;étape suivante.
           </p>
 
           {erreur && (

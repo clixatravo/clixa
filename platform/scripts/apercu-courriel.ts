@@ -11,6 +11,13 @@
  *
  * Les fichiers sortent dans `apercus/` (ignoré par git), à ouvrir dans un
  * navigateur — et, mieux, à s'envoyer pour les voir dans un vrai client.
+ *
+ * ⚠️ Ces corps de message sont recopiés, pas produits par `courrielParticipant`.
+ * L'aperçu montre donc le gabarit fidèlement, et le texte seulement tant qu'on
+ * pense à le reporter ici : une phrase ajoutée au vrai courriel et oubliée dans
+ * cet aperçu ferait relire, rassuré, un message qui n'existe pas. Le jour où
+ * cela dérivera une fois de trop, il faudra appeler les vraies fonctions avec
+ * un expéditeur factice plutôt que d'entretenir deux textes.
  */
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
@@ -31,6 +38,12 @@ const exemples = [
         <p style="margin: 0 0 16px 0;">
           Votre place est retenue pour le parcours <strong>Directeur Administratif et
           Financier</strong>, session du 19 septembre 2026.
+        </p>
+        <p style="margin: 0 0 16px 0;">
+          Cette place vous est tenue jusqu'au <strong style="color: #ffffff;">4 septembre
+          2026</strong> — le temps qu'un transfert parte et arrive. Passé cette date, sans
+          versement reçu, elle repart au catalogue. Votre premier versement la retient
+          définitivement.
         </p>
         <p style="margin: 0 0 16px 0;">
           Vous avez choisi le règlement en trois fois : 170 € avant le 19 septembre,
