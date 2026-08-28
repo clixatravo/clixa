@@ -147,6 +147,8 @@ réinitialisation sur un compte réel.
 ```bash
 npx payload run scripts/reinitialiser-mot-de-passe.ts <email>  # lien de réinit.
 npx payload run scripts/supprimer-compte.ts <email>            # supprime un compte
+npx payload run scripts/supprimer-dossier.ts <CLX-…> [CLX-…]   # supprime des dossiers
+npx payload run scripts/pousser-schema.ts                      # aligne le schéma, n'écrit rien
 ```
 
 Quand plus aucun compte n'existe, `/admin` affiche « Créer le premier
