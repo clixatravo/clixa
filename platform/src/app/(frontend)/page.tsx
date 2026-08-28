@@ -369,12 +369,13 @@ export default async function Accueil() {
                 <Image
                   src="/images/marketing/catalogue-executive-clixa.jpg"
                   alt="Catalogue Exécutif et Brochure Officielle CLIXA Institute"
-                  width={600}
-                  height={450}
+                  width={1200}
+                  height={896}
+                  sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
-                  <span className="border-gold/40 bg-ink/80 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider uppercase backdrop-blur-md">
+                  <span className="border-gold/40 bg-ink/80 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider uppercase backdrop-blur-md">
                     Brochure Officielle
                   </span>
                 </div>
@@ -407,12 +408,13 @@ export default async function Accueil() {
                 <Image
                   src="/images/marketing/seminaire-executif-clixa-v2.jpg"
                   alt="Séminaire Exécutif et Masterclass Dirigeants CLIXA Institute"
-                  width={600}
-                  height={450}
+                  width={1376}
+                  height={768}
+                  sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
-                  <span className="border-emerald/40 bg-ink/80 text-emerald-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider uppercase backdrop-blur-md">
+                  <span className="border-emerald/40 bg-ink/80 text-emerald-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider uppercase backdrop-blur-md">
                     Masterclasses &amp; Hubs
                   </span>
                 </div>
@@ -445,12 +447,13 @@ export default async function Accueil() {
                 <Image
                   src="/images/marketing/certification-diplome-clixa.jpg"
                   alt="Diplôme Officiel et Certification Exécutive CLIXA"
-                  width={600}
-                  height={450}
+                  width={1200}
+                  height={896}
+                  sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
-                  <span className="bg-ink/80 rounded-clixa border border-[#0077b5]/40 px-2.5 py-1 font-mono text-[9px] font-semibold tracking-wider text-[#38bdf8] uppercase backdrop-blur-md">
+                  <span className="bg-ink/80 rounded-clixa border border-[#0077b5]/40 px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider text-[#38bdf8] uppercase backdrop-blur-md">
                     Double Certification
                   </span>
                 </div>
