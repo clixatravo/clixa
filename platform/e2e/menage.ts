@@ -58,9 +58,16 @@ export default function menage(): void {
         */
         `DELETE FROM apprenants WHERE email LIKE '%${MARQUE}';`,
         "-c",
+        /*
+          ⚠️ Même règle que le crochet `recompter` : une place se prend en
+          payant, pas en s'inscrivant. Les deux calculs doivent rester
+          identiques — celui-ci existe parce qu'une suppression en SQL ne
+          déclenche aucun crochet.
+        */
         `UPDATE sessions s SET places_reservees = (
            SELECT count(*) FROM inscriptions i
-           WHERE i.session_id = s.id AND i.statut <> 'annulee'
+           WHERE i.session_id = s.id
+             AND i.statut IN ('confirmee', 'payee', 'terminee')
          );`,
       ],
       {

@@ -57,14 +57,27 @@ test("retenir une place mène à un dossier qui porte sa référence", async ({ 
   await expect(page.getByText(reference, { exact: false }).first()).toBeVisible();
 });
 
-test("une place retenue est décomptée des places restantes", async ({ page, request }) => {
+/*
+  ── S'inscrire ne prend pas de place ─────────────────────────────────────────
+  Une place se prend en payant. Elle se prenait auparavant à l'inscription, et
+  l'intention était bonne : protéger celui qui vient de s'inscrire pendant qu'il
+  organise son transfert. Mais un transfert international prend des jours, et
+  beaucoup ne viennent jamais — la session affichait complet en comptant des
+  gens qui n'avaient rien versé.
+
+  L'épreuve ne peut pas aller jusqu'au versement : le marquer réglé demande le
+  back-office. Elle vérifie donc ce qu'elle peut, et c'est le point qui vient de
+  changer.
+*/
+test("retenir une place n'entame pas le décompte tant que rien n'est versé", async ({
+  page,
+  request,
+}) => {
   const avant = await placesReservees(request);
   await retenirUnePlace(page, "P1");
   const apres = await placesReservees(request);
 
-  // Le décompte a déjà été perdu une fois : compté hors de la transaction, il
-  // ne voyait pas la ligne qu'on venait d'écrire, et annulait l'écriture.
-  expect(apres, "la place retenue n'a pas été décomptée").toBe(avant + 1);
+  expect(apres, "un dossier « demandée » ne retient aucune place").toBe(avant);
 });
 
 async function placesReservees(request: {

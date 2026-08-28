@@ -266,6 +266,19 @@ La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
 de places montré au visiteur.
 
+⚠️ **Une place se prend en payant, pas en s'inscrivant** (depuis le 28 août
+2026). Seuls les états `confirmee`, `payee` et `terminee` occupent une place ;
+un dossier `demandee` n'en retient aucune. Auparavant il en retenait une —
+l'intention était de protéger celui qui vient de s'inscrire pendant qu'il
+organise son transfert, mais un transfert international prend des jours et
+beaucoup ne viennent jamais : la session affichait complet en comptant des
+gens qui n'avaient rien versé.
+
+Le revers est réel et assumé : deux personnes peuvent régler la dernière place.
+À trente places, sur des transferts de plusieurs jours, c'est moins probable —
+et moins coûteux — qu'un catalogue qui se ferme tout seul. Si cela arrive,
+c'est un appel à passer, pas une inscription perdue.
+
 ⚠️ Le rythme des dix parcours autres que DAF et PMP reste une hypothèse — le
 catalogue Word ne documente que ces deux-là.
 

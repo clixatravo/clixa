@@ -33,9 +33,30 @@ import { connecte, reserveA } from "@/access/roles";
  * la première annulation faite à la main, et la session annonce alors des
  * places qu'elle n'a plus.
  *
+ * ── Une place se prend en payant, pas en s'inscrivant ───────────────────────
+ * Un dossier « demandée » ne retient rien. Il en retenait une auparavant, et
+ * l'intention était bonne : protéger celui qui vient de s'inscrire pendant
+ * qu'il organise son transfert. Mais un transfert international prend des
+ * jours, et beaucoup ne viennent jamais : la session affichait complet en
+ * comptant des gens qui n'avaient rien versé, pendant que d'autres renonçaient
+ * devant un « il ne reste plus de place » qui n'était pas vrai.
+ *
+ * ⚠️ Le revers est réel et assumé : deux personnes peuvent régler la dernière
+ * place. À trente places, sur des transferts qui mettent des jours, cela reste
+ * moins probable — et moins coûteux — qu'un catalogue qui se ferme tout seul.
+ * Si cela arrive, c'est un appel à passer, pas une inscription perdue.
+ *
  * `req` est passé aux deux appels — sans lui ils tournent hors de la
  * transaction en cours et ne voient pas le dossier qu'on vient d'écrire.
  */
+/**
+ * Les états qui occupent réellement une place.
+ *
+ * ⚠️ `e2e/menage.ts` refait ce calcul à la main, une suppression en SQL ne
+ * déclenchant pas le crochet. Les deux règles doivent rester identiques.
+ */
+const PLACES_PRISES = ["confirmee", "payee", "terminee"] as const;
+
 async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
   const ids = new Set<number>();
   for (const d of docs) {
@@ -47,7 +68,9 @@ async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
   for (const id of ids) {
     const vivantes = await req.payload.count({
       collection: "inscriptions",
-      where: { and: [{ session: { equals: id } }, { statut: { not_equals: "annulee" } }] },
+      // Confirmée, payée, terminée : trois états qui supposent un versement
+      // reçu. « Demandée » n'en suppose aucun, « annulée » plus aucun.
+      where: { and: [{ session: { equals: id } }, { statut: { in: PLACES_PRISES } }] },
       overrideAccess: true,
       req,
     });
