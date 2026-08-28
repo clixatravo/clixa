@@ -861,10 +861,13 @@ poussées ne sortent plus. Le 27 août, deux heures de travail sont restées à
 quai avant qu'on s'en aperçoive, et l'indice n'est venu ni du site ni des
 épreuves mais d'un fichier de `public/` qui répondait 404.
 
-Après un changement de modèle, regarder l'état du déploiement, pas seulement
-celui du site :
+La recette pose désormais la question à la place du lecteur : `/api/version`
+dit quel commit la production sert, et elle le compare à celui du dépôt. Un
+décalage n'est pas toujours une panne — on peut avoir poussé il y a trente
+secondes — d'où un avertissement et non un échec. Il dit où regarder.
 
 ```bash
+cd platform && npm run recette          # la première ligne répond
 npx vercel ls clixa --scope cl-95af | head -6
 ```
 

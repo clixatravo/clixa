@@ -12,6 +12,8 @@
  * Sort en 1 si quoi que ce soit manque, pour qu'on puisse l'enchaîner.
  */
 
+import { execSync } from "node:child_process";
+
 const BASE = (process.argv[2] || "https://www.clixa.africa").replace(/\/$/, "");
 const NAVIGATEUR =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
@@ -32,6 +34,36 @@ async function repond(chemin, options = {}) {
 }
 
 console.log(`\nRecette de ${BASE}\n`);
+
+/*
+  ── Le premier contrôle, parce qu'il conditionne tous les autres ───────────
+  Un déploiement qui échoue ne remplace pas celui qui sert : le site reste
+  debout et la recette passe, sur le build précédent. Sept déploiements ont
+  ainsi échoué deux heures durant sans que rien ne le dise. On demande donc au
+  site quel commit il porte, et on le compare au dépôt.
+
+  Le décalage n'est pas toujours une panne — on peut avoir poussé il y a
+  trente secondes, ou vérifier une adresse depuis une autre machine. C'est un
+  avertissement, pas un échec : il dit où regarder.
+*/
+console.log("Ce qui est en ligne");
+try {
+  const { commit } = await (await fetch(`${BASE}/api/version`)).json();
+  const local = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+
+  if (commit === "local") {
+    dire(true, "serveur de développement", "pas de commit à comparer");
+  } else if (commit === local) {
+    dire(true, `le site sert le dernier commit`, commit.slice(0, 8));
+  } else {
+    console.log(
+      `  ⚠ le site sert ${commit.slice(0, 8)}, le dépôt porte ${local.slice(0, 8)}` +
+        ` — un déploiement a peut-être échoué`,
+    );
+  }
+} catch {
+  dire(false, "le site répond sur /api/version", "route absente ou injoignable");
+}
 
 // ── Le plan du site, et tout ce qu'il annonce ──────────────────────────────
 console.log("Plan du site");
