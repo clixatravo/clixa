@@ -48,15 +48,7 @@ export const organisation = {
   */
   logo: `${SITE_URL}/logo-clixa.png`,
   email: "contact@clixa.africa",
-  /*
-    ⚠️ Pas de `telephone` tant que le numéro des admissions n'est pas arrêté.
-
-    Celui qui figurait ici était un numéro d'essai — et un numéro placé dans
-    les données structurées ne se retire pas comme un bouton : Google le
-    reprend dans son panneau de connaissance, où il peut rester affiché
-    longtemps après la correction. L'adresse et le courriel suffisent à
-    identifier l'établissement en attendant.
-  */
+  telephone: "+212669303467",
   address: {
     "@type": "PostalAddress",
     streetAddress: "N° 1525, Bureau n° 5, Hay Essalam",

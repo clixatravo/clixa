@@ -17,20 +17,22 @@
 
 export const RESEAUX_CLIXA = {
   /*
-    WhatsApp est retiré de la vitrine tant que le numéro des admissions n'est
-    pas arrêté.
+    ⚠️ L'indicatif pays n'est pas décoratif.
 
-    Celui qui figurait ici était un numéro d'essai. Publié en pied de page de
-    chaque page, il envoyait les prospects écrire à quelqu'un qui n'attend pas
-    leurs messages — un mauvais numéro coûte plus qu'un numéro absent : qui
-    écrit et n'obtient rien conclut que personne ne répond, pas que le numéro
-    était faux.
+    `wa.me/0689324243` ouvre une conversation avec un inconnu, ou avec
+    personne : sans indicatif, le numéro n'identifie rien hors du Maroc. C'est
+    déjà la règle que fait respecter le bouton du back-office, qui affiche un
+    tiret plutôt que de composer un mauvais numéro.
 
-    Pour le rétablir : redonner à `whatsapp` sa valeur avec l'indicatif pays,
-    puis remettre son entrée dans `RESEAUX` (components/ReseauxSociaux.tsx).
-    ⚠️ L'indicatif n'est pas facultatif — `wa.me/0689324243` ouvre une
-    conversation avec un inconnu, ou avec personne.
+    Ce numéro-ci est celui qui figure sur les factures de la société.
   */
+  whatsapp: {
+    url: "https://wa.me/212669303467",
+    numeroAffiche: "+212 6 69 30 34 67",
+    label: "WhatsApp Admissions",
+    titre: "WhatsApp Admissions (+212 6 69 30 34 67)",
+    description: "Échange direct avec un conseiller pédagogique",
+  },
   linkedin: {
     url: "https://www.linkedin.com/company/clixainstitute/",
     label: "LinkedIn",
