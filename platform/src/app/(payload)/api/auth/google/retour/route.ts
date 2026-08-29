@@ -106,6 +106,20 @@ export async function GET(request: Request) {
       compte = await payload.create({
         collection: "apprenants",
         overrideAccess: true,
+        /*
+          ── Pas de courriel de confirmation, et ce n'est pas un détail ──────
+          Payload envoie ce courriel dès que `auth.verify` est configuré, sans
+          regarder `_verified` : la seule façon de l'en empêcher est ce drapeau.
+          Sans lui, on adresse à quelqu'un un lien pour prouver l'adresse que
+          Google vient d'attester — et surtout, l'envoi n'est pas rattrapé :
+          s'il échoue, la création du compte échoue avec lui.
+
+          ⚠️ C'est ce qui a mis la connexion Google à terre le 29 août 2026 :
+          le quota d'envoi journalier était épuisé, l'envoi levait, et le compte
+          ne naissait pas. Un service de courriel indisponible fermait une porte
+          qui n'a rien à lui demander.
+        */
+        disableVerificationEmail: true,
         data: {
           email: personne.email,
           // Payload exige un mot de passe à la création. Celui-ci n'est jamais

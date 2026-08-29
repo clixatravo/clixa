@@ -25,6 +25,7 @@ try {
   const ancien = await payload.create({
     collection: "apprenants",
     overrideAccess: true,
+    disableVerificationEmail: true,
     data: { email, password: "un-mot-de-passe-choisi", nom: "Ancien Compte", _verified: true },
   });
   id = ancien.id;
@@ -94,6 +95,54 @@ try {
     refuse = true;
   }
   dire("un second compte portant le même sub est refusé", refuse);
+
+  /*
+    ── La connexion Google ne doit rien devoir au courriel ────────────────────
+    Payload envoie un courriel de confirmation dès que `auth.verify` est
+    configuré, sans regarder `_verified` : seul `disableVerificationEmail`
+    l'arrête. Et cet envoi n'est pas rattrapé — s'il échoue, la création du
+    compte échoue avec lui.
+
+    Le 29 août 2026, le quota d'envoi journalier épuisé a suffi à fermer la
+    connexion Google : le compte ne naissait pas, et rien ne disait pourquoi.
+
+    On reproduit la panne plutôt que de la décrire — l'expéditeur lève, et la
+    création doit tout de même aboutir.
+  */
+  const expediteur = payload.email;
+  let creeMalgreLaPanne = false;
+  let idPanne: string | number | undefined;
+  try {
+    payload.email = {
+      ...expediteur,
+      sendEmail: async () => {
+        throw new Error("expéditeur indisponible (simulé)");
+      },
+    } as typeof payload.email;
+
+    const compte = await payload.create({
+      collection: "apprenants",
+      overrideAccess: true,
+      disableVerificationEmail: true,
+      data: {
+        email: `panne-${Date.now()}@epreuve.invalid`,
+        password: crypto.randomUUID(),
+        nom: "Compte Google",
+        googleId: `sub-panne-${Date.now()}`,
+        _verified: true,
+      },
+    });
+    idPanne = compte.id;
+    creeMalgreLaPanne = true;
+  } catch {
+    creeMalgreLaPanne = false;
+  } finally {
+    payload.email = expediteur;
+    if (idPanne !== undefined) {
+      await payload.delete({ collection: "apprenants", id: idPanne, overrideAccess: true });
+    }
+  }
+  dire("un compte Google naît même si l'expéditeur est en panne", creeMalgreLaPanne);
 } finally {
   if (id !== undefined) {
     await payload.delete({ collection: "apprenants", id, overrideAccess: true });

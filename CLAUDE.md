@@ -528,6 +528,13 @@ qu'il soit suivi. C'est ce qui arrête un robot — remplir le formulaire ne don
 plus rien, il faut relever une boîte aux lettres — et c'est enfin une preuve
 d'adresse à la source.
 
+- ⚠️ **`disableVerificationEmail: true` est obligatoire à la création.** Payload
+  envoie le courriel de confirmation dès que `auth.verify` est configuré, **sans
+  regarder `_verified`** : ce drapeau est le seul moyen de l'en empêcher. Et
+  l'envoi n'est pas rattrapé — s'il échoue, la création du compte échoue avec
+  lui. Le 29 août 2026, un quota d'envoi épuisé a suffi à fermer la connexion
+  Google : le compte ne naissait pas, et rien ne disait pourquoi. Un service de
+  courriel indisponible fermait une porte qui n'a rien à lui demander.
 - ⚠️ **Les comptes Google naissent `_verified: true`.** Google atteste déjà que
   la personne contrôle l'adresse ; lui redemander la preuve qu'elle vient de
   fournir bloquerait sa connexion. Les deux comptes qui existaient avant
