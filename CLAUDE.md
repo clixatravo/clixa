@@ -424,9 +424,21 @@ déployé, en lecture seule à l'exécution : un dépôt écrit là disparaît s
 erreur. C'est pourquoi `Medias` n'a **jamais reçu un seul fichier en
 production** — et que personne ne s'en était aperçu, faute d'avoir essayé.
 
-`scripts/verifier-recus.ts` éprouve les cinq moments, dont le seul qui compte :
+⚠️ **Un dossier accompagné d'un reçu était indestructible.** La clef étrangère
+de `recus.dossier_id` est en « SET NULL » et la colonne est obligatoire :
+Postgres refusait de vider le lien, et c'est la suppression entière qui
+échouait — ni par script, ni depuis /admin, avec un message parlant de
+contrainte et jamais de reçu. Le crochet `beforeDelete` d'`Inscriptions` retire
+donc les reçus d'abord, par l'API, pour que le fichier quitte aussi le magasin.
+
+`scripts/verifier-recus.ts` éprouve les six moments, dont le seul qui compte :
 on demande au magasin l'adresse publique qu'aurait le fichier, et on la tire
 sans jeton. Un **403** est la preuve ; un 200 dirait que le magasin est public.
+
+⚠️ **Ne pas le lancer pendant que `next dev` tourne.** Les deux écrivent sur la
+même session — le crochet `recompter` la met à jour à chaque écriture — et
+Postgres finit par signaler un interblocage. Ce n'est pas un défaut du code,
+c'est deux processus qui se disputent la même ligne.
 
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et
