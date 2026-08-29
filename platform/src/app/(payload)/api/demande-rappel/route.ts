@@ -1,6 +1,7 @@
 import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
+import { paysDeLIndicatif } from "@/lib/indicatifs";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -41,9 +42,8 @@ export async function POST(request: Request) {
   const nom = texte("nom");
   const email = texte("email");
   const whatsapp = texte("whatsapp");
-  const pays = texte("pays");
 
-  if (!nom || !email || !whatsapp || !pays) {
+  if (!nom || !email || !whatsapp) {
     redirect("/contact?erreur=champs" as Route);
   }
 
@@ -52,12 +52,20 @@ export async function POST(request: Request) {
   if (
     !tientDans(nom, LONGUEURS.nom) ||
     !tientDans(whatsapp, LONGUEURS.telephone) ||
-    !tientDans(pays, LONGUEURS.pays) ||
     !tientDans(texte("message"), LONGUEURS.message) ||
     !emailPlausible(email)
   ) {
     redirect("/contact?erreur=champs" as Route);
   }
+
+  /*
+    ── Le pays vient du numéro, plus du formulaire ───────────────────────────
+    Le champ « Pays » a été retiré : deux saisies pour un même fait laissaient
+    écrire « Maroc » sous un numéro ivoirien, et le conseiller découvrait
+    l'écart en composant. L'indicatif est de toute façon obligatoire — sans
+    lui, le bouton WhatsApp du back-office refuse de composer.
+  */
+  const pays = paysDeLIndicatif(whatsapp);
 
   const payload = await getPayload({ config });
 

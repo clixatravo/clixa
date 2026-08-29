@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
-import { formatPrix, getProgrammes, getTarifs } from "@/lib/catalogue";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 
 export const metadata: Metadata = {
@@ -21,19 +20,24 @@ interface Props {
 /**
  * FE-11 / BE-12 — Formulaire de demande de rappel.
  *
- * Sortie de tous les boutons « Réserver » tant que le tunnel de paiement
- * n'existe pas. Le formulaire poste vers /api/demande-rappel : il fonctionne
- * sans JavaScript, et la demande est enregistrée en base avant tout le reste.
+ * Le formulaire poste vers /api/demande-rappel : il fonctionne sans
+ * JavaScript, et la demande est enregistrée en base avant tout le reste.
+ *
+ * ── Trois champs, décidés par la direction ──────────────────────────────────
+ * Il en demandait sept : pays, formation visée, rythme de paiement, message.
+ * C'est un rappel qu'on demande, pas un dossier — et chaque champ de plus est
+ * une occasion de refermer l'onglet. Le conseiller pose ces questions de vive
+ * voix, ce qui est son métier et va plus vite.
+ *
+ * Le catalogue et le barème ne sont donc plus lus ici : la page ne se rend
+ * plus que sur ce qu'elle contient, et ne dépend plus de la base.
+ *
+ * ⚠️ `programme` et `plan` restent acceptés dans l'adresse — les anciens liens
+ * « Être rappelé » les portaient — mais ils ne préremplissent plus rien. Les
+ * retirer du type ferait échouer le build sur ces liens.
  */
 export default async function Contact({ searchParams }: Props) {
-  const {
-    envoye,
-    erreur,
-    programme: programmePreselectionne,
-    plan: planChoisi,
-  } = await searchParams;
-  const programmes = await getProgrammes();
-  const tarifs = await getTarifs();
+  const { envoye, erreur } = await searchParams;
 
   return (
     <>
@@ -101,76 +105,27 @@ export default async function Contact({ searchParams }: Props) {
                   autoComplete="email"
                   requis
                 />
+                {/*
+                  ── Trois champs, et rien d'autre ──────────────────────────
+                  Le formulaire en demandait sept : pays, formation visée,
+                  rythme de paiement, message. C'est un rappel qu'on demande,
+                  pas un dossier — et chaque champ de plus est une occasion de
+                  refermer l'onglet. Le conseiller pose ces questions lui-même,
+                  c'est son métier et c'est plus rapide de vive voix.
+
+                  Le pays se déduit de l'indicatif : deux saisies pour un même
+                  fait laissaient écrire « Maroc » sous un numéro ivoirien.
+                */}
                 <Champ
                   label="Numéro WhatsApp"
                   name="whatsapp"
                   type="tel"
                   autoComplete="tel"
+                  inputMode="tel"
+                  placeholder="+212 6 00 00 00 00"
+                  aide="Avec l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal."
                   requis
                 />
-                <Champ label="Pays" name="pays" autoComplete="country-name" requis />
-
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label
-                    htmlFor="programme"
-                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
-                  >
-                    Formation qui vous intéresse
-                  </label>
-                  <select
-                    id="programme"
-                    name="programme"
-                    defaultValue={programmePreselectionne ?? ""}
-                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
-                  >
-                    <option value="">Je ne sais pas encore</option>
-                    {programmes.map((p) => (
-                      <option key={p.slug} value={p.slug}>
-                        {p.titre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label
-                    htmlFor="plan"
-                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
-                  >
-                    Rythme de paiement souhaité
-                  </label>
-                  <select
-                    id="plan"
-                    name="plan"
-                    defaultValue={planChoisi ?? ""}
-                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
-                  >
-                    <option value="">À décider avec le conseiller</option>
-                    {tarifs.plans.map((p) => (
-                      <option key={p.code} value={p.code}>
-                        {p.libelle} — {formatPrix(p.totalCentimes)}
-                        {p.echeancesCentimes.length > 1
-                          ? ` (${p.echeancesCentimes.map((m) => formatPrix(m)).join(" + ")})`
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-2 sm:col-span-2">
-                  <label
-                    htmlFor="message"
-                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
-                  >
-                    Votre message (facultatif)
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={3}
-                    className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold min-h-24 resize-y border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
-                  />
-                </div>
 
                 <div className="pt-2 sm:col-span-2">
                   <button
@@ -206,12 +161,19 @@ function Champ({
   name,
   type = "text",
   autoComplete,
+  inputMode,
+  placeholder,
+  aide,
   requis = false,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
+  inputMode?: "tel" | "email" | "text";
+  placeholder?: string;
+  /** Une phrase sous le champ, quand la saisie attendue n'est pas évidente. */
+  aide?: string;
   requis?: boolean;
 }) {
   return (
@@ -224,9 +186,17 @@ function Champ({
         name={name}
         type={type}
         autoComplete={autoComplete}
+        inputMode={inputMode}
+        placeholder={placeholder}
+        aria-describedby={aide ? `${name}-aide` : undefined}
         required={requis}
         className="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1"
       />
+      {aide && (
+        <p id={`${name}-aide`} className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
+          {aide}
+        </p>
+      )}
     </div>
   );
 }
