@@ -177,17 +177,36 @@ export default async function Compte({
                       <div key={i} className="flex items-baseline justify-between gap-3 sm:block">
                         <div
                           className={`font-mono text-[0.86rem] tabular-nums ${
-                            e.statut === "regle" ? "text-emerald-bright" : "text-ivory"
+                            e.statut === "regle"
+                              ? "text-emerald-bright"
+                              : e.statut === "annonce"
+                                ? "text-gold-bright"
+                                : "text-ivory"
                           }`}
                         >
                           {formatPrix(e.montantCentimes)}
                         </div>
+                        {/*
+                          ── Trois états, pas deux ─────────────────────────
+                          Cette page n'en connaissait que deux : « réglée » ou
+                          une date. Un versement annoncé et en cours de
+                          vérification retombait donc sur sa date limite —
+                          exactement comme si rien n'avait été fait. Le
+                          participant venait de nous envoyer son numéro de
+                          transfert et son espace ne le montrait nulle part :
+                          il rappelait pour demander si c'était arrivé.
+
+                          La page du dossier le disait déjà ; c'est l'espace,
+                          celui où il revient, qui l'ignorait.
+                        */}
                         <div className="text-ivory-dim text-[0.72rem]">
                           {e.statut === "regle"
                             ? "réglée"
-                            : e.dateLimite
-                              ? `avant le ${JOUR.format(new Date(e.dateLimite))}`
-                              : "à régler"}
+                            : e.statut === "annonce"
+                              ? "en vérification"
+                              : e.dateLimite
+                                ? `avant le ${JOUR.format(new Date(e.dateLimite))}`
+                                : "à régler"}
                         </div>
                       </div>
                     ))}

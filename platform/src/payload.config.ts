@@ -19,6 +19,7 @@ import { Temoignages } from "@/collections/Temoignages";
 import { Partenaires } from "@/collections/Partenaires";
 import { Pages } from "@/collections/Pages";
 import { Medias } from "@/collections/Medias";
+import { Recus } from "@/collections/Recus";
 import { DemandesRappel } from "@/collections/DemandesRappel";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -105,6 +106,7 @@ export default buildConfig({
     DemandesRappel,
     Inscriptions,
     Apprenants,
+    Recus,
     // Accès
     Utilisateurs,
   ],

@@ -79,6 +79,7 @@ export interface Config {
     'demandes-rappel': DemandesRappel;
     inscriptions: Inscription;
     apprenants: Apprenant;
+    recus: Recus;
     utilisateurs: Utilisateur;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -98,6 +99,7 @@ export interface Config {
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
     inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
+    recus: RecusSelect<false> | RecusSelect<true>;
     utilisateurs: UtilisateursSelect<false> | UtilisateursSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -718,6 +720,26 @@ export interface Apprenant {
   collection: 'apprenants';
 }
 /**
+ * Déposés par les participants depuis leur dossier. Le fichier ne s'ouvre que d'ici.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recus".
+ */
+export interface Recus {
+  id: number;
+  dossier: number | Inscription;
+  /**
+   * 1 pour la première.
+   */
+  echeance?: number | null;
+  nomOriginal: string;
+  chemin: string;
+  typeFichier?: string | null;
+  taille?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "utilisateurs".
  */
@@ -814,6 +836,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'apprenants';
         value: number | Apprenant;
+      } | null)
+    | ({
+        relationTo: 'recus';
+        value: number | Recus;
       } | null)
     | ({
         relationTo: 'utilisateurs';
@@ -1251,6 +1277,20 @@ export interface ApprenantsSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recus_select".
+ */
+export interface RecusSelect<T extends boolean = true> {
+  dossier?: T;
+  echeance?: T;
+  nomOriginal?: T;
+  chemin?: T;
+  typeFichier?: T;
+  taille?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

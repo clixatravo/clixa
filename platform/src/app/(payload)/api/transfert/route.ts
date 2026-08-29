@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielTransfert } from "@/lib/courriel";
+import { deposerRecu, estTypeAccepte, stockageConfigure, TAILLE_MAX } from "@/lib/recus";
 import type { Inscription } from "@/payload-types";
 
 /**
@@ -115,6 +116,35 @@ export async function POST(request: Request) {
   const courante = index === -1 ? undefined : echeances[index];
   if (!courante || courante.statut === "annonce") redirect(`${retour}?annonce=rien` as Route);
 
+  /*
+    ── Le justificatif, s'il en a joint un ──────────────────────────────────
+    Facultatif, et c'est voulu : beaucoup enverront leur numéro depuis un
+    téléphone où le reçu est une photo qu'ils n'ont pas encore prise. Refuser
+    l'annonce faute de pièce jointe ferait perdre le numéro, qui est ce qui
+    permet de retrouver l'argent.
+
+    ⚠️ Le type est vérifié ici, jamais déduit du nom du fichier : une extension
+    se renomme. Et la taille est bornée avant le dépôt — Vercel refuse un corps
+    au-delà de 4,5 Mo, mais cette limite n'existe pas en développement, et une
+    règle qui ne s'applique qu'en production se découvre en production.
+  */
+  const fichier = form.get("recu");
+  const aUnRecu = fichier instanceof File && fichier.size > 0;
+
+  if (aUnRecu) {
+    if (!estTypeAccepte(fichier.type)) redirect(`${retour}?annonce=format` as Route);
+    if (fichier.size > TAILLE_MAX) redirect(`${retour}?annonce=lourd` as Route);
+    if (!stockageConfigure()) {
+      /*
+        Sans magasin configuré, on ne fait pas semblant. Écrire la fiche sans
+        le fichier laisserait l'équipe chercher une pièce qui n'a jamais été
+        déposée — et le participant croire qu'elle est arrivée.
+      */
+      payload.logger.error("[transfert] BLOB_READ_WRITE_TOKEN absent : reçu non déposé");
+      redirect(`${retour}?annonce=stockage` as Route);
+    }
+  }
+
   const misesAJour: Echeance[] = echeances.map((e, i) =>
     i === index ? { ...e, statut: "annonce" as const, moyen, reference: numero } : e,
   );
@@ -125,6 +155,32 @@ export async function POST(request: Request) {
     data: { echeances: misesAJour },
     overrideAccess: true,
   });
+
+  if (aUnRecu) {
+    try {
+      const { chemin, taille, type } = await deposerRecu(reference, fichier);
+      await payload.create({
+        collection: "recus",
+        overrideAccess: true,
+        data: {
+          dossier: dossier.id,
+          echeance: index + 1,
+          nomOriginal: fichier.name.slice(0, 120),
+          chemin,
+          typeFichier: type,
+          taille,
+        },
+      });
+    } catch (e) {
+      /*
+        L'annonce est déjà enregistrée, et c'est elle qui compte : le numéro de
+        transfert suffit à retrouver l'argent. On ne défait donc rien — on le
+        dit au participant, qui pourra renvoyer la pièce, et à nous, qui devrons
+        la lui redemander.
+      */
+      payload.logger.error({ err: e, reference }, "[transfert] dépôt du reçu impossible");
+    }
+  }
 
   const session = typeof dossier.session === "object" ? dossier.session : undefined;
   const programme =

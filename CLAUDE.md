@@ -405,6 +405,29 @@ Le bouton WhatsApp de la page disait « Demander les coordonnées sur WhatsApp �
 il contredisait la phrase au-dessus et invitait à faire circuler un RIB par
 messagerie. Il dit « Nous écrire ».
 
+**Le participant joint son justificatif** (`lib/recus.ts`, collection `Recus`,
+`api/recu/[id]`, depuis le 29 août 2026). Une photo du reçu du guichet ou le PDF
+de la banque, déposé au moment où il annonce son transfert. Facultatif, exprès :
+beaucoup annoncent depuis un téléphone, le reçu encore dans la poche, et exiger
+la pièce ferait perdre le numéro — qui est ce qui permet de retrouver l'argent.
+
+⚠️ **Le greffon `@payloadcms/storage-vercel-blob` ne sait écrire qu'en accès
+public** — son propre type le dit, et un magasin privé refuse net (« Cannot use
+public access on a private store »). Un reçu porte un nom, un montant et parfois
+un numéro de compte ; le protéger par une adresse qu'on espère introuvable, ce
+n'est pas le protéger. Le SDK `@vercel/blob`, lui, sait faire du privé : les
+trois fonctions de `lib/recus.ts` sont tout ce qu'il fallait, et la collection
+n'a pas d'`upload`.
+
+⚠️ **Le disque de Vercel ne s'écrit pas.** `staticDir` pointe dans le paquet
+déployé, en lecture seule à l'exécution : un dépôt écrit là disparaît sans
+erreur. C'est pourquoi `Medias` n'a **jamais reçu un seul fichier en
+production** — et que personne ne s'en était aperçu, faute d'avoir essayé.
+
+`scripts/verifier-recus.ts` éprouve les cinq moments, dont le seul qui compte :
+on demande au magasin l'adresse publique qu'aurait le fichier, et on la tire
+sans jeton. Un **403** est la preuve ; un 200 dirait que le magasin est public.
+
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et
 rien ne l'écrivait : la page demandait d'envoyer le numéro « par WhatsApp »,

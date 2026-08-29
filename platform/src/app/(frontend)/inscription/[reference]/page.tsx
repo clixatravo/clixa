@@ -24,6 +24,10 @@ const RETOUR_ANNONCE: Record<string, string> = {
   ok: "C'est noté. Nous vérifions le transfert et vous confirmons votre place — comptez un jour ouvré.",
   champs: "Il manque le moyen d'envoi ou le numéro de transfert.",
   rien: "Aucune échéance n'attend d'annonce en ce moment.",
+  format: "Le justificatif doit être une photo (JPG, PNG, HEIC) ou un PDF.",
+  lourd: "Le justificatif dépasse 5 Mo. Une photo un peu moins grande suffira.",
+  stockage:
+    "Votre annonce n'a pas été enregistrée : nous ne pouvons pas recevoir de pièce jointe pour l'instant. Réessayez sans le fichier, le numéro seul nous suffit.",
 };
 
 const JOUR = new Intl.DateTimeFormat("fr-FR", {
@@ -334,9 +338,16 @@ export default async function Dossier({ params, searchParams }: Props) {
                 figure sur le reçu remis à l&apos;envoi.
               </p>
 
+              {/*
+                `multipart/form-data` : sans cet encodage, le navigateur
+                n'envoie que le *nom* du fichier, et la route reçoit une chaîne
+                là où elle attend un File. L'annonce passerait, le justificatif
+                disparaîtrait — sans erreur nulle part.
+              */}
               <form
                 action="/api/transfert"
                 method="POST"
+                encType="multipart/form-data"
                 className="grid gap-5 sm:grid-cols-2 [&>*]:min-w-0"
               >
                 {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
@@ -385,6 +396,30 @@ export default async function Dossier({ params, searchParams }: Props) {
                     autoComplete="off"
                     className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full min-w-0 border px-3.5 text-[0.95rem]"
                   />
+                </div>
+
+                {/*
+                  ── Le justificatif reste facultatif ────────────────────────
+                  Beaucoup annoncent depuis un téléphone, le reçu encore dans
+                  la poche. Exiger la pièce ferait perdre le numéro, qui est ce
+                  qui permet de retrouver l'argent ; la demander quand elle est
+                  là évite un aller-retour à l'équipe.
+                */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label htmlFor="recu" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Photo du reçu <span className="normal-case">(facultatif)</span>
+                  </label>
+                  <input
+                    id="recu"
+                    name="recu"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/heic,application/pdf"
+                    className="border-line bg-ink rounded-clixa text-ivory-dim focus:border-gold file:bg-panel file:text-ivory file:border-line w-full min-w-0 border px-3.5 py-2.5 text-[0.86rem] file:mr-3 file:rounded file:border file:px-3 file:py-1.5 file:text-[0.82rem]"
+                  />
+                  <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
+                    Une photo du reçu du guichet, ou le PDF de votre banque. 5 Mo au plus. Il
+                    n&apos;est lisible que par notre équipe.
+                  </p>
                 </div>
 
                 <button
