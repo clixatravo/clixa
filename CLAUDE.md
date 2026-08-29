@@ -1000,7 +1000,21 @@ le schéma au démarrage, ce que le pooler gère mal.
 
 ### La base passe avant le code
 
-Payload ne pousse le schéma qu'en dehors de la production. Tant que les deux
+⚠️ **`push: false` est posé sur l'adaptateur depuis le 29 août 2026.** Payload
+ne pousse donc plus le schéma nulle part, pas même en développement : un champ
+ajouté au modèle n'existe dans aucune base tant que personne ne l'y met. Le
+build de production interroge la base pour pré-générer les pages, et
+**échouera** en cherchant la colonne manquante — sans que le site tombe, sans
+que la CI le voie.
+
+Pour aligner une base, réactiver `push` le temps de l'opération puis le
+remettre, ou écrire la migration à la main :
+
+```bash
+cd platform && npx payload run scripts/pousser-schema.ts        # n'agit que si push est actif
+```
+
+Payload ne poussait le schéma qu'en dehors de la production. Tant que les deux
 environnements partageaient une base, une modification faite en local arrivait
 seule sur le site public ; ce n'est plus le cas.
 
