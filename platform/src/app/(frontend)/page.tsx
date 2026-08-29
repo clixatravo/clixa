@@ -362,17 +362,25 @@ export default async function Accueil() {
             </p>
           </div>
 
+          {/*
+            ⚠️ Les `width`/`height` d'une `Image` sont ceux du *fichier*, jamais
+            ceux du cadre. Ici le conteneur impose son rapport et `object-cover`
+            remplit : les changer ne déplace rien à l'écran, et c'est ce qui rend
+            l'erreur difficile à voir. Ils décident du srcset — annoncer un 16/10
+            pour un fichier en 4/3 fait calculer les variantes sur une image qui
+            n'existe pas.
+          */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Carte 1 : Catalogue Exécutif */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
-              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+              <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
                 <Image
                   src="/images/marketing/catalogue-executive-clixa.jpg"
                   alt="Catalogue Exécutif et Brochure Officielle CLIXA Institute"
                   width={1200}
                   height={896}
                   sizes="(min-width: 768px) 33vw, 100vw"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
                   <span className="border-gold/40 bg-ink/80 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider uppercase backdrop-blur-md">
@@ -404,14 +412,14 @@ export default async function Accueil() {
 
             {/* Carte 2 : Séminaire Exécutif */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
-              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+              <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
                 <Image
-                  src="/images/marketing/seminaire-executif-clixa-v2.jpg"
+                  src="/images/marketing/seminaire-directeur-clixa.jpg"
                   alt="Séminaire Exécutif et Masterclass Dirigeants CLIXA Institute"
                   width={1376}
                   height={768}
                   sizes="(min-width: 768px) 33vw, 100vw"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
                   <span className="border-emerald/40 bg-ink/80 text-emerald-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider uppercase backdrop-blur-md">
@@ -443,14 +451,14 @@ export default async function Accueil() {
 
             {/* Carte 3 : Certification Diplômante */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
-              <div className="bg-ink relative aspect-[4/3] w-full overflow-hidden">
+              <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
                 <Image
                   src="/images/marketing/certification-diplome-clixa.jpg"
                   alt="Diplôme Officiel et Certification Exécutive CLIXA"
                   width={1200}
                   height={896}
                   sizes="(min-width: 768px) 33vw, 100vw"
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3">
                   <span className="bg-ink/80 rounded-clixa border border-[#0077b5]/40 px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider text-[#38bdf8] uppercase backdrop-blur-md">
