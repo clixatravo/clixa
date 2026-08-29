@@ -144,21 +144,30 @@ export const Tarifs: GlobalConfig = {
     },
 
     /**
-     * À qui envoyer l'argent.
+     * À qui envoyer l'argent — et pourquoi ce bloc ne s'affiche plus.
      *
-     * Western Union, Ria et MoneyGram ne sont pas des passerelles : personne ne
-     * paie sur le site. On y transfère de l'argent à une personne nommée, dans
-     * une ville donnée. Sans ces trois lignes, le tunnel s'arrête sur « payez »
-     * sans dire à qui.
+     * ⚠️ Ces champs ne sont plus publiés, et le masquage est la garde. La
+     * direction a tranché : le RIB, le lien de paiement bancaire et les
+     * coordonnées de transfert partent **par courriel**, après la demande du
+     * participant. Rien de tout cela n'a sa place sur une page web.
      *
-     * Ces informations ne s'inventent pas : tant qu'elles sont vides, la page
-     * de paiement le dit au lieu d'afficher des champs creux.
+     * La page du dossier les affichait dès qu'ils étaient renseignés — et elle
+     * s'ouvre avec la seule référence, qui circule par WhatsApp et par
+     * courriel. Il aurait suffi qu'on remplisse ces cases ici, par curiosité ou
+     * en croyant bien faire, pour publier un RIB sur une adresse qu'on partage.
+     * La page ne sait plus les lire ; les masquer empêche qu'on les saisisse en
+     * attendant d'y croire.
+     *
+     * Les colonnes restent en base : les retirer demanderait une migration, et
+     * elles ne coûtent rien. Pour rouvrir ce bloc un jour, retirer `hidden` —
+     * mais il faudra alors rétablir l'affichage, qui a été supprimé.
      */
     {
       type: "collapsible",
-      label: "Coordonnées du bénéficiaire",
+      label: "Coordonnées du bénéficiaire — non publiées",
       admin: {
-        description: "Ce que le participant devra saisir au guichet ou dans l'application.",
+        hidden: true,
+        description: "Sans effet : les coordonnées partent par courriel, jamais par le site.",
       },
       fields: [
         {

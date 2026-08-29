@@ -896,16 +896,23 @@ regarder si le service accepte.
 
 | Sujet | Où | Attend |
 |---|---|---|
-| **Coordonnées du bénéficiaire** | global `tarifs`, vides | **la direction** |
 | Pages légales | brouillon, 3 mentions manquantes | **la direction** |
 | Témoignages et partenaires réels | 0 publié sur 6 et 5 ; les exemples sont dépubliés | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 
-**Le premier bloque tout le reste.** Un visiteur peut retenir sa place, choisir
-son rythme et recevoir sa référence — puis il arrive à « où envoyer le
-règlement » et n'y trouve rien. La page le dit plutôt que d'inventer, mais le
-tunnel s'arrête là.
+⚠️ **Les coordonnées de règlement ne paraissent jamais sur le site**, et ce
+n'est plus un point ouvert : c'est la décision de la direction, prise le 29 août
+2026. RIB, lien de paiement bancaire et coordonnées de transfert partent **par
+courriel**, après la demande du participant — qui a choisi son moyen à
+l'inscription.
+
+Les champs `beneficiaire*` du global `tarifs` sont donc masqués dans /admin, et
+la page du dossier ne sait plus les afficher. Elle les affichait dès qu'ils
+étaient renseignés, et elle s'ouvre avec la seule référence : il aurait suffi de
+remplir ces cases pour publier un RIB sur une adresse qui circule par WhatsApp.
+Les colonnes restent en base — les retirer demanderait une migration, et elles
+ne coûtent rien.
 
 ⚠️ Un article publié — « CLIXA ouvre un rythme régulier de sessions à Abidjan »,
 daté de novembre 2026 — annonce du présentiel dans trois villes où aucune

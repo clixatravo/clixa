@@ -2,7 +2,7 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
-import { formatPrix, getTarifs } from "@/lib/catalogue";
+import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { finDeLaTenue } from "@/lib/places";
@@ -76,9 +76,7 @@ export default async function Dossier({ params, searchParams }: Props) {
   const dossier = await getDossier(reference);
   if (!dossier) notFound();
 
-  const tarifs = await getTarifs();
   const participant = await participantConnecte();
-  const beneficiaireConnu = Boolean(tarifs.beneficiaireNom);
   const { annonce } = await searchParams;
 
   /*
@@ -241,41 +239,30 @@ export default async function Dossier({ params, searchParams }: Props) {
 
           {/* ── Où envoyer ── */}
           <h2 className="font-display mb-4 text-[1.15rem]">Où envoyer le règlement</h2>
-          {beneficiaireConnu ? (
-            <div className="border-line bg-panel border p-6">
-              <dl className="flex flex-col gap-3 text-[0.9rem]">
-                <Ligne terme="Bénéficiaire" valeur={tarifs.beneficiaireNom} />
-                <Ligne
-                  terme="Ville et pays"
-                  valeur={[tarifs.beneficiaireVille, tarifs.beneficiairePays]
-                    .filter(Boolean)
-                    .join(", ")}
-                />
-                <Ligne terme="Services acceptés" valeur={tarifs.moyensPaiement.join(" · ")} />
-                <Ligne terme="Motif à indiquer" valeur={dossier.reference} />
-              </dl>
-              {tarifs.consignesPaiement && (
-                <p className="border-line text-ivory-dim mt-5 border-t pt-4 text-[0.84rem] leading-relaxed">
-                  {tarifs.consignesPaiement}
-                </p>
-              )}
-            </div>
-          ) : (
-            /*
-              Les coordonnées du bénéficiaire ne s'inventent pas. Tant qu'elles
-              ne sont pas saisies, on le dit plutôt que d'afficher un cadre vide
-              qui laisserait croire à un oubli du participant.
-            */
-            <div className="border-line bg-panel border p-6">
-              <p className="text-[0.92rem]">
-                Vous avez choisi de régler {ATTENDU[dossier.moyenSouhaite ?? "transfert"].choix}.
-                Nous vous envoyons {ATTENDU[dossier.moyenSouhaite ?? "transfert"].envoi} par
-                courriel, à l&apos;adresse indiquée à l&apos;inscription. Votre dossier{" "}
-                <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
-                enregistré : vous n&apos;avez rien à écrire de votre côté.
-              </p>
+          {/*
+              ── Les coordonnées ne paraissent pas sur le site ───────────────
+              Décision de la direction : le RIB, le lien bancaire et les
+              coordonnées de transfert partent par courriel, après la demande.
+              Ils n'ont aucune place sur une page web.
 
-              {/*
+              ⚠️ Cette page s'ouvre avec la seule référence du dossier, qui
+              circule par WhatsApp et par courriel. Une branche affichait ces
+              coordonnées dès que le global `tarifs` les portait : il aurait
+              suffi de remplir ces champs dans /admin — par curiosité, ou en
+              croyant bien faire — pour publier un RIB sur une adresse qu'on
+              partage. Les champs sont masqués dans /admin, et cette page ne
+              sait plus les afficher.
+            */}
+          <div className="border-line bg-panel border p-6">
+            <p className="text-[0.92rem]">
+              Vous avez choisi de régler {ATTENDU[dossier.moyenSouhaite ?? "transfert"].choix}. Nous
+              vous envoyons {ATTENDU[dossier.moyenSouhaite ?? "transfert"].envoi} par courriel, à
+              l&apos;adresse indiquée à l&apos;inscription. Votre dossier{" "}
+              <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
+              enregistré : vous n&apos;avez rien à écrire de votre côté.
+            </p>
+
+            {/*
                 ── La seule vérification qu'on puisse lui offrir ─────────────
                 Un lien bancaire reçu par courriel ressemble trait pour trait à
                 un hameçonnage, et le participant n'a aucun moyen de distinguer
@@ -286,33 +273,33 @@ export default async function Dossier({ params, searchParams }: Props) {
                 Un message qui ne correspond à aucune date affichée n'est pas
                 de nous.
               */}
-              <p
-                className={`mt-4 border-l-2 py-2 pl-4 text-[0.86rem] leading-relaxed ${
-                  dossier.coordonneesEnvoyeesLe
-                    ? "border-emerald-bright text-ivory"
-                    : "border-line text-ivory-dim"
-                }`}
-              >
-                {dossier.coordonneesEnvoyeesLe ? (
-                  <>
-                    Envoyé le{" "}
-                    <strong className="text-ivory">
-                      {JOUR.format(new Date(dossier.coordonneesEnvoyeesLe))}
-                    </strong>
-                    . Si un message vous réclame un paiement sans correspondre à cette date, il ne
-                    vient pas de nous : ne le suivez pas, écrivez-nous.
-                  </>
-                ) : (
-                  <>
-                    Rien ne vous a encore été envoyé. Quand ce sera fait, la date apparaîtra ici —
-                    c&apos;est ce qui vous permettra de reconnaître notre message. Nous ne vous
-                    demanderons jamais vos identifiants bancaires, et aucun règlement ne se fait sur
-                    ce site.
-                  </>
-                )}
-              </p>
+            <p
+              className={`mt-4 border-l-2 py-2 pl-4 text-[0.86rem] leading-relaxed ${
+                dossier.coordonneesEnvoyeesLe
+                  ? "border-emerald-bright text-ivory"
+                  : "border-line text-ivory-dim"
+              }`}
+            >
+              {dossier.coordonneesEnvoyeesLe ? (
+                <>
+                  Envoyé le{" "}
+                  <strong className="text-ivory">
+                    {JOUR.format(new Date(dossier.coordonneesEnvoyeesLe))}
+                  </strong>
+                  . Si un message vous réclame un paiement sans correspondre à cette date, il ne
+                  vient pas de nous : ne le suivez pas, écrivez-nous.
+                </>
+              ) : (
+                <>
+                  Rien ne vous a encore été envoyé. Quand ce sera fait, la date apparaîtra ici —
+                  c&apos;est ce qui vous permettra de reconnaître notre message. Nous ne vous
+                  demanderons jamais vos identifiants bancaires, et aucun règlement ne se fait sur
+                  ce site.
+                </>
+              )}
+            </p>
 
-              {/*
+            {/*
                 ── Une porte de sortie, pas le chemin principal ──────────────
                 Ce qu'il attend arrive par courriel : c'est écrit au-dessus, et
                 c'est la décision de la direction. Le bouton n'est plus là pour
@@ -325,18 +312,17 @@ export default async function Dossier({ params, searchParams }: Props) {
                 WhatsApp », ce qui contredisait la phrase juste au-dessus et
                 invitait à faire circuler un RIB par messagerie.
               */}
-              <a
-                href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
-                  `Bonjour, je souhaite recevoir les coordonnées de transfert pour mon dossier ${dossier.reference}.`,
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
-              >
-                Nous écrire sur WhatsApp
-              </a>
-            </div>
-          )}
+            <a
+              href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
+                `Bonjour, je vous écris au sujet de mon dossier ${dossier.reference}.`,
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
+            >
+              Nous écrire sur WhatsApp
+            </a>
+          </div>
 
           {/*
             ── Annoncer le transfert ───────────────────────────────────────
@@ -497,15 +483,5 @@ export default async function Dossier({ params, searchParams }: Props) {
         </div>
       </section>
     </>
-  );
-}
-
-function Ligne({ terme, valeur }: { terme: string; valeur?: string }) {
-  if (!valeur) return null;
-  return (
-    <div className="border-line flex flex-wrap justify-between gap-3 border-b pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-ivory-dim">{terme}</dt>
-      <dd className="text-ivory font-semibold">{valeur}</dd>
-    </div>
   );
 }
