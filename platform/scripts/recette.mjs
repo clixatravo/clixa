@@ -25,10 +25,15 @@ const dire = (ok, quoi, detail = "") => {
 };
 
 async function repond(chemin, options = {}) {
+  /*
+    Les en-têtes se fondent, elles ne se remplacent pas : `...options` posé
+    après aurait effacé le User-Agent dès qu'un appel en fournit une autre, et
+    la requête serait partie sans lui sans que rien ne le dise.
+  */
   const r = await fetch(BASE + chemin, {
     redirect: "manual",
-    headers: { "User-Agent": NAVIGATEUR },
     ...options,
+    headers: { "User-Agent": NAVIGATEUR, ...(options.headers ?? {}) },
   });
   return { code: r.status, vers: r.headers.get("location"), corps: r };
 }
@@ -153,6 +158,57 @@ dire(
 
 const suite = await repond("/api/auth/google?suite=https://ailleurs.test");
 dire(!/ailleurs\.test/.test(suite.vers ?? ""), "la destination reste interne");
+
+/*
+  ── Les justificatifs, et ce qui les protège ────────────────────────────────
+  Un reçu porte un nom, un montant et parfois un numéro de compte. Trois choses
+  doivent rester vraies : la route de lecture exige une session d'équipe, la
+  collection refuse d'être listée, et elle refuse d'être écrite.
+
+  ⚠️ On demande un identifiant qui existe et un qui n'existe pas : les deux
+  doivent répondre pareil. Un 404 sur l'un et un 401 sur l'autre apprendrait à
+  qui essaie quels reçus existent.
+*/
+const recuConnu = await repond("/api/recu/1");
+const recuInvente = await repond("/api/recu/999999");
+dire(
+  recuConnu.code === 401 && recuInvente.code === 401,
+  "un justificatif ne se lit pas sans session d'équipe",
+  `reçus ${recuConnu.code} et ${recuInvente.code}`,
+);
+
+const listeRecus = await repond("/api/recus");
+dire(listeRecus.code === 403, "les justificatifs ne se listent pas", `reçu ${listeRecus.code}`);
+
+const ecrireRecu = await repond("/api/recus", { method: "POST" });
+dire(
+  ecrireRecu.code === 403,
+  "on ne dépose pas un justificatif par l'API",
+  `reçu ${ecrireRecu.code}`,
+);
+
+/*
+  Le contrat et la signature sont des routes publiques, fermées par la référence
+  du dossier. Une référence inventée ne doit ouvrir ni l'un ni l'autre — et
+  surtout, la signature ne doit jamais aboutir sur un dossier qui n'existe pas.
+*/
+const contratInvente = await repond("/inscription/CLX-RECETTE0/contrat");
+dire(
+  contratInvente.code === 404,
+  "un contrat sans dossier répond 404",
+  `reçu ${contratInvente.code}`,
+);
+
+const signatureInventee = await repond("/api/signature", {
+  method: "POST",
+  body: "dossier=CLX-RECETTE0&nom=Personne&mention=Lu+et+approuv%C3%A9",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+});
+dire(
+  signatureInventee.code === 303 && !/signature=ok/.test(signatureInventee.vers ?? ""),
+  "on ne signe pas un dossier qui n'existe pas",
+  `reçu ${signatureInventee.code} → ${signatureInventee.vers ?? "—"}`,
+);
 
 let refus = 0;
 for (let i = 0; i < 26; i += 1) {

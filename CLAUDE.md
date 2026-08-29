@@ -55,8 +55,15 @@ cd platform && npm run recette http://localhost:3000
 
 Elle suit les 31 adresses du plan du site, les sept redirections, ce qu'un
 moteur lit (indexabilité, canonique, fourchette de prix), les douze plaquettes,
-et quatre gardes — jeton des relances, retour Google forgé, destination
-interne, cadence. Elle sort en 1 au moindre manque.
+et neuf gardes — jeton des relances, retour Google forgé, destination interne,
+cadence, et les cinq du second temps du tunnel : un justificatif ne se lit pas
+sans session d'équipe, la collection ne se liste ni ne s'écrit, un contrat sans
+dossier répond 404, une signature sur un dossier inventé n'aboutit pas. Elle
+sort en 1 au moindre manque.
+
+⚠️ **Les deux identifiants de reçu doivent répondre pareil.** La recette en
+demande un qui existe et un qui n'existe pas : un 404 sur l'un et un 401 sur
+l'autre apprendrait à qui essaie quels justificatifs existent.
 
 **Les parcours du site sont éprouvés par Playwright** (`INT-10`). Une série
 tient en une minute et remplace ce qu'on vérifiait à la main après chaque
