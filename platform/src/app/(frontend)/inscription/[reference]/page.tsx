@@ -218,6 +218,27 @@ export default async function Dossier({ params, searchParams }: Props) {
             ))}
           </div>
 
+          {/*
+            ── Dire que la pièce est arrivée, là où ça se voit ───────────────
+            Cette phrase avait d'abord été mise dans le formulaire d'annonce.
+            C'était l'endroit qui semblait juste, et le seul où elle ne pouvait
+            jamais paraître : le formulaire se retire dès l'annonce faite,
+            c'est-à-dire au moment exact où le participant cherche à savoir si
+            son reçu est bien passé. Elle vit donc sous l'échéancier, qui
+            s'affiche toujours.
+
+            Un compte, pas les fichiers : il les a chez lui.
+          */}
+          {dossier.recusRecus ? (
+            <p className="border-emerald-bright bg-panel text-ivory mb-9 border-l-2 p-4 text-[0.88rem] leading-relaxed">
+              {dossier.recusRecus === 1
+                ? "Votre justificatif nous est bien parvenu."
+                : `Vos ${dossier.recusRecus} justificatifs nous sont bien parvenus.`}{" "}
+              Notre équipe le vérifie avec le versement. Vous n&apos;avez rien d&apos;autre à faire
+              — si le reçu était illisible, nous vous le dirons.
+            </p>
+          ) : null}
+
           {/* ── Où envoyer ── */}
           <h2 className="font-display mb-4 text-[1.15rem]">Où envoyer le règlement</h2>
           {beneficiaireConnu ? (
@@ -416,6 +437,12 @@ export default async function Dossier({ params, searchParams }: Props) {
                     accept="image/png,image/jpeg,image/webp,image/heic,application/pdf"
                     className="border-line bg-ink rounded-clixa text-ivory-dim focus:border-gold file:bg-panel file:text-ivory file:border-line w-full min-w-0 border px-3.5 py-2.5 text-[0.86rem] file:mr-3 file:rounded file:border file:px-3 file:py-1.5 file:text-[0.82rem]"
                   />
+                  {/*
+                    ── Dire que la pièce est arrivée ─────────────────────────
+                    Sans cela, le participant dépose son reçu et ne voit rien
+                    changer : il redépose, ou il téléphone. Un compte suffit —
+                    on ne lui remontre pas le fichier, il l'a chez lui.
+                  */}
                   <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
                     Une photo du reçu du guichet, ou le PDF de votre banque. 5 Mo au plus. Il
                     n&apos;est lisible que par notre équipe.

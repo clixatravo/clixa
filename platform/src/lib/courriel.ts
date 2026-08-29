@@ -417,6 +417,10 @@ export async function courrielTransfert(
     moyen: string;
     numero: string;
     montant: number;
+    /** L'identifiant du dossier, pour ouvrir la bonne fiche sans la chercher. */
+    dossierId?: number | string;
+    /** Vrai si le participant a joint un justificatif. */
+    avecRecu?: boolean;
   },
 ): Promise<void> {
   if (!EQUIPE) return;
@@ -431,6 +435,11 @@ export async function courrielTransfert(
       <tr><td style="color: #94a3b8;">Programme :</td><td style="color: #ffffff;">${d.programmeTitre}</td></tr>
       <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
     </table>
+    ${
+      d.avecRecu
+        ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, section « Reçus de versement ». Le fichier est privé : il ne se lit que connecté au back-office.</p>`
+        : `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 14px; color: #cbd5e1;">Aucun justificatif joint — le numéro seul a été transmis. C'est admis : beaucoup annoncent depuis un téléphone, le reçu encore dans la poche.</p>`
+    }
     <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
   `;
 
@@ -447,13 +456,24 @@ export async function courrielTransfert(
       `WhatsApp : ${d.apprenantWhatsapp}`,
       "",
       "L'échéance est passée en « annoncé ».",
+      d.avecRecu
+        ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier."
+        : "Aucun justificatif joint — le numéro seul a été transmis.",
     ].join("\n"),
     html: gabaritHtmlEmail({
       titre: "Nouveau Transfert Annoncé",
       badgeRef: d.reference,
       corpsHtml,
       boutonTexte: "Vérifier et Valider dans l'Admin",
-      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions`,
+      /*
+        Le lien menait à la liste entière : il fallait y retrouver la référence
+        à la main, plusieurs fois par jour. Il ouvre la fiche quand on connaît
+        l'identifiant, la liste sinon — `/inscriptions/undefined` serait pire
+        que la liste.
+      */
+      boutonLien: d.dossierId
+        ? `https://www.clixa.africa/admin/collections/inscriptions/${d.dossierId}`
+        : `https://www.clixa.africa/admin/collections/inscriptions`,
     }),
   });
 }

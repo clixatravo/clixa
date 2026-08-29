@@ -47,6 +47,14 @@ export interface Dossier {
   moyenSouhaite?: "carte" | "virement" | "transfert";
   /** Le jour où l'équipe le lui a envoyé — affiché au participant, exprès. */
   coordonneesEnvoyeesLe?: string;
+  /**
+   * Le nombre de justificatifs reçus pour ce dossier.
+   *
+   * ⚠️ Un compte, pas les fichiers. Le participant n'a pas à relire ce qu'il a
+   * déposé — il l'a chez lui — mais il doit savoir que c'est arrivé, sans quoi
+   * il redépose ou il téléphone.
+   */
+  recusRecus?: number;
   echeances: EcheanceDossier[];
 }
 
@@ -86,6 +94,18 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
       ? session.programme
       : undefined;
 
+  /*
+    Combien de justificatifs sont arrivés. On compte plutôt que de charger : la
+    page n'affiche pas les fichiers, et le participant n'a aucune raison de
+    relire depuis le site ce qu'il vient d'y déposer. Il a besoin de savoir
+    que c'est arrivé, rien de plus.
+  */
+  const { totalDocs: recusRecus } = await payload.count({
+    collection: "recus",
+    where: { dossier: { equals: d.id } },
+    overrideAccess: true,
+  });
+
   return {
     reference: String(d.reference),
     statut: String(d.statut),
@@ -96,6 +116,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
     ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
     ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),
+    ...(recusRecus > 0 ? { recusRecus } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
       ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),

@@ -156,6 +156,7 @@ export async function POST(request: Request) {
     overrideAccess: true,
   });
 
+  let recuDepose = false;
   if (aUnRecu) {
     try {
       const { chemin, taille, type } = await deposerRecu(reference, fichier);
@@ -171,6 +172,7 @@ export async function POST(request: Request) {
           taille,
         },
       });
+      recuDepose = true;
     } catch (e) {
       /*
         L'annonce est déjà enregistrée, et c'est elle qui compte : le numéro de
@@ -193,6 +195,8 @@ export async function POST(request: Request) {
     programmeTitre: String(programme?.titre ?? ""),
     moyen: MOYENS[moyen],
     numero,
+    dossierId: dossier.id,
+    avecRecu: recuDepose,
     montant: Number(courante.montant ?? 0),
   });
 
