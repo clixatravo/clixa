@@ -1,7 +1,7 @@
 import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
-import { paysDeLIndicatif } from "@/lib/indicatifs";
+import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -45,6 +45,16 @@ export async function POST(request: Request) {
 
   if (!nom || !email || !whatsapp) {
     redirect("/contact?erreur=champs" as Route);
+  }
+
+  /*
+    Sans indicatif, le numéro ne désigne personne hors de son pays : le bouton
+    WhatsApp du back-office refuse de composer, et le conseiller ne peut pas
+    rappeler. On refuse ici plutôt que d'enregistrer une demande qu'on ne
+    saurait pas honorer.
+  */
+  if (!aUnIndicatif(whatsapp)) {
+    redirect("/contact?erreur=indicatif" as Route);
   }
 
   // Mêmes bornes qu'à l'inscription : ces valeurs partent dans un courriel que

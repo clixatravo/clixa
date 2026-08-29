@@ -31,6 +31,8 @@ const MESSAGES: Record<string, string> = {
   champs: "Il manque une information. Tous les champs marqués sont nécessaires pour vous rappeler.",
   session: "Cette session n'existe plus. Choisissez-en une autre ci-dessous.",
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
+  indicatif:
+    "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal. C'est par ce numéro que nous vous joindrons.",
   technique: "L'enregistrement a échoué. Réessayez — si cela persiste, écrivez-nous.",
 };
 
@@ -190,7 +192,8 @@ export default async function Inscription({ searchParams }: Props) {
                   name="whatsapp"
                   type="tel"
                   autoComplete="tel"
-                  aide="Avec l'indicatif du pays."
+                  placeholder="+212 6 00 00 00 00"
+                  aide="Avec l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal."
                   valeur={participant?.telephone}
                 />
                 <Champ
@@ -304,6 +307,7 @@ function Champ({
   name,
   type = "text",
   autoComplete,
+  placeholder,
   aide,
   valeur,
 }: {
@@ -311,6 +315,7 @@ function Champ({
   name: string;
   type?: string;
   autoComplete?: string;
+  placeholder?: string;
   aide?: string;
   valeur?: string;
 }) {
@@ -325,10 +330,16 @@ function Champ({
         type={type}
         required
         autoComplete={autoComplete}
+        placeholder={placeholder}
+        aria-describedby={aide ? `${name}-aide` : undefined}
         defaultValue={valeur}
         className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
       />
-      {aide && <span className="text-ivory-dim text-[0.72rem]">{aide}</span>}
+      {aide && (
+        <span id={`${name}-aide`} className="text-ivory-dim text-[0.72rem]">
+          {aide}
+        </span>
+      )}
     </div>
   );
 }

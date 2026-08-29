@@ -73,9 +73,11 @@ export default async function Contact({ searchParams }: Props) {
                   role="alert"
                   className="border-gold bg-gold/15 text-gold-bright rounded-clixa mb-8 border p-4 text-[0.9rem]"
                 >
-                  {erreur === "champs"
-                    ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
-                    : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à contact@clixa.africa."}
+                  {erreur === "indicatif"
+                    ? "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal. C'est par ce numéro que le conseiller vous rappellera."
+                    : erreur === "champs"
+                      ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
+                      : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à contact@clixa.africa."}
                 </p>
               )}
 

@@ -62,6 +62,34 @@ const INDICATIFS: Record<string, string> = {
 };
 
 /**
+ * Le numéro porte-t-il un indicatif international ?
+ *
+ * ── Pourquoi c'est obligatoire, et pas seulement conseillé ──────────────────
+ * Sans indicatif, le numéro ne désigne personne hors de son pays. Le bouton
+ * WhatsApp du back-office refuse alors de composer, et l'équipe se retrouve à
+ * deviner : « 0689324243 » est marocain pour qui le lit, et injoignable pour
+ * qui appelle. Un dossier est arrivé ainsi.
+ *
+ * ⚠️ On exige la forme, pas l'appartenance à la table. Refuser un pays qu'on
+ * n'a pas listé écarterait un inscrit pour une lacune qui est la nôtre : il
+ * suffit que l'indicatif soit là et que le numéro ait une longueur plausible.
+ */
+export function aUnIndicatif(numero: string): boolean {
+  const brut = numero.trim();
+  // Le « + » ou le « 00 » qui l'annonce, et rien d'autre avant.
+  if (!/^(\+|00)/.test(brut)) return false;
+
+  let chiffres = brut.replace(/\D/g, "");
+  if (chiffres.startsWith("00")) chiffres = chiffres.slice(2);
+
+  /*
+    E.164 borne le numéro à quinze chiffres, indicatif compris. En dessous de
+    huit, il n'y a pas la place pour un indicatif et un abonné.
+  */
+  return chiffres.length >= 8 && chiffres.length <= 15;
+}
+
+/**
  * Le pays d'un numéro international, ou l'indicatif à défaut.
  *
  * Rend une chaîne dans tous les cas : le champ est obligatoire en base, et un

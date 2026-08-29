@@ -801,6 +801,22 @@ garde. `csrf`, `cors` et `serverURL` sont maintenant posés sur
 `NEXT_PUBLIC_SITE_URL`. Vérifié : le même cookie passe depuis l'origine du site
 et est refusé depuis une autre.
 
+⚠️ **L'indicatif du pays est obligatoire, aux deux portes** (`lib/indicatifs.ts`,
+depuis le 29 août 2026). Sans lui, le numéro ne désigne personne hors de son
+pays : le bouton WhatsApp du back-office refuse de composer, et l'équipe se
+retrouve à deviner. Un dossier était déjà arrivé avec `0689324243` — marocain
+pour qui le lit, injoignable pour qui appelle.
+
+On exige la forme, pas l'appartenance à la table : refuser un pays qu'on n'a pas
+listé écarterait un inscrit pour une lacune qui est la nôtre. Le pays de la
+demande de rappel s'en déduit — deux saisies pour un même fait laissaient écrire
+« Maroc » sous un numéro ivoirien.
+
+⚠️ **Le repli ne devine pas.** Un premier essai rendait « Indicatif +346 » pour
+un numéro espagnol : les trois premiers chiffres d'un code à deux. La longueur
+d'un indicatif ne se déduit pas sans la table ; hors table, la fiche porte « À
+préciser ».
+
 **Les champs libres ont des bornes** (`lib/saisie.ts`). Ils n'étaient vérifiés
 que sur un point : ne pas être vides. On refuse plutôt que de tronquer — un nom
 coupé donnerait un dossier au nom de quelqu'un d'autre. L'adresse est vérifiée

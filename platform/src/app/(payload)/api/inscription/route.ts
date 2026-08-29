@@ -6,6 +6,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
+import { aUnIndicatif } from "@/lib/indicatifs";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -88,6 +89,13 @@ export async function POST(request: Request) {
 
   if (!formation) redirect("/formations" as Route);
   if (!nom || !email || !whatsapp || !pays) echec("champs");
+
+  /*
+    Même exigence qu'à la demande de rappel, et pour la même raison : un dossier
+    est déjà arrivé avec « 0689324243 », marocain pour qui le lit et injoignable
+    pour qui appelle. C'est le numéro par lequel l'équipe suit tout le dossier.
+  */
+  if (!aUnIndicatif(whatsapp)) echec("indicatif");
 
   /*
     Bornes des champs libres.

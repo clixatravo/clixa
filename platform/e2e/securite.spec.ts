@@ -88,3 +88,40 @@ test.describe("Sécurité", () => {
     expect(acceptes).not.toContain("image/svg+xml");
   });
 });
+
+/*
+  ── L'indicatif est obligatoire, et c'est une garde ─────────────────────────
+  Sans lui, le numéro ne désigne personne hors de son pays : le bouton WhatsApp
+  du back-office refuse de composer, et l'équipe se retrouve à deviner. Un
+  dossier est déjà arrivé avec « 0689324243 » — marocain pour qui le lit,
+  injoignable pour qui appelle.
+*/
+test("un numéro sans indicatif est refusé, aux deux portes", async ({ request }) => {
+  const rappel = await request.post("/api/demande-rappel", {
+    form: {
+      nom: "Épreuve Indicatif",
+      email: `indicatif.${Date.now()}${MARQUE}`,
+      whatsapp: "0689324243",
+      origine: "/contact",
+    },
+    maxRedirects: 0,
+  });
+  expect(rappel.headers()["location"], "le rappel doit refuser").toContain("erreur=indicatif");
+
+  const inscription = await request.post("/api/inscription", {
+    form: {
+      formation: "directeur-audit-interne",
+      nom: "Épreuve Indicatif",
+      email: `indicatif.${Date.now()}${MARQUE}`,
+      whatsapp: "0689324243",
+      pays: "Maroc",
+      plan: "P1",
+      moyen: "virement",
+      payeur: "particulier",
+    },
+    maxRedirects: 0,
+  });
+  expect(inscription.headers()["location"], "la pré-inscription doit refuser").toContain(
+    "erreur=indicatif",
+  );
+});
