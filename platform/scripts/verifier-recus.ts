@@ -47,6 +47,7 @@ const dossier = await payload.create({
 });
 
 let chemin: string | undefined;
+let dossierSupprime = false;
 
 try {
   const octets = await readFile("public/images/marketing/catalogue-executive-clixa.jpg");
@@ -86,13 +87,32 @@ try {
   });
   dire("la fiche est créée et rattachée au dossier", Boolean(fiche.id));
 
-  await payload.delete({ collection: "recus", id: fiche.id, overrideAccess: true });
+  /*
+    ── Supprimer le dossier, et non la fiche ────────────────────────────────
+    La clef étrangère de `recus.dossier_id` est en « SET NULL » et la colonne
+    est obligatoire : sans le crochet `beforeDelete` d'`Inscriptions`, Postgres
+    refuse de vider le lien et c'est la suppression du dossier entier qui
+    échoue. Un dossier accompagné d'un justificatif devenait indestructible,
+    et le message parlait de contrainte, jamais de reçu.
+  */
+  await payload.delete({ collection: "inscriptions", id: dossier.id, overrideAccess: true });
+  dossierSupprime = true;
+
+  const resteLaFiche = await payload
+    .findByID({ collection: "recus", id: fiche.id, overrideAccess: true })
+    .catch(() => null);
+  dire("supprimer le dossier emporte le reçu", resteLaFiche === null);
+
   const apres = await lireRecu(chemin).catch(() => null);
-  dire("supprimer la fiche retire aussi le fichier du magasin", apres === null);
+  dire("et le fichier quitte le magasin avec lui", apres === null);
   chemin = undefined;
 } finally {
   if (chemin) await retirerRecu(chemin).catch(() => undefined);
-  await payload.delete({ collection: "inscriptions", id: dossier.id, overrideAccess: true });
+  if (!dossierSupprime) {
+    await payload
+      .delete({ collection: "inscriptions", id: dossier.id, overrideAccess: true })
+      .catch(() => undefined);
+  }
   console.log("  · dossier d'épreuve supprimé");
 }
 

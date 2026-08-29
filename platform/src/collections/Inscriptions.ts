@@ -162,6 +162,34 @@ export const Inscriptions: CollectionConfig = {
         return doc;
       },
     ],
+    beforeDelete: [
+      async ({ id, req }) => {
+        /*
+          ── Un reçu ne survit pas à son dossier ───────────────────────────
+          La clef étrangère de `recus.dossier_id` est en « SET NULL », et la
+          colonne est obligatoire : Postgres refuse donc de vider le lien, et
+          c'est la suppression entière qui échoue. Un dossier accompagné d'un
+          justificatif devenait indestructible — ni par script, ni depuis
+          /admin, et le message parlait de contrainte, pas de reçu.
+
+          On les retire d'abord, par l'API : le crochet `afterDelete` de
+          `Recus` en profite pour effacer aussi le fichier dans le magasin. Une
+          suppression en SQL laisserait le fichier derrière, facturé et toujours
+          lisible par qui détient le jeton.
+        */
+        const { docs } = await req.payload.find({
+          collection: "recus",
+          where: { dossier: { equals: id } },
+          limit: 100,
+          depth: 0,
+          overrideAccess: true,
+        });
+
+        for (const recu of docs) {
+          await req.payload.delete({ collection: "recus", id: recu.id, overrideAccess: true });
+        }
+      },
+    ],
     beforeChange: [
       ({ data }) => {
         /*
