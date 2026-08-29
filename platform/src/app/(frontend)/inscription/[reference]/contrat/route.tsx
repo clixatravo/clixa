@@ -23,6 +23,11 @@ import type { Dossier } from "@/lib/inscriptions";
  * ⚠️ Les coordonnées de paiement n'y figurent pas, et l'article 3 le dit :
  * elles sont communiquées après signature. C'est la décision de la direction,
  * et le contrat s'y tient.
+ *
+ * ⚠️ La juridiction est celle d'Agadir, où la société a son siège. Le modèle
+ * transmis par la direction désignait Casablanca — les deux ne pouvaient pas
+ * avoir raison, puisque les mentions légales du site renvoient déjà aux
+ * tribunaux du siège. Tranché par la direction le 29 août 2026.
  */
 
 export const dynamic = "force-dynamic";
@@ -198,7 +203,7 @@ function Contrat({ dossier }: { dossier: Dossier }) {
           feuilles de présence, journaux d&apos;accès, supports remis, validations et justificatifs
           de paiement. Le présent contrat est régi par le droit marocain. Tout litige relatif à sa
           validité, son interprétation, son exécution, son paiement ou sa résiliation relève de la
-          compétence exclusive des tribunaux compétents de Casablanca, sans préjudice du droit de
+          compétence exclusive des tribunaux compétents d&apos;Agadir, sans préjudice du droit de
           CLIXA de solliciter toute mesure conservatoire utile.
         </Text>
 

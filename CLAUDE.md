@@ -425,9 +425,10 @@ confiance et un abonnement.
 elles sont communiquées après signature. Le contrat s'accorde ainsi avec la
 décision de la direction.
 
-⚠️ **Le contrat dit « tribunaux de Casablanca », les mentions légales disent
-« Agadir ».** Le premier vient du modèle transmis par la direction, les secondes
-découlent du siège. Les deux ne peuvent pas avoir raison : à trancher.
+La juridiction est celle d'**Agadir**, où la société a son siège — tranché par
+la direction le 29 août 2026. Le modèle transmis désignait Casablanca, quand les
+mentions légales du site renvoyaient déjà aux tribunaux du siège : deux
+documents de la même maison ne pouvaient pas se contredire là-dessus.
 
 **Le participant joint son justificatif** (`lib/recus.ts`, collection `Recus`,
 `api/recu/[id]`, depuis le 29 août 2026). Une photo du reçu du guichet ou le PDF
