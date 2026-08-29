@@ -43,7 +43,22 @@ export const DemandesRappel: CollectionConfig = {
           required: true,
           admin: { width: "50%" },
         },
-        { name: "email", type: "email", label: "E-mail", required: true, admin: { width: "50%" } },
+        {
+          /*
+            ── Facultatif depuis le 29 août 2026 ──────────────────────────────
+            La demande de rappel se fait au téléphone : le conseiller appelle,
+            c'est tout l'objet. Exiger une adresse en plus du numéro ajoutait un
+            champ pour un usage qui n'arrive qu'ensuite — et chaque champ de
+            plus est une occasion de refermer l'onglet.
+
+            Elle reste dans le modèle : beaucoup la donneront d'eux-mêmes en
+            écrivant, et l'équipe la saisit depuis /admin quand elle l'obtient.
+          */
+          name: "email",
+          type: "email",
+          label: "E-mail",
+          admin: { width: "50%" },
+        },
       ],
     },
     {

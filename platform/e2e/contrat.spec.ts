@@ -55,18 +55,59 @@ test("le contrat se demande, puis se signe", async ({ page }) => {
   await expect(formulaire, "le formulaire de signature doit apparaître").toBeVisible();
 
   /*
+    Le tracé se fait au doigt sur téléphone et à la souris sur ordinateur : un
+    seul jeu d'événements « pointer » couvre les deux. On imite ici la main —
+    poser, déplacer, lever — plutôt que d'écrire directement dans le champ
+    caché, qui ne prouverait que l'existence du champ.
+  */
+  const tracer = async () => {
+    await page.evaluate(() => {
+      const c = document.querySelector("#signature-toile") as HTMLCanvasElement | null;
+      if (!c) throw new Error("cadre de signature absent");
+      const r = c.getBoundingClientRect();
+      const evt = (type: string, x: number, y: number) =>
+        c.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 1,
+            pointerType: "touch",
+            isPrimary: true,
+            bubbles: true,
+            cancelable: true,
+            clientX: r.left + x,
+            clientY: r.top + y,
+          }),
+        );
+      evt("pointerdown", 20, 60);
+      for (let i = 0; i <= 40; i += 1) evt("pointermove", 20 + i * 5, 60 - Math.sin(i / 4) * 25);
+      evt("pointerup", 220, 60);
+    });
+  };
+
+  /*
     Un nom qui n'est pas celui du dossier ne signe pas. Sans ce refus, la
     signature ne dirait rien de plus qu'un clic.
   */
   await formulaire.locator('input[name="nom"]').fill("Quelqu'un d'autre");
   await formulaire.locator('input[name="mention"]').fill("Lu et approuvé");
+  await tracer();
   await formulaire.locator('button[type="submit"]').click();
   await page.waitForURL(/signature=nom/);
+
+  /*
+    Un cadre vide n'est pas une signature. Sans ce refus, le tracé serait
+    décoratif — et le contrat porterait un blanc là où l'on attend une main.
+  */
+  const sansTrace = page.locator('form[action="/api/signature"]');
+  await sansTrace.locator('input[name="nom"]').fill(NOM);
+  await sansTrace.locator('input[name="mention"]').fill("Lu et approuvé");
+  await sansTrace.locator('button[type="submit"]').click();
+  await page.waitForURL(/signature=trace/);
 
   // La mention que le contrat exige, et pas une approximation.
   const encore = page.locator('form[action="/api/signature"]');
   await encore.locator('input[name="nom"]').fill(NOM);
   await encore.locator('input[name="mention"]').fill("ok");
+  await tracer();
   await encore.locator('button[type="submit"]').click();
   await page.waitForURL(/signature=mention/);
 
@@ -74,6 +115,7 @@ test("le contrat se demande, puis se signe", async ({ page }) => {
   const bonne = page.locator('form[action="/api/signature"]');
   await bonne.locator('input[name="nom"]').fill(NOM.toLowerCase());
   await bonne.locator('input[name="mention"]').fill("lu et approuve");
+  await tracer();
   await bonne.locator('button[type="submit"]').click();
   await page.waitForURL(/signature=ok/);
 

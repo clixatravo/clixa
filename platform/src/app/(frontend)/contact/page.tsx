@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 export const metadata: Metadata = {
   title: "Être rappelé",
@@ -68,6 +69,39 @@ export default async function Contact({ searchParams }: Props) {
                 ouvrées pour préciser le programme, les dates et les possibilités de financement.
               </p>
 
+              {/*
+                ── Nos coordonnées avant notre formulaire ────────────────────
+                Beaucoup préfèrent écrire eux-mêmes plutôt que de laisser un
+                numéro et attendre. Leur imposer un formulaire pour obtenir une
+                adresse qu'on affiche partout ailleurs n'a pas de sens : on
+                donne les deux, et chacun choisit.
+              */}
+              <div className="border-line/70 bg-ink/40 rounded-clixa mb-8 border p-5">
+                <p className="mono-label text-gold mb-3 text-[0.68rem] tracking-wider">
+                  Nous joindre directement
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                  <a
+                    href={RESEAUX_CLIXA.whatsapp.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa inline-flex min-h-11 flex-1 items-center justify-center border px-4 text-[0.88rem] font-medium transition-colors"
+                  >
+                    WhatsApp · {RESEAUX_CLIXA.whatsapp.numeroAffiche}
+                  </a>
+                  <a
+                    href="mailto:contact@clixa.africa"
+                    className="border-line text-ivory hover:border-gold rounded-clixa inline-flex min-h-11 flex-1 items-center justify-center border px-4 text-[0.88rem] font-medium transition-colors"
+                  >
+                    contact@clixa.africa
+                  </a>
+                </div>
+                <p className="text-ivory-dim/70 mt-3 text-[0.8rem] leading-relaxed">
+                  Ou laissez-nous votre numéro ci-dessous : c&apos;est le conseiller qui vous
+                  rappelle.
+                </p>
+              </div>
+
               {erreur && (
                 <p
                   role="alert"
@@ -100,13 +134,6 @@ export default async function Contact({ searchParams }: Props) {
                 <input type="hidden" name="origine" value="/contact" />
 
                 <Champ label="Nom complet" name="nom" autoComplete="name" requis />
-                <Champ
-                  label="Adresse e-mail"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  requis
-                />
                 {/*
                   ── Trois champs, et rien d'autre ──────────────────────────
                   Le formulaire en demandait sept : pays, formation visée,

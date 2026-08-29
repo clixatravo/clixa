@@ -52,6 +52,8 @@ export interface Dossier {
   /** Le jour où il a signé, et sous quel nom. Le contrat le porte ensuite. */
   contratSigneLe?: string;
   contratSignataire?: string;
+  /** Le tracé apposé au doigt ou à la souris, en PNG encodé. */
+  contratTrace?: string;
   /**
    * Le nombre de justificatifs reçus pour ce dossier.
    *
@@ -139,6 +141,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     ...(d.contratDemandeLe ? { contratDemandeLe: String(d.contratDemandeLe) } : {}),
     ...(d.contratSigneLe ? { contratSigneLe: String(d.contratSigneLe) } : {}),
     ...(d.contratSignataire ? { contratSignataire: String(d.contratSignataire) } : {}),
+    ...(d.contratTrace ? { contratTrace: String(d.contratTrace) } : {}),
     ...(recusRecus > 0 ? { recusRecus } : {}),
     ...(d.apprenantNom ? { apprenantNom: String(d.apprenantNom) } : {}),
     ...(d.apprenantEmail ? { apprenantEmail: String(d.apprenantEmail) } : {}),

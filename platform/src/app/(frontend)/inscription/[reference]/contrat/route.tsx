@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import { getDossier } from "@/lib/inscriptions";
 import { formatPrix } from "@/lib/catalogue";
 import type { Dossier } from "@/lib/inscriptions";
@@ -68,6 +68,13 @@ const s = StyleSheet.create({
   colonneTitre: { fontSize: 7.5, letterSpacing: 1.2, color: OR, marginBottom: 7 },
   champ: { marginBottom: 5, lineHeight: 1.4 },
   mention: { fontSize: 7, color: GRIS, marginTop: 6, lineHeight: 1.35 },
+  /*
+    Le tracé arrive sur fond transparent, dessiné en clair pour un écran sombre.
+    Sur le papier il serait invisible : on le pose sur une bande sombre, comme
+    un tampon, plutôt que d'en inverser les couleurs — une inversion ferait de
+    l'anti-aliasing une bouillie grise.
+  */
+  trace: { height: 46, marginTop: 4, backgroundColor: ENCRE, borderRadius: 3 },
   intertitre: { fontSize: 7.5, letterSpacing: 1.3, color: OR, marginTop: 16, marginBottom: 6 },
   pied: {
     position: "absolute",
@@ -224,6 +231,7 @@ function Contrat({ dossier }: { dossier: Dossier }) {
                   Signé le : {JOUR.format(new Date(dossier.contratSigneLe))}
                 </Text>
                 <Text style={s.champ}>Mention : « Lu et approuvé »</Text>
+                {dossier.contratTrace ? <Image style={s.trace} src={dossier.contratTrace} /> : null}
                 <Text style={s.mention}>
                   Signature électronique apposée depuis l&apos;espace du participant. Horodatage,
                   adresse IP, navigateur et empreinte des termes sont conservés par CLIXA et
@@ -313,9 +321,12 @@ function Contrat({ dossier }: { dossier: Dossier }) {
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>SIGNATURE</Text>
             {dossier.contratSigneLe ? (
-              <Text style={s.champ}>
-                Signé électroniquement le {JOUR.format(new Date(dossier.contratSigneLe))}
-              </Text>
+              <>
+                {dossier.contratTrace ? <Image style={s.trace} src={dossier.contratTrace} /> : null}
+                <Text style={s.champ}>
+                  Signé électroniquement le {JOUR.format(new Date(dossier.contratSigneLe))}
+                </Text>
+              </>
             ) : (
               <Text style={s.mention}>Précédée de la mention « Lu et approuvé ».</Text>
             )}

@@ -425,9 +425,28 @@ contrat rédigé à la main vieillit dès que le barème change, et se recopie d
 travers.
 
 **Le contrat se signe en ligne** (`api/signature`, `lib/signature.ts`, depuis le
-29 août 2026). Deux champs : le nom du dossier recopié, et la mention « Lu et
-approuvé » que le contrat exige. Une case seule se coche pour n'importe qui ; un
-tracé à la souris n'ajoute pas de force, il ajoute une image.
+29 août 2026). Trois choses : le nom du dossier recopié, la mention « Lu et
+approuvé » que le contrat exige, et le **tracé** apposé au doigt sur téléphone
+ou à la souris sur ordinateur (`components/SignatureTracee.tsx`).
+
+⚠️ **Le tracé n'ajoute pas de force juridique** — c'est l'empreinte des termes
+qui défend la signature. Il apporte autre chose, qui compte tout autant : un
+contrat portant une signature se lit comme un contrat, et un document qu'on
+n'ose pas montrer ne sert à rien. Son empreinte est gardée elle aussi, pour
+qu'il ne puisse pas être remplacé après coup.
+
+⚠️ **`touch-action: none` est indispensable sur la toile.** Sans lui, le doigt
+fait défiler la page au lieu de tracer, et le cadre paraît simplement inerte sur
+mobile. La toile est aussi dimensionnée en pixels réels et non CSS : sur un
+écran à densité double, un trait tracé aux dimensions CSS ressort flou dans le
+PDF, où il est agrandi.
+
+**Le bouton « J'ai envoyé les instructions de paiement »**
+(`components/admin/PasserAuPaiement.tsx`) pose la date du jour et enregistre.
+Le champ existait ; il demandait cinq gestes, et ce qui demande cinq gestes
+finit par ne plus être fait. ⚠️ Cette date n'est pas une trace interne : le
+participant la voit, et c'est elle qui lui permet de distinguer notre courriel
+d'un hameçonnage. Le bouton ne paraît qu'une fois le contrat signé.
 
 ⚠️ **C'est une signature électronique *simple*** : recevable, mais contestable.
 Une signature qualifiée, qui bénéficie d'une présomption de fiabilité, demande

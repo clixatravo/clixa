@@ -80,6 +80,21 @@ export function memeNom(saisi: string, attendu: string): boolean {
   return reduire(saisi) === reduire(attendu);
 }
 
+/**
+ * Le tracé est-il une image PNG plausible, et pas trop lourde ?
+ *
+ * ⚠️ On ne fait pas confiance à ce que dit le formulaire. Le champ est caché,
+ * donc rempli par un script chez nous — mais rien n'empêche d'en poster un
+ * autre. Un préfixe vérifié et une taille bornée suffisent : le PNG n'est
+ * jamais exécuté, seulement redessiné dans le PDF.
+ */
+export function traceValable(donnees: string): boolean {
+  if (!donnees.startsWith("data:image/png;base64,")) return false;
+  // Quelques centaines d'octets pour un trait, 300 Ko de marge pour un écran
+  // dense et une signature bavarde. Au-delà, ce n'est plus une signature.
+  return donnees.length > 200 && donnees.length <= 300_000;
+}
+
 /** Ce qu'on garde de la requête, pour le jour où il faudra le produire. */
 export function preuve(args: {
   empreinte: string;
@@ -87,6 +102,8 @@ export function preuve(args: {
   navigateur: string;
   nom: string;
   quand: string;
+  /** L'empreinte du tracé, quand il y en a un. */
+  empreinteTrace?: string;
 }): string {
   return [
     `Signé le : ${args.quand}`,
@@ -95,5 +112,13 @@ export function preuve(args: {
     `Adresse IP : ${args.ip}`,
     `Navigateur : ${args.navigateur}`,
     `Empreinte des termes (SHA-256) : ${args.empreinte}`,
+    ...(args.empreinteTrace
+      ? [`Empreinte du tracé (SHA-256) : ${args.empreinteTrace}`]
+      : ["Tracé : aucun"]),
   ].join("\n");
+}
+
+/** L'empreinte du tracé, pour qu'il ne puisse pas être remplacé après coup. */
+export function empreinteDuTrace(donnees: string): string {
+  return createHash("sha256").update(donnees, "utf8").digest("hex");
 }

@@ -6,6 +6,7 @@ import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { finDeLaTenue } from "@/lib/places";
+import { SignatureTracee } from "@/components/SignatureTracee";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -35,6 +36,8 @@ const RETOUR_ANNONCE: Record<string, string> = {
   "signature-nom":
     "Le nom saisi ne correspond pas à celui du dossier. Recopiez-le tel qu'il figure ci-dessus.",
   "signature-mention": "Il manque la mention exacte « Lu et approuvé », que le contrat exige.",
+  "signature-trace":
+    "Il manque votre signature. Tracez-la dans le cadre — au doigt sur téléphone, à la souris sur ordinateur.",
   stockage:
     "Votre annonce n'a pas été enregistrée : nous ne pouvons pas recevoir de pièce jointe pour l'instant. Réessayez sans le fichier, le numéro seul nous suffit.",
 };
@@ -390,6 +393,8 @@ export default async function Dossier({ params, searchParams }: Props) {
                         />
                       </div>
                     </div>
+
+                    <SignatureTracee nom={dossier.apprenantNom ?? ""} />
 
                     <p className="text-ivory-dim/70 mt-4 text-[0.78rem] leading-relaxed">
                       En signant, vous acceptez les termes du contrat ci-dessus. Nous conservons la

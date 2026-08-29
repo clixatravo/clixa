@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const email = texte("email");
   const whatsapp = texte("whatsapp");
 
-  if (!nom || !email || !whatsapp) {
+  if (!nom || !whatsapp) {
     redirect("/contact?erreur=champs" as Route);
   }
 
@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     !tientDans(nom, LONGUEURS.nom) ||
     !tientDans(whatsapp, LONGUEURS.telephone) ||
     !tientDans(texte("message"), LONGUEURS.message) ||
-    !emailPlausible(email)
+    // L'adresse est facultative ; donnée, elle doit tout de même tenir debout.
+    (email !== "" && !emailPlausible(email))
   ) {
     redirect("/contact?erreur=champs" as Route);
   }
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
       overrideAccess: true,
       data: {
         nom,
-        email,
+        ...(email ? { email } : {}),
         whatsapp,
         pays,
         programme,

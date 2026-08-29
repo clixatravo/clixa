@@ -517,6 +517,24 @@ export const Inscriptions: CollectionConfig = {
               admin: { width: "30%", readOnly: true },
             },
             {
+              /*
+                Le tracé, en PNG encodé. Quelques kilo-octets : un trait sur
+                fond transparent se compresse bien, et le garder en base plutôt
+                qu'au magasin évite un aller-retour pour composer le contrat.
+
+                ⚠️ Il n'ajoute pas de force juridique — c'est l'empreinte des
+                termes qui défend la signature. Il ajoute ce qu'un contrat doit
+                avoir pour se lire comme un contrat : une signature qu'on voit.
+              */
+              name: "contratTrace",
+              type: "textarea",
+              label: "Tracé de la signature",
+              admin: {
+                readOnly: true,
+                description: "Image PNG encodée, apposée sur le contrat.",
+              },
+            },
+            {
               name: "contratPreuve",
               type: "textarea",
               label: "Preuve de signature",
@@ -545,6 +563,20 @@ export const Inscriptions: CollectionConfig = {
                 width: "30%",
                 description: "À renseigner après l'envoi — le participant voit cette date.",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              /*
+                Le geste, à côté de la date qu'il pose. Un champ date suffit
+                techniquement ; il ne suffit pas dans une journée de travail, où
+                l'on ouvre vingt dossiers et où ce qui demande cinq gestes finit
+                par ne plus être fait.
+              */
+              name: "passerAuPaiement",
+              type: "ui",
+              label: "Étape suivante",
+              admin: {
+                components: { Field: "@/components/admin/PasserAuPaiement#PasserAuPaiement" },
               },
             },
             {

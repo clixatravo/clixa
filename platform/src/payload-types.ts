@@ -575,7 +575,7 @@ export interface Page {
 export interface DemandesRappel {
   id: number;
   nom: string;
-  email: string;
+  email?: string | null;
   /**
    * Format international avec indicatif (ex: +212612345678).
    */
@@ -648,6 +648,10 @@ export interface Inscription {
   contratDemandeLe?: string | null;
   contratSigneLe?: string | null;
   contratSignataire?: string | null;
+  /**
+   * Image PNG encodée, apposée sur le contrat.
+   */
+  contratTrace?: string | null;
   /**
    * Horodatage, adresse IP, navigateur et empreinte du contrat au moment de la signature. À produire en cas de contestation.
    */
@@ -1243,6 +1247,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   contratDemandeLe?: T;
   contratSigneLe?: T;
   contratSignataire?: T;
+  contratTrace?: T;
   contratPreuve?: T;
   coordonneesEnvoyeesLe?: T;
   montantTotal?: T;
