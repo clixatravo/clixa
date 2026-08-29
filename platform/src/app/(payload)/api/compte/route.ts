@@ -2,6 +2,7 @@ import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
+import { envoyerConfirmation } from "@/lib/courriel";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { fermerSession, ouvrirSession, participantConnecte } from "@/lib/session-apprenant";
@@ -185,7 +186,28 @@ export async function POST(request: Request) {
         C'est aussi ce qui arrête un robot : remplir le formulaire ne donne
         plus rien, il faut relever une boîte aux lettres.
       */
-      redirect("/compte/creer?envoye=1" as Route);
+      /*
+        Le jeton est écrit par Payload à la création, dans un champ caché : on
+        le relit pour composer le message nous-mêmes. Le relire plutôt que de le
+        refabriquer garantit qu'on envoie celui que la base attend.
+      */
+      const relu = await payload.findByID({
+        collection: "apprenants",
+        id: compte.id,
+        overrideAccess: true,
+        showHiddenFields: true,
+        depth: 0,
+      });
+      const jeton = (relu as { _verificationToken?: string })._verificationToken;
+      if (!jeton) {
+        payload.logger.error({ email }, "[compte] aucun jeton de confirmation à envoyer");
+      }
+
+      const parti = jeton
+        ? await envoyerConfirmation(payload, email, { nom, token: jeton })
+        : false;
+
+      redirect(`/compte/creer?envoye=1${parti ? "" : "&courriel=echec"}` as Route);
     } catch (e) {
       // `redirect` lève : on le laisse passer, sinon la création réussie
       // finirait dans la branche d'erreur ci-dessous.

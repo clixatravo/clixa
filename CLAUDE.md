@@ -903,9 +903,22 @@ consomment le quota et abîment la réputation d'envoi. Le quota journalier a fi
 par tomber, et avec lui la création de comptes : `auth.verify` lève quand
 l'envoi échoue, et la route ne peut que répondre « impossible ».
 
-⚠️ **`envoyer()` attrape, `auth.verify` non.** Une inscription dont le courriel
-échoue aboutit quand même — c'est voulu, le dossier compte plus que l'accusé de
-réception. Un compte, lui, ne peut pas naître sans que son lien parte.
+⚠️ **Aucune porte d'entrée ne dépend plus de l'expéditeur.** Payload envoie le
+lien de confirmation dès que `auth.verify` est configuré, **sans regarder
+`_verified`**, et cet envoi n'est pas rattrapé : s'il échoue, la création du
+compte échoue avec lui. Un quota épuisé fermait donc l'inscription *et* la
+connexion Google, sans que rien ne le dise.
+
+Les deux routes créent maintenant avec `disableVerificationEmail: true`, puis
+envoient elles-mêmes par `envoyer()`, qui attrape. La page dit alors la vérité —
+« votre compte existe, mais nous n'avons pas pu vous envoyer le lien » — et
+`api/confirmation` permet de le redemander.
+
+⚠️ **Sans ce renvoi, un envoi manqué enferme dehors** : l'adresse est prise,
+donc on ne peut pas recommencer, et le compte ne s'ouvre pas. La route répond la
+même chose que l'adresse existe, soit déjà confirmée, ou n'existe pas — elle n'a
+rien à apprendre à qui essaie des adresses — et ne régénère pas le jeton, sans
+quoi elle invaliderait un premier message encore en route.
 
 **Sans `RESEND_API_KEY`, l'adaptateur n'est pas branché du tout**
 (`payload.config.ts`) et Payload écrit les messages dans la console. C'est

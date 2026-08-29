@@ -100,6 +100,63 @@ try {
     headers: new Headers({ cookie: cookie.split(";")[0] ?? "", ...COMME_UN_NAVIGATEUR }),
   });
   dire("la session Google authentifie malgré la confirmation exigée", Boolean(user));
+
+  /*
+    ── Un compte naît même si le courrier ne part pas ────────────────────────
+    Payload envoie le lien de confirmation lui-même, et son envoi n'est pas
+    rattrapé : s'il échoue, la création échoue avec lui. Un quota d'envoi épuisé
+    suffisait donc à fermer l'inscription, et la route ne pouvait répondre que
+    « impossible ».
+
+    La route crée désormais sans envoi, puis envoie elle-même — et dit au
+    participant si le lien est parti. On reproduit la panne ici plutôt que de
+    la décrire.
+  */
+  const expediteur = payload.email;
+  let creeMalgreLaPanne = false;
+  try {
+    payload.email = {
+      ...expediteur,
+      sendEmail: async () => {
+        throw new Error("expéditeur indisponible (simulé)");
+      },
+    } as typeof payload.email;
+
+    const compte = await payload.create({
+      collection: "apprenants",
+      overrideAccess: true,
+      disableVerificationEmail: true,
+      data: {
+        email: `panne-${Date.now()}@epreuve.invalid`,
+        password: "un-mot-de-passe-choisi",
+        nom: "Compte Sans Courrier",
+      },
+    });
+    aSupprimer.push(compte.id);
+    creeMalgreLaPanne = true;
+
+    /*
+      Et le jeton doit être relisible : c'est lui qui permettra de renvoyer le
+      lien quand l'expéditeur reviendra. Sans lui, le compte serait créé et
+      définitivement inaccessible.
+    */
+    const relu = await payload.findByID({
+      collection: "apprenants",
+      id: compte.id,
+      overrideAccess: true,
+      showHiddenFields: true,
+      depth: 0,
+    });
+    dire(
+      "le jeton reste relisible, pour renvoyer le lien plus tard",
+      Boolean((relu as { _verificationToken?: string })._verificationToken),
+    );
+  } catch {
+    creeMalgreLaPanne = false;
+  } finally {
+    payload.email = expediteur;
+  }
+  dire("un compte naît même si l'expéditeur est en panne", creeMalgreLaPanne);
 } finally {
   for (const id of aSupprimer) {
     await payload.delete({ collection: "apprenants", id, overrideAccess: true });

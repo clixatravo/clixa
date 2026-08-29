@@ -12,6 +12,13 @@ import type { Payload } from "payload";
 /** Où arrivent les notifications internes. À défaut, personne n'est prévenu. */
 const EQUIPE = process.env.EMAIL_EQUIPE;
 
+/*
+  L'adresse canonique du site. Les liens d'un courriel ne se rattrapent pas :
+  une redirection depuis l'apex coûte un aller-retour à qui clique, et certains
+  clients de messagerie l'affichent comme une adresse différente.
+*/
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa";
+
 const EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 
@@ -526,6 +533,85 @@ export async function courrielSignature(
       boutonLien: `https://www.clixa.africa/admin/collections/inscriptions/${d.dossierId}`,
     }),
   });
+}
+
+/**
+ * Le lien qui confirme une adresse.
+ *
+ * ── Pourquoi il vit ici plutôt que dans la collection ───────────────────────
+ * Payload l'envoie lui-même quand `auth.verify` est configuré — mais son envoi
+ * n'est pas rattrapé : s'il échoue, la création du compte échoue avec lui, et
+ * un service de courriel indisponible ferme une porte d'entrée. La route crée
+ * donc le compte sans envoi, puis appelle ceci, qui passe par `envoyer()` et
+ * attrape.
+ *
+ * ⚠️ Un seul texte pour les deux chemins. Le premier envoi et le renvoi disent
+ * la même chose, sans quoi ils finiraient par diverger — et c'est le second
+ * qu'on relit le moins.
+ */
+export function courrielConfirmation(args: { nom: string; token: string }): {
+  subject: string;
+  text: string;
+  html: string;
+} {
+  const lien = `${SITE}/compte/confirmer?token=${args.token}`;
+
+  return {
+    subject: "Confirmez votre adresse — CLIXA Institute",
+    text: [
+      `Bonjour ${args.nom},`,
+      "",
+      "Votre accès est presque prêt. Il ne manque qu'une confirmation : elle nous",
+      "assure que cette adresse est bien la vôtre, et c'est elle qui vous permettra",
+      "de retrouver vos dossiers.",
+      "",
+      lien,
+      "",
+      "Si vous n'avez pas demandé d'accès, ce message ne vous concerne pas : sans",
+      "confirmation, rien ne s'ouvre.",
+      "",
+      "CLIXA Institute — Direction des Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Confirmez votre adresse",
+      soustitre: "Une dernière étape avant d'accéder à votre espace",
+      corpsHtml: `
+        <p style="margin: 0 0 16px 0;">Bonjour ${echapper(args.nom)},</p>
+        <p style="margin: 0 0 16px 0;">
+          Votre accès est presque prêt. Il ne manque qu'une confirmation : elle
+          nous assure que cette adresse est bien la vôtre, et c'est elle qui
+          vous permettra de retrouver vos dossiers.
+        </p>
+        <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 13px;">
+          Si vous n'avez pas demandé d'accès, ce message ne vous concerne pas :
+          sans confirmation, rien ne s'ouvre.
+        </p>
+      `,
+      boutonTexte: "Confirmer mon adresse",
+      boutonLien: lien,
+    }),
+  };
+}
+
+/**
+ * Envoie ce lien, et dit si c'est parti.
+ *
+ * Rend `false` plutôt que de lever : la création du compte ne doit pas dépendre
+ * de l'expéditeur, mais l'appelant doit savoir quoi afficher.
+ */
+export async function envoyerConfirmation(
+  payload: Payload,
+  destinataire: string,
+  args: { nom: string; token: string },
+): Promise<boolean> {
+  const message = courrielConfirmation(args);
+  try {
+    await payload.sendEmail({ to: destinataire, ...message });
+    return true;
+  } catch (e) {
+    payload.logger.error({ err: e, to: destinataire }, "[confirmation] envoi impossible");
+    return false;
+  }
 }
 
 /** À l'équipe : notification d'une nouvelle inscription. */
