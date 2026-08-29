@@ -33,15 +33,22 @@ export function SignatureTracee({ nom }: { nom: string }) {
     La toile est dimensionnée en pixels réels, pas en pixels CSS : sur un écran
     à densité double, un trait dessiné sur une toile aux dimensions CSS ressort
     flou dans le PDF, où il est agrandi.
+
+    ⚠️ Le dimensionnement est refait au premier trait, pas seulement au montage.
+    Une toile mesurée avant que la mise en page soit posée fait zéro pixel de
+    large : le trait part alors dans le vide, `toDataURL` rend une image vide,
+    et la signature est refusée sans que rien ne l'explique. Vu en intégration
+    continue, où la machine est plus lente ; un téléphone chargé ferait pareil.
   */
-  React.useEffect(() => {
+  const dimensionner = React.useCallback(() => {
     const c = toile.current;
-    if (!c) return;
+    if (!c || c.clientWidth === 0) return;
+    // Déjà à la bonne taille : redimensionner effacerait le trait en cours.
     const densite = window.devicePixelRatio || 1;
-    const largeur = c.clientWidth;
-    const hauteur = c.clientHeight;
-    c.width = largeur * densite;
-    c.height = hauteur * densite;
+    if (c.width === Math.round(c.clientWidth * densite)) return;
+
+    c.width = c.clientWidth * densite;
+    c.height = c.clientHeight * densite;
 
     const ctx = c.getContext("2d");
     if (!ctx) return;
@@ -52,6 +59,8 @@ export function SignatureTracee({ nom }: { nom: string }) {
     ctx.strokeStyle = "#F3EFE4";
   }, []);
 
+  React.useEffect(dimensionner, [dimensionner]);
+
   const position = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const c = toile.current!;
     const cadre = c.getBoundingClientRect();
@@ -59,6 +68,7 @@ export function SignatureTracee({ nom }: { nom: string }) {
   };
 
   const commencer = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    dimensionner();
     const ctx = toile.current?.getContext("2d");
     if (!ctx) return;
     // Le pointeur est capturé : le trait suit le doigt même s'il sort du cadre.
@@ -90,8 +100,13 @@ export function SignatureTracee({ nom }: { nom: string }) {
       un trait sur fond transparent se compresse bien — et voyage dans la même
       requête que le nom et la mention, ce qui garantit qu'ils décrivent le même
       geste.
+
+      ⚠️ Une toile de largeur nulle rend un PNG minuscule et vide. On préfère ne
+      rien poser plutôt qu'une image que la route refusera en parlant de
+      signature manquante, alors qu'on vient d'en tracer une.
     */
-    champ.current.value = points.current >= POINTS_MINIMUM ? c.toDataURL("image/png") : "";
+    const image = c.width > 0 && points.current >= POINTS_MINIMUM ? c.toDataURL("image/png") : "";
+    champ.current.value = image.length > 200 ? image : "";
   };
 
   const effacer = () => {

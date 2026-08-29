@@ -61,6 +61,15 @@ test("le contrat se demande, puis se signe", async ({ page }) => {
     caché, qui ne prouverait que l'existence du champ.
   */
   const tracer = async () => {
+    /*
+      On attend que la toile ait une largeur : dessiner avant que la mise en
+      page soit posée laisse le trait dans le vide, et la signature est refusée
+      pour « cadre vide » alors qu'on vient de tracer. C'est arrivé en
+      intégration continue, où la machine est plus lente qu'ici.
+    */
+    await page
+      .locator("#signature-toile")
+      .evaluate((c) => (c as HTMLCanvasElement).clientWidth > 0 || Promise.reject());
     await page.evaluate(() => {
       const c = document.querySelector("#signature-toile") as HTMLCanvasElement | null;
       if (!c) throw new Error("cadre de signature absent");
