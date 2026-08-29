@@ -127,6 +127,7 @@ export default buildConfig({
   sharp,
 
   db: postgresAdapter({
+    push: false,
     /*
       ⚠️ Sans délais, une connexion morte fait attendre sans fin.
 
