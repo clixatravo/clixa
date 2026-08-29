@@ -413,6 +413,121 @@ export async function courrielContrat(
   });
 }
 
+/**
+ * Le contrat vient d'être signé : au participant, et à l'équipe.
+ *
+ * Deux messages pour un même fait, parce qu'ils ne disent pas la même chose.
+ * Au participant : ce qu'il vient d'engager, et ce qui vient ensuite. À
+ * l'équipe : qu'il faut maintenant envoyer les instructions de paiement — c'est
+ * la seule chose qui bloque la suite.
+ *
+ * ⚠️ Le participant reçoit l'empreinte de son contrat. Elle ne lui sert à rien
+ * au quotidien, et c'est précisément le but : le jour où l'un de nous deux
+ * prétendrait que les termes ont changé, elle est dans sa boîte, datée, hors de
+ * notre portée.
+ */
+export async function courrielSignature(
+  payload: Payload,
+  d: {
+    reference: string;
+    dossierId: number | string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    apprenantWhatsapp: string;
+    programmeTitre: string;
+    signeLe: string;
+    empreinte: string;
+  },
+): Promise<void> {
+  const quand = JOUR.format(new Date(d.signeLe));
+  const url = `https://www.clixa.africa/inscription/${d.reference}`;
+
+  await envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `Contrat signé — ${d.programmeTitre} [Dossier ${d.reference}]`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Votre contrat de formation a bien été signé le ${quand}.`,
+      "",
+      "Ce qui suit :",
+      "  1. Notre équipe vous envoie par courriel de quoi régler votre première",
+      "     échéance — un lien bancaire, notre RIB ou les coordonnées de",
+      "     transfert, selon ce que vous avez choisi.",
+      "  2. Vous effectuez le versement.",
+      "  3. Vous nous indiquez la référence depuis votre dossier, avec le reçu.",
+      "",
+      "Votre exemplaire signé reste disponible sur votre dossier :",
+      url,
+      "",
+      `Empreinte de votre contrat : ${d.empreinte}`,
+      "Conservez ce message : cette empreinte identifie les termes que vous avez",
+      "signés, et permet de vérifier qu'ils n'ont pas changé depuis.",
+      "",
+      "CLIXA Institute — Direction des Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Votre contrat est signé",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml: `
+        <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+        <p>Votre contrat de formation a bien été signé le <strong style="color: #ffffff;">${quand}</strong>.</p>
+        <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin: 22px 0 10px 0;">Ce qui suit :</div>
+        <ol style="margin: 0; padding-left: 20px; line-height: 1.8; color: #cbd5e1; font-size: 14px;">
+          <li>Nous vous envoyons par courriel de quoi régler votre première échéance.</li>
+          <li>Vous effectuez le versement.</li>
+          <li>Vous nous en indiquez la référence depuis votre dossier, avec le reçu.</li>
+        </ol>
+        <p style="margin: 22px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 12px; color: #94a3b8;">
+          <strong style="color: #ffffff;">Empreinte de votre contrat</strong><br/>
+          <code style="font-family: monospace; color: #e9cd84; word-break: break-all;">${d.empreinte}</code><br/>
+          Conservez ce message : cette empreinte identifie les termes que vous avez signés, et permet de vérifier qu'ils n'ont pas changé depuis.
+        </p>
+      `,
+      boutonTexte: "Voir mon dossier",
+      boutonLien: url,
+    }),
+  });
+
+  if (!EQUIPE) return;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `[Contrat signé] ${d.reference} — ${d.apprenantNom}`,
+    text: [
+      `${d.apprenantNom} a signé son contrat le ${quand}.`,
+      "",
+      `Parcours : ${d.programmeTitre}`,
+      `Dossier : ${d.reference}`,
+      `WhatsApp : ${d.apprenantWhatsapp}`,
+      `E-mail : ${d.apprenantEmail}`,
+      "",
+      "À FAIRE : envoyer les instructions de paiement, puis renseigner la date",
+      "d'envoi sur le dossier.",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Contrat signé",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml: `
+        <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;">
+          <strong>${echapper(d.apprenantNom)} a signé son contrat</strong> le ${quand}.
+          À faire maintenant : lui envoyer les instructions de paiement, puis renseigner la date d'envoi sur le dossier.
+        </p>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+          <tr><td style="color: #94a3b8; width: 130px;">Dossier :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
+          <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
+          <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
+        </table>
+        <p style="color: #94a3b8; font-size: 12px;">La preuve de signature — horodatage, IP, navigateur et empreinte — est enregistrée sur le dossier.</p>
+      `,
+      boutonTexte: "Ouvrir le dossier",
+      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions/${d.dossierId}`,
+    }),
+  });
+}
+
 /** À l'équipe : notification d'une nouvelle inscription. */
 export async function courrielEquipe(payload: Payload, d: CourrielInscription): Promise<void> {
   if (!EQUIPE) return;

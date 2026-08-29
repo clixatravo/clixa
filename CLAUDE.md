@@ -416,10 +416,28 @@ comme la plaquette : formule, échéancier, dates et moyen choisi y sont déjà.
 contrat rédigé à la main vieillit dès que le barème change, et se recopie de
 travers.
 
-⚠️ **Il ne signe rien.** La signature reste manuscrite, précédée de « Lu et
-approuvé », parce que le contrat l'exige lui-même : une signature dessinée dans
-un navigateur n'a pas la même valeur, et l'obtenir demanderait un tiers de
-confiance et un abonnement.
+**Le contrat se signe en ligne** (`api/signature`, `lib/signature.ts`, depuis le
+29 août 2026). Deux champs : le nom du dossier recopié, et la mention « Lu et
+approuvé » que le contrat exige. Une case seule se coche pour n'importe qui ; un
+tracé à la souris n'ajoute pas de force, il ajoute une image.
+
+⚠️ **C'est une signature électronique *simple*** : recevable, mais contestable.
+Une signature qualifiée, qui bénéficie d'une présomption de fiabilité, demande
+un tiers de confiance et un abonnement. Pour des montants de quelques centaines
+d'euros, c'est proportionné ; pour un engagement plus lourd, il faudrait le
+tiers.
+
+⚠️ **Ce qui la défend n'est pas le geste, c'est l'empreinte.** On garde la date,
+l'adresse IP, le navigateur, et surtout un SHA-256 des *termes* — pas du PDF,
+dont deux rendus diffèrent d'un octet. Sans elle, la première objection serait
+« le document a changé depuis », et elle serait imparable. Le participant reçoit
+la même empreinte par courriel : elle est datée, dans sa boîte, hors de notre
+portée.
+
+⚠️ **L'ordre des parties de l'empreinte est écrit à la main.** `JSON.stringify`
+suivrait l'ordre d'insertion : une refonte qui déplacerait un champ changerait
+l'empreinte de tous les contrats déjà signés, et les ferait tous paraître
+falsifiés.
 
 ⚠️ **Les coordonnées de paiement n'y figurent pas**, et l'article 3 le dit :
 elles sont communiquées après signature. Le contrat s'accorde ainsi avec la
@@ -839,6 +857,18 @@ n'additionne pas les expéditeurs autorisés : la vérification devient
 sous-domaine — `clixa.africa` garde le SPF de Zoho, `envoi.clixa.africa` a le
 sien. Le jour où il faudra qu'un même domaine serve les deux, on fusionne les
 `include:` dans une seule ligne, jamais deux lignes.
+
+⚠️ **Ne jamais poser `RESEND_API_KEY` dans `platform/.env.local`.** Elle y est
+arrivée le 29 août 2026 par un `vercel env pull` déclenché en sous-main par
+`vercel blob create-store` — et, dès lors, **chaque série d'épreuves a envoyé de
+vrais courriels** à des adresses en `@epreuve.invalid`. Elles rebondissent,
+consomment le quota et abîment la réputation d'envoi. Le quota journalier a fini
+par tomber, et avec lui la création de comptes : `auth.verify` lève quand
+l'envoi échoue, et la route ne peut que répondre « impossible ».
+
+⚠️ **`envoyer()` attrape, `auth.verify` non.** Une inscription dont le courriel
+échoue aboutit quand même — c'est voulu, le dossier compte plus que l'accusé de
+réception. Un compte, lui, ne peut pas naître sans que son lien parte.
 
 **Sans `RESEND_API_KEY`, l'adaptateur n'est pas branché du tout**
 (`payload.config.ts`) et Payload écrit les messages dans la console. C'est

@@ -488,6 +488,46 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                ── La signature électronique, et ce qui la prouve ────────────
+                Le participant signe depuis sa page, en recopiant « Lu et
+                approuvé » comme le contrat l'exige. C'est une signature
+                électronique *simple* : recevable, mais contestable — une
+                signature qualifiée demanderait un tiers de confiance et un
+                abonnement.
+
+                ⚠️ Ce qui la rend défendable n'est pas la case cochée, c'est ce
+                qu'on garde autour : la date, l'adresse IP, le navigateur, et
+                l'empreinte du contrat tel qu'il était au moment de signer. Sans
+                l'empreinte, rien n'empêcherait de prétendre que le document a
+                changé depuis — et c'est la première chose qu'on objecterait.
+              */
+              name: "contratSigneLe",
+              type: "date",
+              label: "Contrat signé le",
+              admin: {
+                width: "35%",
+                readOnly: true,
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              name: "contratSignataire",
+              type: "text",
+              label: "Nom du signataire",
+              admin: { width: "30%", readOnly: true },
+            },
+            {
+              name: "contratPreuve",
+              type: "textarea",
+              label: "Preuve de signature",
+              admin: {
+                readOnly: true,
+                description:
+                  "Horodatage, adresse IP, navigateur et empreinte du contrat au moment de la signature. À produire en cas de contestation.",
+              },
+            },
+            {
+              /*
                 Le jour où l'équipe lui a envoyé de quoi payer.
                 
                 ⚠️ Ce n'est pas une trace pour nous : c'est ce que la page de

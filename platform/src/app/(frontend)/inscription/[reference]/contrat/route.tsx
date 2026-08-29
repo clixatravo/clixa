@@ -217,12 +217,29 @@ function Contrat({ dossier }: { dossier: Dossier }) {
           </View>
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>POUR LE CLIENT</Text>
-            <Text style={s.champ}>Nom : {dossier.apprenantNom ?? "______________"}</Text>
-            <Text style={s.champ}>Fait à ____________, le : ____________</Text>
-            <Text style={s.champ}>Signature :</Text>
-            <Text style={s.mention}>
-              Signature précédée de la mention manuscrite « Lu et approuvé ».
-            </Text>
+            {dossier.contratSigneLe ? (
+              <>
+                <Text style={s.champ}>Nom : {dossier.contratSignataire}</Text>
+                <Text style={s.champ}>
+                  Signé le : {JOUR.format(new Date(dossier.contratSigneLe))}
+                </Text>
+                <Text style={s.champ}>Mention : « Lu et approuvé »</Text>
+                <Text style={s.mention}>
+                  Signature électronique apposée depuis l&apos;espace du participant. Horodatage,
+                  adresse IP, navigateur et empreinte des termes sont conservés par CLIXA et
+                  produits sur demande.
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={s.champ}>Nom : {dossier.apprenantNom ?? "______________"}</Text>
+                <Text style={s.champ}>Fait à ____________, le : ____________</Text>
+                <Text style={s.champ}>Signature :</Text>
+                <Text style={s.mention}>
+                  Signature précédée de la mention manuscrite « Lu et approuvé ».
+                </Text>
+              </>
+            )}
           </View>
         </View>
 
@@ -289,11 +306,19 @@ function Contrat({ dossier }: { dossier: Dossier }) {
         <View style={s.signatures}>
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>NOM DU CLIENT</Text>
-            <Text style={s.champ}>{dossier.apprenantNom ?? "______________"}</Text>
+            <Text style={s.champ}>
+              {dossier.contratSignataire ?? dossier.apprenantNom ?? "______________"}
+            </Text>
           </View>
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>SIGNATURE</Text>
-            <Text style={s.mention}>Précédée de la mention « Lu et approuvé ».</Text>
+            {dossier.contratSigneLe ? (
+              <Text style={s.champ}>
+                Signé électroniquement le {JOUR.format(new Date(dossier.contratSigneLe))}
+              </Text>
+            ) : (
+              <Text style={s.mention}>Précédée de la mention « Lu et approuvé ».</Text>
+            )}
           </View>
         </View>
 

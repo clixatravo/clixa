@@ -646,6 +646,12 @@ export interface Inscription {
    * Renseigné par le participant depuis son dossier.
    */
   contratDemandeLe?: string | null;
+  contratSigneLe?: string | null;
+  contratSignataire?: string | null;
+  /**
+   * Horodatage, adresse IP, navigateur et empreinte du contrat au moment de la signature. À produire en cas de contestation.
+   */
+  contratPreuve?: string | null;
   /**
    * À renseigner après l'envoi — le participant voit cette date.
    */
@@ -1235,6 +1241,9 @@ export interface InscriptionsSelect<T extends boolean = true> {
   planPaiement?: T;
   moyenSouhaite?: T;
   contratDemandeLe?: T;
+  contratSigneLe?: T;
+  contratSignataire?: T;
+  contratPreuve?: T;
   coordonneesEnvoyeesLe?: T;
   montantTotal?: T;
   devise?: T;

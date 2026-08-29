@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ reference: string }>;
-  searchParams: Promise<{ annonce?: string; contrat?: string }>;
+  searchParams: Promise<{ annonce?: string; contrat?: string; signature?: string }>;
 }
 
 /** Ce que dit la page au retour d'une annonce de transfert. */
@@ -29,6 +29,12 @@ const RETOUR_ANNONCE: Record<string, string> = {
   "contrat-ok":
     "C'est noté. Votre contrat est prêt ci-dessous : téléchargez-le, signez-le, et renvoyez-le-nous. Notre Responsable Orientation vous appelle sous peu.",
   "contrat-deja": "Votre contrat a déjà été demandé — il est prêt ci-dessous.",
+  "signature-ok":
+    "Votre contrat est signé. Nous vous envoyons par courriel de quoi régler votre première échéance.",
+  "signature-deja": "Ce contrat est déjà signé — la première signature fait foi.",
+  "signature-nom":
+    "Le nom saisi ne correspond pas à celui du dossier. Recopiez-le tel qu'il figure ci-dessus.",
+  "signature-mention": "Il manque la mention exacte « Lu et approuvé », que le contrat exige.",
   stockage:
     "Votre annonce n'a pas été enregistrée : nous ne pouvons pas recevoir de pièce jointe pour l'instant. Réessayez sans le fichier, le numéro seul nous suffit.",
 };
@@ -80,7 +86,7 @@ export default async function Dossier({ params, searchParams }: Props) {
   if (!dossier) notFound();
 
   const participant = await participantConnecte();
-  const { annonce, contrat } = await searchParams;
+  const { annonce, contrat, signature } = await searchParams;
 
   /*
     On ne propose d'annoncer que s'il y a quelque chose à annoncer, et seulement
@@ -133,6 +139,17 @@ export default async function Dossier({ params, searchParams }: Props) {
             {dossier.sessionDetail} · dossier{" "}
             <strong className="text-gold-bright font-mono">{dossier.reference}</strong>
           </p>
+
+          {signature && (
+            <p
+              role="status"
+              className={`bg-panel mb-8 border-l-2 p-4 text-[0.9rem] ${
+                signature === "ok" ? "border-emerald-bright text-ivory" : "border-gold text-ivory"
+              }`}
+            >
+              {RETOUR_ANNONCE[`signature-${signature}`] ?? RETOUR_ANNONCE["signature-nom"]}
+            </p>
+          )}
 
           {contrat && (
             <p
@@ -264,19 +281,112 @@ export default async function Dossier({ params, searchParams }: Props) {
             {dossier.contratDemandeLe ? (
               <>
                 <p className="text-ivory mb-4 text-[0.92rem] leading-relaxed">
-                  Demandé le <strong>{JOUR.format(new Date(dossier.contratDemandeLe))}</strong>.
-                  Téléchargez-le, signez-le à la main en faisant précéder votre signature de la
-                  mention «&nbsp;Lu et approuvé&nbsp;», puis renvoyez-le-nous. Les instructions de
-                  règlement vous parviennent après signature.
+                  {dossier.contratSigneLe ? (
+                    <>
+                      Signé le <strong>{JOUR.format(new Date(dossier.contratSigneLe))}</strong> par{" "}
+                      <strong>{dossier.contratSignataire}</strong>. Votre exemplaire porte la
+                      signature et reste disponible ici. Les instructions de règlement vous ont été
+                      envoyées par courriel — ou vous parviennent sous peu.
+                    </>
+                  ) : (
+                    <>
+                      Demandé le <strong>{JOUR.format(new Date(dossier.contratDemandeLe))}</strong>.
+                      Lisez-le, puis signez-le en ligne ci-dessous. Les instructions de règlement
+                      vous parviennent après signature.
+                    </>
+                  )}
                 </p>
                 <a
                   href={`/inscription/${dossier.reference}/contrat`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright inline-flex min-h-11 items-center px-5 text-[0.9rem] font-semibold transition-colors"
+                  className={
+                    dossier.contratSigneLe
+                      ? "bg-gold text-ink rounded-clixa hover:bg-gold-bright inline-flex min-h-11 items-center px-5 text-[0.9rem] font-semibold transition-colors"
+                      : "border-line text-ivory hover:border-gold rounded-clixa inline-flex min-h-11 items-center border px-5 text-[0.9rem] font-semibold transition-colors"
+                  }
                 >
-                  Ouvrir mon contrat (PDF) ↗
+                  {dossier.contratSigneLe
+                    ? "Ouvrir mon contrat signé (PDF) ↗"
+                    : "Lire le contrat (PDF) ↗"}
                 </a>
+
+                {/*
+                  ── Signer ─────────────────────────────────────────────────
+                  Deux champs, et rien de plus : le nom du dossier recopié, et
+                  la mention que le contrat exige. Une case seule se coche pour
+                  n'importe qui ; un tracé à la souris n'ajoute pas de force, il
+                  ajoute une image.
+
+                  ⚠️ Ce qui rend la signature défendable est gardé à côté, pas
+                  ici : la date, l'adresse IP, le navigateur et l'empreinte des
+                  termes. La page le dit — qui signe a le droit de savoir ce
+                  qu'on garde de lui.
+                */}
+                {!dossier.contratSigneLe && (
+                  <form action="/api/signature" method="POST" className="mt-7">
+                    <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
+                      <label htmlFor="site_web_signature">Ne pas remplir</label>
+                      <input
+                        id="site_web_signature"
+                        name="site_web"
+                        type="text"
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </div>
+                    <input type="hidden" name="dossier" value={dossier.reference} />
+
+                    <p className="mono-label text-gold mt-7 mb-4 text-[0.7rem]">Signer en ligne</p>
+
+                    <div className="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="sig-nom" className="text-ivory-dim text-[0.8rem]">
+                          Recopiez votre nom :{" "}
+                          <strong className="text-ivory">{dossier.apprenantNom}</strong>
+                        </label>
+                        <input
+                          id="sig-nom"
+                          name="nom"
+                          type="text"
+                          required
+                          maxLength={120}
+                          autoComplete="off"
+                          className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full min-w-0 border px-3.5 text-[0.95rem]"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="sig-mention" className="text-ivory-dim text-[0.8rem]">
+                          Recopiez : <strong className="text-ivory">Lu et approuvé</strong>
+                        </label>
+                        <input
+                          id="sig-mention"
+                          name="mention"
+                          type="text"
+                          required
+                          maxLength={40}
+                          autoComplete="off"
+                          className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full min-w-0 border px-3.5 text-[0.95rem]"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-ivory-dim/70 mt-4 text-[0.78rem] leading-relaxed">
+                      En signant, vous acceptez les termes du contrat ci-dessus. Nous conservons la
+                      date, votre adresse IP, votre navigateur et une empreinte des termes signés —
+                      c&apos;est ce qui permet, à vous comme à nous, de prouver plus tard ce qui a
+                      été signé, et que rien n&apos;a changé depuis.
+                    </p>
+
+                    <button
+                      type="submit"
+                      className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 min-h-11 px-6 text-[0.9rem] font-semibold transition-colors"
+                    >
+                      Signer le contrat
+                    </button>
+                  </form>
+                )}
               </>
             ) : (
               <>
