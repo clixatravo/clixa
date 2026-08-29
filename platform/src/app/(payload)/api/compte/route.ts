@@ -140,6 +140,16 @@ export async function POST(request: Request) {
       const compte = await payload.create({
         collection: "apprenants",
         overrideAccess: true,
+        /*
+          ── Le compte ne dépend pas de l'expéditeur ────────────────────────
+          Payload envoie le lien de confirmation dès que `auth.verify` est
+          configuré, et son envoi n'est pas rattrapé : s'il échoue, la création
+          échoue avec lui. Un quota épuisé fermait donc l'inscription, et la
+          route ne pouvait répondre que « impossible ».
+
+          On crée sans envoi, puis on envoie soi-même quelques lignes plus bas.
+        */
+        disableVerificationEmail: true,
         data: {
           email,
           password: motDePasse,
