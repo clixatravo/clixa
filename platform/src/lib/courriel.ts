@@ -355,6 +355,64 @@ ${
   });
 }
 
+/**
+ * À l'équipe : quelqu'un demande son contrat de formation.
+ *
+ * C'est le signal qui compte dans le tunnel. Une pré-inscription dit « je
+ * regarde » ; une demande de contrat dit « je m'engage », et appelle un appel.
+ */
+export async function courrielContrat(
+  payload: Payload,
+  d: {
+    reference: string;
+    dossierId: number | string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    apprenantWhatsapp: string;
+    programmeTitre: string;
+  },
+): Promise<void> {
+  if (!EQUIPE) return;
+
+  const corpsHtml = `
+    <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 15px; color: #ffffff;">
+      <strong>${echapper(d.apprenantNom)} demande son contrat de formation.</strong>
+      C'est le moment de l'appeler : orientation, questions, et ce qu'il faut savoir avant de signer.
+    </p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 130px;">Parcours :</td><td style="color: #e9cd84;"><strong>${d.programmeTitre}</strong></td></tr>
+      <tr><td style="color: #94a3b8;">Dossier :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
+    </table>
+    <p style="color: #94a3b8; font-size: 13px;">Le contrat est déjà composé depuis son dossier : il peut le télécharger, le signer et nous le renvoyer. Les instructions de paiement partent après signature.</p>
+  `;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `[Contrat demandé] ${d.reference} — ${d.apprenantNom}`,
+    text: [
+      `${d.apprenantNom} demande son contrat de formation.`,
+      "",
+      `Parcours : ${d.programmeTitre}`,
+      `Dossier : ${d.reference}`,
+      `WhatsApp : ${d.apprenantWhatsapp}`,
+      `E-mail : ${d.apprenantEmail}`,
+      "",
+      "À faire : l'appeler pour l'orientation, puis envoyer les instructions",
+      "de paiement une fois le contrat signé et renvoyé.",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Contrat demandé",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Ouvrir le dossier",
+      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions/${d.dossierId}`,
+    }),
+  });
+}
+
 /** À l'équipe : notification d'une nouvelle inscription. */
 export async function courrielEquipe(payload: Payload, d: CourrielInscription): Promise<void> {
   if (!EQUIPE) return;

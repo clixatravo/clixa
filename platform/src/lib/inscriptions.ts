@@ -47,6 +47,8 @@ export interface Dossier {
   moyenSouhaite?: "carte" | "virement" | "transfert";
   /** Le jour où l'équipe le lui a envoyé — affiché au participant, exprès. */
   coordonneesEnvoyeesLe?: string;
+  /** Le jour où il a demandé son contrat — le passage de « je regarde » à « je m'engage ». */
+  contratDemandeLe?: string;
   /**
    * Le nombre de justificatifs reçus pour ce dossier.
    *
@@ -55,6 +57,21 @@ export interface Dossier {
    * il redépose ou il téléphone.
    */
   recusRecus?: number;
+  /*
+    ── L'identité, portée seulement par `getDossier` ─────────────────────────
+    Le contrat de formation doit nommer le Client : sans nom, sans adresse et
+    sans téléphone, l'Annexe 1 ne vaut rien. Ces champs restent facultatifs
+    parce que la liste des dossiers d'un compte ne les charge pas — elle n'en a
+    pas l'usage, et un objet plus large voyagerait pour rien.
+
+    ⚠️ Les afficher n'est pas parce qu'on les a. La page du dossier ne montre
+    toujours que la référence : ces valeurs ne servent qu'au PDF, que le
+    participant ouvre lui-même.
+  */
+  apprenantNom?: string;
+  apprenantEmail?: string;
+  apprenantWhatsapp?: string;
+  apprenantPays?: string;
   echeances: EcheanceDossier[];
 }
 
@@ -116,7 +133,12 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
     ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
     ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),
+    ...(d.contratDemandeLe ? { contratDemandeLe: String(d.contratDemandeLe) } : {}),
     ...(recusRecus > 0 ? { recusRecus } : {}),
+    ...(d.apprenantNom ? { apprenantNom: String(d.apprenantNom) } : {}),
+    ...(d.apprenantEmail ? { apprenantEmail: String(d.apprenantEmail) } : {}),
+    ...(d.apprenantWhatsapp ? { apprenantWhatsapp: String(d.apprenantWhatsapp) } : {}),
+    ...(d.apprenantPays ? { apprenantPays: String(d.apprenantPays) } : {}),
     echeances: (d.echeances ?? []).map((e) => ({
       montantCentimes: Math.round((e.montant ?? 0) * 100),
       ...(e.dateLimite ? { dateLimite: e.dateLimite } : {}),

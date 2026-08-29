@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ reference: string }>;
-  searchParams: Promise<{ annonce?: string }>;
+  searchParams: Promise<{ annonce?: string; contrat?: string }>;
 }
 
 /** Ce que dit la page au retour d'une annonce de transfert. */
@@ -26,6 +26,9 @@ const RETOUR_ANNONCE: Record<string, string> = {
   rien: "Aucune échéance n'attend d'annonce en ce moment.",
   format: "Le justificatif doit être une photo (JPG, PNG, HEIC) ou un PDF.",
   lourd: "Le justificatif dépasse 5 Mo. Une photo un peu moins grande suffira.",
+  "contrat-ok":
+    "C'est noté. Votre contrat est prêt ci-dessous : téléchargez-le, signez-le, et renvoyez-le-nous. Notre Responsable Orientation vous appelle sous peu.",
+  "contrat-deja": "Votre contrat a déjà été demandé — il est prêt ci-dessous.",
   stockage:
     "Votre annonce n'a pas été enregistrée : nous ne pouvons pas recevoir de pièce jointe pour l'instant. Réessayez sans le fichier, le numéro seul nous suffit.",
 };
@@ -77,7 +80,7 @@ export default async function Dossier({ params, searchParams }: Props) {
   if (!dossier) notFound();
 
   const participant = await participantConnecte();
-  const { annonce } = await searchParams;
+  const { annonce, contrat } = await searchParams;
 
   /*
     On ne propose d'annoncer que s'il y a quelque chose à annoncer, et seulement
@@ -130,6 +133,15 @@ export default async function Dossier({ params, searchParams }: Props) {
             {dossier.sessionDetail} · dossier{" "}
             <strong className="text-gold-bright font-mono">{dossier.reference}</strong>
           </p>
+
+          {contrat && (
+            <p
+              role="status"
+              className="bg-panel border-gold text-ivory mb-8 border-l-2 p-4 text-[0.9rem]"
+            >
+              {RETOUR_ANNONCE[`contrat-${contrat}`] ?? RETOUR_ANNONCE["contrat-deja"]}
+            </p>
+          )}
 
           {annonce && (
             <p
@@ -237,6 +249,66 @@ export default async function Dossier({ params, searchParams }: Props) {
             </p>
           ) : null}
 
+          {/*
+            ── Le contrat, et le moment où l'on s'engage ──────────────────────
+            La pré-inscription ne coûte rien et n'engage à rien : on peut
+            s'arrêter là, poser ses questions, et ne jamais aller plus loin.
+            Demander son contrat est le geste qui change de nature — et c'est
+            lui qui prévient l'équipe qu'il faut appeler.
+
+            Le PDF se compose depuis ce dossier : la formule, l'échéancier et
+            les dates y sont déjà. Rien à préparer, rien à attendre.
+          */}
+          <h2 className="font-display mb-4 text-[1.15rem]">Votre contrat de formation</h2>
+          <div className="border-line bg-panel mb-9 border p-6">
+            {dossier.contratDemandeLe ? (
+              <>
+                <p className="text-ivory mb-4 text-[0.92rem] leading-relaxed">
+                  Demandé le <strong>{JOUR.format(new Date(dossier.contratDemandeLe))}</strong>.
+                  Téléchargez-le, signez-le à la main en faisant précéder votre signature de la
+                  mention «&nbsp;Lu et approuvé&nbsp;», puis renvoyez-le-nous. Les instructions de
+                  règlement vous parviennent après signature.
+                </p>
+                <a
+                  href={`/inscription/${dossier.reference}/contrat`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright inline-flex min-h-11 items-center px-5 text-[0.9rem] font-semibold transition-colors"
+                >
+                  Ouvrir mon contrat (PDF) ↗
+                </a>
+              </>
+            ) : (
+              <>
+                <p className="text-ivory-dim mb-4 text-[0.92rem] leading-relaxed">
+                  Votre place est retenue, et rien ne vous engage encore. Quand vous serez décidé,
+                  demandez votre contrat : il reprend votre parcours, votre formule et votre
+                  échéancier. Notre Responsable Orientation vous appelle ensuite, avant toute
+                  signature.
+                </p>
+                <form action="/api/contrat" method="POST">
+                  <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
+                    <label htmlFor="site_web_contrat">Ne pas remplir</label>
+                    <input
+                      id="site_web_contrat"
+                      name="site_web"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <input type="hidden" name="dossier" value={dossier.reference} />
+                  <button
+                    type="submit"
+                    className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-5 text-[0.9rem] font-semibold transition-colors"
+                  >
+                    Demander mon contrat de formation
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+
           {/* ── Où envoyer ── */}
           <h2 className="font-display mb-4 text-[1.15rem]">Où envoyer le règlement</h2>
           {/*
@@ -312,15 +384,26 @@ export default async function Dossier({ params, searchParams }: Props) {
                 WhatsApp », ce qui contredisait la phrase juste au-dessus et
                 invitait à faire circuler un RIB par messagerie.
               */}
+            {/*
+              La phrase que la direction a dictée, au-dessus du bouton : elle
+              dit ce que l'appel sert à faire, et rappelle qu'on peut poser ses
+              questions sans s'engager. Le bouton nomme une personne, pas un
+              canal — qui hésite entre deux parcours n'écrit pas « au support ».
+            */}
+            <p className="text-ivory-dim mt-5 text-[0.88rem] leading-relaxed">
+              Une question sur le parcours, le rythme ou l&apos;échéancier ? Vous pouvez en parler
+              avant de vous engager — la pré-inscription ne vous lie à rien.
+            </p>
+
             <a
               href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
-                `Bonjour, je vous écris au sujet de mon dossier ${dossier.reference}.`,
+                `Bonjour, je souhaite être conseillé au sujet de mon dossier ${dossier.reference}.`,
               )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
             >
-              Nous écrire sur WhatsApp
+              Parler à notre Responsable Orientation
             </a>
           </div>
 

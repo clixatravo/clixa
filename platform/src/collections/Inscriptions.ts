@@ -466,6 +466,28 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                ── Le jour où il a demandé son contrat ──────────────────────
+                La demande est un geste, pas une case à cocher par l'équipe :
+                c'est le participant qui décide de passer de « je me renseigne »
+                à « je m'engage ». Beaucoup s'arrêtent avant, et c'est très bien
+                — la pré-inscription ne coûte rien et n'engage à rien.
+
+                Elle marque aussi le moment où l'équipe doit agir : appeler,
+                orienter, puis envoyer les instructions de paiement une fois le
+                contrat signé.
+              */
+              name: "contratDemandeLe",
+              type: "date",
+              label: "Contrat demandé le",
+              admin: {
+                width: "35%",
+                readOnly: true,
+                description: "Renseigné par le participant depuis son dossier.",
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              /*
                 Le jour où l'équipe lui a envoyé de quoi payer.
                 
                 ⚠️ Ce n'est pas une trace pour nous : c'est ce que la page de

@@ -643,6 +643,10 @@ export interface Inscription {
    */
   moyenSouhaite: 'carte' | 'virement' | 'transfert';
   /**
+   * Renseigné par le participant depuis son dossier.
+   */
+  contratDemandeLe?: string | null;
+  /**
    * À renseigner après l'envoi — le participant voit cette date.
    */
   coordonneesEnvoyeesLe?: string | null;
@@ -1230,6 +1234,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   payeurEmail?: T;
   planPaiement?: T;
   moyenSouhaite?: T;
+  contratDemandeLe?: T;
   coordonneesEnvoyeesLe?: T;
   montantTotal?: T;
   devise?: T;

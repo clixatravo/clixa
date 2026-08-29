@@ -49,7 +49,13 @@ test("retenir une place mène à un dossier qui porte sa référence", async ({ 
 
   await expect(page.getByText(reference, { exact: false }).first()).toBeVisible();
   // Comptant : une seule échéance, au montant du barème.
-  await expect(page.getByText("Votre échéancier")).toBeVisible();
+  /*
+    Le titre, pas le texte. « Votre échéancier » figure aussi dans la phrase qui
+    présente le contrat — « votre parcours, votre formule et votre échéancier » —
+    et la recherche par texte trouvait alors deux éléments. Elle visait le titre
+    depuis le début ; elle le dit maintenant.
+  */
+  await expect(page.getByRole("heading", { name: "Votre échéancier" })).toBeVisible();
 
   // Le dossier reste joignable par son adresse, sans compte — c'est la règle.
   await page.context().clearCookies();

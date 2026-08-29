@@ -405,6 +405,30 @@ Le bouton WhatsApp de la page disait « Demander les coordonnées sur WhatsApp �
 il contredisait la phrase au-dessus et invitait à faire circuler un RIB par
 messagerie. Il dit « Nous écrire ».
 
+**Le tunnel a deux temps** (depuis le 29 août 2026). Le formulaire retient une
+place et n'engage à rien : c'est la **pré-inscription**. Le participant peut
+s'arrêter là, poser ses questions au Responsable Orientation, et ne jamais aller
+plus loin. Demander son **contrat de formation** est le geste qui change de
+nature — et c'est lui qui prévient l'équipe qu'il faut appeler.
+
+Le contrat (`inscription/[reference]/contrat`) est **composé depuis le dossier**,
+comme la plaquette : formule, échéancier, dates et moyen choisi y sont déjà. Un
+contrat rédigé à la main vieillit dès que le barème change, et se recopie de
+travers.
+
+⚠️ **Il ne signe rien.** La signature reste manuscrite, précédée de « Lu et
+approuvé », parce que le contrat l'exige lui-même : une signature dessinée dans
+un navigateur n'a pas la même valeur, et l'obtenir demanderait un tiers de
+confiance et un abonnement.
+
+⚠️ **Les coordonnées de paiement n'y figurent pas**, et l'article 3 le dit :
+elles sont communiquées après signature. Le contrat s'accorde ainsi avec la
+décision de la direction.
+
+⚠️ **Le contrat dit « tribunaux de Casablanca », les mentions légales disent
+« Agadir ».** Le premier vient du modèle transmis par la direction, les secondes
+découlent du siège. Les deux ne peuvent pas avoir raison : à trancher.
+
 **Le participant joint son justificatif** (`lib/recus.ts`, collection `Recus`,
 `api/recu/[id]`, depuis le 29 août 2026). Une photo du reçu du guichet ou le PDF
 de la banque, déposé au moment où il annonce son transfert. Facultatif, exprès :
