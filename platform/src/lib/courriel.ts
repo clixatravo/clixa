@@ -269,7 +269,7 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
 
   const corpsHtml = `
     <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
-    <p>Nous vous confirmons que votre place a bien été retenue pour le parcours exécutif :</p>
+    <p>Votre pré-inscription est enregistrée et votre place est retenue pour le parcours exécutif :</p>
     
     <!-- Boîte Récapitulatif -->
     <div style="background-color: #111a33; border-left: 3px solid #c9a24c; border-radius: 4px; padding: 16px 20px; margin: 20px 0;">
@@ -315,11 +315,11 @@ ${
 
   await envoyer(payload, {
     to: d.apprenantEmail,
-    subject: `Place Retenue — ${d.programmeTitre} [Dossier ${d.reference}]`,
+    subject: `Pré-inscription enregistrée — ${d.programmeTitre} [Dossier ${d.reference}]`,
     text: [
       `Bonjour ${d.apprenantNom},`,
       "",
-      `Votre place est retenue pour « ${d.programmeTitre} ».`,
+      `Votre pré-inscription est enregistrée pour « ${d.programmeTitre} », et votre place est retenue.`,
       ...(d.tenueJusquau
         ? [
             `Elle vous est tenue jusqu'au ${JOUR.format(new Date(d.tenueJusquau))} : passé cette`,
@@ -345,7 +345,7 @@ ${
       "CLIXA Institute — Direction des Admissions",
     ].join("\n"),
     html: gabaritHtmlEmail({
-      titre: "Votre place est retenue",
+      titre: "Votre pré-inscription est enregistrée",
       soustitre: `Dossier d'admission officiel · ${d.sessionLibelle}`,
       badgeRef: d.reference,
       corpsHtml,
@@ -533,7 +533,7 @@ export async function courrielEquipe(payload: Payload, d: CourrielInscription): 
   if (!EQUIPE) return;
 
   const corpsHtml = `
-    <p>Une nouvelle demande de place vient d'être enregistrée sur la plateforme :</p>
+    <p>Une nouvelle pré-inscription vient d'être enregistrée sur la plateforme :</p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
       <tr><td style="color: #94a3b8; width: 130px;">Candidat :</td><td><strong style="color: #ffffff;">${echapper(d.apprenantNom)}</strong> (${echapper(d.apprenantPays)})</td></tr>
       <tr><td style="color: #94a3b8;">Programme :</td><td><strong style="color: #e9cd84;">${d.programmeTitre}</strong></td></tr>

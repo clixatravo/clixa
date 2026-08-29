@@ -14,7 +14,7 @@ import {
 } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
-  title: "Réserver une place",
+  title: "Pré-inscription",
   robots: { index: false, follow: false },
 };
 
@@ -77,13 +77,13 @@ export default async function Inscription({ searchParams }: Props) {
         items={[
           { label: "Toutes les formations", href: "/formations" },
           { label: programme.titre, href: `/formations/${programme.slug}` as Route },
-          { label: "Réserver" },
+          { label: "Pré-inscription" },
         ]}
       />
 
       <section className="px-8 py-13">
         <div className="mx-auto max-w-[860px]">
-          <span className="mono-label text-gold mb-3 block">Demande de place</span>
+          <span className="mono-label text-gold mb-3 block">Pré-inscription</span>
           <h1 className="mb-3 text-[clamp(1.6rem,3vw,2.3rem)]">{programme.titre}</h1>
           {participant && (
             <p className="border-gold bg-panel text-ivory mb-6 border-l-2 p-4 text-[0.9rem]">
@@ -285,7 +285,7 @@ export default async function Inscription({ searchParams }: Props) {
                 type="submit"
                 className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-7 w-full px-6 py-3.5 text-[0.92rem] font-semibold transition-colors sm:w-auto"
               >
-                Retenir ma place
+                Envoyer ma pré-inscription
               </button>
 
               <p className="text-ivory-dim mt-4 text-[0.76rem]">

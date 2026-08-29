@@ -122,7 +122,7 @@ export default async function Dossier({ params, searchParams }: Props) {
         <div className="mx-auto max-w-[820px]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-4">
             <span className="mono-label text-gold block">
-              {tenueExpiree ? "Place à confirmer" : "Place retenue"}
+              {tenueExpiree ? "Place à confirmer" : "Pré-inscription enregistrée"}
             </span>
             <a
               href={`/api/attestation/${dossier.reference}`}
@@ -439,7 +439,7 @@ export default async function Dossier({ params, searchParams }: Props) {
             <p className="text-[0.92rem]">
               Vous avez choisi de régler {ATTENDU[dossier.moyenSouhaite ?? "transfert"].choix}. Nous
               vous envoyons {ATTENDU[dossier.moyenSouhaite ?? "transfert"].envoi} par courriel, à
-              l&apos;adresse indiquée à l&apos;inscription. Votre dossier{" "}
+              l&apos;adresse indiquée à la pré-inscription. Votre dossier{" "}
               <span className="text-gold-bright font-mono">{dossier.reference}</span> est déjà
               enregistré : vous n&apos;avez rien à écrire de votre côté.
             </p>

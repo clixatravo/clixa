@@ -261,7 +261,7 @@ export default async function FicheFormation({ params }: Props) {
                     }
                     className="w-full py-4 text-xs font-bold tracking-wider uppercase shadow-lg"
                   >
-                    Réserver ma place en ligne
+                    Me pré-inscrire en ligne
                   </Button>
                 ) : (
                   <Button

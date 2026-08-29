@@ -14,7 +14,7 @@ import { HeureLocale } from "@/components/HeureLocale";
 /**
  * FE-07 — Bloc de sélection de session.
  *
- * « Réserver » mène au tunnel depuis la phase 02, avec la session déjà
+ * « Me pré-inscrire » mène au tunnel depuis la phase 02, avec la session déjà
  * choisie : chaque ligne réserve la sienne, pas une autre. Une session
  * complète renvoie au rappel — il n'y a rien à réserver.
  */
@@ -88,7 +88,7 @@ export function SessionsDisponibles({
                     : "shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold bg-gradient-to-r hover:shadow-[0_0_15px_rgba(201,162,76,0.35)]"
                 }`}
               >
-                {complete ? "Liste d'attente" : "Réserver"}
+                {complete ? "Liste d'attente" : "Me pré-inscrire"}
               </a>
             </div>
 
