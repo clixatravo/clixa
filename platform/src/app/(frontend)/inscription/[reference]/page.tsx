@@ -197,19 +197,38 @@ export default async function Dossier({ params, searchParams }: Props) {
           <div className="border-gold bg-panel mb-8 border p-6">
             <h2 className="font-display mb-3 text-[1.1rem]">Ce qu&apos;il reste à faire</h2>
             <p className="text-gold-bright mb-4 text-[0.92rem]">{prochaineEtape(dossier)}</p>
+            {/*
+              ── La liste suit le tunnel, pas l'inverse ────────────────────────
+              Elle commençait par « envoyer le montant » quel que soit l'état du
+              dossier : quelqu'un qui venait de se pré-inscrire lisait qu'il
+              devait payer, trois lignes sous une phrase lui disant que rien ne
+              l'engageait. Les deux premières étapes n'apparaissent donc que tant
+              qu'elles restent à faire.
+            */}
             <ol className="text-ivory-dim flex flex-col gap-3 text-[0.9rem]">
+              {!dossier.contratSigneLe && (
+                <li>
+                  <strong className="text-ivory">1.</strong>{" "}
+                  {dossier.contratDemandeLe
+                    ? "Signer votre contrat de formation, ci-dessous."
+                    : "Demander votre contrat de formation quand vous serez décidé."}
+                </li>
+              )}
               <li>
-                <strong className="text-ivory">1.</strong> Envoyer le montant de la première
-                échéance par Western Union, Ria ou MoneyGram.
+                <strong className="text-ivory">{dossier.contratSigneLe ? "1." : "2."}</strong>{" "}
+                Recevoir par courriel de quoi régler, puis envoyer le montant de la première
+                échéance.
               </li>
               <li>
-                <strong className="text-ivory">2.</strong> Nous indiquer le numéro de transfert{" "}
+                <strong className="text-ivory">{dossier.contratSigneLe ? "2." : "3."}</strong> Nous
+                indiquer le numéro de transfert{" "}
                 {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — il arrive
                 rattaché à votre dossier, sans que vous ayez à citer sa référence.
               </li>
               <li>
-                <strong className="text-ivory">3.</strong> Nous vérifions le transfert et confirmons
-                votre place — vous recevez alors le lien de connexion.
+                <strong className="text-ivory">{dossier.contratSigneLe ? "3." : "4."}</strong> Nous
+                vérifions le transfert et confirmons votre place — vous recevez alors le lien de
+                connexion.
               </li>
             </ol>
           </div>

@@ -186,6 +186,8 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       ...(session?.debut ? { sessionDebut: session.debut } : {}),
       ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
       ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
+      ...(d.contratDemandeLe ? { contratDemandeLe: String(d.contratDemandeLe) } : {}),
+      ...(d.contratSigneLe ? { contratSigneLe: String(d.contratSigneLe) } : {}),
       ...(d.coordonneesEnvoyeesLe
         ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) }
         : {}),
@@ -224,6 +226,25 @@ export function prochaineEtape(d: Dossier): string {
   const enVerification = d.echeances.find((e) => e.statut === "annonce");
   if (enVerification) {
     return `Nous vérifions votre transfert de ${formatPrix(enVerification.montantCentimes)}. Rien à faire de votre côté.`;
+  }
+
+  /*
+    ── Le contrat passe avant l'argent ───────────────────────────────────────
+    Le tunnel a deux temps depuis le 29 août, et cette phrase disait encore
+    « nous attendons votre premier transfert » à quelqu'un qui n'a même pas
+    demandé son contrat. Elle réclamait un versement avant l'engagement — soit
+    l'inverse de ce que le site promet trois lignes plus haut.
+
+    On ne le dit que tant que rien n'est réglé : un dossier dont l'acompte est
+    arrivé sans contrat signé existe (l'équipe peut avoir tout mené de vive
+    voix), et lui réclamer une signature après coup serait absurde.
+  */
+  const rienDeRegle = d.echeances.every((e) => e.statut !== "regle");
+  if (rienDeRegle && !d.contratSigneLe) {
+    if (!d.contratDemandeLe) {
+      return "Votre place est retenue. Demandez votre contrat quand vous serez décidé — rien ne vous engage encore.";
+    }
+    return "Il reste à signer votre contrat. Les instructions de règlement vous parviennent ensuite.";
   }
 
   const due = d.echeances.find((e) => e.statut !== "regle");

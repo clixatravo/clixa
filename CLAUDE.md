@@ -39,6 +39,7 @@ npx payload run scripts/verifier-catalogue.ts     # le catalogue se tient
 npx payload run scripts/verifier-session.ts       # la connexion sans mot de passe
 npx payload run scripts/verifier-google.ts        # une personne, un compte
 npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
+npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 ```
 
@@ -440,6 +441,12 @@ dont deux rendus diffèrent d'un octet. Sans elle, la première objection serait
 « le document a changé depuis », et elle serait imparable. Le participant reçoit
 la même empreinte par courriel : elle est datée, dans sa boîte, hors de notre
 portée.
+
+`scripts/verifier-signature.ts` éprouve les trois propriétés qui la portent :
+les mêmes termes rendent la même empreinte, chaque terme changé seul en rend une
+autre, et l'ordre des échéances compte. Une empreinte se casse en silence — elle
+continue de se calculer, elle a toujours la bonne longueur — et l'on ne s'en
+aperçoit qu'au moment de la produire.
 
 ⚠️ **L'ordre des parties de l'empreinte est écrit à la main.** `JSON.stringify`
 suivrait l'ordre d'insertion : une refonte qui déplacerait un champ changerait

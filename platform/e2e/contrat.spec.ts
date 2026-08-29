@@ -92,7 +92,15 @@ test("une pré-inscription n'engage à rien tant qu'on n'a pas demandé le contr
     formulaire doit lire qu'il peut s'arrêter là. C'est la promesse du premier
     temps du tunnel, et elle ne tient que si elle est écrite.
   */
-  await expect(page.getByText("rien ne vous engage encore", { exact: false })).toBeVisible();
+  /*
+    `.first()` parce que la page le dit deux fois — dans « Ce qu'il reste à
+    faire » et dans le bloc du contrat. C'est voulu : la promesse vaut d'être
+    répétée là où l'on hésite. L'épreuve vérifie qu'elle est dite, pas combien
+    de fois.
+  */
+  await expect(
+    page.getByText("rien ne vous engage encore", { exact: false }).first(),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Responsable Orientation/ }),
     "l'orientation doit être offerte avant l'engagement",
