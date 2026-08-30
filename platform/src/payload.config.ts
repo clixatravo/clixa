@@ -127,7 +127,25 @@ export default buildConfig({
   sharp,
 
   db: postgresAdapter({
-    push: false,
+    /*
+      ── Le schéma ne bouge que si on le demande, à voix haute ────────────────
+      Payload alignait le schéma tout seul hors production : une modification
+      faite en local partait sur la base partagée sans que personne la
+      décide. Depuis que dev et production sont deux bases, c'est fermé.
+
+      ⚠️ La conséquence est sévère et vaut d'être connue : un champ ajouté au
+      modèle n'existe dans aucune base tant que personne ne l'y met, et le build
+      de production échoue en cherchant la colonne — sans faire tomber le site,
+      sans que la CI le voie.
+
+      La variable remplace le va-et-vient qu'on faisait ici à la main
+      (`push: true`, pousser, remettre `false`). Un interrupteur qu'on rouvre à
+      chaque fois finit par rester ouvert ; celui-ci ne vaut que le temps d'une
+      commande :
+
+        PAYLOAD_PUSH=1 npx payload run scripts/pousser-schema.ts
+    */
+    push: process.env.PAYLOAD_PUSH === "1",
     /*
       ⚠️ Sans délais, une connexion morte fait attendre sans fin.
 

@@ -43,6 +43,7 @@ npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
+                                                  # et le contrat vérifié
 ```
 
 **La production se contrôle en une commande** (`INT-11`). Les épreuves
@@ -501,6 +502,35 @@ fait défiler la page au lieu de tracer, et le cadre paraît simplement inerte s
 mobile. La toile est aussi dimensionnée en pixels réels et non CSS : sur un
 écran à densité double, un trait tracé aux dimensions CSS ressort flou dans le
 PDF, où il est agrandi.
+
+**Le contrat se vérifie avant qu'on envoie de quoi payer**
+(`components/admin/VerifierContrat.tsx`, `contratVerifieLe`, depuis le 30 août
+2026). Signer est le geste du participant ; relire est le nôtre. Entre les deux
+il n'avait aucune nouvelle — au moment précis où il venait de s'engager par
+écrit. Le bouton mène d'abord au contrat, puis pose la date et lui annonce que
+son contrat est accepté.
+
+- **Le courriel part du crochet `afterChange`, pas du bouton.** Une date saisie
+  à la main dans le champ doit produire le même effet qu'un clic ; deux chemins
+  pour un même fait finissent toujours par diverger.
+- ⚠️ **La condition est « vide avant, rempli maintenant ».** Sans elle, chaque
+  enregistrement du dossier renverrait l'annonce — une échéance corrigée, une
+  note ajoutée, et le participant reçoit deux fois la même nouvelle.
+  `verifier-courriel.ts` garde cette porte.
+- ⚠️ **Ce message ne porte aucune coordonnée de règlement, et le dit.** Elles
+  partent séparément — rien de bancaire ne traverse le site. Il rappelle aussi
+  que la date d'envoi s'affichera sur le dossier : un message qui n'y correspond
+  pas n'est pas de nous.
+
+⚠️ **Le tracé de la signature se regarde, il ne se lit pas**
+(`components/admin/SignatureVue.tsx`). Le champ était une zone de texte : elle
+affichait le PNG encodé en base64, une centaine de milliers de caractères.
+Ouvrir le dossier depuis le courriel « Contrat signé » donnait un mur de
+charabia, et la signature — la seule chose qu'on venait voir — n'était nulle
+part. Le composant la rend en image et mène au contrat signé ; le courriel de
+l'équipe porte le même lien. ⚠️ Son cadre est sombre parce que le tracé est
+dessiné en ivoire : sur le thème clair de Payload, une signature ivoire sur
+blanc est invisible, et l'on ne recolore pas un PNG déjà tracé.
 
 **Le bouton « J'ai envoyé les instructions de paiement »**
 (`components/admin/PasserAuPaiement.tsx`) pose la date du jour et enregistre.
@@ -1270,12 +1300,21 @@ build de production interroge la base pour pré-générer les pages, et
 **échouera** en cherchant la colonne manquante — sans que le site tombe, sans
 que la CI le voie.
 
-Pour aligner une base, réactiver `push` le temps de l'opération puis le
-remettre, ou écrire la migration à la main :
+Pour aligner une base, `PAYLOAD_PUSH=1` le temps d'une commande — la variable
+a remplacé le va-et-vient qu'on faisait dans `payload.config.ts` (`push: true`,
+pousser, remettre `false`). ⚠️ Un interrupteur qu'on rouvre à chaque fois finit
+par rester ouvert ; celui-ci ne vaut que pour la commande qui le porte.
 
 ```bash
-cd platform && npx payload run scripts/pousser-schema.ts        # n'agit que si push est actif
+cd platform && PAYLOAD_PUSH=1 npx payload run scripts/pousser-schema.ts   # dev
+cd platform && set -a && . ./.env.prod && set +a && PAYLOAD_PUSH=1 \
+  npx payload run scripts/pousser-schema.ts                              # production
 ```
+
+Sans la variable, le script ne pousse rien : il prouve seulement que la base
+répond. Comparer les deux schémas après coup vaut mieux que d'y croire —
+`information_schema.columns` des deux côtés, et l'écart doit être nul dans les
+deux sens.
 
 Payload ne poussait le schéma qu'en dehors de la production. Tant que les deux
 environnements partageaient une base, une modification faite en local arrivait

@@ -2,6 +2,7 @@ import { occupeUnePlace } from "@/lib/places";
 import { randomBytes } from "crypto";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
+import { courrielContratVerifie } from "@/lib/courriel";
 
 /**
  * BE-14 — Les inscriptions.
@@ -152,6 +153,36 @@ export const Inscriptions: CollectionConfig = {
     afterChange: [
       async ({ doc, previousDoc, req }) => {
         await recompter([doc, previousDoc], req);
+
+        /*
+          ── Le contrat vient d'être déclaré vérifié ─────────────────────────
+          On prévient le participant : entre sa signature et l'arrivée des
+          coordonnées, il n'avait aucune nouvelle, au moment précis où il vient
+          de s'engager.
+
+          Le courriel part d'ici et non du bouton, pour qu'une date saisie à la
+          main dans le champ produise exactement le même effet qu'un clic —
+          deux chemins pour un même fait finissent toujours par diverger.
+
+          ⚠️ La comparaison porte sur « vide avant, rempli maintenant ». Sans
+          elle, chaque enregistrement du dossier renverrait le message : une
+          échéance corrigée, une note ajoutée, et le participant reçoit deux
+          fois la même annonce.
+        */
+        if (doc.contratVerifieLe && !previousDoc?.contratVerifieLe) {
+          const session = typeof doc.session === "object" ? doc.session : undefined;
+          const programme =
+            session && typeof session.programme === "object" ? session.programme : undefined;
+
+          await courrielContratVerifie(req.payload, {
+            reference: String(doc.reference ?? ""),
+            apprenantNom: String(doc.apprenantNom ?? ""),
+            apprenantEmail: String(doc.apprenantEmail ?? ""),
+            programmeTitre: String(programme?.titre ?? "votre parcours"),
+            ...(doc.moyenSouhaite ? { moyenSouhaite: doc.moyenSouhaite } : {}),
+          });
+        }
+
         return doc;
       },
     ],
@@ -531,7 +562,15 @@ export const Inscriptions: CollectionConfig = {
               label: "Tracé de la signature",
               admin: {
                 readOnly: true,
-                description: "Image PNG encodée, apposée sur le contrat.",
+                /*
+                  ⚠️ Rendu par un composant, jamais par la zone de texte. Le
+                  tracé est un PNG encodé : une centaine de milliers de
+                  caractères, que le champ affichait tels quels. Ouvrir le
+                  dossier depuis le courriel « Contrat signé » donnait un mur de
+                  charabia — et la signature, la seule chose qu'on venait voir,
+                  n'était nulle part.
+                */
+                components: { Field: "@/components/admin/SignatureVue#SignatureVue" },
               },
             },
             {
@@ -542,6 +581,37 @@ export const Inscriptions: CollectionConfig = {
                 readOnly: true,
                 description:
                   "Horodatage, adresse IP, navigateur et empreinte du contrat au moment de la signature. À produire en cas de contestation.",
+              },
+            },
+            {
+              /*
+                ── Le contrat a été relu, et le participant l'apprend ─────────
+                Signer est son geste ; vérifier est le nôtre. Entre les deux, il
+                attendait sans nouvelle : le courriel de signature annonce que
+                l'équipe enverra de quoi payer, puis plus rien jusqu'à ce que
+                quelqu'un s'en occupe. C'est le moment du tunnel où il s'est
+                engagé et où il ne se passe rien de visible.
+
+                Poser cette date envoie le message qui manquait — et c'est le
+                crochet `afterChange` qui l'envoie, pas le bouton : une date
+                renseignée à la main dans ce champ doit produire le même effet
+                qu'un clic.
+              */
+              name: "contratVerifieLe",
+              type: "date",
+              label: "Contrat vérifié le",
+              admin: {
+                width: "35%",
+                description: "Prévient le participant que son contrat est accepté.",
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              name: "verifierContrat",
+              type: "ui",
+              label: "Vérification",
+              admin: {
+                components: { Field: "@/components/admin/VerifierContrat#VerifierContrat" },
               },
             },
             {

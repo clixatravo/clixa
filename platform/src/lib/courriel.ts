@@ -539,8 +539,11 @@ export async function courrielSignature(
       `WhatsApp : ${d.apprenantWhatsapp}`,
       `E-mail : ${d.apprenantEmail}`,
       "",
-      "À FAIRE : envoyer les instructions de paiement, puis renseigner la date",
-      "d'envoi sur le dossier.",
+      "Le contrat signé, tel qu'il a été signé :",
+      `https://www.clixa.africa/inscription/${d.reference}/contrat`,
+      "",
+      "À FAIRE : le relire, envoyer les instructions de paiement, puis",
+      "renseigner la date d'envoi sur le dossier.",
     ].join("\n"),
     html: gabaritHtmlEmail({
       titre: "Contrat signé",
@@ -556,7 +559,10 @@ export async function courrielSignature(
           <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
           <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
         </table>
-        <p style="color: #94a3b8; font-size: 12px;">La preuve de signature — horodatage, IP, navigateur et empreinte — est enregistrée sur le dossier.</p>
+        <p style="margin: 0 0 18px 0;">
+          <a href="https://www.clixa.africa/inscription/${d.reference}/contrat" style="display: inline-block; padding: 10px 18px; background-color: #c9a24c; color: #080c18; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 4px;">Lire le contrat signé (PDF) &rarr;</a>
+        </p>
+        <p style="color: #94a3b8; font-size: 12px;">Le contrat porte la signature tracée. La preuve — horodatage, IP, navigateur et empreinte des termes — est enregistrée sur le dossier.</p>
       `,
       boutonTexte: "Ouvrir le dossier",
       boutonLien: `https://www.clixa.africa/admin/collections/inscriptions/${d.dossierId}`,
@@ -912,5 +918,78 @@ export async function courrielBilanRelances(payload: Payload, lignes: string[]):
     to: EQUIPE,
     subject: `[Bilan Relances] ${lignes.length} échéance(s) traitée(s)`,
     text: ["Les participants suivants ont été relancés :", "", ...lignes].join("\n"),
+  });
+}
+
+/**
+ * Au participant : son contrat a été relu et accepté.
+ *
+ * ── Le silence que ce message rompt ─────────────────────────────────────────
+ * Entre la signature et l'arrivée des coordonnées, le participant ne voyait
+ * rien. Il venait de s'engager par écrit, le courriel de signature lui
+ * annonçait que l'équipe enverrait de quoi payer — puis plus rien, le temps que
+ * quelqu'un ouvre son dossier. C'est le moment du tunnel où l'on doute.
+ *
+ * ⚠️ Ce message n'apporte aucune coordonnée de règlement, et le dit. Les
+ * coordonnées partent séparément, décision de la direction : rien de bancaire
+ * ne traverse le site. Promettre ici un lien qui n'y est pas ferait chercher
+ * une pièce jointe qui n'existe pas.
+ *
+ * ⚠️ Il rappelle aussi la garde contre l'hameçonnage : la date d'envoi des
+ * coordonnées s'affiche sur son dossier, et un message qui ne correspond à
+ * aucune date affichée n'est pas de nous.
+ */
+export async function courrielContratVerifie(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    moyenSouhaite?: "carte" | "virement" | "transfert";
+  },
+): Promise<boolean> {
+  const url = `${SITE}/inscription/${d.reference}`;
+  const attendu = ATTENDU[d.moyenSouhaite ?? "transfert"].participant;
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `Contrat vérifié — ${d.programmeTitre} [Dossier ${d.reference}]`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      "Nous avons relu votre contrat de formation : il est vérifié et accepté.",
+      "",
+      `Vous allez recevoir, dans un courriel séparé, ${attendu}.`,
+      "",
+      "IMPORTANT — comment reconnaître notre message :",
+      "  La date de cet envoi s'affichera sur la page de votre dossier. Un",
+      "  message qui vous réclame un paiement sans correspondre à cette date",
+      "  ne vient pas de nous. Vérifiez toujours ici :",
+      `  ${url}`,
+      "",
+      "Votre place reste retenue en attendant.",
+      "",
+      "CLIXA Institute — Direction des Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Votre contrat est vérifié",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml: `
+        <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+        <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;">
+          Nous avons relu votre contrat de formation : il est <strong>vérifié et accepté</strong>.
+        </p>
+        <p>Vous allez recevoir, dans un courriel séparé, ${attendu}.</p>
+        <p style="margin: 22px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 13px; color: #cbd5e1;">
+          <strong style="color: #ffffff;">Comment reconnaître notre message</strong><br/>
+          La date de cet envoi s'affichera sur la page de votre dossier. Un message qui vous réclame un paiement sans correspondre à cette date ne vient pas de nous — vérifiez toujours sur votre dossier.
+        </p>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">Votre place reste retenue en attendant.</p>
+      `,
+      boutonTexte: "Voir mon dossier",
+      boutonLien: url,
+    }),
   });
 }

@@ -648,14 +648,15 @@ export interface Inscription {
   contratDemandeLe?: string | null;
   contratSigneLe?: string | null;
   contratSignataire?: string | null;
-  /**
-   * Image PNG encodée, apposée sur le contrat.
-   */
   contratTrace?: string | null;
   /**
    * Horodatage, adresse IP, navigateur et empreinte du contrat au moment de la signature. À produire en cas de contestation.
    */
   contratPreuve?: string | null;
+  /**
+   * Prévient le participant que son contrat est accepté.
+   */
+  contratVerifieLe?: string | null;
   /**
    * À renseigner après l'envoi — le participant voit cette date.
    */
@@ -1249,6 +1250,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   contratSignataire?: T;
   contratTrace?: T;
   contratPreuve?: T;
+  contratVerifieLe?: T;
   coordonneesEnvoyeesLe?: T;
   montantTotal?: T;
   devise?: T;

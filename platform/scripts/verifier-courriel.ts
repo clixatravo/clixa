@@ -40,6 +40,7 @@ const dire = (q: string, v: boolean) => {
   qui rendait la lecture suivante impossible à typer.
 */
 const envoyes: Record<string, unknown>[] = [];
+const aSupprimer: (string | number)[] = [];
 
 try {
   payload.sendEmail = (async (m: Record<string, unknown>) => {
@@ -113,12 +114,84 @@ try {
     `elle va à l'adresse affichée sur le site (${RESEAUX_CLIXA.email.adresse})`,
     String(rappel?.to) === RESEAUX_CLIXA.email.adresse,
   );
+  /*
+    ⚠️ Cette distinction ne se mesure que si les deux adresses diffèrent. Elles
+    ont été identiques jusqu'au 30 août 2026, et le seront encore sur toute
+    machine dont le `.env` n'a pas suivi. Une épreuve qui ne peut rien conclure
+    doit le dire — la passer au vert apprendrait le contraire de la vérité.
+  */
+  const equipe = process.env.EMAIL_EQUIPE;
+  if (equipe && equipe !== RESEAUX_CLIXA.email.adresse) {
+    dire("elle ne suit pas EMAIL_EQUIPE", String(rappel?.to) !== equipe);
+  } else {
+    console.log("  · EMAIL_EQUIPE vaut ici l'adresse publique : la distinction ne se mesure pas");
+  }
+
+  /*
+    ── « Contrat vérifié » ne se dit qu'une fois ─────────────────────────────
+    Le courriel part du crochet `afterChange`, pour qu'une date saisie à la main
+    dans /admin fasse la même chose qu'un clic sur le bouton. Le risque de ce
+    choix est net : sans la comparaison « vide avant, rempli maintenant »,
+    **chaque** enregistrement du dossier renverrait l'annonce — une échéance
+    corrigée, une note ajoutée, et le participant reçoit deux fois la même
+    nouvelle.
+  */
+  const { docs: sessions } = await payload.find({
+    collection: "sessions",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    where: { fin: { greater_than: new Date().toISOString() } },
+  });
+
+  const dossier = await payload.create({
+    collection: "inscriptions",
+    overrideAccess: true,
+    data: {
+      session: sessions[0]!.id,
+      statut: "demandee",
+      apprenantNom: "Épreuve Vérifié",
+      apprenantEmail: "verifie@epreuve.invalid",
+      apprenantWhatsapp: "+212600000000",
+      apprenantPays: "Maroc",
+      planPaiement: "P1",
+      echeances: [{ montant: 423, statut: "attendu" }],
+      contratSigneLe: new Date().toISOString(),
+      contratSignataire: "Épreuve Vérifié",
+    } as never,
+  });
+  aSupprimer.push(dossier.id);
+
+  const avantVerif = envoyes.length;
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: { contratVerifieLe: new Date().toISOString() },
+  });
+
+  const annonces = envoyes.slice(avantVerif);
+  dire("poser la date de vérification envoie une annonce", annonces.length === 1);
   dire(
-    "elle ne suit pas EMAIL_EQUIPE",
-    !process.env.EMAIL_EQUIPE || String(rappel?.to) !== process.env.EMAIL_EQUIPE,
+    "elle part au participant, pas à l'équipe",
+    String(annonces[0]?.to) === "verifie@epreuve.invalid",
   );
+
+  // Un second enregistrement, sans toucher à la date : rien ne doit repartir.
+  const avantSecond = envoyes.length;
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: { apprenantPays: "Sénégal" },
+  });
+  dire("⚠️ un second enregistrement ne la renvoie pas", envoyes.length === avantSecond);
 } finally {
   payload.sendEmail = expediteur;
+  for (const id of aSupprimer) {
+    await payload.delete({ collection: "inscriptions", id, overrideAccess: true });
+  }
+  if (aSupprimer.length > 0) console.log("  · dossier d'épreuve supprimé");
 }
 
 console.log(manques === 0 ? "\nCourriel : tout tient." : `\nCourriel : ${manques} manque(s).`);
