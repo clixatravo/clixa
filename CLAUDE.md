@@ -289,6 +289,38 @@ n'avaient rien versé et ne viendraient jamais ; sans la tenue initiale, deux
 personnes pouvaient régler la même dernière place pendant que leurs virements
 voyageaient.
 
+⚠️ **Sept jours à partir de quoi — c'est là que tout se joue** (depuis le
+30 août 2026). Le compte à rebours partait du dépôt du dossier. Depuis que le
+tunnel a deux temps, le participant **ne peut rien verser** avant que l'équipe
+lui envoie les coordonnées — ce qui vient après la consultation, la demande de
+contrat et la signature. Le délai pouvait donc s'épuiser avant qu'il ait eu le
+droit d'agir, et sa place partait pendant qu'il attendait de nos nouvelles.
+
+Le départ est maintenant le dernier moment qui compte :
+
+| État du dossier | La place est tenue |
+|---|---|
+| un versement reçu | sans limite |
+| contrat signé, coordonnées pas encore envoyées | sans limite — la balle est chez nous |
+| coordonnées envoyées | sept jours à partir de cet envoi |
+| pré-inscription seule | sept jours à partir du dépôt |
+
+⚠️ **Un contrat signé qui attend nos coordonnées tient sa place sans terme.**
+Rendre au catalogue la place de quelqu'un qui s'est engagé par écrit, parce que
+*nous* n'avons pas envoyé un courriel, serait lui faire payer notre retard. Le
+bandeau du tableau de bord compte ces dossiers : c'est là que le rattrapage se
+fait, pas en leur reprenant leur place.
+
+⚠️ **La durée exacte reste une décision de la direction.** Sept jours à partir
+de l'envoi des coordonnées est ce qui se défend le mieux aujourd'hui ; c'est un
+réglage, pas une vérité. La page du dossier se tait quand il n'y a pas de terme,
+plutôt que d'afficher une date que le participant n'aurait aucun moyen de tenir.
+
+Trouvé en regardant les dossiers réels : le 30 août 2026, les deux seuls
+dossiers de production étaient **signés**, coordonnées non envoyées, et leur
+délai courait depuis le dépôt. Aucun n'avait encore expiré — le défaut aurait
+mordu sept jours plus tard, sans que rien ne le signale.
+
 ⚠️ **Un acompte reçu confirme le dossier**, et c'est ce qui protège la place.
 Le statut du dossier et celui de ses échéances vivaient séparément : on pouvait
 marquer un acompte « réglé » et laisser le dossier « demandée ». Sans
@@ -858,6 +890,15 @@ protège de cette bascule. ⚠️ `psql` cherche alors son autorité dans
 `~/.postgresql/`, qui n'existe sur aucune machine : `PGSSLROOTCERT=system` le
 renvoie au magasin du système (`e2e/menage.ts` le pose).
 
+⚠️ **Ce durcissement se pose partout où la chaîne est écrite, pas seulement
+dans `.env.local`.** Le 30 août 2026, `platform/.env.prod` portait encore
+`require` : tout script lancé contre la production émettait l'avertissement du
+pilote, et aurait perdu la vérification du certificat à la prochaine version
+majeure. Corrigé, et la connexion vérifiée après coup. **Reste à faire la même
+chose sur les variables Vercel**, qui sont ce que le site en ligne utilise —
+elles n'ont pas été relues, `vercel env pull` ne rendant qu'un substitut pour
+une valeur chiffrée.
+
 **Deux colonnes ont reçu un index** — `inscriptions.apprenant_email`, que la
 connexion Google interroge à chaque rattachement, et `inscriptions.statut`, que
 le recompte des places lit à chaque écriture.
@@ -988,6 +1029,37 @@ http://localhost:3000/api/auth/google/retour
 - **L'état (`state`) n'est pas décoratif.** Sans lui, un tiers fabrique une
   adresse de retour portant *son* code et fait atterrir le visiteur dans le
   compte de l'attaquant, où il déposera ensuite ses informations.
+
+⚠️ **La dernière étape est une page, pas une redirection** (`pageDeContinuation`
+dans `lib/session.ts`, depuis le 30 août 2026). Un cookie `SameSite=Lax` posé au
+retour d'un site tiers **ne repart pas** sur le saut de redirection qui suit :
+le navigateur juge la chaîne entière de la navigation, et celle-ci a commencé
+chez Google. La session existait bien dans le navigateur — elle n'était
+simplement pas présentée. `/compte` se rendait donc déconnecté, et il fallait
+recharger pour voir son compte.
+
+La route de retour rend donc une vraie page en 200 qui porte le cookie ; c'est
+elle qui mène à destination, et ce saut-là part de notre site.
+
+- **Reproduit avant d'être corrigé, et c'est ce qui a tout changé.** Un premier
+  essai concluait « rien à signaler » : il partait de notre propre origine,
+  quand le retour de Google part d'ailleurs. C'est le seul ingrédient qui
+  compte. Refait depuis une autre origine, le défaut est apparu du premier coup.
+- ⚠️ **`SameSite=None` réglerait cela en une ligne, et il ne faut pas.** Le
+  cookie de session partirait alors sur *toutes* les requêtes tierces. `Lax` est
+  ce qui protège aujourd'hui les routes de formulaire — inscription, transfert,
+  signature. On ne défait pas une garde pour rattraper une redirection.
+- **La page marche sans JavaScript** (balise `refresh`), le script la double
+  pour que la transition ne se voie pas, et un lien reste si les deux échouent.
+- ⚠️ **Aucune épreuve ne voyait ce défaut, et aucune ne le verrait revenir** :
+  les parcours Playwright partent tous de notre site, donc du bon côté de la
+  règle. Six épreuves de `verifier-session.ts` gardent la porte — la route
+  répond 200 et jamais une redirection, elle mène à destination sans
+  JavaScript, et une destination piégée est échappée.
+- **Le drapeau `Secure` du cookie n'était pas la cause.** Il a été posé au
+  passage (`Apprenants.ts`, conditionné à la production : en développement il
+  fermerait `http://localhost`), et c'est un vrai défaut — mais le défaut
+  reproduit tourne en `http://` et échoue quand même.
 
 ⚠️ **`lib/session.ts` refait à la main ce que fait `payload.login()`.** Celui-ci
 exige un mot de passe — c'est tout son objet — et quand Google a prouvé

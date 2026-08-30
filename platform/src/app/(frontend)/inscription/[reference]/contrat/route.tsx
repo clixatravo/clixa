@@ -1,4 +1,12 @@
 import React from "react";
+/*
+  ⚠️ `jsx-a11y/alt-text` désactivé pour ce fichier, et pour une seule raison :
+  l'`Image` de `@react-pdf/renderer` n'est pas un `<img>`. Elle dessine dans un
+  PDF, où l'attribut `alt` n'existe pas — la règle ne peut donc pas être
+  satisfaite, seulement contournée par un attribut inerte. Deux avertissements
+  à chaque vérification apprennent surtout à ne plus les lire.
+*/
+/* eslint-disable jsx-a11y/alt-text */
 import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import { getDossier } from "@/lib/inscriptions";
 import { formatPrix } from "@/lib/catalogue";
