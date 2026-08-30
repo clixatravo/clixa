@@ -12,6 +12,22 @@ import type { Payload } from "payload";
 /** Où arrivent les notifications internes. À défaut, personne n'est prévenu. */
 const EQUIPE = process.env.EMAIL_EQUIPE;
 
+/**
+ * Où atterrit la réponse de qui appuie sur « Répondre ».
+ *
+ * ⚠️ Sans cela, la réponse partait vers l'expéditeur — `contact@envoi.clixa.africa`
+ * — et **rebondissait** : le sous-domaine d'envoi n'a ni MX ni A, exprès. Il
+ * sert à envoyer, pas à recevoir. Le participant voyait donc son message
+ * revenir, et de notre côté rien n'arrivait : un silence des deux bords, sur le
+ * geste le plus naturel qu'on puisse faire devant un courriel.
+ *
+ * L'adresse de réponse est celle que des humains relèvent, sur le domaine
+ * principal — celui dont les MX pointent vers Zoho. Le défaut vaut pour la
+ * production ; la variable existe pour ne pas avoir à toucher au code le jour
+ * où l'adresse change.
+ */
+const REPONDRE_A = process.env.EMAIL_REPONSE ?? RESEAUX_CLIXA.email.adresse;
+
 /*
   L'adresse canonique du site. Les liens d'un courriel ne se rattrapent pas :
   une redirection depuis l'apex coûte un aller-retour à qui clique, et certains
@@ -259,7 +275,8 @@ async function envoyer(
   message: { to: string; subject: string; text: string; html?: string },
 ): Promise<boolean> {
   try {
-    await payload.sendEmail(message);
+    // `replyTo` sur tous les messages : l'expéditeur ne sait pas recevoir.
+    await payload.sendEmail({ replyTo: REPONDRE_A, ...message });
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: message.to }, "[courriel] envoi impossible");
@@ -618,7 +635,8 @@ export async function envoyerConfirmation(
 ): Promise<boolean> {
   const message = courrielConfirmation(args);
   try {
-    await payload.sendEmail({ to: destinataire, ...message });
+    // Même raison qu'ailleurs : l'expéditeur ne sait pas recevoir de réponse.
+    await payload.sendEmail({ replyTo: REPONDRE_A, to: destinataire, ...message });
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: destinataire }, "[confirmation] envoi impossible");
@@ -761,7 +779,23 @@ export async function courrielRappel(
     plan?: string;
   },
 ): Promise<void> {
-  if (!EQUIPE) return;
+  /*
+    ⚠️ Celui-ci ne va pas à l'équipe entière, mais à l'adresse affichée sur le
+    site — et il la tient de `lib/reseaux.ts`, la même source que la page de
+    contact et le pied de page.
+
+    Deux raisons. La première est une décision : une demande de rappel n'est pas
+    un événement à constater, c'est un appel à passer. Elle appelle une personne,
+    pas une équipe. Les autres notifications — inscription, contrat, transfert —
+    disent ce qui s'est produit et vont, elles, à tout le monde.
+
+    La seconde est une règle de la maison : qui écrit à l'adresse publique et qui
+    remplit le formulaire aboutissent au même endroit **par construction**. Écrire
+    l'adresse ici en toutes lettres en ferait une seconde copie, et deux copies
+    finissent toujours par diverger — c'est ce qui avait laissé un faux numéro
+    d'admissions dans chaque courriel envoyé.
+  */
+  const destinataire = RESEAUX_CLIXA.email.adresse;
 
   const corpsHtml = `
     <p>Une nouvelle demande de rappel téléphonique a été déposée :</p>
@@ -775,7 +809,7 @@ export async function courrielRappel(
   `;
 
   await envoyer(payload, {
-    to: EQUIPE,
+    to: destinataire,
     subject: `Demande de rappel — ${d.nom} (${d.pays})`,
     text: [
       `${d.nom} (${d.pays}) demande à être rappelé.`,

@@ -42,6 +42,7 @@ npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
 npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
+npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 ```
 
 **La production se contrôle en une commande** (`INT-11`). Les épreuves
@@ -962,6 +963,37 @@ Ce que ce coup d'œil a trouvé, et qu'aucune épreuve ne pouvait voir :
 panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », dont
 l'équivalent a été retiré du site faute de pouvoir l'étayer.
 
+
+**Les notifications internes ne vont pas toutes au même endroit** (depuis le
+30 août 2026). Cinq d'entre elles — inscription, contrat demandé, contrat signé,
+transfert annoncé, bilan des relances — vont à `EMAIL_EQUIPE`, le groupe Zoho
+que relève toute l'équipe. La **demande de rappel** va à l'adresse affichée sur
+le site, et elle la tient de `lib/reseaux.ts`.
+
+C'est une décision, pas un oubli : une demande de rappel n'est pas un événement
+à constater, c'est **un appel à passer**. Elle appelle une personne, pas une
+équipe — et qui écrit à l'adresse publique et qui remplit le formulaire
+aboutissent ainsi au même endroit, par construction. L'écrire en toutes lettres
+dans `courriel.ts` en ferait une seconde copie ; c'est ce genre de copie qui
+avait laissé un faux numéro d'admissions dans chaque courriel envoyé.
+
+⚠️ **Le risque assumé** : si personne ne relève cette adresse un jour donné, la
+demande y reste seule. C'est le premier contact de quelqu'un qui n'a pas encore
+décidé — le message qui supporte le moins de rester sans réponse. Si cela se
+produit, la remettre sur `EMAIL_EQUIPE` est une ligne.
+
+⚠️ **Le sous-domaine d'envoi ne sait pas recevoir, et c'est voulu** —
+`envoi.clixa.africa` n'a ni MX ni A. Sans `replyTo`, la réponse du participant
+partait donc vers `contact@envoi.clixa.africa` et **rebondissait** : elle lui
+revenait, et de notre côté rien n'arrivait. Un silence des deux bords, sur le
+geste le plus naturel devant un courriel — et que rien ne signale.
+
+Tous les envois portent désormais `replyTo` — `EMAIL_REPONSE`, par défaut
+l'adresse de `lib/reseaux.ts`, sur le domaine dont les MX pointent vers Zoho.
+`verifier-courriel.ts` ne se contente pas de vérifier que la variable est
+remplie : il **interroge les MX du domaine de réponse**. Une adresse sur un
+domaine muet a l'air juste et reste indélivrable — c'est exactement le défaut
+d'origine.
 
 Deux services, deux rôles, et il faut savoir lequel on touche :
 
