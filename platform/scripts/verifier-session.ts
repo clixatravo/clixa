@@ -14,7 +14,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { ouvrirSession } from "../src/lib/session.js";
+import { ouvrirSession, pageDeContinuation } from "../src/lib/session.js";
 
 /*
   ⚠️ `Sec-Fetch-Site` : sans lui, la garde CSRF refuse le cookie.
@@ -97,6 +97,41 @@ try {
   verifier(
     "une seconde connexion ajoute une session sans effacer la première",
     ((relu2 as { sessions?: unknown[] }).sessions ?? []).length === 2,
+  );
+  /*
+    ── La dernière étape ne doit pas être une redirection ────────────────────
+
+    ⚠️ Un cookie `SameSite=Lax` posé au retour d'un site tiers ne repart pas sur
+    le saut de redirection qui suit : le navigateur juge la chaîne entière, et
+    celle-ci a commencé chez Google. La page d'arrivée se rendait déconnectée,
+    et il fallait recharger — le défaut signalé le 29 août 2026, reproduit en
+    navigateur au départ d'une autre origine.
+
+    Ces épreuves gardent la porte. Rien dans les types ni dans les parcours
+    Playwright ne verrait quelqu'un remettre un `redirect()` ici : les épreuves
+    partent toutes de notre propre site, donc du bon côté de la règle.
+  */
+  const OU = "https://exemple.test/compte";
+  const reponse = pageDeContinuation(OU, ["a=1; Path=/", "b=2; Path=/"]);
+  const corps = await reponse.text();
+
+  verifier("la continuation répond 200, jamais une redirection", reponse.status === 200);
+  verifier("elle ne porte aucun en-tête Location", reponse.headers.get("location") === null);
+  verifier(
+    "elle emporte tous les cookies qu'on lui donne",
+    reponse.headers.getSetCookie().length === 2,
+  );
+  verifier("elle mène à destination sans JavaScript", corps.includes(`content="0; url=${OU}"`));
+  verifier("elle ne se garde pas en cache", reponse.headers.get("cache-control") === "no-store");
+
+  // La destination vient d'un paramètre d'URL : elle est bornée aux chemins
+  // internes, mais une garde qui ne tient qu'à une garde d'ailleurs n'en est
+  // pas une.
+  const piege = pageDeContinuation('/compte"><script>alert(1)</script>', []);
+  const corpsPiege = await piege.text();
+  verifier(
+    "une destination piégée est échappée, pas rendue",
+    !corpsPiege.includes("<script>alert(1)</script>"),
   );
 } finally {
   if (compteId !== undefined) {

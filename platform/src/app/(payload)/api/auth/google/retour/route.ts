@@ -17,7 +17,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { COOKIE_ETAT, COOKIE_SUITE, googleConfigure, identite } from "@/lib/google";
-import { ouvrirSession } from "@/lib/session";
+import { ouvrirSession, pageDeContinuation } from "@/lib/session";
 
 const EFFACER = "Path=/; HttpOnly; Max-Age=0";
 
@@ -147,15 +147,18 @@ export async function GET(request: Request) {
   const cookie = await ouvrirSession(payload, "apprenants", compte.id);
   const suite = decodeURIComponent(lireCookie(request, COOKIE_SUITE) ?? "") || "/compte";
 
-  return new Response(null, {
-    status: 303,
-    headers: [
-      ["Location", new URL(suite.startsWith("/") ? suite : "/compte", origine).toString()],
-      ["Set-Cookie", cookie],
-      ["Set-Cookie", `${COOKIE_ETAT}=; ${EFFACER}`],
-      ["Set-Cookie", `${COOKIE_SUITE}=; ${EFFACER}`],
-    ],
-  });
+  /*
+    ⚠️ Une page, pas une redirection — et ce n'est pas un détail de style.
+    Un cookie `SameSite=Lax` posé au retour d'un site tiers ne repart pas sur le
+    saut de redirection qui suit : le navigateur juge la chaîne entière, et
+    celle-ci a commencé chez Google. `/compte` se rendait donc déconnecté, et il
+    fallait recharger pour voir son compte. Reproduit puis vérifié en
+    navigateur, au départ d'une autre origine. Voir `pageDeContinuation`.
+  */
+  return pageDeContinuation(
+    new URL(suite.startsWith("/") ? suite : "/compte", origine).toString(),
+    [cookie, `${COOKIE_ETAT}=; ${EFFACER}`, `${COOKIE_SUITE}=; ${EFFACER}`],
+  );
 }
 
 /**

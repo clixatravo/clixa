@@ -27,6 +27,22 @@ export const Apprenants: CollectionConfig = {
   slug: "apprenants",
   labels: { singular: "Participant", plural: "Participants" },
   auth: {
+    /*
+      ── Le cookie de session porte le drapeau `Secure` en production ─────────
+      Sans lui, le cookie voyage aussi sur une connexion en clair : il suffit
+      d'un lien en `http://` pour que la session parte en lisible. Les
+      navigateurs qui cloisonnent les cookies posés au retour d'un site tiers
+      — le retour de Google en est un — traitent aussi moins bien un cookie non
+      marqué.
+
+      ⚠️ Conditionné à l'environnement : posé en développement, le cookie ne
+      serait jamais accepté sur `http://localhost`, et la connexion locale
+      cesserait de fonctionner sans que rien ne l'explique.
+    */
+    cookies: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    },
     // Une session qui dure : personne ne revient sur son dossier chaque jour.
     tokenExpiration: 60 * 60 * 24 * 30,
     maxLoginAttempts: 10,
