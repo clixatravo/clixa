@@ -608,6 +608,39 @@ n'est pas le protéger. Le SDK `@vercel/blob`, lui, sait faire du privé : les
 trois fonctions de `lib/recus.ts` sont tout ce qu'il fallait, et la collection
 n'a pas d'`upload`.
 
+⚠️ **Les médias attendent un second magasin, public** (depuis le 30 août 2026).
+Le greffon `@payloadcms/storage-vercel-blob` est installé et branché dans
+`payload.config.ts`, mais **conditionné à `BLOB_MEDIAS_TOKEN`** — une variable
+qui n'existe pas encore. Tant qu'elle manque, rien ne change : le dépôt retombe
+sur le disque, ce qui marche en développement et **perd le fichier en
+production**.
+
+Il faut un magasin **distinct** de celui des justificatifs : celui-là est
+*privé*, et le greffon refuse net (« Cannot use public access on a private
+store »). Les deux besoins sont opposés — des images faites pour être vues, des
+reçus faits pour ne pas l'être — et un magasin ne porte qu'un seul régime.
+
+```bash
+npx vercel blob store add medias-public --scope cl-95af
+```
+
+⚠️ **C'est cette commande qui, le 29 août, a déclenché un `vercel env pull` en
+sous-main** et écrasé `.env.local`. Sauvegarder le fichier avant, le relire
+après. Poser ensuite le jeton du nouveau magasin sous le nom
+`BLOB_MEDIAS_TOKEN`.
+
+`verifier-medias.ts` **échoue tant que ce n'est pas fait**, et le dit en toutes
+lettres. C'est voulu : un vert qui cache une perte de fichiers vaut moins qu'un
+rouge qui nomme ce qui manque. Le script éprouve maintenant ce qu'aucune de ses
+vérifications ne touchait — il va **chercher le fichier à l'adresse rendue**,
+parce qu'une adresse n'est pas un fichier.
+
+⚠️ **`numeric` ne se lit pas pareil selon la porte.** `places_reservees` est de
+type `numeric` : le pilote `pg` le rend en **texte**, quand Payload le rend en
+**nombre**. Un script de diagnostic écrit en SQL brut compare donc `"1"` à `1`
+et conclut que tout a changé. Vérifié : le code applicatif passe par Payload et
+ne connaît pas ce piège — mais les scripts d'inspection, eux, doivent convertir.
+
 ⚠️ **Le disque de Vercel ne s'écrit pas.** `staticDir` pointe dans le paquet
 déployé, en lecture seule à l'exécution : un dépôt écrit là disparaît sans
 erreur. C'est pourquoi `Medias` n'a **jamais reçu un seul fichier en
