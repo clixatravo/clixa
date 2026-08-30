@@ -5,7 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
-import { finDeLaTenue } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import Link from "next/link";
 
@@ -112,10 +112,36 @@ export default async function Dossier({ params, searchParams }: Props) {
 
     Un versement reçu retient la place sans limite : on ne montre alors aucune
     date, parce qu'il n'y en a plus.
+
+    ⚠️ Le délai ne court pas depuis le dépôt, mais depuis le moment où le
+    participant peut agir — l'envoi des coordonnées. Un contrat signé dont les
+    coordonnées ne sont pas encore parties n'a donc pas de terme : `depart`
+    rend `undefined`, et la page se tait plutôt que d'afficher une échéance
+    qu'il n'aurait aucun moyen de tenir. Voir `departDeLaTenue`.
   */
-  const tenueProvisoire = dossier.statut === "demandee" && Boolean(dossier.depuis);
-  const tenueJusquau = tenueProvisoire ? finDeLaTenue(dossier.depuis!) : undefined;
+  const depart =
+    dossier.statut === "demandee"
+      ? departDeLaTenue({
+          createdAt: dossier.depuis,
+          contratSigneLe: dossier.contratSigneLe,
+          coordonneesEnvoyeesLe: dossier.coordonneesEnvoyeesLe,
+        })
+      : undefined;
+  const tenueJusquau = depart ? finDeLaTenue(depart) : undefined;
   const tenueExpiree = verifierTenueExpiree(tenueJusquau);
+
+  /*
+    ⚠️ Sans terme ne veut pas dire sans nouvelle. Un contrat signé dont les
+    coordonnées ne sont pas parties tient sa place sans date limite — et si la
+    page se contentait de retirer le bandeau, celui qui vient de signer
+    passerait de « tenue jusqu'au 5 septembre » à rien du tout. Un silence, à
+    cet endroit, se lit comme une promesse retirée. On lui dit donc ce qui est
+    vrai : sa place est tenue, et c'est nous qu'il attend.
+  */
+  const tenueSansTerme =
+    dossier.statut === "demandee" &&
+    Boolean(dossier.contratSigneLe) &&
+    !dossier.coordonneesEnvoyeesLe;
 
   return (
     <>
@@ -125,7 +151,17 @@ export default async function Dossier({ params, searchParams }: Props) {
         <div className="mx-auto max-w-[820px]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-4">
             <span className="mono-label text-gold block">
-              {tenueExpiree ? "Place à confirmer" : "Pré-inscription enregistrée"}
+              {/*
+                Trois états, parce que le dossier en a trois. « Pré-inscription
+                enregistrée » sur un dossier signé sous-dit ce qui s'est passé :
+                le tunnel a deux temps précisément pour que la signature se
+                distingue du premier geste, qui n'engage à rien.
+              */}
+              {tenueExpiree
+                ? "Place à confirmer"
+                : dossier.contratSigneLe
+                  ? "Contrat signé"
+                  : "Pré-inscription enregistrée"}
             </span>
             <a
               href={`/api/attestation/${dossier.reference}`}
@@ -171,6 +207,15 @@ export default async function Dossier({ params, searchParams }: Props) {
               }`}
             >
               {RETOUR_ANNONCE[annonce] ?? RETOUR_ANNONCE.champs}
+            </p>
+          )}
+
+          {tenueSansTerme && (
+            <p className="bg-panel border-line text-ivory-dim mb-8 border-l-2 p-4 text-[0.9rem] leading-relaxed">
+              Votre contrat est signé et{" "}
+              <strong className="text-ivory">votre place vous est tenue</strong> — sans date limite,
+              le temps que nous vous envoyions de quoi régler. C&apos;est nous que vous attendez,
+              pas l&apos;inverse.
             </p>
           )}
 

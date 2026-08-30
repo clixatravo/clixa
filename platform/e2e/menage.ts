@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
 
 /**
  * Retirer ce que les épreuves ont écrit.
@@ -59,18 +60,17 @@ export default function menage(): void {
         `DELETE FROM apprenants WHERE email LIKE '%${MARQUE}';`,
         "-c",
         /*
-          ⚠️ Même règle que le crochet `recompter` : une place se prend en
-          payant, pas en s'inscrivant. Les deux calculs doivent rester
-          identiques — celui-ci existe parce qu'une suppression en SQL ne
-          déclenche aucun crochet.
+          ⚠️ Même règle que le crochet `recompter` et que la tâche quotidienne :
+          une place se prend en payant, pas en s'inscrivant. Ce recompte existe
+          parce qu'une suppression en SQL ne déclenche aucun crochet.
+
+          La condition n'est plus recopiée : elle vient de `lib/places.ts`.
+          Elle l'était, et deux textes tenus à la main finissent par diverger —
+          en silence, le décompte des places restant simplement faux.
         */
         `UPDATE sessions s SET places_reservees = (
            SELECT count(*) FROM inscriptions i
-           WHERE i.session_id = s.id
-             AND (
-               i.statut IN ('confirmee', 'payee', 'terminee')
-               OR (i.statut = 'demandee' AND i.created_at > now() - interval '7 days')
-             )
+           WHERE i.session_id = s.id AND ${OCCUPE_UNE_PLACE_SQL}
          );`,
       ],
       {

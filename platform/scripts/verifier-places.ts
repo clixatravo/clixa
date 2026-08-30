@@ -8,7 +8,11 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { rendreLesPlacesExpirees } from "../src/lib/places.js";
+import {
+  OCCUPE_UNE_PLACE_SQL,
+  occupeUnePlace,
+  rendreLesPlacesExpirees,
+} from "../src/lib/places.js";
 
 const payload = await getPayload({ config });
 const aSupprimer: (string | number)[] = [];
@@ -36,7 +40,20 @@ const compter = async () => {
   return (s as { placesReservees?: number }).placesReservees ?? 0;
 };
 
-const creer = async (jours: number, nom: string, acompte = false) => {
+/**
+ * Crée un dossier d'épreuve, vieilli de `jours`.
+ *
+ * `signe` et `coordonneesIlYa` servent au second temps du tunnel : depuis que
+ * le participant signe avant de recevoir de quoi payer, le délai ne court plus
+ * depuis le dépôt. `coordonneesIlYa` vaut `undefined` tant que rien ne lui a
+ * été envoyé — le cas où la place se tient sans terme.
+ */
+const creer = async (
+  jours: number,
+  nom: string,
+  acompte = false,
+  options: { signe?: boolean; coordonneesIlYa?: number } = {},
+) => {
   const d = await payload.create({
     collection: "inscriptions",
     overrideAccess: true,
@@ -52,10 +69,21 @@ const creer = async (jours: number, nom: string, acompte = false) => {
     } as never,
   });
   aSupprimer.push(d.id);
-  // On vieillit la ligne en base : Payload pose `createdAt` lui-même.
-  if (jours > 0) {
+  /*
+    On vieillit la ligne en base : Payload pose `createdAt` lui-même, et passer
+    par l'API le réécrirait. Les dates du contrat sont posées ici pour la même
+    raison — et parce qu'un `update` déclencherait le crochet, ce qui
+    fausserait le décompte qu'on est en train de mesurer.
+  */
+  const poser: string[] = [];
+  if (jours > 0) poser.push(`created_at = now() - interval '${jours} days'`);
+  if (options.signe) poser.push(`contrat_signe_le = now() - interval '${jours} days'`);
+  if (options.coordonneesIlYa !== undefined) {
+    poser.push(`coordonnees_envoyees_le = now() - interval '${options.coordonneesIlYa} days'`);
+  }
+  if (poser.length > 0) {
     await payload.db.drizzle.execute(
-      `UPDATE inscriptions SET created_at = now() - interval '${jours} days' WHERE id = ${d.id}` as never,
+      `UPDATE inscriptions SET ${poser.join(", ")} WHERE id = ${d.id}` as never,
     );
   }
   return d.id;
@@ -108,6 +136,69 @@ try {
   dire(
     "et la tâche quotidienne ne la lui reprend pas",
     (await rendreLesPlacesExpirees(payload), (await compter()) === avantAcompte + 1),
+  );
+
+  /*
+    ── Le délai court depuis le moment où l'on peut agir ─────────────────────
+    Depuis que le tunnel a deux temps, le participant ne peut rien verser avant
+    que l'équipe lui envoie les coordonnées. Un compte à rebours parti du dépôt
+    pouvait donc s'épuiser pendant qu'il attendait de nos nouvelles — et rendre
+    au catalogue la place de quelqu'un qui avait signé un contrat.
+
+    Les trois épreuves qui suivent vieillissent tout de dix jours, bien au-delà
+    du délai, et regardent qui tient encore sa place.
+  */
+  const avantContrat = await compter();
+
+  await creer(10, "Épreuve Signée Sans Coordonnées", false, { signe: true });
+  await rendreLesPlacesExpirees(payload);
+  dire(
+    "un contrat signé dont les coordonnées ne sont pas parties tient sa place",
+    (await compter()) === avantContrat + 1,
+  );
+
+  await creer(10, "Épreuve Coordonnées Fraîches", false, { signe: true, coordonneesIlYa: 0 });
+  await rendreLesPlacesExpirees(payload);
+  dire(
+    "des coordonnées envoyées ce jour relancent le délai",
+    (await compter()) === avantContrat + 2,
+  );
+
+  await creer(10, "Épreuve Coordonnées Vieilles", false, { signe: true, coordonneesIlYa: 10 });
+  await rendreLesPlacesExpirees(payload);
+  dire(
+    "passé sept jours après l'envoi, la place repart au catalogue",
+    (await compter()) === avantContrat + 2,
+  );
+
+  /*
+    ── Les deux façons de poser la même question ─────────────────────────────
+    Payload interroge par `occupeUnePlace()` ; `e2e/menage.ts` recompte en SQL,
+    une suppression directe ne déclenchant aucun crochet. Les deux viennent
+    maintenant du même fichier, mais la traduction reste écrite deux fois — une
+    fois en `Where`, une fois en SQL — et rien ne garantit qu'elles disent la
+    même chose.
+
+    On les compte donc toutes les deux, sur les mêmes dossiers d'épreuve, dont
+    l'un au moins tombe dans chacune des quatre branches. Un écart ici est
+    exactement le défaut qui rendrait le décompte faux sans rien casser.
+  */
+  const { totalDocs: parPayload } = await payload.count({
+    collection: "inscriptions",
+    where: { and: [{ session: { equals: session.id } }, occupeUnePlace()] },
+    overrideAccess: true,
+  });
+
+  const parSql = await payload.db.drizzle.execute(
+    `SELECT count(*)::int AS n FROM inscriptions i
+     WHERE i.session_id = ${session.id} AND ${OCCUPE_UNE_PLACE_SQL}` as never,
+  );
+  const lignes = (parSql as unknown as { rows?: Record<string, unknown>[] }).rows ?? [];
+  const compteSql = Number(lignes[0]?.n ?? -1);
+
+  dire(
+    `les deux formulations comptent pareil (Payload ${parPayload}, SQL ${compteSql})`,
+    parPayload === compteSql,
   );
 } finally {
   for (const id of aSupprimer) {
