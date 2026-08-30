@@ -544,6 +544,23 @@ son contrat est accepté.
   que la date d'envoi s'affichera sur le dossier : un message qui n'y correspond
   pas n'est pas de nous.
 
+⚠️ **Les dates que le participant voit ne vont jamais dans le futur**
+(`pasDansLeFutur`, depuis le 30 août 2026). `coordonneesEnvoyeesLe` s'affiche
+sur la page de son dossier, et c'est **la seule vérification qu'on lui offre**
+contre un faux message réclamant un paiement : comparer deux dates est tout ce
+qu'il a.
+
+Une date au lendemain casse cette garantie **dans le mauvais sens** — le
+courriel part aujourd'hui, la page annonce demain, et *notre* message ne
+correspond à rien. Le participant qui fait exactement ce qu'on lui demande
+conclut qu'on l'escroque. Arrivé sur un dossier réel : un jour de trop au
+calendrier. Le bouton pose toujours le jour même ; c'est la saisie à la main qui
+glisse, et elle est maintenant bornée.
+
+⚠️ **La comparaison porte sur des jours, pas des instants.** Avec
+`pickerAppearance: "dayOnly"`, Payload enregistre **midi UTC** : à neuf heures
+du matin, une comparaison à la seconde ferait refuser le bouton par lui-même.
+
 ⚠️ **Le tracé de la signature se regarde, il ne se lit pas**
 (`components/admin/SignatureVue.tsx`). Le champ était une zone de texte : elle
 affichait le PNG encodé en base64, une centaine de milliers de caractères.

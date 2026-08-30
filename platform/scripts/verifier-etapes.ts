@@ -15,6 +15,7 @@
  * `prochaineEtape` est pure : aucune base, aucun réseau.
  */
 import { prochaineEtape } from "../src/lib/inscriptions.js";
+import { pasDansLeFutur } from "../src/collections/champs.js";
 import type { Dossier } from "../src/lib/inscriptions.js";
 
 let manques = 0;
@@ -91,6 +92,31 @@ const annonce = prochaineEtape(
   } as Partial<Dossier>),
 );
 dire("un transfert annoncé : rien à faire de son côté", /rien à faire/i.test(annonce));
+
+/*
+  ── Les dates que le participant voit ne vont pas dans le futur ─────────────
+  `coordonneesEnvoyeesLe` s'affiche sur sa page, et c'est la seule vérification
+  qu'on lui offre contre un faux message réclamant un paiement. Une date au
+  lendemain la casse dans le mauvais sens : notre propre courriel ne correspond
+  plus à rien, et qui vérifie conclut qu'on l'escroque. Arrivé le 30 août 2026
+  sur un dossier réel.
+*/
+const valide = (v: unknown) => pasDansLeFutur(v as never, {} as never) === true;
+const jourDecale = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
+
+dire("une date d'hier est acceptée", valide(jourDecale(-1)));
+dire("une date de demain est refusée", !valide(jourDecale(1)));
+dire("un champ vide est accepté", valide(undefined) && valide(null));
+
+/*
+  ⚠️ Le cas qui compte le plus : le bouton pose l'instant présent, et Payload
+  enregistre midi UTC pour un champ « jour seul ». Une comparaison à la seconde
+  ferait donc refuser le bouton par lui-même, le matin. On compare des jours.
+*/
+dire("aujourd'hui passe, quelle que soit l'heure", valide(new Date().toISOString()));
+const midi = new Date();
+midi.setUTCHours(12, 0, 0, 0);
+dire("⚠️ y compris midi UTC, ce que pose le sélecteur « jour seul »", valide(midi.toISOString()));
 
 console.log(manques === 0 ? "\nÉtapes : tout tient." : `\nÉtapes : ${manques} manque(s).`);
 process.exit(manques === 0 ? 0 : 1);

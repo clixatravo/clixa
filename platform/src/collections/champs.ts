@@ -45,3 +45,39 @@ export const auMoinsUnEnFrancais: Validate = (valeur, { req }) => {
     ? true
     : "Ajoutez au moins un élément en français.";
 };
+
+/**
+ * Refuse une date postérieure à aujourd'hui.
+ *
+ * ── Ce que cela protège ─────────────────────────────────────────────────────
+ * `coordonneesEnvoyeesLe` n'est pas une trace interne : le participant la voit
+ * sur la page de son dossier, et c'est **la seule vérification qu'on puisse lui
+ * offrir** contre un faux message réclamant un paiement. Un lien bancaire reçu
+ * par courriel ressemble trait pour trait à un hameçonnage ; comparer deux
+ * dates est tout ce qu'il a.
+ *
+ * ⚠️ Une date au lendemain casse cette garantie **dans le mauvais sens** : le
+ * courriel part aujourd'hui, la page annonce demain, et notre propre message ne
+ * correspond à rien. Le participant bien avisé — celui qui fait exactement ce
+ * qu'on lui demande — conclut qu'on essaie de l'escroquer. C'est arrivé le
+ * 30 août 2026 sur un dossier réel : un jour de trop au calendrier.
+ *
+ * Le bouton du bandeau pose toujours le jour même ; c'est la saisie à la main
+ * qui glisse. On la borne plutôt que de compter sur l'attention.
+ *
+ * ⚠️ On compare des **jours**, pas des instants. Avec `pickerAppearance:
+ * "dayOnly"`, Payload enregistre midi UTC : à neuf heures du matin, la date
+ * d'aujourd'hui serait « dans le futur » pour une comparaison à la seconde, et
+ * le bouton se refuserait lui-même.
+ */
+export const pasDansLeFutur: Validate = (valeur) => {
+  if (!valeur) return true;
+  const jour = new Date(valeur as string | number | Date);
+  if (Number.isNaN(jour.getTime())) return true;
+
+  const enJours = (d: Date) => d.toISOString().slice(0, 10);
+  if (enJours(jour) > enJours(new Date())) {
+    return "Cette date ne peut pas être dans le futur : le participant la voit sur son dossier, et c'est elle qui lui permet de reconnaître nos courriels.";
+  }
+  return true;
+};

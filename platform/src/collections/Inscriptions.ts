@@ -2,6 +2,7 @@ import { occupeUnePlace } from "@/lib/places";
 import { randomBytes } from "crypto";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
+import { pasDansLeFutur } from "@/collections/champs";
 import { courrielContratVerifie, courrielInstructionsEnvoyees } from "@/lib/courriel";
 
 /**
@@ -619,6 +620,7 @@ export const Inscriptions: CollectionConfig = {
               name: "contratVerifieLe",
               type: "date",
               label: "Contrat vérifié le",
+              validate: pasDansLeFutur,
               admin: {
                 width: "35%",
                 description: "Prévient le participant que son contrat est accepté.",
@@ -655,6 +657,14 @@ export const Inscriptions: CollectionConfig = {
               name: "coordonneesEnvoyeesLe",
               type: "date",
               label: "Coordonnées envoyées le",
+              /*
+                ⚠️ Jamais dans le futur. Le participant voit cette date, et
+                c'est la seule vérification qu'on lui offre contre un faux
+                message réclamant un paiement. Une date au lendemain la casse
+                dans le mauvais sens : notre propre courriel ne correspond plus
+                à rien, et qui vérifie conclut qu'on l'escroque.
+              */
+              validate: pasDansLeFutur,
               admin: {
                 width: "30%",
                 description: "À renseigner après l'envoi — le participant voit cette date.",
