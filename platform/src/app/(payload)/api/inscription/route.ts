@@ -3,6 +3,7 @@ import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
+import { malgreUnInterblocage } from "@/lib/interblocage";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
@@ -177,26 +178,38 @@ export async function POST(request: Request) {
 
   let reference: string;
   try {
-    const cree = await payload.create({
-      collection: "inscriptions",
-      overrideAccess: true,
-      data: {
-        session: session!.id,
-        statut: "demandee",
-        apprenantNom: nom,
-        apprenantEmail: email,
-        apprenantWhatsapp: whatsapp,
-        apprenantPays: pays,
-        payeurType: texte("payeur") === "organisation" ? "organisation" : "particulier",
-        ...(texte("organisation") ? { payeurNom: texte("organisation") } : {}),
-        ...(participant ? { apprenant: Number(participant.id) } : {}),
-        planPaiement: plan,
-        moyenSouhaite: moyen,
-        montantTotal: barème?.total ?? tarifs.prixComptant ?? 0,
-        devise: tarifs.devise ?? "EUR",
-        echeances,
-      },
-    });
+    /*
+      ⚠️ Réessayé en cas d'interblocage. Deux personnes qui s'inscrivent au même
+      instant à la même session se bloquent l'une l'autre sur la ligne du
+      décompte de places, et Postgres en tue une : le participant voyait
+      « erreur technique » sur une inscription parfaitement valide. La
+      transaction perdante est entièrement annulée — rien n'a été écrit, donc
+      rejouer ne crée pas de doublon. Voir `lib/interblocage.ts`.
+    */
+    const cree = await malgreUnInterblocage(
+      () =>
+        payload.create({
+          collection: "inscriptions",
+          overrideAccess: true,
+          data: {
+            session: session!.id,
+            statut: "demandee",
+            apprenantNom: nom,
+            apprenantEmail: email,
+            apprenantWhatsapp: whatsapp,
+            apprenantPays: pays,
+            payeurType: texte("payeur") === "organisation" ? "organisation" : "particulier",
+            ...(texte("organisation") ? { payeurNom: texte("organisation") } : {}),
+            ...(participant ? { apprenant: Number(participant.id) } : {}),
+            planPaiement: plan,
+            moyenSouhaite: moyen,
+            montantTotal: barème?.total ?? tarifs.prixComptant ?? 0,
+            devise: tarifs.devise ?? "EUR",
+            echeances,
+          },
+        }),
+      (m) => console.warn(m),
+    );
     reference = String(cree.reference);
   } catch (e) {
     // Le dire plutôt qu'afficher une confirmation à quelqu'un dont la place

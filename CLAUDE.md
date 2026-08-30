@@ -44,6 +44,7 @@ npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
+npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
 
@@ -360,6 +361,41 @@ being configured » et rend la main sans erreur. Le premier jet de
 persuadé d'éprouver la panne. ⚠️ Et Postgres rend `null` pour une colonne vide,
 jamais `undefined` : comparer à `undefined` déclarait « pas de relance » quelle
 que soit la valeur.
+
+⚠️ **Deux inscriptions au même instant se bloquaient l'une l'autre**
+(`lib/interblocage.ts`, depuis le 30 août 2026). Chaque transaction insère une
+ligne dans `inscriptions`, ce qui pose un verrou **partagé** sur la ligne de
+`sessions` — la clef étrangère l'exige. Puis `recompter` met à jour le décompte
+sur cette même ligne, ce qui demande un verrou **exclusif**. Chacune attend que
+l'autre lâche le partagé, et Postgres en tue une :
+
+```
+deadlock detected · while locking tuple in relation "sessions"
+```
+
+Le participant voyait alors « erreur technique » sur une inscription
+parfaitement valide. Il suffit de deux personnes et d'une annonce qui circule.
+
+L'écriture est donc rejouée — trois tentatives, attente croissante et
+**irrégulière** : deux transactions tuées au même instant qui repartiraient
+après le même délai se bloqueraient de nouveau.
+
+- **Rejouer est sans risque ici.** La transaction perdante est *entièrement*
+  annulée : rien n'a été écrit, donc aucun doublon. Ce n'est pas un échec au
+  milieu du travail, c'est un travail qui n'a pas eu lieu.
+- ⚠️ **Seul `40P01` est rejoué.** Une contrainte violée ou une base injoignable
+  se reproduiraient à l'identique ; les répéter ne ferait que retarder le
+  message d'erreur.
+- **Le code vit parfois dans `cause`** : Payload et drizzle enveloppent l'erreur
+  du pilote. Les deux niveaux sont regardés.
+- **On ne verrouille pas plus tôt**, bien que ce serait plus propre : tenir la
+  transaction autour de `payload.create` demande des rouages internes de
+  l'adaptateur que rien ne garantit d'une version à l'autre — sur le chemin
+  d'écriture de *chaque* inscription.
+
+`verifier-interblocage.ts` **provoque un vrai interblocage** dans Postgres, deux
+transactions croisées, et vérifie que le code rendu est bien celui qu'on guette.
+Une garde qui n'a jamais vu la panne qu'elle prétend arrêter ne prouve rien.
 
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche
