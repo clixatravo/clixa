@@ -111,13 +111,21 @@ export function EtapesContrat() {
     faite ? "faite" : courante ? "courante" : "attente";
 
   /*
-    On pose la date puis on enregistre. Sans le `submit`, le champ paraîtrait
-    rempli, rien n'irait en base, et aucun courriel ne partirait — l'équipe
-    croirait avoir prévenu quelqu'un.
+    ── La date part dans la soumission, pas seulement dans l'état ────────────
+    ⚠️ `setValue` puis `submit()` dans la même foulée ne marche pas : `setValue`
+    passe par l'état de React, qui n'est pas propagé au moment où l'on soumet.
+    L'enregistrement partait donc **sans la date** — la requête réussissait, la
+    page se rechargeait, et il ne s'était rien passé. Aucune erreur nulle part :
+    le champ restait vide, le courriel ne partait pas, et l'étape suivante ne
+    s'ouvrait jamais. Observé en production le 30 août 2026.
+
+    `overrides` porte la valeur directement dans le corps envoyé. On garde
+    `setValue` pour que l'écran suive sans attendre la réponse.
   */
-  const poser = (champ: ReturnType<typeof useField<string>>) => () => {
-    champ.setValue(new Date().toISOString());
-    void submit();
+  const poser = (chemin: string, champ: ReturnType<typeof useField<string>>) => () => {
+    const maintenant = new Date().toISOString();
+    champ.setValue(maintenant);
+    void submit({ overrides: { [chemin]: maintenant } });
   };
 
   return (
@@ -182,7 +190,7 @@ export function EtapesContrat() {
               type="button"
               className="btn btn--style-primary btn--size-small"
               style={{ margin: 0 }}
-              onClick={poser(verifie)}
+              onClick={poser("contratVerifieLe", verifie)}
             >
               Contrat vérifié — prévenir le participant
             </button>
@@ -195,7 +203,7 @@ export function EtapesContrat() {
               type="button"
               className="btn btn--style-primary btn--size-small"
               style={{ margin: 0 }}
-              onClick={poser(envoye)}
+              onClick={poser("coordonneesEnvoyeesLe", envoye)}
             >
               J&apos;ai envoyé les instructions de paiement
             </button>
