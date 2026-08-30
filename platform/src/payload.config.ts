@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { resendAdapter } from "@payloadcms/email-resend";
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import sharp from "sharp";
 import { fr } from "@payloadcms/translations/languages/fr";
@@ -224,4 +225,45 @@ export default buildConfig({
     defaultLocale: "fr",
     fallback: true,
   },
+
+  /*
+    ── Les dépôts vont au magasin, jamais sur le disque ─────────────────────
+    `Medias` écrivait dans `staticDir`, c'est-à-dire **dans le paquet déployé**
+    — en lecture seule à l'exécution sur Vercel. Un fichier déposé depuis
+    /admin disparaissait donc sans la moindre erreur : la fiche était créée, la
+    vignette cassée, et rien ne le disait. La collection n'a jamais reçu un
+    seul fichier en production, et personne ne s'en était aperçu faute d'avoir
+    essayé. Vercel le répétait pourtant à chaque démarrage, dans un
+    avertissement que rien ne lisait.
+
+    ⚠️ Accès **public**, et c'est correct ici : ce sont les images du site —
+    illustrations de parcours, logos de partenaires, visuels d'articles. Elles
+    sont faites pour être servies à des visiteurs.
+
+    C'est justement ce que `lib/recus.ts` ne pouvait pas faire : un justificatif
+    de versement porte un nom, un montant, parfois un numéro de compte. Ce
+    greffon ne sait écrire qu'en public — son propre type le dit — d'où le SDK
+    `@vercel/blob` appelé à la main de ce côté-là, avec `access: "private"`.
+
+    ⚠️ **Il faut un second magasin, et la variable porte un autre nom.**
+    `BLOB_READ_WRITE_TOKEN` désigne le magasin **privé** créé pour les
+    justificatifs de versement, et ce greffon s'y casse le nez sans détour :
+    « Cannot use public access on a private store ». Les deux besoins sont
+    opposés — des images faites pour être vues, des reçus faits pour ne pas
+    l'être — et un magasin ne porte qu'un seul régime.
+
+    Tant que `BLOB_MEDIAS_TOKEN` n'existe pas, le greffon n'est pas branché et
+    rien ne change : le dépôt retombe sur le disque. C'est juste en
+    développement, où le disque s'écrit ; **c'est faux en production**, où le
+    fichier disparaît sans erreur. `verifier-medias.ts` le dit en toutes
+    lettres au lieu de laisser croire que tout va bien.
+  */
+  plugins: process.env.BLOB_MEDIAS_TOKEN
+    ? [
+        vercelBlobStorage({
+          collections: { medias: true },
+          token: process.env.BLOB_MEDIAS_TOKEN,
+        }),
+      ]
+    : [],
 });

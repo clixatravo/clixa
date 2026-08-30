@@ -27,6 +27,7 @@
     "@payloadcms/email-resend": "^3.88.0",
     "@payloadcms/next": "^3.88.0",
     "@payloadcms/richtext-lexical": "^3.88.0",
+    "@payloadcms/storage-vercel-blob": "^3.88.0",
     "@payloadcms/ui": "^3.88.0",
     "@react-pdf/renderer": "^4.8.1",
     "@vercel/blob": "^2.8.0",

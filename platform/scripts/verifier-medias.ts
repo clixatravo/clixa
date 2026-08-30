@@ -70,6 +70,54 @@ try {
     ? ok(`La vignette pèse ${Math.round((poidsVignette / original.length) * 100)} % de l'original`)
     : ko("La vignette n'allège pas l'original");
 
+  console.log("\n── Le fichier existe-t-il vraiment ? ────────");
+
+  /*
+    ⚠️ Tout ce qui précède passait déjà quand le fichier n'allait nulle part.
+
+    `Medias` écrivait dans `staticDir`, c'est-à-dire dans le paquet déployé —
+    en lecture seule à l'exécution sur Vercel. Le document était créé, les
+    variantes calculées, l'adresse rendue : tout avait l'air d'un succès, et le
+    fichier disparaissait. La collection n'a jamais reçu un seul fichier en
+    production, et personne ne s'en était aperçu faute d'avoir essayé.
+
+    Une adresse n'est pas un fichier. On va donc le chercher là où elle mène.
+  */
+  const adresse = (media as { url?: string }).url ?? "";
+  adresse ? ok(`Adresse rendue : ${adresse.slice(0, 60)}…`) : ko("Aucune adresse rendue");
+
+  if (!process.env.BLOB_MEDIAS_TOKEN) {
+    /*
+      Pas d'échec ici : en développement le disque s'écrit, et le dépôt marche
+      pour de bon. Mais se taire laisserait croire que la production fait
+      pareil, alors qu'elle perd le fichier sans rien dire. On le dit.
+    */
+    ko(
+      "⚠️ BLOB_MEDIAS_TOKEN absent : le dépôt va sur le disque. " +
+        "Vrai en développement — EN PRODUCTION LE FICHIER EST PERDU, sans erreur. " +
+        "Il faut un magasin Vercel Blob PUBLIC (celui de BLOB_READ_WRITE_TOKEN est privé, " +
+        "réservé aux justificatifs).",
+    );
+  } else {
+    /blob\.vercel-storage\.com/.test(adresse)
+      ? ok("Elle mène au magasin, pas au disque du paquet")
+      : ko(`Elle ne mène pas au magasin : ${adresse}`);
+
+    try {
+      const reponse = await fetch(adresse);
+      reponse.ok
+        ? ok(`Le fichier se relit vraiment (${reponse.status})`)
+        : ko(`Le fichier ne se relit pas (${reponse.status})`);
+
+      const octets = await reponse.arrayBuffer();
+      octets.byteLength > 0
+        ? ok(`Et il n'est pas vide : ${Math.round(octets.byteLength / 1024)} Ko`)
+        : ko("Ce qu'on relit est vide");
+    } catch (e) {
+      ko(`Impossible d'aller le chercher : ${e instanceof Error ? e.message : e}`);
+    }
+  }
+
   console.log("\n── Texte alternatif obligatoire ─────────────");
 
   let refuse = false;
