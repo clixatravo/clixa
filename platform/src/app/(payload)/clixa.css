@@ -81,32 +81,58 @@ h3,
   outline: none !important;
 }
 
-.clixa-icone-wrap {
+.clixa-btn-accueil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(201, 162, 76, 0.14);
+  border: 1px solid rgba(201, 162, 76, 0.45);
+  border-radius: 6px;
+  color: var(--clixa-or-clair);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.step-nav__home:hover .clixa-btn-accueil {
+  background: var(--clixa-or);
+  color: #080c18;
+  border-color: var(--clixa-or);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(201, 162, 76, 0.4);
+}
+
+.clixa-btn-accueil__icone-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  vertical-align: middle;
-  line-height: 1;
+  color: inherit;
 }
 
-.clixa-admin-icon {
-  display: block;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
+.clixa-btn-accueil__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-.step-nav__home:hover .clixa-admin-icon {
-  transform: scale(1.08);
+.clixa-btn-accueil__marque {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
 }
 
-.step-nav span {
-  display: inline-flex !important;
-  align-items: center !important;
-  max-width: none !important;
-  overflow: visible !important;
-  color: rgba(243, 239, 228, 0.35) !important;
-  font-size: 0.85rem !important;
-  font-weight: 300 !important;
+.clixa-btn-accueil__sep {
+  opacity: 0.5;
+}
+
+.clixa-btn-accueil__texte {
+  font-weight: 600;
 }
 
 .step-nav__last,
@@ -311,6 +337,21 @@ h3,
   border-right: 1px solid rgba(243, 239, 228, 0.1) !important;
 }
 
+.nav__header,
+.nav__header a {
+  display: flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  padding: 0.75rem 1rem !important;
+  margin-bottom: 0.5rem !important;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.08) !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav__header a:hover {
+  background: rgba(201, 162, 76, 0.08) !important;
+}
+
 .nav__group {
   margin-bottom: 1.5rem !important;
 }
@@ -362,9 +403,9 @@ h3,
 /* ── Cockpit Exécutif (Dashboard Header) ─────────────────────────────────── */
 
 .clixa-cockpit {
-  margin-bottom: 2.75rem;
+  margin-bottom: 2.5rem;
   padding-bottom: 2.25rem;
-  border-bottom: 1px solid rgba(243, 239, 228, 0.15);
+  border-bottom: 1px solid rgba(243, 239, 228, 0.12);
 }
 
 .clixa-cockpit__header {
@@ -376,75 +417,135 @@ h3,
   margin-bottom: 1.5rem;
 }
 
-.clixa-cockpit__eyebrow {
+.clixa-cockpit__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.clixa-cockpit__badge-statut {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.18em;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--clixa-or);
-  margin-bottom: 0.35rem;
+  background: rgba(201, 162, 76, 0.08);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(201, 162, 76, 0.25);
+  width: fit-content;
 }
 
-.clixa-cockpit__point-live {
-  width: 6px;
-  height: 6px;
+.clixa-cockpit__dot-pulse {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--clixa-or);
-  box-shadow: 0 0 8px var(--clixa-or);
+  background: #2fa37d;
+  box-shadow: 0 0 8px #2fa37d;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
 }
 
 .clixa-cockpit__titre {
-  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-size: clamp(1.4rem, 2.5vw, 1.95rem);
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
+  color: var(--clixa-ivoire);
+}
+
+.clixa-cockpit__soustitre {
+  font-size: 0.88rem;
+  color: rgba(243, 239, 228, 0.65);
+  margin: 0;
 }
 
 .clixa-cockpit__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
 }
 
 .clixa-cockpit__btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.45rem 0.9rem;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.52rem 0.95rem;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none !important;
-  border-radius: 3px;
-  border: 1px solid rgba(243, 239, 228, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(243, 239, 228, 0.18);
   color: var(--clixa-ivoire);
-  background: rgba(243, 239, 228, 0.05);
-  transition: all 0.2s ease;
+  background: rgba(243, 239, 228, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 38px;
 }
 
 .clixa-cockpit__btn:hover {
-  background: rgba(243, 239, 228, 0.12);
+  background: rgba(243, 239, 228, 0.14);
   border-color: var(--clixa-or);
   color: var(--clixa-or-clair);
+  transform: translateY(-1px);
+}
+
+.clixa-cockpit__btn--primary {
+  background: linear-gradient(135deg, #c9a24c 0%, #a88334 100%);
+  border-color: var(--clixa-or);
+  color: #080c18 !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(201, 162, 76, 0.25);
+}
+
+.clixa-cockpit__btn--primary:hover {
+  background: linear-gradient(135deg, #e9cd84 0%, #c9a24c 100%);
+  color: #080c18 !important;
+  box-shadow: 0 6px 18px rgba(201, 162, 76, 0.4);
 }
 
 .clixa-cockpit__btn--accent {
-  background: rgba(201, 162, 76, 0.15);
-  border-color: rgba(201, 162, 76, 0.5);
+  background: rgba(201, 162, 76, 0.12);
+  border-color: rgba(201, 162, 76, 0.4);
   color: var(--clixa-or-clair);
 }
 
 .clixa-cockpit__btn--accent:hover {
   background: var(--clixa-or);
-  color: var(--clixa-encre);
+  color: #080c18;
+}
+
+.clixa-cockpit__btn--notif {
+  background: rgba(47, 163, 125, 0.18);
+  border-color: rgba(47, 163, 125, 0.45);
+  color: var(--clixa-emeraude-clair);
+}
+
+.clixa-cockpit__btn--notif:hover {
+  background: var(--clixa-emeraude);
+  color: #ffffff;
 }
 
 .clixa-cockpit__btn--ghost {
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
 .clixa-cockpit__btn--ghost:hover {
@@ -456,11 +557,11 @@ h3,
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.15rem;
+  padding: 0.85rem 1.25rem;
   margin-bottom: 1.5rem;
   background: rgba(31, 122, 92, 0.12);
   border: 1px solid rgba(47, 163, 125, 0.35);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.85rem;
   color: var(--clixa-ivoire);
 }
@@ -481,27 +582,29 @@ h3,
 
 .clixa-cockpit__calme-texte {
   line-height: 1.4;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
-/*
-  Grille des KPIs — cinq colonnes depuis l'ajout de l'activité de la semaine.
-  À quatre, la cinquième carte restait seule sur une deuxième ligne, et un
-  chiffre isolé se lit comme une remarque plutôt que comme un indicateur.
-*/
+/* Grille des 5 KPIs Exécutifs */
 .clixa-cockpit__grille {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1.15rem;
+  gap: 1rem;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
+  .clixa-cockpit__grille {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
   .clixa-cockpit__grille {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 520px) {
   .clixa-cockpit__grille {
     grid-template-columns: 1fr;
   }
@@ -510,41 +613,42 @@ h3,
 .clixa-kpi {
   display: flex;
   flex-direction: column;
-  min-height: 148px;
-  padding: 1.25rem;
-  border-radius: 4px;
-  background: rgba(17, 26, 51, 0.65);
+  min-height: 155px;
+  padding: 1.2rem;
+  border-radius: 6px;
+  background: #111a33;
   border: 1px solid rgba(243, 239, 228, 0.12);
   text-decoration: none !important;
   color: inherit;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .clixa-kpi:hover {
   transform: translateY(-2px);
-  background: rgba(22, 31, 61, 0.9);
+  background: #161f3d;
   border-color: var(--clixa-or);
   box-shadow:
-    0 10px 28px -4px rgba(0, 0, 0, 0.45),
-    0 0 16px -4px rgba(201, 162, 76, 0.15);
+    0 12px 28px -4px rgba(0, 0, 0, 0.5),
+    0 0 16px -4px rgba(201, 162, 76, 0.2);
 }
 
 .clixa-kpi__haut {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
 }
 
 .clixa-kpi__tag {
   font-family: var(--font-mono);
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--clixa-or);
-  opacity: 0.9;
+  font-weight: 600;
 }
 
 .clixa-kpi__indicateur {
@@ -553,48 +657,48 @@ h3,
 
 .clixa-kpi__valeur {
   font-family: var(--font-serif);
-  font-size: 2.4rem;
+  font-size: 2.3rem;
   font-weight: 700;
   line-height: 1;
   color: var(--clixa-ivoire);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .clixa-kpi__valeur-date {
   font-family: var(--font-serif);
-  font-size: 1.65rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
   color: var(--clixa-or-clair);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
 .clixa-kpi__libelle {
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   line-height: 1.35;
-  opacity: 0.8;
+  color: rgba(243, 239, 228, 0.75);
   margin-bottom: 0.5rem;
 }
 
-.clixa-kpi__fleche {
+.clixa-kpi__action {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
+  font-weight: 600;
   color: var(--clixa-or);
   margin-top: auto;
-  padding-top: 0.4rem;
-  opacity: 0.9;
-  transition: transform 0.2s ease;
+  padding-top: 0.5rem;
+  transition: all 0.2s ease;
 }
 
-.clixa-kpi:hover .clixa-kpi__fleche {
-  transform: translateX(3px);
+.clixa-kpi:hover .clixa-kpi__action {
   color: var(--clixa-or-clair);
+  transform: translateX(3px);
 }
 
-/* Variantes d'alertes KPIs */
+/* Alertes KPIs spécifiques */
 .clixa-kpi--alerte-or {
   border-color: rgba(201, 162, 76, 0.45);
-  background: linear-gradient(135deg, rgba(201, 162, 76, 0.12) 0%, rgba(17, 26, 51, 0.7) 100%);
+  background: linear-gradient(135deg, rgba(201, 162, 76, 0.12) 0%, #111a33 100%);
 }
 
 .clixa-kpi--alerte-or .clixa-kpi__valeur {
@@ -603,7 +707,7 @@ h3,
 
 .clixa-kpi--alerte-vert {
   border-color: rgba(47, 163, 125, 0.45);
-  background: linear-gradient(135deg, rgba(31, 122, 92, 0.15) 0%, rgba(17, 26, 51, 0.7) 100%);
+  background: linear-gradient(135deg, rgba(31, 122, 92, 0.15) 0%, #111a33 100%);
 }
 
 .clixa-kpi--alerte-vert .clixa-kpi__valeur {
@@ -612,11 +716,61 @@ h3,
 
 .clixa-kpi--alerte-rouge {
   border-color: rgba(224, 82, 82, 0.4);
-  background: linear-gradient(135deg, rgba(224, 82, 82, 0.12) 0%, rgba(17, 26, 51, 0.7) 100%);
+  background: linear-gradient(135deg, rgba(224, 82, 82, 0.12) 0%, #111a33 100%);
 }
 
 .clixa-kpi--alerte-rouge .clixa-kpi__valeur {
   color: var(--clixa-rouge);
+}
+
+/* ── Barre de Raccourcis Rapides ── */
+.clixa-raccourcis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.15rem;
+  background: rgba(17, 26, 51, 0.45);
+  border: 1px solid rgba(243, 239, 228, 0.09);
+  border-radius: 6px;
+}
+
+.clixa-raccourcis__titre {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  font-weight: 700;
+}
+
+.clixa-raccourcis__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clixa-raccourcis__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(243, 239, 228, 0.85);
+  background: rgba(243, 239, 228, 0.05);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 4px;
+  text-decoration: none !important;
+  transition: all 0.18s ease;
+}
+
+.clixa-raccourcis__pill:hover {
+  background: rgba(201, 162, 76, 0.15);
+  border-color: var(--clixa-or);
+  color: var(--clixa-or-clair);
+  transform: translateY(-1px);
 }
 
 /* ── Collections Dashboard (Groupes & Cartes) ────────────────────────────── */
@@ -1065,4 +1219,142 @@ h3,
 :focus-visible {
   outline: 2px solid var(--clixa-or) !important;
   outline-offset: 2px !important;
+}
+
+/* ── Bouton Cellule WhatsApp (Tableaux & Fiches) ─────────────────────────── */
+
+.clixa-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.clixa-wa__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(37, 211, 102, 0.15);
+  border: 1px solid rgba(37, 211, 102, 0.4);
+  color: #25d366 !important;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.clixa-wa__bouton:hover {
+  background: #25d366;
+  color: #080c18 !important;
+  border-color: #25d366;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+.clixa-wa__icon {
+  flex-shrink: 0;
+}
+
+.clixa-wa__numero {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: rgba(243, 239, 228, 0.7);
+}
+
+.clixa-wa__incomplet {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #e0a352;
+  border-bottom: 1px dashed rgba(224, 163, 82, 0.5);
+  cursor: help;
+}
+
+.clixa-wa__vide {
+  color: rgba(243, 239, 228, 0.25);
+  font-family: var(--font-mono);
+}
+
+/* ── Optimisations Responsives Mobile & Tablette ────────────────────────── */
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.6rem 0.85rem !important;
+  }
+
+  .clixa-cockpit__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .clixa-cockpit__actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .clixa-cockpit__btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .clixa-raccourcis {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  .clixa-raccourcis__pills {
+    width: 100%;
+  }
+
+  .clixa-raccourcis__pill {
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 0.74rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.65rem 0.75rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .btn {
+    min-height: 42px !important;
+  }
+
+  .field-type input,
+  .field-type select,
+  .field-type textarea {
+    font-size: 16px !important; /* Évite le zoom automatique sur iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .clixa-cockpit__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .clixa-raccourcis__pill {
+    flex: 1 1 100%;
+  }
+
+  .clixa-jauges__liste {
+    grid-template-columns: 1fr;
+  }
 }

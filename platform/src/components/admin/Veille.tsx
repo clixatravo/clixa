@@ -98,11 +98,27 @@ export async function Veille() {
 
   return (
     <section className="clixa-cockpit">
+      {/* ── En-tête Cockpit avec Salutation & Actions Rapides ── */}
       <div className="clixa-cockpit__header">
-        <div>
+        <div className="clixa-cockpit__intro">
+          <div className="clixa-cockpit__badge-statut">
+            <span className="clixa-cockpit__dot-pulse" aria-hidden="true" />
+            <span>CONSOLE EXÉCUTIVE · CLIXA INSTITUTE</span>
+          </div>
           <h2 className="clixa-cockpit__titre">{dateFormatee}</h2>
+          <p className="clixa-cockpit__soustitre">
+            Supervision des admissions, encaissements et cohortes en direct.
+          </p>
         </div>
+
         <div className="clixa-cockpit__actions">
+          <Link
+            href="/admin/collections/inscriptions/create"
+            className="clixa-cockpit__btn clixa-cockpit__btn--primary"
+            title="Créer manuellement un nouveau dossier d'inscription"
+          >
+            <span>+ Nouvelle Inscription</span>
+          </Link>
           <a
             href="/api/admin/export-admissions"
             download
@@ -113,35 +129,37 @@ export async function Veille() {
           </a>
           <Link
             href="/admin/collections/demandes-rappel"
-            className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--accent" : ""}`}
+            className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--notif" : ""}`}
+            title="Voir les demandes de rappel téléphonique"
           >
-            <span>Demandes ({nouvellesDemandes})</span>
-          </Link>
-          <Link href="/admin/collections/inscriptions" className="clixa-cockpit__btn">
-            <span>Inscriptions</span>
+            <span>📞 Rappels {nouvellesDemandes > 0 ? `(${nouvellesDemandes})` : ""}</span>
           </Link>
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
             className="clixa-cockpit__btn clixa-cockpit__btn--ghost"
+            title="Ouvrir le site public dans un nouvel onglet"
           >
             <span>Site public ↗</span>
           </a>
         </div>
       </div>
 
+      {/* ── Message de Sérénité si tout est à jour ── */}
       {toutEstCalme && (
         <div className="clixa-cockpit__calme-box">
           <span className="clixa-cockpit__calme-icone">✓</span>
           <span className="clixa-cockpit__calme-texte">
-            Tous les dossiers sont à jour. Aucun paiement ni relance en attente.
+            Tous les dossiers sont à jour. Aucun paiement en attente de vérification ni relance
+            urgente.
           </span>
         </div>
       )}
 
+      {/* ── Grille des 5 KPIs Exécutifs ── */}
       <div className="clixa-cockpit__grille">
-        {/* KPI 1 : Paiements à vérifier */}
+        {/* KPI 1 : Transferts à vérifier */}
         <Link
           href="/admin/collections/inscriptions"
           className={`clixa-kpi ${aVerifier > 0 ? "clixa-kpi--alerte-or" : ""}`}
@@ -154,7 +172,9 @@ export async function Veille() {
           <div className="clixa-kpi__libelle">
             {aVerifier > 1 ? "Transferts à vérifier" : "Transfert à vérifier"}
           </div>
-          <span className="clixa-kpi__fleche">Ouvrir les dossiers →</span>
+          <div className="clixa-kpi__action">
+            <span>{aVerifier > 0 ? "Traiter les reçus →" : "Voir les dossiers →"}</span>
+          </div>
         </Link>
 
         {/* KPI 2 : Demandes de rappel */}
@@ -170,26 +190,47 @@ export async function Veille() {
           <div className="clixa-kpi__libelle">
             {nouvellesDemandes > 1 ? "Nouvelles demandes" : "Nouvelle demande"}
           </div>
-          <span className="clixa-kpi__fleche">Contacter les prospects →</span>
+          <div className="clixa-kpi__action">
+            <span>
+              {nouvellesDemandes > 0 ? "Appeler les prospects →" : "Consulter l'historique →"}
+            </span>
+          </div>
         </Link>
 
-        {/* KPI 3 : Relances */}
+        {/* KPI 3 : Échéances en retard */}
         <Link
           href="/admin/collections/inscriptions"
           className={`clixa-kpi ${enRetard > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">⚠️</span>
+            <span className="clixa-kpi__indicateur">⏳</span>
             <span className="clixa-kpi__tag">Relances</span>
           </div>
           <div className="clixa-kpi__valeur">{enRetard}</div>
           <div className="clixa-kpi__libelle">
             {enRetard > 1 ? "Échéances en retard" : "Échéance en retard"}
           </div>
-          <span className="clixa-kpi__fleche">Voir les échéances →</span>
+          <div className="clixa-kpi__action">
+            <span>{enRetard > 0 ? "Envoyer les rappels →" : "Planning des paiements →"}</span>
+          </div>
         </Link>
 
-        {/* KPI 4 : Prochaine rentrée */}
+        {/* KPI 4 : Activité de la semaine */}
+        <Link href="/admin/collections/inscriptions" className="clixa-kpi">
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">📈</span>
+            <span className="clixa-kpi__tag">Activité (7j)</span>
+          </div>
+          <div className="clixa-kpi__valeur">{inscriptionsSemaine}</div>
+          <div className="clixa-kpi__libelle">
+            {inscriptionsSemaine > 1 ? "Inscriptions reçues" : "Inscription reçue"}
+          </div>
+          <div className="clixa-kpi__action">
+            <span>Voir les inscriptions →</span>
+          </div>
+        </Link>
+
+        {/* KPI 5 : Prochaine rentrée */}
         <Link href="/admin/collections/sessions" className="clixa-kpi">
           <div className="clixa-kpi__haut">
             <span className="clixa-kpi__indicateur">🎓</span>
@@ -204,33 +245,50 @@ export async function Veille() {
           </div>
           <div className="clixa-kpi__libelle">
             {prochaine
-              ? `Prochaine séance : ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(prochaine))}`
-              : "Aucune séance programmée"}
+              ? `Séance : ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(prochaine))}`
+              : "Aucune séance"}
           </div>
-          <span className="clixa-kpi__fleche">Gérer le planning →</span>
-        </Link>
-
-        {/* KPI 5 : Activité de la semaine */}
-        <Link href="/admin/collections/inscriptions" className="clixa-kpi">
-          <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">📈</span>
-            <span className="clixa-kpi__tag">Activité</span>
+          <div className="clixa-kpi__action">
+            <span>Gérer le planning →</span>
           </div>
-          <div className="clixa-kpi__valeur">{inscriptionsSemaine}</div>
-          <div className="clixa-kpi__libelle">
-            {inscriptionsSemaine > 1 ? "Inscriptions sur 7 jours" : "Inscription sur 7 jours"}
-          </div>
-          <span className="clixa-kpi__fleche">Voir les dossiers →</span>
         </Link>
       </div>
 
-      {/* Jauge de Remplissage des Promotions à venir */}
+      {/* ── Raccourcis Rapides de Navigation ── */}
+      <div className="clixa-raccourcis">
+        <span className="clixa-raccourcis__titre">⚡ ACCÈS DIRECTS :</span>
+        <div className="clixa-raccourcis__pills">
+          <Link href="/admin/collections/inscriptions" className="clixa-raccourcis__pill">
+            <span>📋 Inscriptions</span>
+          </Link>
+          <Link href="/admin/collections/apprenants" className="clixa-raccourcis__pill">
+            <span>👥 Apprenants</span>
+          </Link>
+          <Link href="/admin/collections/recus" className="clixa-raccourcis__pill">
+            <span>🧾 Reçus &amp; Transferts</span>
+          </Link>
+          <Link href="/admin/collections/programmes" className="clixa-raccourcis__pill">
+            <span>📚 12 Formations</span>
+          </Link>
+          <Link href="/admin/collections/sessions" className="clixa-raccourcis__pill">
+            <span>📅 Sessions &amp; Dates</span>
+          </Link>
+          <Link href="/admin/globals/tarifs" className="clixa-raccourcis__pill">
+            <span>💰 Tarifs &amp; Banques</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Jauge de Remplissage des Promotions à venir ── */}
       {sessions.length > 0 && (
         <div className="clixa-jauges">
           <div className="clixa-jauges__en-tete">
-            <span className="clixa-jauges__titre">✦ CAPACITÉ & REMPLISSAGE DES PROMOTIONS</span>
+            <div className="clixa-jauges__titre-group">
+              <span className="clixa-jauges__icon">✦</span>
+              <span className="clixa-jauges__titre">CAPACITÉ &amp; REMPLISSAGE DES COHORTES</span>
+            </div>
             <Link href="/admin/collections/sessions" className="clixa-jauges__lien">
-              Gérer les sessions →
+              Voir tout le calendrier →
             </Link>
           </div>
           <div className="clixa-jauges__liste">
@@ -275,7 +333,7 @@ export async function Veille() {
                   </div>
                   <div className="clixa-jauge-carte__chiffres">
                     <span>
-                      <strong>{reservees}</strong> / {max} places
+                      <strong>{reservees}</strong> / {max} places réservées
                     </span>
                     <span className="clixa-jauge-carte__pct">{pct}%</span>
                   </div>

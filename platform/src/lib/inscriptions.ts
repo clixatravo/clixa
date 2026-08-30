@@ -51,6 +51,15 @@ export interface Dossier {
   contratDemandeLe?: string;
   /** Le jour où il a signé, et sous quel nom. Le contrat le porte ensuite. */
   contratSigneLe?: string;
+  /**
+   * Le jour où l'équipe a relu son contrat et l'a accepté.
+   *
+   * ⚠️ Il ne sert pas qu'à informer : entre la signature et l'envoi des
+   * coordonnées, le participant **ne peut rien verser**. C'est ce champ qui
+   * empêche la page de lui réclamer un transfert qu'il n'a aucun moyen de
+   * faire. Voir `prochaineEtape`.
+   */
+  contratVerifieLe?: string;
   contratSignataire?: string;
   /** Le tracé apposé au doigt ou à la souris, en PNG encodé. */
   contratTrace?: string;
@@ -140,6 +149,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),
     ...(d.contratDemandeLe ? { contratDemandeLe: String(d.contratDemandeLe) } : {}),
     ...(d.contratSigneLe ? { contratSigneLe: String(d.contratSigneLe) } : {}),
+    ...(d.contratVerifieLe ? { contratVerifieLe: String(d.contratVerifieLe) } : {}),
     ...(d.contratSignataire ? { contratSignataire: String(d.contratSignataire) } : {}),
     ...(d.contratTrace ? { contratTrace: String(d.contratTrace) } : {}),
     ...(recusRecus > 0 ? { recusRecus } : {}),
@@ -191,6 +201,7 @@ export const dossiersDuCompte = cache(async (apprenantId: number | string): Prom
       ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
       ...(d.contratDemandeLe ? { contratDemandeLe: String(d.contratDemandeLe) } : {}),
       ...(d.contratSigneLe ? { contratSigneLe: String(d.contratSigneLe) } : {}),
+      ...(d.contratVerifieLe ? { contratVerifieLe: String(d.contratVerifieLe) } : {}),
       ...(d.coordonneesEnvoyeesLe
         ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) }
         : {}),
@@ -248,6 +259,23 @@ export function prochaineEtape(d: Dossier): string {
       return "Votre place est retenue. Demandez votre contrat quand vous serez décidé — rien ne vous engage encore.";
     }
     return "Il reste à signer votre contrat. Les instructions de règlement vous parviennent ensuite.";
+  }
+
+  /*
+    ── Entre la signature et les coordonnées, la balle est chez nous ─────────
+    La phrase suivante réclamait « votre premier transfert » dès la signature.
+    Le participant ne pouvait pas l'effectuer : les coordonnées de règlement lui
+    parviennent après, dans un courriel que l'équipe compose — rien de bancaire
+    ne traversant le site. On lui demandait donc un geste qu'il n'avait aucun
+    moyen de faire, au moment précis où il venait de s'engager par écrit.
+
+    C'est le même défaut que le compte à rebours des places, corrigé le même
+    jour : le site réclamait une action avant d'en avoir donné les moyens.
+  */
+  if (rienDeRegle && d.contratSigneLe && !d.coordonneesEnvoyeesLe) {
+    return d.contratVerifieLe
+      ? "Votre contrat est vérifié. Nous vous envoyons de quoi régler votre première échéance — rien à faire de votre côté pour l'instant."
+      : "Nous relisons votre contrat. Rien à faire de votre côté : de quoi régler vous parvient ensuite.";
   }
 
   const due = d.echeances.find((e) => e.statut !== "regle");

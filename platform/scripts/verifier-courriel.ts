@@ -42,11 +42,24 @@ const dire = (q: string, v: boolean) => {
 const envoyes: Record<string, unknown>[] = [];
 const aSupprimer: (string | number)[] = [];
 
+/* Ce que le journal a retenu, pour vérifier qu'un envoi réussi laisse une trace. */
+const journal: { message: string; donnees: Record<string, unknown> }[] = [];
+const infoOrigine = payload.logger.info.bind(payload.logger);
+
 try {
   payload.sendEmail = (async (m: Record<string, unknown>) => {
     envoyes.push(m);
-    return { messageId: "epreuve" };
+    // L'expéditeur rend un identifiant : c'est le fil qui mène au tableau de
+    // bord de Resend, et le journal doit le porter.
+    return { id: "id-d-epreuve" };
   }) as typeof payload.sendEmail;
+
+  payload.logger.info = ((donnees: unknown, message?: unknown) => {
+    if (typeof donnees === "object" && donnees !== null && typeof message === "string") {
+      journal.push({ message, donnees: donnees as Record<string, unknown> });
+    }
+    return payload.logger;
+  }) as typeof payload.logger.info;
 
   // ── Un courriel au participant ───────────────────────────────────────────
   await courrielRelance(payload, {
@@ -186,7 +199,56 @@ try {
     data: { apprenantPays: "Sénégal" },
   });
   dire("⚠️ un second enregistrement ne la renvoie pas", envoyes.length === avantSecond);
+
+  /*
+    ── Le troisième temps : les instructions de paiement ─────────────────────
+    Même mécanique, même piège. Ce message ne porte aucune coordonnée — il date
+    l'envoi et dit d'aller comparer cette date sur le dossier, ce qui est la
+    garde contre l'hameçonnage.
+  */
+  const avantInstr = envoyes.length;
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: { coordonneesEnvoyeesLe: new Date().toISOString() },
+  });
+
+  const instr = envoyes.slice(avantInstr);
+  dire("poser la date d'envoi annonce les instructions", instr.length === 1);
+  dire("elle part au participant", String(instr[0]?.to) === "verifie@epreuve.invalid");
+  dire(
+    "et elle ne porte aucune coordonnée de règlement",
+    !/IBAN|RIB\s*:|BIC|\bcompte\s+n/i.test(String(instr[0]?.text ?? "")),
+  );
+
+  const avantTroisieme = envoyes.length;
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: { apprenantPays: "Côte d'Ivoire" },
+  });
+  dire("⚠️ elle non plus ne se renvoie pas", envoyes.length === avantTroisieme);
+  /*
+    ── Un envoi réussi doit se voir dans le journal ──────────────────────────
+    Seul l'échec en laissait une trace. Le jour où quelqu'un dit « je n'ai rien
+    reçu », les deux réponses qui comptent — *parti et perdu en route* ou
+    *jamais tenté* — étaient indiscernables, et l'on cherchait un bogue là où il
+    n'y avait peut-être qu'un dossier « indésirables ».
+  */
+  const traces = journal.filter((l) => l.message === "[courriel] envoyé");
+  dire("un envoi réussi laisse une trace", traces.length >= 1);
+  dire(
+    "elle porte le destinataire et l'identifiant de l'expéditeur",
+    Boolean(traces[0]?.donnees.to) && Boolean(traces[0]?.donnees.id),
+  );
+  dire(
+    "⚠️ elle ne porte pas le corps du message",
+    traces.every((l) => !("text" in l.donnees) && !("html" in l.donnees)),
+  );
 } finally {
+  payload.logger.info = infoOrigine;
   payload.sendEmail = expediteur;
   for (const id of aSupprimer) {
     await payload.delete({ collection: "inscriptions", id, overrideAccess: true });

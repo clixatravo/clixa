@@ -2,7 +2,7 @@ import { occupeUnePlace } from "@/lib/places";
 import { randomBytes } from "crypto";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
-import { courrielContratVerifie } from "@/lib/courriel";
+import { courrielContratVerifie, courrielInstructionsEnvoyees } from "@/lib/courriel";
 
 /**
  * BE-14 — Les inscriptions.
@@ -169,17 +169,36 @@ export const Inscriptions: CollectionConfig = {
           échéance corrigée, une note ajoutée, et le participant reçoit deux
           fois la même annonce.
         */
-        if (doc.contratVerifieLe && !previousDoc?.contratVerifieLe) {
-          const session = typeof doc.session === "object" ? doc.session : undefined;
-          const programme =
-            session && typeof session.programme === "object" ? session.programme : undefined;
+        const session = typeof doc.session === "object" ? doc.session : undefined;
+        const programme =
+          session && typeof session.programme === "object" ? session.programme : undefined;
+        const commun = {
+          reference: String(doc.reference ?? ""),
+          apprenantNom: String(doc.apprenantNom ?? ""),
+          apprenantEmail: String(doc.apprenantEmail ?? ""),
+          programmeTitre: String(programme?.titre ?? "votre parcours"),
+          ...(doc.moyenSouhaite ? { moyenSouhaite: doc.moyenSouhaite } : {}),
+        };
 
-          await courrielContratVerifie(req.payload, {
-            reference: String(doc.reference ?? ""),
-            apprenantNom: String(doc.apprenantNom ?? ""),
-            apprenantEmail: String(doc.apprenantEmail ?? ""),
-            programmeTitre: String(programme?.titre ?? "votre parcours"),
-            ...(doc.moyenSouhaite ? { moyenSouhaite: doc.moyenSouhaite } : {}),
+        if (doc.contratVerifieLe && !previousDoc?.contratVerifieLe) {
+          await courrielContratVerifie(req.payload, commun);
+        }
+
+        /*
+          ── Les instructions viennent de partir ────────────────────────────
+          Ce message ne porte aucune coordonnée : celles-ci partent à la main,
+          dans un courriel que l'équipe compose. Il fait autre chose — il
+          **date** l'envoi, et dit au participant d'aller comparer cette date
+          sur la page de son dossier.
+
+          ⚠️ C'est la garde contre l'hameçonnage, et elle ne tenait qu'à
+          moitié : la date s'affichait depuis le début, mais personne ne disait
+          au participant qu'il devait la regarder.
+        */
+        if (doc.coordonneesEnvoyeesLe && !previousDoc?.coordonneesEnvoyeesLe) {
+          await courrielInstructionsEnvoyees(req.payload, {
+            ...commun,
+            envoyeLe: String(doc.coordonneesEnvoyeesLe),
           });
         }
 
@@ -607,11 +626,18 @@ export const Inscriptions: CollectionConfig = {
               },
             },
             {
-              name: "verifierContrat",
+              /*
+                Les trois temps du dossier sur une seule ligne, et une seule
+                action offerte : celle du moment. Deux boutons posés l'un sous
+                l'autre disaient chacun ce qu'il faisait, mais aucun ne disait
+                **où l'on en est** ni lequel venait après — et les afficher
+                ensemble invitait à sauter la lecture du contrat.
+              */
+              name: "etapesContrat",
               type: "ui",
-              label: "Vérification",
+              label: "Où en est ce dossier",
               admin: {
-                components: { Field: "@/components/admin/VerifierContrat#VerifierContrat" },
+                components: { Field: "@/components/admin/EtapesContrat#EtapesContrat" },
               },
             },
             {
@@ -633,20 +659,6 @@ export const Inscriptions: CollectionConfig = {
                 width: "30%",
                 description: "À renseigner après l'envoi — le participant voit cette date.",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
-              },
-            },
-            {
-              /*
-                Le geste, à côté de la date qu'il pose. Un champ date suffit
-                techniquement ; il ne suffit pas dans une journée de travail, où
-                l'on ouvre vingt dossiers et où ce qui demande cinq gestes finit
-                par ne plus être fait.
-              */
-              name: "passerAuPaiement",
-              type: "ui",
-              label: "Étape suivante",
-              admin: {
-                components: { Field: "@/components/admin/PasserAuPaiement#PasserAuPaiement" },
               },
             },
             {

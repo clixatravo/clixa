@@ -29,3 +29,8 @@ yarn-error.log*
 
 # Hébergement
 .vercel
+
+# Résidus de Playwright — la série peut les déposer à la racine
+# quand elle est lancée depuis un autre dossier que platform/.
+test-results/
+playwright-report/

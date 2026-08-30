@@ -43,6 +43,7 @@ npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
+npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
                                                   # et le contrat vérifié
 ```
 
@@ -502,6 +503,27 @@ fait défiler la page au lieu de tracer, et le cadre paraît simplement inerte s
 mobile. La toile est aussi dimensionnée en pixels réels et non CSS : sur un
 écran à densité double, un trait tracé aux dimensions CSS ressort flou dans le
 PDF, où il est agrandi.
+
+⚠️ **La page ne réclame rien qu'on n'ait rendu possible** (`prochaineEtape`,
+depuis le 30 août 2026). Dès la signature, elle annonçait « Nous attendons votre
+premier transfert de 423 € ». Le participant ne pouvait pas l'effectuer : les
+coordonnées lui parviennent après, dans un courriel que l'équipe compose. On lui
+réclamait un geste qu'il n'avait aucun moyen de faire, au moment précis où il
+venait de s'engager par écrit.
+
+| Moment | Ce que la page dit |
+|---|---|
+| pré-inscription | « rien ne vous engage encore » |
+| contrat demandé | « il reste à le signer » |
+| **signé** | « nous relisons — **rien à faire de votre côté** » |
+| **vérifié** | « vérifié, de quoi régler vous parvient » |
+| coordonnées envoyées | « nous attendons votre premier transfert » |
+
+C'est le même défaut que le compte à rebours des places, trouvé le même jour :
+le site réclamait une action avant d'en avoir donné les moyens. Il ne se voit ni
+au type ni à la compilation — la phrase est juste, c'est le moment qui ne l'est
+pas. `verifier-etapes.ts` éprouve les sept moments ; `prochaineEtape` est pure,
+l'épreuve ne touche ni base ni réseau.
 
 **Le contrat se vérifie avant qu'on envoie de quoi payer**
 (`components/admin/VerifierContrat.tsx`, `contratVerifieLe`, depuis le 30 août
@@ -1011,6 +1033,23 @@ avait laissé un faux numéro d'admissions dans chaque courriel envoyé.
 demande y reste seule. C'est le premier contact de quelqu'un qui n'a pas encore
 décidé — le message qui supporte le moins de rester sans réponse. Si cela se
 produit, la remettre sur `EMAIL_EQUIPE` est une ligne.
+
+⚠️ **Un envoi réussi laisse une trace, lui aussi** (depuis le 30 août 2026).
+Seul l'échec en laissait une. Le jour où quelqu'un dit « je n'ai rien reçu »,
+les deux seules réponses qui comptent — *parti et perdu en route* (boîte pleine,
+filtre anti-spam, adresse mal saisie) ou *jamais tenté*, qui serait un défaut
+chez nous — étaient **indiscernables**. On cherchait un bogue là où il n'y avait
+peut-être qu'un dossier « indésirables ».
+
+```bash
+npx vercel logs <déploiement> --scope cl-95af | grep "\[courriel\]"
+```
+
+Le journal porte le destinataire, le sujet, et **l'identifiant rendu par
+Resend** — le fil qui mène à son tableau de bord, où l'on voit si le serveur
+d'en face a accepté, refusé ou mis en attente. ⚠️ Jamais le corps : ces messages
+portent des montants, des références de dossier et des liens de règlement, et un
+journal se consulte à plusieurs.
 
 ⚠️ **Le sous-domaine d'envoi ne sait pas recevoir, et c'est voulu** —
 `envoi.clixa.africa` n'a ni MX ni A. Sans `replyTo`, la réponse du participant

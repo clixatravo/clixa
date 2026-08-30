@@ -276,7 +276,30 @@ async function envoyer(
 ): Promise<boolean> {
   try {
     // `replyTo` sur tous les messages : l'expéditeur ne sait pas recevoir.
-    await payload.sendEmail({ replyTo: REPONDRE_A, ...message });
+    const resultat = await payload.sendEmail({ replyTo: REPONDRE_A, ...message });
+
+    /*
+      ── Un envoi réussi laisse une trace, lui aussi ──────────────────────────
+      Seul l'échec en laissait une. Le jour où quelqu'un dit « je n'ai rien
+      reçu », on ne pouvait pas distinguer les deux seules réponses qui
+      comptent : *parti et perdu en route* — boîte pleine, filtre anti-spam,
+      adresse mal saisie — ou *jamais tenté*, ce qui serait un défaut chez nous.
+      Sans cette ligne, la question ne se tranche pas : on cherche un bogue
+      là où il n'y a peut-être qu'un dossier « indésirables ».
+
+      L'identifiant rendu par l'expéditeur est le fil qui mène au reste : c'est
+      lui qu'on cherche dans le tableau de bord de Resend pour savoir si le
+      serveur d'en face a accepté, refusé, ou mis en attente.
+
+      ⚠️ Le sujet et le destinataire, jamais le corps : ces messages portent des
+      montants, des références de dossier et des liens de règlement. Un journal
+      se consulte à plusieurs et se conserve ; il n'a pas à en garder copie.
+    */
+    const id = (resultat as { id?: unknown } | undefined)?.id;
+    payload.logger.info(
+      { to: message.to, subject: message.subject, ...(id ? { id: String(id) } : {}) },
+      "[courriel] envoyé",
+    );
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: message.to }, "[courriel] envoi impossible");
@@ -640,9 +663,24 @@ export async function envoyerConfirmation(
   args: { nom: string; token: string },
 ): Promise<boolean> {
   const message = courrielConfirmation(args);
+  /*
+    Ce chemin double `envoyer` volontairement : il part avant que le compte
+    existe vraiment, et son échec se raconte au visiteur au lieu d'être avalé.
+    La trace, elle, doit être la même — c'est le courriel dont l'absence
+    enferme quelqu'un dehors, et celui qu'on cherchera en premier.
+  */
   try {
     // Même raison qu'ailleurs : l'expéditeur ne sait pas recevoir de réponse.
-    await payload.sendEmail({ replyTo: REPONDRE_A, to: destinataire, ...message });
+    const resultat = await payload.sendEmail({
+      replyTo: REPONDRE_A,
+      to: destinataire,
+      ...message,
+    });
+    const id = (resultat as { id?: unknown } | undefined)?.id;
+    payload.logger.info(
+      { to: destinataire, subject: message.subject, ...(id ? { id: String(id) } : {}) },
+      "[courriel] envoyé",
+    );
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: destinataire }, "[confirmation] envoi impossible");
@@ -989,6 +1027,78 @@ export async function courrielContratVerifie(
         <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">Votre place reste retenue en attendant.</p>
       `,
       boutonTexte: "Voir mon dossier",
+      boutonLien: url,
+    }),
+  });
+}
+
+/**
+ * Au participant : les instructions de règlement viennent de partir.
+ *
+ * ── Pourquoi ce message existe, alors qu'un autre porte les coordonnées ─────
+ * Les coordonnées elles-mêmes partent à la main, dans un message que l'équipe
+ * compose — décision de la direction : rien de bancaire ne traverse le site.
+ * Ce message-ci ne les porte pas. Il fait autre chose, qui compte autant :
+ * il **date** l'envoi.
+ *
+ * ⚠️ C'est la garde contre l'hameçonnage, et elle ne tenait qu'à moitié. La
+ * date d'envoi s'affiche sur la page du dossier depuis le début — mais personne
+ * ne disait au participant d'aller la regarder. Un lien bancaire reçu par
+ * courriel ressemble trait pour trait à un faux ; la seule vérification qu'on
+ * puisse lui offrir sans mettre le lien en ligne est de comparer deux dates,
+ * encore faut-il qu'il sache qu'il doit le faire.
+ */
+export async function courrielInstructionsEnvoyees(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    moyenSouhaite?: "carte" | "virement" | "transfert";
+    envoyeLe: string;
+  },
+): Promise<boolean> {
+  const url = `${SITE}/inscription/${d.reference}`;
+  const attendu = ATTENDU[d.moyenSouhaite ?? "transfert"].participant;
+  const quand = JOUR.format(new Date(d.envoyeLe));
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `De quoi régler votre première échéance — ${d.programmeTitre} [${d.reference}]`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Nous venons de vous envoyer, dans un message séparé, ${attendu}.`,
+      "",
+      "AVANT DE RÉGLER, VÉRIFIEZ :",
+      `  La page de votre dossier indique « Coordonnées envoyées le ${quand} ».`,
+      "  Si le message que vous avez reçu ne correspond pas à cette date, il ne",
+      "  vient pas de nous — ne réglez rien et écrivez-nous.",
+      `  ${url}`,
+      "",
+      "Une fois le versement effectué, indiquez-nous son numéro depuis votre",
+      "dossier, avec le reçu si vous l'avez sous la main.",
+      "",
+      "CLIXA Institute — Direction des Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "De quoi régler votre première échéance",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml: `
+        <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+        <p>Nous venons de vous envoyer, <strong style="color: #ffffff;">dans un message séparé</strong>, ${attendu}.</p>
+        <p style="margin: 22px 0 0 0; padding: 14px 16px; background-color: #2a1a0d; border-left: 3px solid #c9a24c; font-size: 14px; color: #f3efe4;">
+          <strong style="color: #ffffff;">Avant de régler, vérifiez</strong><br/>
+          La page de votre dossier indique « Coordonnées envoyées le <strong style="color: #e9cd84;">${quand}</strong> ».
+          Si le message que vous avez reçu ne correspond pas à cette date, <strong>il ne vient pas de nous</strong> — ne réglez rien et écrivez-nous.
+        </p>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">
+          Une fois le versement effectué, indiquez-nous son numéro depuis votre dossier, avec le reçu si vous l'avez sous la main.
+        </p>
+      `,
+      boutonTexte: "Vérifier sur mon dossier",
       boutonLien: url,
     }),
   });
