@@ -41,6 +41,7 @@ npx payload run scripts/verifier-google.ts        # une personne, un compte
 npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
 npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
+npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 ```
 
 **La production se contrôle en une commande** (`INT-11`). Les épreuves
@@ -329,6 +330,33 @@ sept jours, cela rendait au catalogue la place de quelqu'un qui avait payé. La
 tâche quotidienne ne lit que le statut du dossier — et jusque-là elle avait
 raison de s'en contenter. Le crochet fait donc deux passages, dans cet ordre :
 un acompte confirme, tout régler solde.
+
+⚠️ **Une trace d'envoi ne s'écrit qu'après l'envoi** (`api/relances`, depuis le
+30 août 2026). La route posait `relanceeLe` sur l'échéance **sans savoir si le
+courriel était parti** : l'envoi était lancé sans être attendu (`void`), et
+`envoyer()` avale ses erreurs. Un quota épuisé — ce qui est arrivé le 29 août —
+et l'échéance passait pour relancée : plus rien pendant sept jours. Le
+participant en retard n'entendait jamais parler de son retard, et l'équipe
+lisait « 1 relance » dans le journal.
+
+- **`void` n'attend pas, et sur une fonction serverless cela peut vouloir dire
+  « ne s'exécute jamais »** : le processus est gelé dès que la réponse part.
+- **L'échéance reste intacte quand l'envoi échoue**, et le passage du lendemain
+  la reprend : la relance est retardée d'un jour, pas perdue.
+- **Le bilan de l'équipe porte les envois manqués.** Une tâche qui échoue à
+  moitié en silence est pire qu'une tâche qui échoue.
+- ⚠️ **`envoyer()` rend maintenant un booléen.** Il reste permissif — refuser
+  d'enregistrer une inscription parce qu'un courriel n'est pas parti serait
+  pire — mais qui écrit une trace de cet envoi doit pouvoir la conditionner.
+
+⚠️ **Pour simuler une panne d'expédition, remplacer `payload.sendEmail`, pas
+`payload.email`.** Sans adaptateur configuré — le cas en développement —
+Payload ne délègue pas à l'adaptateur : il journalise « Email attempted without
+being configured » et rend la main sans erreur. Le premier jet de
+`verifier-relances.ts` passait ainsi au vert en mesurant le chemin nominal,
+persuadé d'éprouver la panne. ⚠️ Et Postgres rend `null` pour une colonne vide,
+jamais `undefined` : comparer à `undefined` déclarait « pas de relance » quelle
+que soit la valeur.
 
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche

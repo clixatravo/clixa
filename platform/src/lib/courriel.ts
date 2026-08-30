@@ -244,14 +244,26 @@ export function gabaritHtmlEmail({
 </html>`;
 }
 
+/**
+ * Envoie, et dit si c'est parti.
+ *
+ * ⚠️ Le booléen n'est pas décoratif. Un envoi qui échoue est journalisé et la
+ * suite continue — refuser d'enregistrer une inscription parce qu'un courriel
+ * n'est pas parti serait pire. Mais l'appelant qui *écrit une trace* de cet
+ * envoi doit pouvoir la conditionner : marquer une échéance « relancée » alors
+ * que rien n'est parti la fait taire pendant sept jours, et la relance est
+ * perdue sans que personne ne le sache. Voir `api/relances`.
+ */
 async function envoyer(
   payload: Payload,
   message: { to: string; subject: string; text: string; html?: string },
-): Promise<void> {
+): Promise<boolean> {
   try {
     await payload.sendEmail(message);
+    return true;
   } catch (e) {
     payload.logger.error({ err: e, to: message.to }, "[courriel] envoi impossible");
+    return false;
   }
 }
 
@@ -798,7 +810,12 @@ export async function courrielRelance(
     enRetard: boolean;
     urlDossier: string;
   },
-): Promise<void> {
+  /*
+    ⚠️ Rend `true` seulement si le courriel est parti. L'appelant écrit une
+    trace (`relanceeLe`) qui fait taire cette échéance pendant sept jours :
+    l'écrire sur un envoi manqué perd la relance en silence.
+  */
+): Promise<boolean> {
   const quand = JOUR.format(new Date(d.dateLimite));
 
   const corpsHtml = `
@@ -821,7 +838,7 @@ export async function courrielRelance(
     </p>
   `;
 
-  await envoyer(payload, {
+  return envoyer(payload, {
     to: d.apprenantEmail,
     subject: d.enRetard
       ? `Rappel d'échéance — ${d.programmeTitre} [${d.reference}]`

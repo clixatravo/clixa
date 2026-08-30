@@ -91,37 +91,71 @@ export async function GET(request: Request) {
   });
 
   const bilan: string[] = [];
+  const manques: string[] = [];
   let examinees = 0;
 
   for (const dossier of docs) {
     const echeances = dossier.echeances ?? [];
     let modifie = false;
 
-    const suivantes = echeances.map((e) => {
-      if (e.statut === "regle" || !e.dateLimite) return e;
+    /*
+      ⚠️ Une boucle, pas un `map`. Il faut attendre chaque envoi pour savoir
+      s'il est parti, et un `map` ne sait pas attendre — il rendait des
+      promesses qu'on jetait aussitôt.
+    */
+    const suivantes: typeof echeances = [];
+
+    for (const e of echeances) {
+      if (e.statut === "regle" || !e.dateLimite) {
+        suivantes.push(e);
+        continue;
+      }
       examinees++;
 
       const limite = new Date(e.dateLimite).getTime();
       const joursRestants = Math.floor((limite - maintenant) / JOUR_MS);
-      if (joursRestants > JOURS_AVANT) return e;
+      if (joursRestants > JOURS_AVANT) {
+        suivantes.push(e);
+        continue;
+      }
 
       // Déjà relancée récemment : on laisse respirer.
       if (e.relanceeLe) {
         const depuis = Math.floor((maintenant - new Date(e.relanceeLe).getTime()) / JOUR_MS);
-        if (depuis < JOURS_ENTRE_DEUX) return e;
+        if (depuis < JOURS_ENTRE_DEUX) {
+          suivantes.push(e);
+          continue;
+        }
       }
 
       const session = typeof dossier.session === "object" ? dossier.session : undefined;
       const programme =
         session && typeof session.programme === "object" ? session.programme : undefined;
 
-      bilan.push(
+      const ligne =
         `${dossier.reference} · ${dossier.apprenantNom} · ${e.montant} € ` +
-          `· échéance du ${String(e.dateLimite).slice(0, 10)}` +
-          (joursRestants < 0 ? ` · ${-joursRestants} jour(s) de retard` : ""),
-      );
+        `· échéance du ${String(e.dateLimite).slice(0, 10)}` +
+        (joursRestants < 0 ? ` · ${-joursRestants} jour(s) de retard` : "");
 
-      void courrielRelance(payload, {
+      /*
+        ── On attend l'envoi, et on n'écrit la trace que s'il est parti ───────
+
+        ⚠️ Deux défauts tenaient dans l'ancienne ligne `void courrielRelance(…)`.
+
+        Le premier : la date `relanceeLe` était posée sans savoir si le courriel
+        était parti. Un envoi manqué — quota épuisé, ce qui est arrivé le
+        29 août 2026 — et l'échéance passait pour relancée : plus rien pendant
+        sept jours, sans que personne ne l'apprenne. Le participant en retard
+        n'entendait jamais parler de son retard.
+
+        Le second : `void` n'attend pas. Sur une fonction serverless, ce qui
+        n'est pas attendu avant la réponse peut ne jamais s'exécuter — le
+        processus est gelé dès que la réponse part.
+
+        Laisser l'échéance intacte quand l'envoi échoue la fait reprendre au
+        passage du lendemain : la relance est retardée d'un jour, pas perdue.
+      */
+      const parti = await courrielRelance(payload, {
         reference: String(dossier.reference),
         apprenantNom: String(dossier.apprenantNom),
         apprenantEmail: String(dossier.apprenantEmail),
@@ -132,9 +166,17 @@ export async function GET(request: Request) {
         urlDossier: `${site}/inscription/${dossier.reference}`,
       });
 
+      if (!parti) {
+        // Le bilan de l'équipe dit la vérité : elle saura qui n'a rien reçu.
+        manques.push(ligne);
+        suivantes.push(e);
+        continue;
+      }
+
+      bilan.push(ligne);
       modifie = true;
-      return { ...e, relanceeLe: new Date(maintenant).toISOString() };
-    });
+      suivantes.push({ ...e, relanceeLe: new Date(maintenant).toISOString() });
+    }
 
     if (!modifie) continue;
 
@@ -158,16 +200,31 @@ export async function GET(request: Request) {
   */
   const rendues = await rendreLesPlacesExpirees(payload);
 
-  await courrielBilanRelances(payload, bilan);
+  /*
+    Le bilan porte aussi ce qui n'est pas parti. Une tâche qui échoue à moitié
+    en silence est pire qu'une tâche qui échoue : l'équipe croit les relances
+    faites. Ces échéances seront reprises demain, mais quelqu'un doit savoir
+    que le service de courriel a refusé aujourd'hui.
+  */
+  await courrielBilanRelances(
+    payload,
+    manques.length === 0
+      ? bilan
+      : [...bilan, "", `⚠️ ${manques.length} envoi(s) impossible(s), repris demain :`, ...manques],
+  );
 
+  const alerte = manques.length > 0 ? `, ${manques.length} envoi(s) IMPOSSIBLE(S)` : "";
   payload.logger.info(
-    `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ${bilan.length} relance(s)`,
+    `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ` +
+      `${bilan.length} relance(s)${alerte}`,
   );
 
   return Response.json({
     dossiers: docs.length,
     echeancesExaminees: examinees,
     relances: bilan.length,
+    // Ce que le planificateur verra dans son journal si le courriel flanche.
+    envoisImpossibles: manques.length,
     placesRendues: rendues,
   });
 }
