@@ -605,6 +605,21 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                Les trois temps du dossier sur une seule ligne, et une seule
+                action offerte : celle du moment. Deux boutons posés l'un sous
+                l'autre disaient chacun ce qu'il faisait, mais aucun ne disait
+                **où l'on en est** ni lequel venait après — et les afficher
+                ensemble invitait à sauter la lecture du contrat.
+              */
+              name: "etapesContrat",
+              type: "ui",
+              label: "Où en est ce dossier",
+              admin: {
+                components: { Field: "@/components/admin/EtapesContrat#EtapesContrat" },
+              },
+            },
+            {
+              /*
                 ── Le contrat a été relu, et le participant l'apprend ─────────
                 Signer est son geste ; vérifier est le nôtre. Entre les deux, il
                 attendait sans nouvelle : le courriel de signature annonce que
@@ -622,24 +637,9 @@ export const Inscriptions: CollectionConfig = {
               label: "Contrat vérifié le",
               validate: pasDansLeFutur,
               admin: {
-                width: "35%",
+                width: "50%",
                 description: "Prévient le participant que son contrat est accepté.",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
-              },
-            },
-            {
-              /*
-                Les trois temps du dossier sur une seule ligne, et une seule
-                action offerte : celle du moment. Deux boutons posés l'un sous
-                l'autre disaient chacun ce qu'il faisait, mais aucun ne disait
-                **où l'on en est** ni lequel venait après — et les afficher
-                ensemble invitait à sauter la lecture du contrat.
-              */
-              name: "etapesContrat",
-              type: "ui",
-              label: "Où en est ce dossier",
-              admin: {
-                components: { Field: "@/components/admin/EtapesContrat#EtapesContrat" },
               },
             },
             {
@@ -666,7 +666,7 @@ export const Inscriptions: CollectionConfig = {
               */
               validate: pasDansLeFutur,
               admin: {
-                width: "30%",
+                width: "50%",
                 description: "À renseigner après l'envoi — le participant voit cette date.",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
               },
