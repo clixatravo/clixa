@@ -127,6 +127,7 @@ export const Inscriptions: CollectionConfig = {
     defaultColumns: [
       "reference",
       "apprenantNom",
+      "apprenantEmail",
       "apprenantWhatsapp",
       "session",
       "statut",

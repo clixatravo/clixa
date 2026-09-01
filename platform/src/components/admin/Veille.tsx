@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
@@ -36,6 +37,14 @@ export async function Veille() {
   const { aujourdhui, ilYASeptJours } = obtenirFiltresDates();
 
   // 1. Inscriptions vivantes
+  /*
+    ⚠️ Ce plafond est une limite connue. Les deux premiers compteurs se
+    calculent en mémoire — ils demandent de regarder les échéances de chaque
+    dossier, ce qu'un `where` ne sait pas faire en une passe — et au-delà de
+    cinq cents dossiers vivants le bandeau compterait moins que la vérité,
+    sans le dire. Une cohorte de trente places en est loin ; le jour où elle
+    s'en approche, c'est ce calcul-là qu'il faut porter en SQL.
+  */
   const { docs: inscriptions } = await payload.find({
     collection: "inscriptions",
     limit: 500,
@@ -94,6 +103,30 @@ export async function Veille() {
 
   const dateAujourdhui = JOUR.format(new Date());
   const dateFormatee = dateAujourdhui.charAt(0).toUpperCase() + dateAujourdhui.slice(1);
+  /*
+    ── Chaque vignette mène aux dossiers qu'elle compte ──────────────────────
+    Les trois pointaient sur la liste entière : le nombre annonçait un tri que
+    le lien ne faisait pas. On cliquait sur « 3 » et l'on tombait sur cinq
+    dossiers, à retrouver soi-même.
+
+    ⚠️ Le tri de l'URL n'égale pas tout à fait le comptage. Celui-ci est une
+    partition — un dossier dont le transfert est annoncé n'est pas recompté
+    parmi les retards, même si sa date est passée — et un filtre de liste ne
+    sait pas dire « en retard mais pas annoncé ». L'écart vaut au plus une
+    ligne, contre la liste entière auparavant.
+  */
+  const filtres = {
+    aVerifier: "/admin/collections/inscriptions?where[echeances.statut][equals]=annonce",
+    enRetard: `/admin/collections/inscriptions?where[prochaineEcheance][less_than]=${aujourdhui}`,
+    recentes: `/admin/collections/inscriptions?where[createdAt][greater_than]=${ilYASeptJours}`,
+    /*
+      Le compteur ne relève que les demandes « nouvelle » ; le lien menait à
+      l'historique entier, où les appels déjà passés noient ceux qui restent
+      à passer.
+    */
+    rappels: "/admin/collections/demandes-rappel?where[statut][equals]=nouvelle",
+  } as const;
+
   const toutEstCalme = aVerifier === 0 && nouvellesDemandes === 0 && enRetard === 0;
 
   return (
@@ -128,7 +161,11 @@ export async function Veille() {
             <span>📥 Exporter CSV</span>
           </a>
           <Link
-            href="/admin/collections/demandes-rappel"
+            href={
+              (nouvellesDemandes > 0
+                ? filtres.rappels
+                : "/admin/collections/demandes-rappel") as Route
+            }
             className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--notif" : ""}`}
             title="Voir les demandes de rappel téléphonique"
           >
@@ -161,7 +198,7 @@ export async function Veille() {
       <div className="clixa-cockpit__grille">
         {/* KPI 1 : Transferts à vérifier */}
         <Link
-          href="/admin/collections/inscriptions"
+          href={filtres.aVerifier as Route}
           className={`clixa-kpi ${aVerifier > 0 ? "clixa-kpi--alerte-or" : ""}`}
         >
           <div className="clixa-kpi__haut">
@@ -179,7 +216,11 @@ export async function Veille() {
 
         {/* KPI 2 : Demandes de rappel */}
         <Link
-          href="/admin/collections/demandes-rappel"
+          href={
+            (nouvellesDemandes > 0
+              ? filtres.rappels
+              : "/admin/collections/demandes-rappel") as Route
+          }
           className={`clixa-kpi ${nouvellesDemandes > 0 ? "clixa-kpi--alerte-vert" : ""}`}
         >
           <div className="clixa-kpi__haut">
@@ -199,7 +240,7 @@ export async function Veille() {
 
         {/* KPI 3 : Échéances en retard */}
         <Link
-          href="/admin/collections/inscriptions"
+          href={filtres.enRetard as Route}
           className={`clixa-kpi ${enRetard > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
         >
           <div className="clixa-kpi__haut">
@@ -216,7 +257,7 @@ export async function Veille() {
         </Link>
 
         {/* KPI 4 : Activité de la semaine */}
-        <Link href="/admin/collections/inscriptions" className="clixa-kpi">
+        <Link href={filtres.recentes as Route} className="clixa-kpi">
           <div className="clixa-kpi__haut">
             <span className="clixa-kpi__indicateur">📈</span>
             <span className="clixa-kpi__tag">Activité (7j)</span>
@@ -268,13 +309,13 @@ export async function Veille() {
             <span>🧾 Reçus &amp; Transferts</span>
           </Link>
           <Link href="/admin/collections/programmes" className="clixa-raccourcis__pill">
-            <span>📚 12 Formations</span>
+            <span>📚 Formations</span>
           </Link>
           <Link href="/admin/collections/sessions" className="clixa-raccourcis__pill">
             <span>📅 Sessions &amp; Dates</span>
           </Link>
           <Link href="/admin/globals/tarifs" className="clixa-raccourcis__pill">
-            <span>💰 Tarifs &amp; Banques</span>
+            <span>💰 Tarifs</span>
           </Link>
         </div>
       </div>

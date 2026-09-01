@@ -44,6 +44,7 @@ npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
+npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -136,6 +137,39 @@ collection, qui disent où aller mais jamais s'il faut y aller. Le bandeau
 au-dessus compte les transferts annoncés à vérifier, les échéances dépassées et
 les dossiers sans premier versement — et se tait, en toutes lettres, quand il
 n'y a rien.
+
+⚠️ **Une vignette mène aux dossiers qu'elle compte** (depuis le 1er septembre
+2026). Les quatre pointaient sur la liste entière : le nombre annonçait un tri
+que le lien ne faisait pas. On cliquait sur « 3 » et l'on tombait sur le fichier
+complet, à retrouver soi-même — ce qui vide le bandeau de son intérêt, puisqu'il
+existe pour dire quoi faire maintenant. Les demandes de rappel étaient le cas le
+plus net : le compteur ne relève que les « nouvelle », et le lien menait à
+l'historique où les appels déjà passés noient ceux qui restent à passer.
+
+- **Le filtre de la liste n'égale pas tout à fait le comptage**, et c'est
+  assumé. Le comptage est une partition — un transfert annoncé n'est pas
+  recompté parmi les retards — quand une URL ne sait pas dire « en retard mais
+  pas annoncé ». L'écart vaut au plus une ligne, contre la liste entière avant.
+- ⚠️ **Un filtre d'URL faux ne casse rien.** Payload rend la liste, simplement
+  sans le tri : ni erreur, ni type fautif, ni page blanche. C'est pourquoi
+  `verifier-veille.ts` **fabrique quatre dossiers** — un par vignette et un
+  qu'aucune ne doit ramasser. Sans ce quatrième, un filtre qui rend tout
+  passerait au vert.
+- ⚠️ **Et une base vide rend tous les filtres verts.** Le premier jet du script
+  s'est félicité de trois « 0 dossier » sur une branche que le ménage des
+  épreuves venait de vider : il mesurait le néant.
+- **L'adresse rejoint les colonnes de la liste.** Joindre quelqu'un demandait
+  d'ouvrir sa fiche ; le nom, l'adresse et le téléphone sont maintenant sur la
+  ligne.
+- ⚠️ **Deux raccourcis affirmaient ce qui n'est plus vrai** : « 12 Formations »,
+  un nombre écrit en dur qui vieillirait au premier parcours ajouté, et
+  « Tarifs & Banques », quand les coordonnées bancaires ont justement été
+  retirées de /admin par décision de la direction.
+- ⚠️ **Les deux premiers compteurs lisent au plus cinq cents dossiers vivants.**
+  Ils regardent les échéances de chacun, ce qu'un `where` ne fait pas en une
+  passe. Une cohorte de trente places en est loin ; au-delà, le bandeau
+  compterait moins que la vérité sans le dire — c'est ce calcul qu'il faudrait
+  alors porter en SQL.
 
 ⚠️ **Un dossier n'y compte qu'une fois.** Ces trois états se chevauchent : un
 dossier peut être en retard *et* sans premier versement, annoncé *et* encore
