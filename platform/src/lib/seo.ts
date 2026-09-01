@@ -10,6 +10,7 @@
 import type { Programme, Session, Tarifs } from "@/lib/types";
 import type { Article } from "@/lib/blog";
 import { lieuSession } from "@/lib/catalogue";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 /*
   Le repli ne sert que si la variable manque — ce qui ne devrait pas arriver,
@@ -47,8 +48,13 @@ export const organisation = {
     changerait d'URL à chaque construction, et Google la reprendrait à zéro.
   */
   logo: `${SITE_URL}/logo-clixa.png`,
-  email: "contact@clixa.africa",
-  telephone: "+212669303467",
+  email: RESEAUX_CLIXA.email.adresse,
+  /*
+    Le numéro sans espaces ni signes : c'est la forme que lit un moteur, quand
+    `numeroAffiche` est celle que lit un humain. Une seule source, deux
+    présentations — plutôt qu'une seconde copie à tenir à jour.
+  */
+  telephone: `+${RESEAUX_CLIXA.whatsapp.url.split("/").pop()}`,
   address: {
     "@type": "PostalAddress",
     streetAddress: "N° 1525, Bureau n° 5, Hay Essalam",

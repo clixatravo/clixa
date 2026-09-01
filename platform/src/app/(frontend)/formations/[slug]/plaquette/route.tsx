@@ -9,6 +9,7 @@ import {
   libelleNiveau,
 } from "@/lib/catalogue";
 import type { Programme, Session, Tarifs } from "@/lib/types";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 /**
  * La plaquette d'un parcours, en PDF.
@@ -184,7 +185,7 @@ function Plaquette({
         )}
 
         <View style={s.pied} fixed>
-          <Text>CLIXA Institute — contact@clixa.africa — clixa.africa</Text>
+          <Text>CLIXA Institute — {RESEAUX_CLIXA.email.adresse} — www.clixa.africa</Text>
           <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

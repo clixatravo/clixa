@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { getPages } from "@/lib/pages";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 /**
  * Les pages légales se lisent dans le CMS, elles ne sont pas écrites ici.
@@ -57,10 +58,10 @@ export async function SiteFooter() {
               dirigeants et certifier les compétences clés.
             </p>
             <a
-              href="mailto:contact@clixa.africa"
+              href={RESEAUX_CLIXA.email.url}
               className="text-gold-bright hover:text-gold mt-4 inline-flex items-center gap-1.5 py-0.5 text-[0.84rem] transition-colors"
             >
-              <span>contact@clixa.africa</span>
+              <span>{RESEAUX_CLIXA.email.adresse}</span>
               <span>→</span>
             </a>
 

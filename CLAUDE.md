@@ -1231,6 +1231,27 @@ Ce que ce coup d'œil a trouvé, et qu'aucune épreuve ne pouvait voir :
 - ⚠️ **Le numéro d'admissions était faux** — un numéro d'attente, dans chaque
   courriel envoyé. Il vient maintenant de `lib/reseaux.ts`, comme partout
   ailleurs : deux copies finissent toujours par diverger.
+
+⚠️ **« Comme partout ailleurs » n'était pas vrai** (corrigé le 1er septembre
+2026). Le courriel avait été rebranché sur `lib/reseaux.ts`, mais **huit copies
+subsistaient** : la page campus (« reprises de index.html », disait le
+commentaire), le pied de page, la page contact, la création de compte, les
+données structurées lues par Google, et la plaquette PDF — qui portait de
+surcroît l'apex quand le canonique est `www`. La plaquette est justement ce
+qu'un prospect fait suivre à qui décide du budget.
+
+Une **règle ESLint** l'empêche désormais, comme celle qui interdit d'importer
+`@/data/*` : toute chaîne portant l'adresse ou le numéro est refusée hors de
+`src/lib/reseaux.ts`, y compris dans un gabarit de chaîne. Éprouvée en écrivant
+les deux formes dans un fichier jetable.
+
+- **Une source, deux présentations.** Les données structurées veulent le numéro
+  sans espaces ; il se dérive de l'URL WhatsApp plutôt que d'ouvrir une seconde
+  copie.
+- ⚠️ **Le PDF s'est vérifié à l'œil, pas au grep.** Son texte ne se lit pas dans
+  les flux compressés — deux extractions ont conclu « introuvable » sur un
+  document parfaitement juste. `qlmanage -t -s 1400 -o <dossier> <fichier.pdf>`
+  en rend une image, et l'on regarde.
 - **Six adresses pointaient sur l'apex**, qui redirige. Le canonique est `www`.
 - **La référence se coupait en deux dans l'en-tête** — « CLX- » d'un côté, le
   reste de l'autre — depuis qu'elle compte huit symboles. Une référence à

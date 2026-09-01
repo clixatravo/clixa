@@ -6,6 +6,7 @@ import { participantConnecte } from "@/lib/session-apprenant";
 import { ChampCompte, FormulaireCompte } from "@/components/FormulaireCompte";
 import { CadreCompte } from "@/components/CadreCompte";
 import { BoutonGoogle } from "@/components/BoutonGoogle";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
@@ -69,7 +70,7 @@ export default async function CreerCompte({
                 Votre compte existe, mais nous n&apos;avons pas pu vous envoyer le lien de
                 confirmation — notre service de courrier est momentanément indisponible. Redemandez
                 le lien ci-dessous dans quelques minutes ; si cela persiste, écrivez-nous à
-                contact@clixa.africa.
+                {RESEAUX_CLIXA.email.adresse}.
               </p>
             ) : (
               <p className="text-ivory-dim mb-6 text-[0.95rem] leading-relaxed">

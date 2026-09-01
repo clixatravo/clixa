@@ -90,10 +90,10 @@ export default async function Contact({ searchParams }: Props) {
                     WhatsApp · {RESEAUX_CLIXA.whatsapp.numeroAffiche}
                   </a>
                   <a
-                    href="mailto:contact@clixa.africa"
+                    href={RESEAUX_CLIXA.email.url}
                     className="border-line text-ivory hover:border-gold rounded-clixa inline-flex min-h-11 flex-1 items-center justify-center border px-4 text-[0.88rem] font-medium transition-colors"
                   >
-                    contact@clixa.africa
+                    {RESEAUX_CLIXA.email.adresse}
                   </a>
                 </div>
                 <p className="text-ivory-dim/70 mt-3 text-[0.8rem] leading-relaxed">
@@ -111,7 +111,9 @@ export default async function Contact({ searchParams }: Props) {
                     ? "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal. C'est par ce numéro que le conseiller vous rappellera."
                     : erreur === "champs"
                       ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
-                      : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à contact@clixa.africa."}
+                      : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à " +
+                        RESEAUX_CLIXA.email.adresse +
+                        "."}
                 </p>
               )}
 

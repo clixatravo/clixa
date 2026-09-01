@@ -4,6 +4,7 @@ import { getSessions, getProgrammes, formatPeriode, lieuSession } from "@/lib/ca
 import { placesRestantes } from "@/lib/types";
 import { PlacesBadge } from "@/components/ui/Badge";
 import { FilAriane } from "@/components/FilAriane";
+import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 export const metadata: Metadata = {
   title: "Campus",
@@ -11,14 +12,21 @@ export const metadata: Metadata = {
     "CLIXA opère depuis Agadir, Abidjan et Dakar pour rester proche des professionnels qu'il forme.",
 };
 
-/** Coordonnées reprises de index.html — source de vérité tant que le CMS n'est pas en place. */
+/*
+  Les coordonnées viennent de `lib/reseaux.ts`, jamais d'une copie.
+
+  ⚠️ Elles étaient recopiées ici « depuis index.html ». C'est exactement ce qui
+  a laissé un faux numéro d'admissions dans chaque courriel envoyé : deux copies
+  d'un même fait finissent toujours par diverger, et l'on ne s'en aperçoit qu'en
+  composant le mauvais numéro.
+*/
 const campus = [
   {
     ville: "Agadir, Maroc",
     role: "Siège social",
     adresse: "N° 1525, Bureau n° 5, Hay Essalam",
-    telephone: "+212 6 69 30 34 67",
-    email: "contact@clixa.africa",
+    telephone: RESEAUX_CLIXA.whatsapp.numeroAffiche,
+    email: RESEAUX_CLIXA.email.adresse,
     note: null,
   },
   {

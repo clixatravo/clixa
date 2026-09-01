@@ -246,7 +246,7 @@ export function gabaritHtmlEmail({
                 <tr>
                   <td style="font-size: 13px; color: #cbd5e1; line-height: 1.8;">
                     <div><strong>💬 WhatsApp Admissions :</strong> <a href="${RESEAUX_CLIXA.whatsapp.url}" style="color: #2fa37d; text-decoration: none; font-weight: bold;">${RESEAUX_CLIXA.whatsapp.numeroAffiche}</a></div>
-                    <div><strong>✉️ Courriel Officiel :</strong> <a href="mailto:contact@clixa.africa" style="color: #e9cd84; text-decoration: none;">contact@clixa.africa</a></div>
+                    <div><strong>✉️ Courriel Officiel :</strong> <a href="${RESEAUX_CLIXA.email.url}" style="color: #e9cd84; text-decoration: none;">${RESEAUX_CLIXA.email.adresse}</a></div>
                     <div><strong>🌐 Portail Officiel :</strong> <a href="https://www.clixa.africa" style="color: #e9cd84; text-decoration: none;">https://www.clixa.africa</a></div>
                   </td>
                 </tr>
@@ -419,7 +419,7 @@ ${
       "Votre dossier en ligne :",
       d.urlDossier,
       "",
-      "Contact Admissions : contact@clixa.africa · https://www.clixa.africa",
+      `Contact Admissions : ${RESEAUX_CLIXA.email.adresse} · https://www.clixa.africa`,
       "CLIXA Institute — Direction des Admissions",
     ].join("\n"),
     html: gabaritHtmlEmail({
