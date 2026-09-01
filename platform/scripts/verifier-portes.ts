@@ -146,6 +146,75 @@ try {
   dire("un visiteur anonyme est refusé", (await apercu()) === 401);
   dire("un compte participant connecté est refusé", (await apercu(cookieParticipant)) === 401);
   dire("l'équipe passe la garde", (await apercu(cookieEquipe)) !== 401);
+  /*
+    ── Les coordonnées du bénéficiaire ────────────────────────────────────────
+    Le global `tarifs` est en lecture publique : c'est le barème que le site
+    affiche. Il porte aussi, masqués dans /admin, le nom du bénéficiaire et les
+    consignes de règlement.
+
+    ⚠️ `admin.hidden` n'est pas un contrôle d'accès. Il retire la case du
+    formulaire, et l'API REST continue de servir le champ à n'importe qui.
+    Éprouvé en remplissant les quatre valeurs et en tirant
+    `/api/globals/tarifs` sans session : le RIB sortait.
+
+    On ne se fie donc pas au fait qu'ils soient vides aujourd'hui : on les
+    remplit, on regarde ce que l'API rend, et on les remet à vide.
+  */
+  console.log("\n▸ Les coordonnées de règlement ne sortent jamais\n");
+
+  const avant = await payload.findGlobal({ slug: "tarifs", locale: "fr", overrideAccess: true });
+  const temoin = `NE-DOIT-PAS-SORTIR-${marque}`;
+  try {
+    await payload.updateGlobal({
+      slug: "tarifs",
+      locale: "fr",
+      overrideAccess: true,
+      data: {
+        beneficiaireNom: temoin,
+        beneficiaireVille: temoin,
+        beneficiairePays: temoin,
+        consignesPaiement: temoin,
+      } as never,
+    });
+
+    const publique = (await payload.findGlobal({
+      slug: "tarifs",
+      locale: "fr",
+      // Pas d'`overrideAccess` : on veut voir ce qu'un visiteur obtient.
+      overrideAccess: false,
+    })) as unknown as Record<string, unknown>;
+
+    const fuites = Object.entries(publique)
+      .filter(([, v]) => typeof v === "string" && v.includes(temoin))
+      .map(([k]) => k);
+    dire(
+      "aucune coordonnée ne sort sans session",
+      fuites.length === 0,
+      fuites.length ? `sorties : ${fuites.join(", ")}` : "",
+    );
+    dire(
+      "et le barème que le site affiche est intact",
+      typeof publique.prixComptant === "number" && Array.isArray(publique.plans),
+    );
+  } finally {
+    /*
+      Remis exactement dans l'état d'avant, y compris s'il était rempli : ce
+      script tourne aussi sur une base où la direction aurait saisi quelque
+      chose.
+    */
+    const a = avant as unknown as Record<string, unknown>;
+    await payload.updateGlobal({
+      slug: "tarifs",
+      locale: "fr",
+      overrideAccess: true,
+      data: {
+        beneficiaireNom: a.beneficiaireNom ?? null,
+        beneficiaireVille: a.beneficiaireVille ?? null,
+        beneficiairePays: a.beneficiairePays ?? null,
+        consignesPaiement: a.consignesPaiement ?? null,
+      } as never,
+    });
+  }
 } finally {
   for (const { collection, id } of aSupprimer) {
     await payload.delete({ collection, id, overrideAccess: true }).catch(() => {});

@@ -1,5 +1,5 @@
 import type { GlobalConfig } from "payload";
-import { reserveA } from "@/access/roles";
+import { champPersonnel, reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
 import { revaliderTarifs } from "@/collections/revalider";
 
@@ -155,8 +155,16 @@ export const Tarifs: GlobalConfig = {
      * s'ouvre avec la seule référence, qui circule par WhatsApp et par
      * courriel. Il aurait suffi qu'on remplisse ces cases ici, par curiosité ou
      * en croyant bien faire, pour publier un RIB sur une adresse qu'on partage.
-     * La page ne sait plus les lire ; les masquer empêche qu'on les saisisse en
-     * attendant d'y croire.
+     * La page ne sait plus les lire ; les masquer décourage qu'on les saisisse
+     * en attendant d'y croire.
+     *
+     * ⚠️ Mais `admin.hidden` n'est **pas** un contrôle d'accès : il retire la
+     * case du formulaire, et l'API REST continue de servir le champ à qui le
+     * demande. Éprouvé — les quatre valeurs remplies, `/api/globals/tarifs`
+     * tiré sans aucune session, et le RIB sortait. Le global est en lecture
+     * publique, comme tout ce que le site affiche. Chacun de ces champs porte
+     * donc `access: { read: champPersonnel }` : la donnée peut exister, elle ne
+     * sort jamais.
      *
      * Les colonnes restent en base : les retirer demanderait une migration, et
      * elles ne coûtent rien. Pour rouvrir ce bloc un jour, retirer `hidden` —
@@ -178,18 +186,21 @@ export const Tarifs: GlobalConfig = {
               type: "text",
               label: "Nom complet du bénéficiaire",
               admin: { width: "50%", placeholder: "Tel qu'il figure sur la pièce d'identité" },
+              access: { read: champPersonnel },
             },
             {
               name: "beneficiaireVille",
               type: "text",
               label: "Ville",
               admin: { width: "25%", placeholder: "Agadir" },
+              access: { read: champPersonnel },
             },
             {
               name: "beneficiairePays",
               type: "text",
               label: "Pays",
               admin: { width: "25%", placeholder: "Maroc" },
+              access: { read: champPersonnel },
             },
           ],
         },
@@ -198,6 +209,7 @@ export const Tarifs: GlobalConfig = {
           type: "textarea",
           label: "Consignes complémentaires",
           localized: true,
+          access: { read: champPersonnel },
           admin: {
             description:
               "Affiché sous les coordonnées. Par exemple : envoyer le numéro de transfert par WhatsApp après l'envoi.",

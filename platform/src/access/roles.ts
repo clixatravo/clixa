@@ -99,3 +99,17 @@ export const comptesEcriture: Access = ({ req }) => {
  * qui pourrait s'attribuer les pleins pouvoirs en modifiant sa propre fiche.
  */
 export const champRole: FieldAccess = ({ req }) => roleDe(req) === "direction";
+
+/**
+ * Champ que l'API ne rend qu'à l'équipe.
+ *
+ * ⚠️ `admin.hidden` n'est pas un contrôle d'accès. Il retire le champ du
+ * formulaire de /admin, et rien de plus : l'API REST continue de le servir, à
+ * n'importe qui. Éprouvé en remplissant les coordonnées du bénéficiaire, puis
+ * en tirant `/api/globals/tarifs` sans la moindre session — le RIB sortait.
+ *
+ * Cacher une case pour qu'on ne la remplisse pas est une bonne intention ;
+ * elle ne tient pas devant un script, une reprise en base, ou le jour où
+ * quelqu'un retire `hidden` en croyant rouvrir un réglage inoffensif.
+ */
+export const champPersonnel: FieldAccess = ({ req }) => estPersonnel(req);

@@ -1084,6 +1084,24 @@ partent par courriel. Qui s'en serait servi pour vérifier ce que reçoit un
 client aurait lu un message que nous n'envoyons plus. `scripts/apercu-courriel.ts`
 rend les **vrais** gabarits, et reste le seul chemin.
 
+⚠️ **`admin.hidden` n'est pas un contrôle d'accès** (`Tarifs`, depuis le 1er
+septembre 2026). Les coordonnées du bénéficiaire — nom, ville, pays, consignes
+de règlement — étaient masquées dans /admin pour qu'on ne les saisisse pas. Mais
+`hidden` ne retire que la case du formulaire : le global `tarifs` est en lecture
+publique, puisqu'il porte le barème que le site affiche, et **l'API REST
+continuait de servir ces champs à n'importe qui**.
+
+Éprouvé plutôt que supposé : les quatre valeurs remplies, `/api/globals/tarifs`
+tiré sans la moindre session, et le RIB sortait. Elles sont vides aujourd'hui —
+c'est la seule raison pour laquelle rien n'a fuité. Chacun porte désormais
+`access: { read: champPersonnel }` : la donnée peut exister, elle ne sort
+jamais. `verifier-portes.ts` les remplit, regarde ce que l'API rend, et les
+remet dans leur état d'avant.
+
+Cacher une case pour qu'on ne la remplisse pas est une bonne intention ; elle ne
+tient pas devant un script, une reprise en base, ou le jour où quelqu'un retire
+`hidden` en croyant rouvrir un réglage inoffensif.
+
 ⚠️ **Seul le refus s'éprouve sur `/api/apercu`.** Passé la garde, la route
 appelle `draftMode()` puis `redirect()`, qui exigent le contexte de requête de
 Next. Une session d'équipe se reconnaît donc à ce qu'elle **ne reçoit pas** 401 —
