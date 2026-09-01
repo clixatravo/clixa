@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
+import { MOYENS } from "@/lib/moyens";
 import {
   formatPeriode,
   formatPrix,
@@ -246,9 +247,11 @@ export default async function Inscription({ searchParams }: Props) {
                     defaultValue="transfert"
                     className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   >
-                    <option value="carte">Carte bancaire</option>
-                    <option value="virement">Virement bancaire</option>
-                    <option value="transfert">Western Union · Ria · MoneyGram</option>
+                    {MOYENS.map((m) => (
+                      <option key={m.valeur} value={m.valeur}>
+                        {m.libelle}
+                      </option>
+                    ))}
                   </select>
                   <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
                     Rien ne se paie sur ce site. Nous vous envoyons par courriel de quoi régler — un

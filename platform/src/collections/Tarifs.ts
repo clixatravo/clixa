@@ -127,11 +127,36 @@ export const Tarifs: GlobalConfig = {
         },
       ],
     },
+    /**
+     * ⚠️ Ce champ ne commande plus rien, et c'est délibéré.
+     *
+     * Il portait « Western Union · Ria · MoneyGram », et la fiche d'un parcours
+     * l'affichait tel quel. Le 28 août 2026, la direction a ouvert la carte
+     * bancaire et le virement : le formulaire a suivi, ce champ est resté. Un
+     * prospect qui voulait régler par carte lisait donc, sur la page qui décide
+     * de son achat, que nous ne prenons que des services de transfert.
+     *
+     * Le corriger ici n'aurait pas suffi. Chaque moyen commande ce que le
+     * participant reçoit par courriel et ce que le contrat écrit : ajouter une
+     * ligne dans /admin aurait promis un moyen que le reste du système ne sait
+     * pas honorer. La liste vraie est donc celle du code — `lib/moyens.ts` —
+     * qu'emploient maintenant la fiche et le formulaire.
+     *
+     * Masqué plutôt que retiré : le retirer demanderait une migration, et une
+     * case qui reste modifiable sans effet est pire qu'une case absente.
+     * ⚠️ `admin.hidden` empêche la saisie, pas la lecture par l'API — sans
+     * conséquence ici, ces valeurs n'ayant rien de confidentiel.
+     */
     {
       name: "moyensPaiement",
       type: "array",
-      label: "Moyens de paiement acceptés",
+      label: "Moyens de paiement acceptés — sans effet",
       labels: { singular: "Moyen", plural: "Moyens" },
+      admin: {
+        hidden: true,
+        description:
+          "Sans effet : les moyens affichés viennent de lib/moyens.ts, seul endroit que le reste du système sait honorer.",
+      },
       fields: [
         {
           name: "valeur",

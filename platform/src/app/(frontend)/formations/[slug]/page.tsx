@@ -10,6 +10,7 @@ import { Temoignages } from "@/components/Temoignages";
 import { Badge, PlacesBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { placesRestantes } from "@/lib/types";
+import { MOYENS_AFFICHES } from "@/lib/moyens";
 import {
   formatPeriode,
   formatPrix,
@@ -295,7 +296,21 @@ export default async function FicheFormation({ params }: Props) {
 
               <ul className="border-line/60 flex flex-col gap-2.5 border-t pt-5">
                 {[
-                  ...tarifs.moyensPaiement,
+                  /*
+                    ⚠️ La liste vient du code, pas du global `tarifs`.
+
+                    Celui-ci ne portait que « Western Union · Ria · MoneyGram » :
+                    un prospect qui voulait régler par carte lisait, sur la page
+                    qui décide de son achat, que nous ne prenons que des
+                    services de transfert. Les deux listes ont divergé le jour
+                    où la direction a ouvert la carte et le virement — le
+                    formulaire a suivi, la fiche est restée en arrière.
+
+                    Chaque moyen commande ce que le participant reçoit par
+                    courriel et ce que le contrat écrit : la liste vraie est
+                    celle que le système sait honorer.
+                  */
+                  ...MOYENS_AFFICHES,
                   "Support de cours & livrables inclus",
                   "Attestation de fin de formation",
                   "Accompagnement live en direct",

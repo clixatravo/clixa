@@ -15,6 +15,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { MOYENS } from "../src/lib/moyens.js";
 
 const payload = await getPayload({ config });
 
@@ -131,7 +132,20 @@ const anomalies = (tarifs.plans ?? []).filter(
 );
 verifier(anomalies.length === 0, "aucun plan échelonné moins cher que le comptant");
 
-verifier((tarifs.moyensPaiement ?? []).length > 0, "au moins un moyen de paiement annoncé");
+/*
+  ⚠️ On mesure ce que le visiteur lit, pas ce que le CMS contient.
+
+  Cette ligne regardait `tarifs.moyensPaiement`, que la fiche n'affiche plus :
+  elle serait restée verte pendant que la page annonçait une liste périmée. Les
+  moyens viennent de `lib/moyens.ts`, et chacun doit être un moyen que le reste
+  du système sait honorer — sans quoi on promet un règlement qu'on ne peut pas
+  instruire.
+*/
+verifier(MOYENS.length > 0, "au moins un moyen de règlement est proposé");
+verifier(
+  MOYENS.every((m) => ["carte", "virement", "transfert"].includes(m.valeur)),
+  "chaque moyen proposé est un moyen que le système sait instruire",
+);
 
 /* ── Les rattachements ────────────────────────────────────────────────── */
 

@@ -1412,6 +1412,9 @@ export interface Tarif {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Sans effet : les moyens affichés viennent de lib/moyens.ts, seul endroit que le reste du système sait honorer.
+   */
   moyensPaiement?:
     | {
         valeur: string;

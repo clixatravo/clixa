@@ -558,6 +558,28 @@ l'équipe, s'affiche sur la page du dossier, qu'il ouvre avec sa propre
 référence. Un message qui ne correspond à aucune date affichée n'est pas de
 nous, et les deux courriels le disent.
 
+⚠️ **La fiche annonçait moins que le formulaire n'offre** (`lib/moyens.ts`,
+depuis le 1er septembre 2026). La fiche d'un parcours affichait
+`tarifs.moyensPaiement` — « Western Union · Ria · MoneyGram », et rien d'autre.
+Le formulaire, lui, propose carte bancaire, virement et transfert depuis le
+28 août. Un prospect qui voulait régler par carte lisait donc, **sur la page qui
+décide de son achat**, que nous ne prenons que des services de transfert.
+
+Les deux listes vivaient à deux endroits ; l'une a suivi la décision de la
+direction, l'autre est restée.
+
+- ⚠️ **La liste vraie est celle du code, pas celle du CMS.** Chaque moyen
+  commande ce que le participant reçoit par courriel (`ATTENDU`) et ce que le
+  contrat écrit. Ajouter une ligne dans /admin n'aurait rien fait fonctionner :
+  cela aurait promis un règlement que le reste du système ne sait pas
+  instruire.
+- **`moyensPaiement` est donc masqué**, comme les coordonnées du bénéficiaire —
+  une case modifiable sans effet est pire qu'une case absente.
+- **`verifier-catalogue.ts` mesure maintenant ce que le visiteur lit.** Il
+  regardait le champ du CMS : il serait resté vert pendant que la page annonçait
+  une liste périmée. Il vérifie en plus que chaque moyen proposé est un moyen
+  que le système sait instruire.
+
 ⚠️ **`moyenSouhaite` n'est pas le `moyen` d'une échéance.** Le second dit par
 quoi l'argent est arrivé, renseigné après coup ; le premier dit ce que le
 participant a demandé, avant qu'aucun argent n'existe. Les confondre ferait
