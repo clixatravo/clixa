@@ -1,5 +1,5 @@
 /**
- * L'export CSV sort-il seulement pour l'équipe ?
+ * Les portes réservées à l'équipe le sont-elles vraiment ?
  *
  * Le bouton « Exporter CSV » du tableau de bord verse dans un tableur le nom,
  * l'adresse, le téléphone, la session, le statut et les montants réglés de
@@ -12,13 +12,20 @@
  * le fichier. C'est exactement le trou que `api/recu` ferme en toutes lettres,
  * resté ouvert ici.
  *
- * On ne le décrit pas : on monte une vraie session de participant, une vraie
- * session d'équipe, et l'on appelle la route.
+ * La même faute vivait sur `api/apercu`, qui ouvre les brouillons — les quatre
+ * pages légales non relues, les témoignages dépubliés, les articles en
+ * préparation. Son propre commentaire disait pourtant que « sans ce contrôle,
+ * l'URL suffirait à lire n'importe quel brouillon ». Le contrôle existait ; il
+ * ne regardait pas la bonne chose.
+ *
+ * On ne décrit rien : on monte une vraie session de participant, une vraie
+ * session d'équipe, et l'on appelle les routes.
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ouvrirSession } from "../src/lib/session.js";
 import { GET } from "../src/app/(payload)/api/admin/export-admissions/route.js";
+import { GET as APERCU } from "../src/app/(payload)/api/apercu/route.js";
 
 const payload = await getPayload({ config });
 
@@ -110,6 +117,35 @@ try {
     );
     dire("il ne se garde pas en cache", equipe.headers.get("cache-control") === "no-store");
   }
+  /*
+    ── La prévisualisation des brouillons ─────────────────────────────────────
+    ⚠️ Seul le refus s'éprouve ici. Passé la garde, la route appelle
+    `draftMode()` puis `redirect()`, qui exigent tous deux le contexte de
+    requête de Next : hors de lui, ils lèvent. Une session d'équipe se
+    reconnaît donc à ce qu'elle **ne reçoit pas** 401 — ce qui suffit, puisque
+    c'est le refus qui protège.
+  */
+  console.log("\n▸ Les brouillons ne s'ouvrent pas à un participant\n");
+
+  const apercu = async (cookie?: string) => {
+    const entetes = new Headers({
+      ...COMME_UN_NAVIGATEUR,
+      ...(cookie ? { cookie: cookie.split(";")[0] ?? "" } : {}),
+    });
+    const requete = new Request("http://localhost/api/apercu?chemin=/mentions-legales", {
+      headers: entetes,
+    });
+    try {
+      return (await APERCU(requete)).status;
+    } catch {
+      // Levée : la garde est franchie, et c'est tout ce qu'on veut savoir.
+      return 0;
+    }
+  };
+
+  dire("un visiteur anonyme est refusé", (await apercu()) === 401);
+  dire("un compte participant connecté est refusé", (await apercu(cookieParticipant)) === 401);
+  dire("l'équipe passe la garde", (await apercu(cookieEquipe)) !== 401);
 } finally {
   for (const { collection, id } of aSupprimer) {
     await payload.delete({ collection, id, overrideAccess: true }).catch(() => {});
@@ -118,7 +154,7 @@ try {
 
 console.log(
   manques === 0
-    ? "\n✓ Le fichier clients ne sort que pour l'équipe.\n"
+    ? "\n✓ Les portes de l'équipe ne s'ouvrent qu'à elle.\n"
     : `\n✗ ${manques} manque(s).\n`,
 );
 process.exit(manques === 0 ? 0 : 1);

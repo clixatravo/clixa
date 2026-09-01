@@ -13,6 +13,13 @@ import config from "@payload-config";
  *
  * Le contrôle d'identité n'est pas une formalité : sans lui, l'URL suffirait à
  * lire n'importe quel brouillon, y compris une page légale non relue.
+ *
+ * ⚠️ Et il ne suffit pas de demander « une session » : `apprenants` en est une.
+ * La route se contentait de cela, si bien qu'un compte participant — ouvert
+ * depuis /compte, ou par Google — lisait tous les brouillons : les quatre pages
+ * légales non relues, les témoignages dépubliés, les articles en préparation.
+ * Même faute que l'export des admissions, trouvée le même jour en relisant
+ * toutes les portes ensemble.
  */
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -25,8 +32,8 @@ export async function GET(request: Request) {
   const payload = await getPayload({ config });
   const { user } = await payload.auth({ headers: request.headers });
 
-  if (!user) {
-    return new Response("Connexion requise pour prévisualiser un brouillon.", { status: 401 });
+  if (!user || user.collection !== "utilisateurs") {
+    return new Response("Prévisualisation réservée à l'équipe CLIXA.", { status: 401 });
   }
 
   (await draftMode()).enable();

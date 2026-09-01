@@ -45,7 +45,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
-npx payload run scripts/verifier-export.ts        # le fichier clients ne sort pas
+npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -1067,6 +1067,27 @@ n'y passe pas.
   servies.
 - **La recette garde la porte en production**, faute de pouvoir y monter une
   session : elle vérifie au moins qu'un anonyme reçoit 401.
+
+⚠️ **La même faute vivait sur `/api/apercu`**, trouvée en relisant toutes les
+portes ensemble plutôt qu'une seule. Elle ouvre les brouillons : les quatre
+pages légales non relues, les témoignages dépubliés, les articles en
+préparation. Son propre commentaire disait pourtant que « sans ce contrôle,
+l'URL suffirait à lire n'importe quel brouillon » — le contrôle existait, il ne
+regardait simplement pas la bonne chose.
+
+⚠️ **`/api/admin/apercu-email` a été retirée**, et ce n'était pas du ménage. Rien
+n'y menait, et elle portait une **copie figée** des gabarits de courriel : un
+parcours qui n'existe pas au catalogue, l'apex au lieu de `www`, et des
+instructions de paiement d'avant la décision de la direction — « transmettez le
+numéro par WhatsApp », quand le tunnel a deux temps et que les coordonnées
+partent par courriel. Qui s'en serait servi pour vérifier ce que reçoit un
+client aurait lu un message que nous n'envoyons plus. `scripts/apercu-courriel.ts`
+rend les **vrais** gabarits, et reste le seul chemin.
+
+⚠️ **Seul le refus s'éprouve sur `/api/apercu`.** Passé la garde, la route
+appelle `draftMode()` puis `redirect()`, qui exigent le contexte de requête de
+Next. Une session d'équipe se reconnaît donc à ce qu'elle **ne reçoit pas** 401 —
+ce qui suffit, puisque c'est le refus qui protège.
 
 **Les routes publiques ont un frein** (`lib/cadence.ts`) : inscription 40 par
 minute et par adresse, compte 30, transfert et attestation 20, rappel 10.
