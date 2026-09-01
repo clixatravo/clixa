@@ -1164,10 +1164,27 @@ renvoie au magasin du système (`e2e/menage.ts` le pose).
 dans `.env.local`.** Le 30 août 2026, `platform/.env.prod` portait encore
 `require` : tout script lancé contre la production émettait l'avertissement du
 pilote, et aurait perdu la vérification du certificat à la prochaine version
-majeure. Corrigé, et la connexion vérifiée après coup. **Reste à faire la même
-chose sur les variables Vercel**, qui sont ce que le site en ligne utilise —
-elles n'ont pas été relues, `vercel env pull` ne rendant qu'un substitut pour
-une valeur chiffrée.
+majeure.
+
+**Les quatre endroits portent maintenant `verify-full`** — `.env.local`,
+`.env.prod`, et les trois variables Vercel, posées le 1er septembre 2026. Les
+variables n'ont pas pu être relues avant : `vercel env pull` ne rend qu'un
+substitut pour une valeur chiffrée. Elles ont donc été **réécrites** depuis les
+deux fichiers locaux, qui venaient de faire tourner scripts et épreuves — la
+seule preuve qui vaille que la chaîne est bonne.
+
+- **Development et Preview portent la branche `dev`** (`ep-silent-wave`),
+  Production la branche `production` (`ep-morning-pond`). Se tromper d'hôte
+  ferait servir les données de développement au site public.
+- ⚠️ **`--sensitive` maintient le type.** Sans lui, une variable *Secret*
+  redevient *Config* et sa valeur se relit dans le tableau de bord. Seule
+  Development était déjà en *Config*, et l'est restée.
+- **Une chaîne fautive ne coupe pas le site, elle fait échouer le build** — et
+  le déploiement précédent continue de servir. C'est la panne silencieuse
+  décrite plus haut : rassurante ici, trompeuse partout ailleurs. Il faut donc
+  regarder le déploiement, puis la recette.
+- **Vérifié après coup** : le site répond, lit ses douze sessions et son barème
+  depuis la base, et la recette ne signale rien.
 
 **Deux colonnes ont reçu un index** — `inscriptions.apprenant_email`, que la
 connexion Google interroge à chaque rattachement, et `inscriptions.statut`, que
