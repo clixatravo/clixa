@@ -702,6 +702,16 @@ export const Inscriptions: CollectionConfig = {
           label: "Échéances",
           labels: { singular: "Échéance", plural: "Échéances" },
           admin: {
+            /*
+              Une échéance repliée disait « Échéance 01 » — le seul renseignement
+              dont on n'a pas besoin. Sur un dossier réglé en trois fois,
+              l'équipe voyait trois lignes numérotées et devait toutes les
+              déplier pour trouver celle qui attend de l'argent. Elle porte
+              maintenant le montant, la date et l'état.
+            */
+            components: {
+              RowLabel: "@/components/admin/EtiquetteEcheance#EtiquetteEcheance",
+            },
             description:
               "Créées à l'inscription d'après le rythme choisi. Cocher « réglée » quand le transfert est vérifié.",
           },
@@ -768,7 +778,7 @@ export const Inscriptions: CollectionConfig = {
                     { label: "MoneyGram", value: "moneygram" },
                     { label: "Espèces", value: "especes" },
                   ],
-                  admin: { width: "35%" },
+                  admin: { width: "30%" },
                 },
                 {
                   name: "reference",
@@ -781,7 +791,7 @@ export const Inscriptions: CollectionConfig = {
                   */
                   label: "Référence du versement",
                   admin: {
-                    width: "35%",
+                    width: "30%",
                     description:
                       "MTCN (Western Union), PIN (Ria), ou la référence de l'opération bancaire.",
                   },
@@ -791,7 +801,7 @@ export const Inscriptions: CollectionConfig = {
                   type: "date",
                   label: "Relancée le",
                   admin: {
-                    width: "30%",
+                    width: "20%",
                     readOnly: true,
                     description:
                       "Posé par la relance automatique. Empêche d'écrire deux fois la même semaine.",
@@ -803,7 +813,7 @@ export const Inscriptions: CollectionConfig = {
                   type: "date",
                   label: "Vérifié le",
                   admin: {
-                    width: "25%",
+                    width: "20%",
                     date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
                   },
                 },
