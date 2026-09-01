@@ -580,6 +580,22 @@ export const Inscriptions: CollectionConfig = {
               name: "contratTrace",
               type: "textarea",
               label: "Tracé de la signature",
+              /*
+                ⚠️ Sans cette ligne, Payload refusait la signature au-delà de
+                40 000 caractères — sa limite par défaut pour un champ texte.
+
+                La limite dormait depuis le début : les tracés enregistrés
+                pesaient 34 378, 35 598, 35 910 caractères, tous passés de
+                justesse. Un trait un peu plus appliqué, un écran un peu plus
+                dense, et le participant voyait sa signature refusée sans
+                comprendre — au moment précis où il s'engageait.
+
+                ⚠️ Les deux limites ne se parlaient pas : `traceValable` accepte
+                jusqu'à 300 000 caractères, Payload s'arrêtait à 40 000. C'est
+                `lib/signature.ts` qui décide ce qu'est un tracé recevable ; le
+                champ ne fait que le stocker, et doit suivre.
+              */
+              maxLength: 300_000,
               admin: {
                 readOnly: true,
                 /*

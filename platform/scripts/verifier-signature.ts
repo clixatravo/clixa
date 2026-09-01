@@ -20,6 +20,7 @@ import {
   memeNom,
   mentionValable,
   preuve,
+  traceValable,
   type TermesSignes,
 } from "@/lib/signature";
 
@@ -114,6 +115,49 @@ for (const attendu of [reference, "196.200.0.1", "Mozilla/5.0", "Lu et approuvé
   dire(
     `la trace porte « ${attendu.slice(0, 24)}${attendu.length > 24 ? "…" : ""} »`,
     trace.includes(attendu),
+  );
+}
+
+/*
+  ── La limite du champ doit suivre celle du code ────────────────────────────
+  ⚠️ Payload borne un champ texte à 40 000 caractères par défaut. `traceValable`
+  en accepte 300 000. Les deux limites ne se parlaient pas : le code disait oui,
+  la base disait non — et la signature était refusée sans que rien ne l'explique
+  au participant, au moment précis où il s'engageait.
+
+  Les tracés déjà enregistrés pesaient 34 378, 35 598 et 35 910 caractères :
+  tous passaient de justesse. Il a suffi d'un trait un peu plus appliqué, sur un
+  iPhone, pour franchir le seuil.
+*/
+{
+  const { Inscriptions } = await import("../src/collections/Inscriptions.js");
+
+  const trouver = (champs: unknown[], nom: string): Record<string, unknown> | undefined => {
+    for (const c of champs as Record<string, unknown>[]) {
+      if (c.name === nom) return c;
+      const dedans = (c.fields ?? c.tabs) as unknown[] | undefined;
+      if (Array.isArray(dedans)) {
+        const t = trouver(dedans, nom);
+        if (t) return t;
+      }
+    }
+    return undefined;
+  };
+
+  const champ = trouver(Inscriptions.fields as unknown[], "contratTrace");
+  const borne = Number(champ?.maxLength ?? 0);
+
+  dire("le champ du tracé existe", champ !== undefined);
+  dire(`sa borne suit celle du code (${borne} \u2265 300 000)`, borne >= 300_000);
+
+  /*
+    Et la borne doit accepter ce que le code accepte : on fabrique un tracé de
+    la taille maximale admise et on vérifie que le champ le laisserait passer.
+  */
+  const maximal = "data:image/png;base64," + "A".repeat(299_000 - 22);
+  dire(
+    "un tracé au plafond de `traceValable` tiendrait dans le champ",
+    traceValable(maximal) && maximal.length <= borne,
   );
 }
 
