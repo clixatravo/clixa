@@ -25,3 +25,6 @@ playwright-report/
 .playwright/
 storybook-static/
 apercus/
+
+# Réglage local du serveur de développement (panneau navigateur)
+.claude/

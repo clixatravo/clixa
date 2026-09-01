@@ -261,7 +261,18 @@ export default buildConfig({
   plugins: process.env.BLOB_MEDIAS_TOKEN
     ? [
         vercelBlobStorage({
-          collections: { medias: true },
+          /*
+            ⚠️ `disablePayloadAccessControl` sert le fichier depuis le magasin,
+            et non par une route de Payload. Sans lui, chaque image du site
+            passait par une fonction serverless : plus lent qu'un CDN, facturé
+            à l'exécution, et pour rien — ce sont des visuels publics, dont la
+            protection ne veut rien dire.
+
+            Ce réglage n'aurait aucun sens sur les justificatifs, eux privés :
+            c'est précisément ce contrôle qui les protège, et `lib/recus.ts` ne
+            passe pas par ce greffon.
+          */
+          collections: { medias: { disablePayloadAccessControl: true } },
           token: process.env.BLOB_MEDIAS_TOKEN,
         }),
       ]

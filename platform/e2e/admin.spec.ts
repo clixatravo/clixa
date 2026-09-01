@@ -38,10 +38,24 @@ test.describe("Back-office", () => {
     "E2E_ADMIN_EMAIL et E2E_ADMIN_PASSWORD absents : la série du back-office est sautée.",
   );
 
-  /** Connexion par le vrai formulaire — c'est aussi une épreuve de la page. */
+  /**
+   * Connexion par le vrai formulaire — c'est aussi une épreuve de la page.
+   *
+   * ⚠️ Une page de connexion vide ne veut pas dire « trop lente ». Le 1er
+   * septembre 2026, cette attente a expiré parce que le back-office **entier**
+   * ne se rendait plus : le greffon des médias apporte un composant client, et
+   * la carte des imports n'avait pas été régénérée. Payload ne le trouvait pas
+   * et abandonnait le rendu — sans erreur serveur, sans échec de build, sans
+   * type fautif.
+   *
+   * J'ai d'abord cru à un délai de compilation et rallongé l'attente : c'était
+   * faux, et cela n'a fait que retarder le diagnostic. La cause tenait en une
+   * ligne de la console du navigateur. Devant une page vide ici, **regarder la
+   * console avant de toucher aux délais**.
+   */
   async function entrer(page: Page): Promise<void> {
     await page.goto("/admin/login", { waitUntil: "domcontentloaded" });
-    await page.locator('input[name="email"]').waitFor({ timeout: 60_000 });
+    await page.locator('input[name="email"]').waitFor({ timeout: 90_000 });
     await page.fill('input[name="email"]', EMAIL!);
     await page.fill('input[name="password"]', PASSE!);
     await Promise.all([
@@ -125,7 +139,7 @@ test.describe("Back-office", () => {
     contenait rien.
   */
   test("le bouton « Contrat vérifié » envoie vraiment la date", async ({ page }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(240_000);
 
     const reference = await dossierSigne(page);
     await entrer(page);

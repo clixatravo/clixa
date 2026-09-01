@@ -7,6 +7,7 @@ import { LienRecu as LienRecu_42bc064a96f6788a14f3d48f157c8958 } from '@/compone
 import { Icone as Icone_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
 import { Logo as Logo_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
 import { Veille as Veille_fed6ea51dcea101e54fe83518c3d395a } from '@/components/admin/Veille'
+import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -20,5 +21,6 @@ export const importMap = {
   "@/components/admin/Marque#Icone": Icone_0fbc6ed2e61e66062cb101ebfccddc7b,
   "@/components/admin/Marque#Logo": Logo_0fbc6ed2e61e66062cb101ebfccddc7b,
   "@/components/admin/Veille#Veille": Veille_fed6ea51dcea101e54fe83518c3d395a,
+  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

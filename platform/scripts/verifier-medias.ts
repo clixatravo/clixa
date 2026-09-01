@@ -39,7 +39,12 @@ try {
     file: {
       data: original,
       mimetype: "image/png",
-      name: "verif-media.png",
+      /*
+        ⚠️ Un nom unique à chaque passage. Le chemin précédent vient d'être
+        supprimé, et le CDN garde un moment la trace d'un fichier effacé : le
+        même nom revenait alors en 404 alors que le dépôt avait réussi.
+      */
+      name: `verif-media-${Date.now()}.png`,
       size: original.length,
     },
   });
@@ -103,18 +108,32 @@ try {
       ? ok("Elle mène au magasin, pas au disque du paquet")
       : ko(`Elle ne mène pas au magasin : ${adresse}`);
 
-    try {
-      const reponse = await fetch(adresse);
-      reponse.ok
-        ? ok(`Le fichier se relit vraiment (${reponse.status})`)
-        : ko(`Le fichier ne se relit pas (${reponse.status})`);
+    /*
+      On retente quelques fois : le fichier vient d'être déposé et sa diffusion
+      prend un instant. Une seule lecture immédiate ferait une épreuve
+      capricieuse — rouge un jour sur trois, pour rien.
+    */
+    let reponse: Response | undefined;
+    for (let essai = 1; essai <= 5; essai += 1) {
+      try {
+        reponse = await fetch(adresse);
+        if (reponse.ok) break;
+      } catch {
+        /* réseau : on retente */
+      }
+      await new Promise((r) => setTimeout(r, essai * 400));
+    }
 
+    if (!reponse) {
+      ko("Impossible d'aller chercher le fichier");
+    } else if (!reponse.ok) {
+      ko(`Le fichier ne se relit pas (${reponse.status})`);
+    } else {
+      ok(`Le fichier se relit vraiment (${reponse.status})`);
       const octets = await reponse.arrayBuffer();
       octets.byteLength > 0
         ? ok(`Et il n'est pas vide : ${Math.round(octets.byteLength / 1024)} Ko`)
         : ko("Ce qu'on relit est vide");
-    } catch (e) {
-      ko(`Impossible d'aller le chercher : ${e instanceof Error ? e.message : e}`);
     }
   }
 

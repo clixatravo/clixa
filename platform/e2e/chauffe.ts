@@ -10,11 +10,20 @@ import { CHEMINS, ROUTES } from "./chemins";
  *
  * Une visite en amont, sans navigateur, suffit à payer cette dette une fois.
  */
+/*
+  Le back-office est bien plus lourd à compiler que le site, et il ne figurait
+  pas dans la liste : `e2e/admin.spec.ts` attendait donc son formulaire de
+  connexion pendant que `next dev` le construisait. Seule, l'épreuve passait en
+  trente secondes ; dans la série, la machine occupée dépassait la minute
+  accordée. C'est exactement la dette que ce fichier existe pour payer d'avance.
+*/
+const BACK_OFFICE = ["/admin/login", "/admin", "/admin/collections/inscriptions"];
+
 export default async function chauffer(): Promise<void> {
   const base = "http://localhost:3000";
   const debut = Date.now();
 
-  for (const chemin of [...CHEMINS, ...ROUTES]) {
+  for (const chemin of [...CHEMINS, ...ROUTES, ...BACK_OFFICE]) {
     try {
       await fetch(base + chemin);
     } catch {
@@ -24,6 +33,7 @@ export default async function chauffer(): Promise<void> {
 
   const secondes = Math.round((Date.now() - debut) / 1000);
   console.log(
-    `[épreuves] ${CHEMINS.length} pages et ${ROUTES.length} routes compilées en ${secondes} s`,
+    `[épreuves] ${CHEMINS.length} pages, ${ROUTES.length} routes et ` +
+      `${BACK_OFFICE.length} écrans de back-office compilés en ${secondes} s`,
   );
 }
