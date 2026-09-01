@@ -177,6 +177,20 @@ dire(
   `reçus ${recuConnu.code} et ${recuInvente.code}`,
 );
 
+/*
+  Le fichier clients entier en un clic — noms, adresses, téléphones, montants,
+  et toutes les demandes de rappel. La route ne vérifiait qu'une session
+  quelconque, et `apprenants` en est une : n'importe quel compte participant
+  l'obtenait. On ne peut pas monter une session d'équipe depuis ici ; on
+  vérifie au moins que la porte est fermée à qui n'en a aucune.
+*/
+const exportCsv = await repond("/api/admin/export-admissions");
+dire(
+  exportCsv.code === 401,
+  "le fichier des admissions ne sort pas sans session d'équipe",
+  `reçu ${exportCsv.code}`,
+);
+
 const listeRecus = await repond("/api/recus");
 dire(listeRecus.code === 403, "les justificatifs ne se listent pas", `reçu ${listeRecus.code}`);
 

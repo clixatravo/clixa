@@ -45,6 +45,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
+npx payload run scripts/verifier-export.ts        # le fichier clients ne sort pas
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -62,10 +63,11 @@ cd platform && npm run recette http://localhost:3000
 
 Elle suit les 31 adresses du plan du site, les sept redirections, ce qu'un
 moteur lit (indexabilité, canonique, fourchette de prix), les douze plaquettes,
-et neuf gardes — jeton des relances, retour Google forgé, destination interne,
-cadence, et les cinq du second temps du tunnel : un justificatif ne se lit pas
-sans session d'équipe, la collection ne se liste ni ne s'écrit, un contrat sans
-dossier répond 404, une signature sur un dossier inventé n'aboutit pas. Elle
+et dix gardes — jeton des relances, retour Google forgé, destination interne,
+cadence, le fichier des admissions qui ne sort pas sans session d'équipe, et les
+cinq du second temps du tunnel : un justificatif ne se lit pas sans session
+d'équipe, la collection ne se liste ni ne s'écrit, un contrat sans dossier
+répond 404, une signature sur un dossier inventé n'aboutit pas. Elle
 sort en 1 au moindre manque.
 
 ⚠️ **Les deux identifiants de reçu doivent répondre pareil.** La recette en
@@ -1037,6 +1039,34 @@ dans le nom s'exécutait chez qui ouvrait l'attestation, avec l'origine du site
 Les trois formats matriciels restent ; un plafond de 5 Mo est vérifié en
 crochet, parce que la limite de 4,5 Mo de Vercel n'existe pas en développement
 et n'appartient pas au logiciel.
+
+⚠️ **Une session ne dit pas laquelle** (`api/admin/export-admissions`, depuis le
+1er septembre 2026). Le bouton « Exporter CSV » du tableau de bord verse dans un
+tableur le nom, l'adresse, le téléphone, la session, le statut et les montants
+de **tous** les dossiers, plus toutes les demandes de rappel. La route vérifiait
+qu'un utilisateur était connecté — et s'arrêtait là.
+
+Or `apprenants` est aussi une collection authentifiée. N'importe qui ouvrait un
+compte depuis `/compte`, ou se connectait par Google, et téléchargeait le
+fichier clients entier. Reproduit avant d'être corrigé, avec un compte
+participant ordinaire : **200**, et le nom, l'adresse et le téléphone d'un autre
+inscrit dans le tableur.
+
+C'est mot pour mot le trou qu'`api/recu` ferme dans son propre commentaire —
+« sans le second contrôle, un compte participant connecté aurait suffi » — resté
+ouvert deux portes plus loin. Une garde écrite une fois ne protège pas ce qui
+n'y passe pas.
+
+- **Les deux routes vérifient maintenant la même chose de la même façon** :
+  une session *et* `user.collection === "utilisateurs"`.
+- ⚠️ **Les en-têtes viennent de la requête, pas de `headers()` de Next.** Hors
+  contexte de requête `headers()` lève, et la route ne pouvait donc être
+  éprouvée que par le réseau. `verifier-export.ts` l'appelle désormais
+  directement, avec un vrai cookie de chaque sorte — et la garde a été prouvée
+  en remettant le défaut : elle passe au rouge, et dit combien de lignes ont été
+  servies.
+- **La recette garde la porte en production**, faute de pouvoir y monter une
+  session : elle vérifie au moins qu'un anonyme reçoit 401.
 
 **Les routes publiques ont un frein** (`lib/cadence.ts`) : inscription 40 par
 minute et par adresse, compte 30, transfert et attestation 20, rappel 10.

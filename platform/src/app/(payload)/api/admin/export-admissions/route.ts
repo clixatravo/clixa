@@ -1,18 +1,36 @@
-import { headers } from "next/headers";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
 /**
- * Route d'export CSV sécurisée pour l'équipe administrative et de direction.
- * Génère un tableur complet des inscriptions et demandes de rappel au format Excel UTF-8.
+ * Export CSV du fichier des admissions, pour l'équipe.
+ *
+ * Il verse dans un tableur le nom, l'adresse, le téléphone, la session, le
+ * statut et les montants réglés de **tous** les dossiers, plus toutes les
+ * demandes de rappel. C'est le fichier clients entier, en un clic.
+ *
+ * ⚠️ Une session ne suffit pas : il faut une session **d'équipe**.
+ *
+ * La route se contentait de vérifier qu'un utilisateur était connecté. Or
+ * `apprenants` est aussi une collection authentifiée : n'importe qui ouvre un
+ * compte depuis /compte — ou se connecte par Google — et obtenait le fichier.
+ * Reproduit avant d'être corrigé, avec un compte participant ordinaire : 200,
+ * et le nom, l'adresse et le téléphone d'un autre inscrit dans le tableur.
+ *
+ * C'est le trou que `api/recu` ferme en toutes lettres, et qui était resté
+ * ouvert ici. Les deux routes vérifient désormais la même chose, de la même
+ * façon.
+ *
+ * ⚠️ Les en-têtes viennent de la requête, pas de `headers()` de Next. Ce n'est
+ * pas un détail de style : hors contexte de requête, `headers()` lève, et la
+ * route ne pouvait donc être éprouvée que par le réseau. `verifier-export.ts`
+ * l'appelle maintenant directement, avec un vrai cookie de chaque sorte.
  */
-export async function GET() {
-  const headersList = await headers();
+export async function GET(request: Request) {
   const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers: headersList });
+  const { user } = await payload.auth({ headers: request.headers });
 
-  if (!user) {
-    return new Response("Accès réservé aux administrateurs connectés.", {
+  if (!user || user.collection !== "utilisateurs") {
+    return new Response("Accès réservé à l'équipe CLIXA.", {
       status: 401,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
