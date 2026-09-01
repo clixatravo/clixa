@@ -20,7 +20,12 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { resolveMx } from "node:dns/promises";
-import { courrielRappel, courrielRelance, envoyerConfirmation } from "../src/lib/courriel.js";
+import {
+  courrielRappel,
+  courrielRelance,
+  courrielSignature,
+  envoyerConfirmation,
+} from "../src/lib/courriel.js";
 import { RESEAUX_CLIXA } from "../src/lib/reseaux.js";
 
 const payload = await getPayload({ config });
@@ -230,6 +235,38 @@ try {
     data: { apprenantPays: "Côte d'Ivoire" },
   });
   dire("⚠️ elle non plus ne se renvoie pas", envoyes.length === avantTroisieme);
+  /*
+    ── Chaque moyen reçoit ses mots, et pas ceux des autres ──────────────────
+    Le message « Contrat signé » énumérait les trois moyens d'un coup, suivis de
+    « selon ce que vous avez choisi » : il annonçait donc « notre RIB » à qui
+    règle par carte, puis lui réclamait « la référence du transfert » qu'il
+    n'aura jamais. Rien ne casse — le message se lit, et personne ne signale
+    qu'on lui a parlé d'un guichet où il n'ira pas.
+  */
+  for (const [moyen, attendu, absent] of [
+    ["carte", /lien de paiement/i, /RIB|guichet/i],
+    ["virement", /RIB/i, /guichet|lien de paiement/i],
+    ["transfert", /Western Union|bénéficiaire/i, /RIB|lien de paiement/i],
+  ] as const) {
+    const avantMoyen = envoyes.length;
+    await courrielSignature(payload, {
+      reference: "CLX-EPREUVE",
+      dossierId: 1,
+      apprenantNom: "Épreuve Moyen",
+      apprenantEmail: "moyen@epreuve.invalid",
+      apprenantWhatsapp: "+212600000000",
+      programmeTitre: "Parcours d'épreuve",
+      signeLe: new Date().toISOString(),
+      empreinte: "0".repeat(64),
+      moyenSouhaite: moyen,
+    });
+
+    // Le premier des deux messages est celui du participant.
+    const texte = String(envoyes[avantMoyen]?.text ?? "");
+    dire(`« ${moyen} » : on lui nomme ce qu'il recevra`, attendu.test(texte));
+    dire(`« ${moyen} » : ⚠️ et jamais ce qu'il ne recevra pas`, !absent.test(texte));
+  }
+
   /*
     ── Un envoi réussi doit se voir dans le journal ──────────────────────────
     Seul l'échec en laissait une trace. Le jour où quelqu'un dit « je n'ai rien

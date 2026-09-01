@@ -140,6 +140,12 @@ export async function POST(request: Request) {
     programmeTitre: String(programme?.titre ?? ""),
     signeLe: quand,
     empreinte,
+    /*
+      Sans lui, le message annonçait les trois moyens d'un coup — « notre RIB »
+      compris — à quelqu'un qui règle peut-être par carte, puis lui réclamait
+      une référence de transfert qu'il n'aura jamais.
+    */
+    ...(dossier.moyenSouhaite ? { moyenSouhaite: dossier.moyenSouhaite } : {}),
   });
 
   redirect(`${retour}?signature=ok` as Route);

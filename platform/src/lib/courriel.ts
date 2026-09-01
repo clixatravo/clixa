@@ -69,20 +69,39 @@ export interface CourrielInscription {
  * À l'équipe : ce qu'elle doit préparer, pour qu'elle n'ait pas à rouvrir le
  * dossier — c'est l'aller-retour qui coûtait le plus de temps.
  */
+/*
+  ⚠️ `geste` et `preuve` existent parce que la suite du message ne veut pas dire
+  la même chose selon le moyen. « Vous effectuez le versement, puis indiquez-nous
+  la référence du transfert » n'a aucun sens pour qui règle par carte : il n'y a
+  ni guichet, ni numéro à recopier. On écrivait pourtant cette phrase à tout le
+  monde, en énumérant les trois moyens suivis de « selon ce que vous avez
+  choisi » — c'est-à-dire en laissant le participant faire le tri lui-même, dans
+  un message qui devait justement le guider.
+*/
 const ATTENDU = {
   carte: {
     participant: "un lien de paiement bancaire sécurisé",
     equipe: "Envoyer le LIEN DE PAIEMENT bancaire",
+    geste: "Vous réglez en ligne, par carte, depuis ce lien.",
+    preuve: "Vous nous le signalez depuis votre dossier — le justificatif de votre banque suffit.",
   },
   virement: {
     participant: "notre RIB, avec le motif à indiquer",
     equipe: "Envoyer le RIB",
+    geste: "Vous effectuez le virement depuis votre banque.",
+    preuve:
+      "Vous nous indiquez la référence du virement depuis votre dossier, avec l'avis d'opération.",
   },
   transfert: {
     participant: "les coordonnées du bénéficiaire (Western Union, Ria ou MoneyGram)",
     equipe: "Envoyer les COORDONNÉES DE TRANSFERT",
+    geste: "Vous effectuez le transfert au guichet.",
+    preuve: "Vous nous indiquez le numéro de transfert depuis votre dossier, avec le reçu.",
   },
 } as const;
+
+/** Ce que le participant a demandé, avec un repli sûr si rien n'est renseigné. */
+const attenduPour = (moyen?: "carte" | "virement" | "transfert") => ATTENDU[moyen ?? "transfert"];
 
 /**
  * Gabarit HTML universel CLIXA Institute.
@@ -496,10 +515,20 @@ export async function courrielSignature(
     programmeTitre: string;
     signeLe: string;
     empreinte: string;
+    /** Ce qu'il a demandé pour régler : la suite du message en dépend. */
+    moyenSouhaite?: "carte" | "virement" | "transfert";
   },
 ): Promise<void> {
   const quand = JOUR.format(new Date(d.signeLe));
   const url = `https://www.clixa.africa/inscription/${d.reference}`;
+  /*
+    ⚠️ Le message nommait les trois moyens d'un coup, suivis de « selon ce que
+    vous avez choisi » — il laissait donc le participant faire le tri, dans le
+    message qui devait justement le guider. Pire : il annonçait « notre RIB » à
+    quelqu'un qui règle par carte, puis lui demandait « la référence du
+    transfert » qu'il n'aura jamais.
+  */
+  const attendu = attenduPour(d.moyenSouhaite);
 
   await envoyer(payload, {
     to: d.apprenantEmail,
@@ -510,11 +539,9 @@ export async function courrielSignature(
       `Votre contrat de formation a bien été signé le ${quand}.`,
       "",
       "Ce qui suit :",
-      "  1. Notre équipe vous envoie par courriel de quoi régler votre première",
-      "     échéance — un lien bancaire, notre RIB ou les coordonnées de",
-      "     transfert, selon ce que vous avez choisi.",
-      "  2. Vous effectuez le versement.",
-      "  3. Vous nous indiquez la référence depuis votre dossier, avec le reçu.",
+      `  1. Notre équipe vous envoie par courriel ${attendu.participant}.`,
+      `  2. ${attendu.geste}`,
+      `  3. ${attendu.preuve}`,
       "",
       "Votre exemplaire signé reste disponible sur votre dossier :",
       url,
@@ -534,9 +561,9 @@ export async function courrielSignature(
         <p>Votre contrat de formation a bien été signé le <strong style="color: #ffffff;">${quand}</strong>.</p>
         <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin: 22px 0 10px 0;">Ce qui suit :</div>
         <ol style="margin: 0; padding-left: 20px; line-height: 1.8; color: #cbd5e1; font-size: 14px;">
-          <li>Nous vous envoyons par courriel de quoi régler votre première échéance.</li>
-          <li>Vous effectuez le versement.</li>
-          <li>Vous nous en indiquez la référence depuis votre dossier, avec le reçu.</li>
+          <li>Nous vous envoyons par courriel <strong style="color: #ffffff;">${attendu.participant}</strong>.</li>
+          <li>${attendu.geste}</li>
+          <li>${attendu.preuve}</li>
         </ol>
         <p style="margin: 22px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 12px; color: #94a3b8;">
           <strong style="color: #ffffff;">Empreinte de votre contrat</strong><br/>
@@ -988,7 +1015,7 @@ export async function courrielContratVerifie(
   },
 ): Promise<boolean> {
   const url = `${SITE}/inscription/${d.reference}`;
-  const attendu = ATTENDU[d.moyenSouhaite ?? "transfert"].participant;
+  const attendu = attenduPour(d.moyenSouhaite);
 
   return envoyer(payload, {
     to: d.apprenantEmail,
@@ -998,7 +1025,7 @@ export async function courrielContratVerifie(
       "",
       "Nous avons relu votre contrat de formation : il est vérifié et accepté.",
       "",
-      `Vous allez recevoir, dans un courriel séparé, ${attendu}.`,
+      `Vous allez recevoir, dans un courriel séparé, ${attendu.participant}.`,
       "",
       "IMPORTANT — comment reconnaître notre message :",
       "  La date de cet envoi s'affichera sur la page de votre dossier. Un",
@@ -1019,7 +1046,7 @@ export async function courrielContratVerifie(
         <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;">
           Nous avons relu votre contrat de formation : il est <strong>vérifié et accepté</strong>.
         </p>
-        <p>Vous allez recevoir, dans un courriel séparé, ${attendu}.</p>
+        <p>Vous allez recevoir, dans un courriel séparé, ${attendu.participant}.</p>
         <p style="margin: 22px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 13px; color: #cbd5e1;">
           <strong style="color: #ffffff;">Comment reconnaître notre message</strong><br/>
           La date de cet envoi s'affichera sur la page de votre dossier. Un message qui vous réclame un paiement sans correspondre à cette date ne vient pas de nous — vérifiez toujours sur votre dossier.
@@ -1060,7 +1087,7 @@ export async function courrielInstructionsEnvoyees(
   },
 ): Promise<boolean> {
   const url = `${SITE}/inscription/${d.reference}`;
-  const attendu = ATTENDU[d.moyenSouhaite ?? "transfert"].participant;
+  const attendu = attenduPour(d.moyenSouhaite);
   const quand = JOUR.format(new Date(d.envoyeLe));
 
   return envoyer(payload, {
@@ -1069,7 +1096,7 @@ export async function courrielInstructionsEnvoyees(
     text: [
       `Bonjour ${d.apprenantNom},`,
       "",
-      `Nous venons de vous envoyer, dans un message séparé, ${attendu}.`,
+      `Nous venons de vous envoyer, dans un message séparé, ${attendu.participant}.`,
       "",
       "AVANT DE RÉGLER, VÉRIFIEZ :",
       `  La page de votre dossier indique « Coordonnées envoyées le ${quand} ».`,
@@ -1077,8 +1104,7 @@ export async function courrielInstructionsEnvoyees(
       "  vient pas de nous — ne réglez rien et écrivez-nous.",
       `  ${url}`,
       "",
-      "Une fois le versement effectué, indiquez-nous son numéro depuis votre",
-      "dossier, avec le reçu si vous l'avez sous la main.",
+      `Une fois que c'est fait : ${attendu.preuve}`,
       "",
       "CLIXA Institute — Direction des Admissions",
     ].join("\n"),
@@ -1088,14 +1114,14 @@ export async function courrielInstructionsEnvoyees(
       badgeRef: d.reference,
       corpsHtml: `
         <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
-        <p>Nous venons de vous envoyer, <strong style="color: #ffffff;">dans un message séparé</strong>, ${attendu}.</p>
+        <p>Nous venons de vous envoyer, <strong style="color: #ffffff;">dans un message séparé</strong>, ${attendu.participant}.</p>
         <p style="margin: 22px 0 0 0; padding: 14px 16px; background-color: #2a1a0d; border-left: 3px solid #c9a24c; font-size: 14px; color: #f3efe4;">
           <strong style="color: #ffffff;">Avant de régler, vérifiez</strong><br/>
           La page de votre dossier indique « Coordonnées envoyées le <strong style="color: #e9cd84;">${quand}</strong> ».
           Si le message que vous avez reçu ne correspond pas à cette date, <strong>il ne vient pas de nous</strong> — ne réglez rien et écrivez-nous.
         </p>
         <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">
-          Une fois le versement effectué, indiquez-nous son numéro depuis votre dossier, avec le reçu si vous l'avez sous la main.
+          Une fois que c'est fait : ${attendu.preuve}
         </p>
       `,
       boutonTexte: "Vérifier sur mon dossier",
