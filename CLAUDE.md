@@ -1253,6 +1253,35 @@ remplie : il **interroge les MX du domaine de réponse**. Une adresse sur un
 domaine muet a l'air juste et reste indélivrable — c'est exactement le défaut
 d'origine.
 
+⚠️ **Aucun DMARC n'existe, sur aucun des deux domaines** (constaté le 1er
+septembre 2026). SPF et DKIM sont bien posés — SPF sur `send.envoi.clixa.africa`,
+l'adresse de rebond, et DKIM sur `resend._domainkey.envoi.clixa.africa` ; c'est
+là que Resend les met, et les chercher ailleurs conclurait à tort qu'ils
+manquent.
+
+Mais sans DMARC, **notre adresse peut être usurpée**. Tout le tunnel repose
+pourtant sur une promesse : le participant doit distinguer notre courriel d'un
+hameçonnage. On lui a donné pour cela une date affichée sur son dossier — à peu
+près rien. N'importe qui envoie un message signé `@clixa.africa` réclamant un
+virement, et le serveur d'en face n'a aucune règle pour le refuser. Gmail et
+Yahoo l'attendent d'ailleurs de tout expéditeur en volume depuis 2024.
+
+Cela se pose chez Namecheap, et la politique est une décision :
+
+```
+_dmarc.clixa.africa        TXT  "v=DMARC1; p=none; rua=mailto:contact@clixa.africa"
+_dmarc.envoi.clixa.africa  TXT  "v=DMARC1; p=none; rua=mailto:contact@clixa.africa"
+```
+
+Commencer par `p=none`, qui n'écarte rien et fait remonter des rapports, puis
+durcir en `quarantine` une fois qu'on a vu passer une semaine de trafic.
+`verifier-courriel.ts` le signale à chaque passage, avec l'enregistrement exact
+— sans faire échouer la suite, parce que ce n'est pas au code de le corriger.
+SPF et DKIM, eux, sont des contrôles durs : effacés par mégarde chez le
+registrar, ils ne cassent ni compilation ni épreuve, et font seulement tomber
+nos messages dans les indésirables — ce qui, pour un tunnel d'inscription,
+revient à ne plus rien envoyer.
+
 Deux services, deux rôles, et il faut savoir lequel on touche :
 
 | | Sert à | Domaine | Réglé chez |

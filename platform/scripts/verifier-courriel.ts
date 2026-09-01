@@ -19,7 +19,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { resolveMx } from "node:dns/promises";
+import { resolveMx, resolveTxt } from "node:dns/promises";
 import {
   courrielRappel,
   courrielRelance,
@@ -110,6 +110,71 @@ try {
     mx = [];
   }
   dire(`le domaine de réponse sait recevoir (${domaine} → ${mx.length} MX)`, mx.length > 0);
+
+  /*
+    ── Ce qui authentifie nos courriels, et qui vit hors du dépôt ─────────────
+    SPF et DKIM disent au serveur d'en face que ce message vient bien de nous.
+    Ils sont posés chez Namecheap, pas ici : rien dans le code ne les protège,
+    et un enregistrement effacé par mégarde ne casse ni compilation ni épreuve.
+    Il fait seulement tomber nos messages dans les indésirables — ce qui, pour
+    un tunnel d'inscription, revient à ne plus rien envoyer.
+
+    ⚠️ Resend pose SPF et MX de retour sur `send.<domaine>`, pas sur le domaine
+    d'envoi lui-même : c'est l'adresse de rebond qui est vérifiée. Chercher au
+    mauvais endroit conclurait à tort que SPF manque.
+  */
+  console.log("\n▸ Ce qui authentifie nos courriels\n");
+
+  const txt = async (nom: string) => {
+    try {
+      return (await resolveTxt(nom)).map((e) => e.join(""));
+    } catch {
+      return [];
+    }
+  };
+
+  const expediteurAdresse = String(relance?.from ?? process.env.EMAIL_EXPEDITEUR ?? "");
+  const domaineEnvoi = expediteurAdresse.split("@")[1] ?? "envoi.clixa.africa";
+
+  const spf = await txt(`send.${domaineEnvoi}`);
+  dire(
+    `SPF sur send.${domaineEnvoi}`,
+    spf.some((v) => v.startsWith("v=spf1")),
+  );
+  const dkim = await txt(`resend._domainkey.${domaineEnvoi}`);
+  dire(
+    `DKIM sur ${domaineEnvoi}`,
+    dkim.some((v) => v.includes("p=")),
+  );
+
+  /*
+    ⚠️ DMARC manque sur les deux domaines, et ce n'est pas un détail technique.
+
+    Tout ce tunnel repose sur une promesse : le participant doit pouvoir
+    distinguer notre courriel d'un hameçonnage. On lui a donné pour cela une
+    date affichée sur son dossier — c'est-à-dire à peu près rien. Sans DMARC,
+    n'importe qui envoie un message signé `@clixa.africa` réclamant un
+    virement, et le serveur d'en face n'a aucune règle pour le refuser.
+
+    Ce n'est pas un manque du code : cela se pose chez Namecheap, et la
+    politique (`none`, `quarantine`, `reject`) est une décision. On le signale
+    plutôt que de le faire échouer — mais on le signale à chaque passage, avec
+    l'enregistrement à poser, pour que l'oubli ne soit pas silencieux.
+  */
+  for (const d of [domaineEnvoi, RESEAUX_CLIXA.email.adresse.split("@")[1] ?? ""]) {
+    if (!d) continue;
+    const dmarc = await txt(`_dmarc.${d}`);
+    if (dmarc.some((v) => v.startsWith("v=DMARC1"))) {
+      dire(`DMARC sur ${d}`, true);
+    } else {
+      console.log(
+        `  ⚠ aucun DMARC sur ${d} — notre adresse peut être usurpée.\n` +
+          `      À poser chez Namecheap : _dmarc.${d}  TXT  ` +
+          `"v=DMARC1; p=none; rua=mailto:${RESEAUX_CLIXA.email.adresse}"\n` +
+          `      Commencer par p=none pour observer, puis durcir en quarantine.`,
+      );
+    }
+  }
 
   /*
     ── Une demande de rappel n'est pas une notification comme les autres ──────
