@@ -77,17 +77,37 @@ test.describe("Back-office", () => {
     await page.fill('input[name="mention"]', "Lu et approuvé");
 
     /*
-      Le tracé se fait au doigt : on le dessine par événements de pointeur,
-      seul moyen de reproduire ce que fait une main sur une toile.
+      Le tracé se fait par événements de pointeur — la même manière que
+      `contrat.spec.ts`, seule éprouvée. Les mouvements de souris de Playwright
+      ne suffisaient pas : le composant écoute `onPointerDown` et compte les
+      points, et le tracé repartait refusé (`?signature=trace`).
+
+      ⚠️ On attend d'abord que la toile ait une largeur : mesurée avant la mise
+      en page, elle fait zéro pixel et le trait part dans le vide.
     */
-    const toile = page.locator("#signature-toile");
-    const cadre = (await toile.boundingBox())!;
-    await page.mouse.move(cadre.x + 20, cadre.y + 40);
-    await page.mouse.down();
-    for (let i = 1; i <= 20; i += 1) {
-      await page.mouse.move(cadre.x + 20 + i * 6, cadre.y + 40 + Math.sin(i / 2) * 12);
-    }
-    await page.mouse.up();
+    await page
+      .locator("#signature-toile")
+      .evaluate((c) => (c as HTMLCanvasElement).clientWidth > 0 || Promise.reject());
+    await page.evaluate(() => {
+      const c = document.querySelector("#signature-toile") as HTMLCanvasElement | null;
+      if (!c) throw new Error("cadre de signature absent");
+      const r = c.getBoundingClientRect();
+      const evt = (type: string, x: number, y: number) =>
+        c.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 1,
+            pointerType: "touch",
+            isPrimary: true,
+            bubbles: true,
+            cancelable: true,
+            clientX: r.left + x,
+            clientY: r.top + y,
+          }),
+        );
+      evt("pointerdown", 20, 60);
+      for (let i = 0; i <= 40; i += 1) evt("pointermove", 20 + i * 5, 60 - Math.sin(i / 4) * 25);
+      evt("pointerup", 220, 60);
+    });
 
     await Promise.all([
       page.waitForURL(/signature=ok/, { timeout: 60_000 }),
@@ -110,9 +130,22 @@ test.describe("Back-office", () => {
     const reference = await dossierSigne(page);
     await entrer(page);
 
-    await page.goto("/admin/collections/inscriptions", { waitUntil: "domcontentloaded" });
-    await page.getByRole("link", { name: reference }).click();
-    await page.waitForURL(/\/admin\/collections\/inscriptions\/\d+/, { timeout: 60_000 });
+    /*
+      On demande l'identifiant à l'API plutôt que de cliquer dans le tableau :
+      la session est déjà ouverte, et l'épreuve ne dépend alors ni de l'ordre
+      des lignes, ni du balisage de la liste, qui changent avec les versions.
+    */
+    const id = await page.evaluate(async (ref) => {
+      const r = await fetch(
+        `/api/inscriptions?where[reference][equals]=${encodeURIComponent(ref)}&limit=1&depth=0`,
+      );
+      const j = (await r.json()) as { docs?: { id: number }[] };
+      return j.docs?.[0]?.id;
+    }, reference);
+
+    expect(id, `le dossier ${reference} doit être lisible depuis le back-office`).toBeTruthy();
+
+    await page.goto(`/admin/collections/inscriptions/${id}`, { waitUntil: "domcontentloaded" });
 
     const bouton = page.getByRole("button", { name: /Contrat vérifié/ });
     await bouton.waitFor({ timeout: 60_000 });
@@ -125,8 +158,19 @@ test.describe("Back-office", () => {
       bouton.click(),
     ]);
 
+    /*
+      ⚠️ On exige une **valeur**, pas seulement le nom du champ. Le formulaire
+      sérialise tous ses champs : `contratVerifieLe` figure dans le corps même
+      quand il est vide, et une assertion `toContain("contratVerifieLe")`
+      passait donc avec le défaut qu'elle prétendait guetter. Vérifié en
+      remettant l'ancien code : l'épreuve restait verte.
+    */
     const corps = requete.postData() ?? "";
-    expect(corps, "la requête doit porter contratVerifieLe").toContain("contratVerifieLe");
+    const pose = /"contratVerifieLe"\s*:\s*"(\d{4}-\d{2}-\d{2}[^"]*)"/.exec(corps);
+    expect(
+      pose,
+      `la requête doit porter une date, pas un champ vide. Corps : ${corps.slice(0, 300)}`,
+    ).not.toBeNull();
 
     /*
       Et la date doit s'être posée pour de bon : une requête qui contient le

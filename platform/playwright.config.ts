@@ -1,8 +1,35 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import verifierLaBase from "./e2e/garde";
 
 // Avant tout : refuser de courir sur la production. Voir e2e/garde.ts.
 verifierLaBase();
+
+/*
+  ── Les épreuves lisent aussi `.env.local` ──────────────────────────────────
+  Next le charge pour l'application ; le processus de Playwright, lui, n'en sait
+  rien. `e2e/admin.spec.ts` cherchait donc `E2E_ADMIN_EMAIL` dans un
+  environnement vide et se sautait — alors que la variable était bien posée.
+  Une épreuve qui se saute sans raison visible est pire qu'une épreuve absente :
+  la série reste verte et l'on croit être couvert.
+
+  ⚠️ On ne remplace jamais une variable déjà définie : celles de l'environnement
+  réel — l'intégration continue, par exemple — doivent l'emporter sur un fichier
+  local.
+*/
+{
+  const chemin = path.join(process.cwd(), ".env.local");
+  if (existsSync(chemin)) {
+    for (const ligne of readFileSync(chemin, "utf8").split("\n")) {
+      const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(ligne);
+      if (!m) continue;
+      const [, cle, brut] = m;
+      if (process.env[cle!] !== undefined) continue;
+      process.env[cle!] = brut!.trim().replace(/^["']|["']$/g, "");
+    }
+  }
+}
 
 /**
  * INT-10 — La recette automatisée.
