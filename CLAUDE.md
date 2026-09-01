@@ -1345,12 +1345,26 @@ dossier. N'importe qui envoyait un message signé `@clixa.africa` réclamant un
 virement, et le serveur d'en face n'avait aucune règle pour le refuser. Gmail et
 Yahoo l'attendent d'ailleurs de tout expéditeur en volume depuis 2024.
 
-Deux enregistrements, posés chez Namecheap :
+Trois enregistrements, posés chez Namecheap :
 
 ```
-_dmarc         TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
-_dmarc.envoi   TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
+_dmarc                              TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
+_dmarc.envoi                        TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
+envoi.clixa.africa._report._dmarc   TXT  v=DMARC1
 ```
+
+⚠️ **Le troisième n'est pas décoratif, et il se serait oublié.** Un rapport ne
+part pas vers un autre domaine sans autorisation : l'enregistrement de
+`envoi.clixa.africa` demande ses rapports à une boîte sur `clixa.africa`, qui
+est un autre domaine au sens de la règle — parent ou pas. Sans cet accord publié
+par le domaine destinataire, Google et Microsoft **n'envoient rien**. On croirait
+observer, et l'on ne verrait que le courrier humain, quand c'est l'expédition
+automatique qui tourne toute seule.
+
+Il ne se voit nulle part ailleurs et son absence ne produit aucune erreur. Il
+avait été oublié dans les premières instructions ; `verifier-courriel.ts` le
+regarde maintenant, en tirant l'adresse de rapport de l'enregistrement lui-même
+plutôt qu'en la recopiant.
 
 - ⚠️ **Chez Namecheap, l'hôte s'écrit sans le domaine** — `_dmarc`, jamais
   `_dmarc.clixa.africa`, que le panneau complèterait en
@@ -1361,10 +1375,12 @@ _dmarc.envoi   TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
   avant de poser quoi que ce soit.
 - **`p=none` n'écarte rien** : il demande des rapports. Passer à `quarantine`
   après une semaine de trafic observé.
-- ⚠️ **`rua` doit aboutir quelque part.** Les rapports sont des XML quotidiens ;
-  `dmarc@clixa.africa` doit exister comme alias Zoho, sans quoi ils rebondissent
-  et l'on ne voit jamais ce qu'on est censé observer. Y envoyer l'adresse
-  publique noierait la boîte que l'équipe relève à la main.
+- **`rua` aboutit sur `it@clixa.africa`**, par l'alias Zoho `dmarc@`. Les
+  rapports sont des XML quotidiens : les envoyer à l'adresse publique noierait
+  la boîte que l'équipe relève à la main, et ils relèvent de l'infrastructure,
+  pas de l'accueil. ⚠️ L'alias garde son nom propre plutôt que de nommer
+  `it@` dans le DNS : le jour où quelqu'un d'autre reprend l'IT, on déplace
+  l'alias au lieu de toucher au DNS. Même principe que `lib/reseaux.ts`.
 - **Le second enregistrement est explicite plutôt que nécessaire** : DMARC sur
   le domaine couvre déjà ses sous-domaines. Le poser séparément permettra de
   durcir l'expédition automatique et le courrier humain à des rythmes

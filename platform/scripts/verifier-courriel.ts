@@ -161,6 +161,33 @@ try {
     plutôt que de le faire échouer — mais on le signale à chaque passage, avec
     l'enregistrement à poser, pour que l'oubli ne soit pas silencieux.
   */
+  /*
+    ⚠️ Un rapport ne part pas vers un autre domaine sans autorisation.
+
+    L'enregistrement DMARC de `envoi.clixa.africa` demande ses rapports à une
+    boîte sur `clixa.africa` — un autre domaine au sens de la règle, parent ou
+    pas. Sans un accord publié par le domaine destinataire, Google et Microsoft
+    **n'envoient rien** : on croirait observer, et l'on ne verrait que la moitié
+    du trafic — celle du courrier humain, quand c'est l'expédition automatique
+    qui tourne toute seule.
+
+    Cet accord est un TXT sur
+    `<domaine-qui-publie>._report._dmarc.<domaine-de-la-boîte>`, dont la valeur
+    est simplement `v=DMARC1`. Il ne se voit nulle part ailleurs, et son absence
+    ne produit aucune erreur.
+  */
+  const boiteRapports = /rua=mailto:([^;\s]+)/.exec(
+    (await txt(`_dmarc.${domaineEnvoi}`)).join(" "),
+  )?.[1];
+  const domaineRapports = boiteRapports?.split("@")[1];
+  if (domaineRapports && domaineRapports !== domaineEnvoi) {
+    const accord = await txt(`${domaineEnvoi}._report._dmarc.${domaineRapports}`);
+    dire(
+      `les rapports de ${domaineEnvoi} sont autorisés vers ${domaineRapports}`,
+      accord.some((v) => v.startsWith("v=DMARC1")),
+    );
+  }
+
   for (const d of [domaineEnvoi, RESEAUX_CLIXA.email.adresse.split("@")[1] ?? ""]) {
     if (!d) continue;
     const dmarc = await txt(`_dmarc.${d}`);
