@@ -1332,28 +1332,43 @@ remplie : il **interroge les MX du domaine de réponse**. Une adresse sur un
 domaine muet a l'air juste et reste indélivrable — c'est exactement le défaut
 d'origine.
 
-⚠️ **Aucun DMARC n'existe, sur aucun des deux domaines** (constaté le 1er
-septembre 2026). SPF et DKIM sont bien posés — SPF sur `send.envoi.clixa.africa`,
+**Les trois protections du courriel sont en place** (DMARC posé le 1er
+septembre 2026). SPF et DKIM l'étaient déjà — SPF sur `send.envoi.clixa.africa`,
 l'adresse de rebond, et DKIM sur `resend._domainkey.envoi.clixa.africa` ; c'est
 là que Resend les met, et les chercher ailleurs conclurait à tort qu'ils
 manquent.
 
-Mais sans DMARC, **notre adresse peut être usurpée**. Tout le tunnel repose
-pourtant sur une promesse : le participant doit distinguer notre courriel d'un
-hameçonnage. On lui a donné pour cela une date affichée sur son dossier — à peu
-près rien. N'importe qui envoie un message signé `@clixa.africa` réclamant un
-virement, et le serveur d'en face n'a aucune règle pour le refuser. Gmail et
+Sans DMARC, notre adresse pouvait être usurpée — et tout le tunnel repose sur
+une promesse contraire : le participant doit distinguer notre courriel d'un
+hameçonnage, et on ne lui avait donné pour cela qu'une date affichée sur son
+dossier. N'importe qui envoyait un message signé `@clixa.africa` réclamant un
+virement, et le serveur d'en face n'avait aucune règle pour le refuser. Gmail et
 Yahoo l'attendent d'ailleurs de tout expéditeur en volume depuis 2024.
 
-Cela se pose chez Namecheap, et la politique est une décision :
+Deux enregistrements, posés chez Namecheap :
 
 ```
-_dmarc.clixa.africa        TXT  "v=DMARC1; p=none; rua=mailto:contact@clixa.africa"
-_dmarc.envoi.clixa.africa  TXT  "v=DMARC1; p=none; rua=mailto:contact@clixa.africa"
+_dmarc         TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
+_dmarc.envoi   TXT  v=DMARC1; p=none; rua=mailto:dmarc@clixa.africa
 ```
 
-Commencer par `p=none`, qui n'écarte rien et fait remonter des rapports, puis
-durcir en `quarantine` une fois qu'on a vu passer une semaine de trafic.
+- ⚠️ **Chez Namecheap, l'hôte s'écrit sans le domaine** — `_dmarc`, jamais
+  `_dmarc.clixa.africa`, que le panneau complèterait en
+  `_dmarc.clixa.africa.clixa.africa`.
+- ⚠️ **Vérifier DKIM avant de durcir.** Zoho signe depuis le sélecteur `zmail`,
+  Resend depuis `resend` : les deux existent, sinon passer en `quarantine`
+  enverrait notre propre courrier aux indésirables. C'est ce qui a été regardé
+  avant de poser quoi que ce soit.
+- **`p=none` n'écarte rien** : il demande des rapports. Passer à `quarantine`
+  après une semaine de trafic observé.
+- ⚠️ **`rua` doit aboutir quelque part.** Les rapports sont des XML quotidiens ;
+  `dmarc@clixa.africa` doit exister comme alias Zoho, sans quoi ils rebondissent
+  et l'on ne voit jamais ce qu'on est censé observer. Y envoyer l'adresse
+  publique noierait la boîte que l'équipe relève à la main.
+- **Le second enregistrement est explicite plutôt que nécessaire** : DMARC sur
+  le domaine couvre déjà ses sous-domaines. Le poser séparément permettra de
+  durcir l'expédition automatique et le courrier humain à des rythmes
+  différents.
 `verifier-courriel.ts` le signale à chaque passage, avec l'enregistrement exact
 — sans faire échouer la suite, parce que ce n'est pas au code de le corriger.
 SPF et DKIM, eux, sont des contrôles durs : effacés par mégarde chez le
