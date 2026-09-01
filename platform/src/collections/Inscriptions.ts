@@ -745,14 +745,27 @@ export const Inscriptions: CollectionConfig = {
               type: "row",
               fields: [
                 {
+                  /*
+                    ⚠️ « Carte bancaire » manquait, et c'était un trou réel. La
+                    direction a ouvert trois façons de régler — carte, virement,
+                    transfert — mais cette liste-ci n'en connaissait que deux.
+                    Quelqu'un payait par lien bancaire et l'équipe ne pouvait pas
+                    noter comment l'argent était arrivé : elle choisissait un
+                    moyen faux, ou laissait vide.
+
+                    ⚠️ Ce champ n'est pas `moyenSouhaite`. Celui-là dit ce que le
+                    participant a demandé, avant qu'aucun argent n'existe ;
+                    celui-ci dit par quoi il est arrivé, renseigné après coup.
+                  */
                   name: "moyen",
                   type: "select",
                   label: "Moyen",
                   options: [
+                    { label: "Carte bancaire", value: "carte" },
+                    { label: "Virement bancaire", value: "virement" },
                     { label: "Western Union", value: "western-union" },
                     { label: "Ria", value: "ria" },
                     { label: "MoneyGram", value: "moneygram" },
-                    { label: "Virement bancaire", value: "virement" },
                     { label: "Espèces", value: "especes" },
                   ],
                   admin: { width: "35%" },
@@ -760,10 +773,17 @@ export const Inscriptions: CollectionConfig = {
                 {
                   name: "reference",
                   type: "text",
-                  label: "Numéro de transfert",
+                  /*
+                    « Numéro de transfert » ne voulait rien dire pour un virement
+                    ni pour une carte, et l'aide ne parlait que de deux guichets
+                    sur six moyens. Le champ sert à retrouver l'argent, quel que
+                    soit le chemin qu'il a pris.
+                  */
+                  label: "Référence du versement",
                   admin: {
                     width: "35%",
-                    description: "MTCN pour Western Union, PIN pour Ria.",
+                    description:
+                      "MTCN (Western Union), PIN (Ria), ou la référence de l'opération bancaire.",
                   },
                 },
                 {

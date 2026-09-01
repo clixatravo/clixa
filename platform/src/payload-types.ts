@@ -674,9 +674,9 @@ export interface Inscription {
         montant: number;
         dateLimite?: string | null;
         statut: 'attendu' | 'annonce' | 'regle';
-        moyen?: ('western-union' | 'ria' | 'moneygram' | 'virement' | 'especes') | null;
+        moyen?: ('carte' | 'virement' | 'western-union' | 'ria' | 'moneygram' | 'especes') | null;
         /**
-         * MTCN pour Western Union, PIN pour Ria.
+         * MTCN (Western Union), PIN (Ria), ou la référence de l'opération bancaire.
          */
         reference?: string | null;
         /**
