@@ -183,7 +183,10 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             )}
 
-            <div className="border-line/60 flex flex-wrap items-baseline gap-3.5 border-b py-3.5">
+            <div
+              data-rubrique="specialisation"
+              className="border-line/60 flex flex-wrap items-baseline gap-3.5 border-b py-3.5"
+            >
               <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
                 Spécialisation
               </span>
@@ -203,7 +206,17 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             </div>
 
-            <div className="border-line/60 flex flex-wrap items-baseline gap-3.5 border-b py-3.5">
+            <div
+              data-rubrique="mode"
+              className={`flex flex-wrap items-baseline gap-3.5 py-3.5 ${
+                /*
+                  Le trait sépare de la rubrique suivante ; sans ville à
+                  proposer, c'est ici que la liste s'arrête et le trait ne
+                  séparerait plus rien.
+                */
+                villes.length > 0 ? "border-line/60 border-b" : "pb-0"
+              }`}
+            >
               <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
                 Modalité
               </span>
@@ -216,18 +229,33 @@ export default async function Catalogue({ searchParams }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-baseline gap-3.5 pt-3.5">
-              <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
-                Ville
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {villes.map((v) => (
-                  <Link key={v} href={lien("ville", v)} className={chip(actif("ville", v))}>
-                    {v}
-                  </Link>
-                ))}
+            {/*
+              ⚠️ Une rubrique sans choix ne s'affiche pas.
+
+              « Ville » se rendait toujours : un intitulé, puis un cadre vide.
+              Les douze parcours se donnent tous à distance, donc la liste est
+              vide et le restera jusqu'à la première session en présentiel — le
+              visiteur lisait un filtre qui ne filtre rien, ce qui se lit comme
+              une page à moitié chargée.
+
+              On ne retire pas la rubrique du code : la direction prévoit
+              d'ouvrir des sessions en présentiel, et le jour où une ville
+              existera, elle reparaîtra d'elle-même.
+            */}
+            {villes.length > 0 && (
+              <div data-rubrique="ville" className="flex flex-wrap items-baseline gap-3.5 pt-3.5">
+                <span className="mono-label text-ivory-dim w-full text-[0.65rem] sm:w-[120px]">
+                  Ville
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {villes.map((v) => (
+                    <Link key={v} href={lien("ville", v)} className={chip(actif("ville", v))}>
+                      {v}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">

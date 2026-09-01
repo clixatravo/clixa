@@ -464,6 +464,25 @@ et les trois villes du pied de page ne ramènent donc rien. C'est voulu : la
 direction prévoit d'ouvrir des sessions en présentiel. Ne pas les retirer en
 croyant nettoyer du code mort.
 
+⚠️ **Mais une rubrique de filtre sans choix ne s'affiche pas** (depuis le 1er
+septembre 2026). « Ville » se rendait toujours : un intitulé, puis un cadre
+vide, en bas du bloc des filtres. Le visiteur lisait un filtre qui ne filtre
+rien — ce qui se lit comme une page à moitié chargée, pas comme une intention.
+La rubrique reste dans le code et reparaîtra d'elle-même le jour où une ville
+existera ; c'est son affichage à vide qui est retiré. Le trait de séparation de
+« Modalité » suit, sans quoi il resterait une ligne qui ne sépare plus rien.
+
+- **Les rubriques portent `data-rubrique`**, et l'épreuve les désigne par là.
+  Un premier jet visait `.mono-label`, qui sert aussi au bandeau du haut et à
+  « Vous êtes » : il accusait deux blocs sains. Un sélecteur trop large ne rend
+  pas une épreuve plus stricte, il la rend fausse.
+- **L'épreuve regarde toutes les rubriques, pas « Ville ».** Le jour où l'on en
+  ajoutera une sur une liste qui peut être vide, la même chose arriverait sans
+  qu'on y pense.
+- **Filtrer sur le présentiel ne rend rien, et le dit bien** : « Aucune
+  formation ne correspond… nous ouvrons régulièrement de nouvelles sessions »,
+  avec de quoi réinitialiser. Une seconde épreuve garde cette phrase.
+
 ⚠️ **Un script ne rafraîchit pas le site.** `revalidatePath` exige le contexte
 de requête de Next ; sous `payload run`, l'appel échoue et les crochets le
 taisent — refuser d'écrire en base parce qu'un cache n'a pas pu être vidé serait
