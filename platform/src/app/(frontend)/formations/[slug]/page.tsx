@@ -312,7 +312,16 @@ export default async function FicheFormation({ params }: Props) {
                   */
                   ...MOYENS_AFFICHES,
                   "Support de cours & livrables inclus",
-                  "Attestation de fin de formation",
+                  /*
+                    ⚠️ « Certificat professionnel », et pas « attestation ». Le
+                    document que le système délivre en fin de parcours porte ce
+                    titre-là depuis le 3 septembre 2026 ; la fiche promettait
+                    encore une attestation, qui est un autre document — celui
+                    d'admission, délivré au début, quand rien n'est encore
+                    suivi. Deux noms pour deux moments : les confondre ici
+                    faisait promettre le plus faible des deux.
+                  */
+                  "Certificat professionnel en fin de parcours",
                   "Accompagnement live en direct",
                 ].map((t) => (
                   <li key={t} className="text-ivory-dim/90 flex items-center gap-2 text-[0.8rem]">
