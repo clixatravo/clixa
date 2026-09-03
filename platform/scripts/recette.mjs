@@ -213,6 +213,19 @@ dire(
   `reçu ${contratInvente.code}`,
 );
 
+/*
+  Même clef, même garde — et une seconde question que le contrat ne se pose
+  pas : le certificat refuse aussi un dossier qui existe mais n'est pas
+  terminé. On ne peut pas monter de dossier « Terminée » depuis ici, mais un
+  dossier inventé suffit à prouver que la porte est fermée par défaut.
+*/
+const certificatInvente = await repond("/inscription/CLX-RECETTE0/certificat");
+dire(
+  certificatInvente.code === 404,
+  "un certificat sans dossier répond 404",
+  `reçu ${certificatInvente.code}`,
+);
+
 const signatureInventee = await repond("/api/signature", {
   method: "POST",
   body: "dossier=CLX-RECETTE0&nom=Personne&mention=Lu+et+approuv%C3%A9",
