@@ -1,5 +1,13 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+/*
+  ⚠️ `jsx-a11y/alt-text` désactivé pour ce fichier : l'`Image` de
+  `@react-pdf/renderer` n'est pas un `<img>`. Elle dessine dans un PDF, où
+  l'attribut `alt` n'existe pas — la règle ne peut être satisfaite, seulement
+  contournée par un attribut inerte. Même raison que dans le contrat.
+*/
+/* eslint-disable jsx-a11y/alt-text */
+import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
+import { CACHET_CLIXA } from "@/lib/cachet";
 import { SOCIETE } from "@/lib/societe";
 import type { Dossier } from "@/lib/inscriptions";
 
@@ -145,23 +153,18 @@ const s = StyleSheet.create({
   },
   signatureDroite: { alignItems: "flex-end" },
 
+  /*
+    ⚠️ Le vrai cachet, pas un cercle en pointillé. La première version dessinait
+    un disque tireté portant « CLIXA INSTITUTE · SCEAU » — l'emplacement où
+    tamponner après impression. Mais ce certificat ne s'imprime pas pour être
+    tamponné : il se télécharge et se fait suivre par courriel. Un emplacement
+    vide s'y lisait comme un document inachevé.
+  */
   sceau: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    borderWidth: 1.1,
-    borderColor: OR,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 18,
-  },
-  sceauTexte: {
-    fontSize: 5.6,
-    fontFamily: "Helvetica-Bold",
-    color: OR,
-    textAlign: "center",
-    lineHeight: 1.5,
+    // Le rapport du tampon d'origine, 260 × 250 : le déformer se verrait.
+    width: 94,
+    height: 90,
+    marginHorizontal: 10,
   },
 
   /*
@@ -327,11 +330,7 @@ export function CertificatPDF({
                 <Text style={s.signatureNom}> </Text>
               </View>
 
-              <View style={s.sceau}>
-                <Text style={s.sceauTexte}>
-                  CLIXA{"\n"}INSTITUTE{"\n"}★ SCEAU ★
-                </Text>
-              </View>
+              <Image style={s.sceau} src={CACHET_CLIXA} />
 
               <View style={[s.signatureCol, s.signatureDroite]}>
                 <Text style={s.signatureRole}>Directeur Général de CLIXA Institute</Text>
