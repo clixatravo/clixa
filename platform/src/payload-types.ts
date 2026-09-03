@@ -662,6 +662,10 @@ export interface Inscription {
    */
   coordonneesEnvoyeesLe?: string | null;
   /**
+   * Posée automatiquement au premier passage à « Terminée ».
+   */
+  certificatEmisLe?: string | null;
+  /**
    * Figé à l'inscription : un barème qui change ne rouvre pas un dossier.
    */
   montantTotal?: number | null;
@@ -1252,6 +1256,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   contratPreuve?: T;
   contratVerifieLe?: T;
   coordonneesEnvoyeesLe?: T;
+  certificatEmisLe?: T;
   montantTotal?: T;
   devise?: T;
   echeances?:

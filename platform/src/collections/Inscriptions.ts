@@ -3,14 +3,25 @@ import { randomBytes } from "crypto";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { pasDansLeFutur } from "@/collections/champs";
-import { courrielContratVerifie, courrielInstructionsEnvoyees } from "@/lib/courriel";
+import {
+  courrielCertificatDisponible,
+  courrielContratVerifie,
+  courrielInstructionsEnvoyees,
+} from "@/lib/courriel";
 
 /**
  * BE-14 — Les inscriptions.
  *
  * Décision n° 2 du contrat : l'inscription est le pivot, pas une ligne de
- * commande. Le paiement s'y accroche aujourd'hui ; la convocation, puis la
- * progression et le certificat quand le LMS viendra.
+ * commande. Le paiement s'y accroche aujourd'hui ; la convocation et la
+ * progression détaillée viendront avec le LMS.
+ *
+ * ⚠️ Le certificat, lui, n'attend pas le LMS (1er septembre 2026) : il ne
+ * dépend d'aucune progression suivie leçon par leçon, seulement du statut
+ * « Terminée » que l'équipe pose à la main — exactement comme le contrat ne
+ * dépend d'aucune signature électronique qualifiée. Décision A (pas de
+ * e-learning cette année) porte sur le contenu des leçons, pas sur ce
+ * document.
  *
  * ── Pourquoi aucune passerelle de paiement ──────────────────────────────────
  * Les règlements passent par Western Union, Ria et MoneyGram. Ce ne sont pas
@@ -204,6 +215,17 @@ export const Inscriptions: CollectionConfig = {
           });
         }
 
+        /*
+          ── Le certificat vient d'exister ────────────────────────────────────
+          `certificatEmisLe` est posé par `beforeChange`, une seule fois, la
+          première fois que le dossier passe « Terminée ». On prévient ici pour
+          la même raison que les deux messages au-dessus : sans lui, l'équipe
+          coche un statut dans /admin et le participant ne l'apprend jamais.
+        */
+        if (doc.certificatEmisLe && !previousDoc?.certificatEmisLe) {
+          await courrielCertificatDisponible(req.payload, commun);
+        }
+
         return doc;
       },
     ],
@@ -243,7 +265,7 @@ export const Inscriptions: CollectionConfig = {
       },
     ],
     beforeChange: [
-      ({ data }) => {
+      ({ data, originalDoc }) => {
         /*
           La référence sert au participant à retrouver son dossier sans compte.
           Elle est tirée une fois, à la création, et ne bouge plus : elle circule
@@ -251,6 +273,23 @@ export const Inscriptions: CollectionConfig = {
         */
         if (!data.reference) {
           data.reference = `CLX-${tirage()}`;
+        }
+
+        /*
+          ── La date du certificat, posée une fois ───────────────────────────
+          Elle doit rester stable d'un téléchargement à l'autre — sinon deux
+          exemplaires du même certificat porteraient deux dates « Fait le »
+          différentes. Posée ici, dans le même écrit que le changement de
+          statut, plutôt que dans `afterChange` : un second aller-retour vers
+          la même ligne rouvrirait exactement le risque d'interblocage que
+          `lib/interblocage.ts` existe pour rattraper ailleurs.
+
+          ⚠️ Le garde-fou porte sur `originalDoc`, pas sur une comparaison de
+          `data` avec elle-même : sans lui, chaque enregistrement d'un dossier
+          déjà terminé écraserait la date d'origine par celle du jour.
+        */
+        if (data.statut === "terminee" && originalDoc?.statut !== "terminee") {
+          data.certificatEmisLe = new Date().toISOString();
         }
 
         // La prochaine échéance impayée, pour trier les relances sans ouvrir les dossiers.
@@ -685,6 +724,24 @@ export const Inscriptions: CollectionConfig = {
               admin: {
                 width: "50%",
                 description: "À renseigner après l'envoi — le participant voit cette date.",
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              /*
+                ── Posée une fois, jamais recalculée ────────────────────────
+                Le crochet `beforeChange` la remplit la première fois que le
+                statut passe « Terminée » ; elle reste ensuite fixe, y compris
+                si le dossier est réenregistré plus tard. C'est la date « Fait
+                le » que porte le certificat.
+              */
+              name: "certificatEmisLe",
+              type: "date",
+              label: "Certificat émis le",
+              admin: {
+                width: "30%",
+                readOnly: true,
+                description: "Posée automatiquement au premier passage à « Terminée ».",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
               },
             },

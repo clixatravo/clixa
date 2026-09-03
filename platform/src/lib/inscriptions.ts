@@ -87,6 +87,23 @@ export interface Dossier {
   apprenantWhatsapp?: string;
   apprenantPays?: string;
   echeances: EcheanceDossier[];
+  /*
+    ── Ce que le certificat ajoute, et rien d'autre ──────────────────────────
+    Fin de session et durée du parcours ne servaient à personne avant lui : la
+    page du dossier ne les affiche pas, seul le PDF en a besoin pour dire
+    « du … au …, pour une durée totale de … heures ».
+  */
+  sessionFin?: string;
+  programmeDureeHeures?: number;
+  /** Le titre de chaque module, dans l'ordre du plan de cours. */
+  programmeModules?: string[];
+  /**
+   * Le jour où le dossier est passé « terminée » pour la première fois — posé
+   * une fois par `beforeChange`, jamais recalculé. C'est la date « Fait le »
+   * du certificat : si elle changeait à chaque régénération du PDF, deux
+   * exemplaires du même certificat porteraient deux dates différentes.
+   */
+  certificatEmisLe?: string;
 }
 
 /**
@@ -144,6 +161,16 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
     sessionLibelle: session?.reference ?? "Session",
     sessionDetail: sansLeParcours(session?.reference, programme?.titre),
     ...(session?.debut ? { sessionDebut: session.debut } : {}),
+    ...(session?.fin ? { sessionFin: session.fin } : {}),
+    ...(programme?.dureeHeures ? { programmeDureeHeures: programme.dureeHeures } : {}),
+    ...(programme?.modules && programme.modules.length > 0
+      ? {
+          programmeModules: programme.modules
+            .map((m) => m.titre)
+            .filter((t): t is string => Boolean(t)),
+        }
+      : {}),
+    ...(d.certificatEmisLe ? { certificatEmisLe: String(d.certificatEmisLe) } : {}),
     ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
     ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
     ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),

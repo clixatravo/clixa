@@ -10,6 +10,7 @@ import React from "react";
 import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import { getDossier } from "@/lib/inscriptions";
 import { formatPrix } from "@/lib/catalogue";
+import { SOCIETE } from "@/lib/societe";
 import type { Dossier } from "@/lib/inscriptions";
 
 /**
@@ -98,20 +99,6 @@ const s = StyleSheet.create({
     color: GRIS,
   },
 });
-
-/*
-  L'identité de la société vient de la facture officielle, comme les mentions
-  légales — pas d'une saisie qui divergerait de l'une à l'autre.
-*/
-const SOCIETE = {
-  nom: "CLIXA SARLAU",
-  forme: "société de droit marocain",
-  siege: "N° 1525, Bureau n° 5, Hay Essalam, Agadir, Maroc",
-  rc: "67759",
-  ice: "003917718000017",
-  if: "71921918",
-  gerant: "Mounir MOUKHTARI",
-};
 
 const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 

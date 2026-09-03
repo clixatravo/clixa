@@ -103,6 +103,12 @@ export default async function Dossier({ params, searchParams }: Props) {
     dossier.statut !== "annulee" && dossier.statut !== "terminee" && enCours?.statut === "attendu";
 
   /*
+    Un parcours suivi n'a plus de « prochaine échéance » à régler ni de
+    transfert à annoncer : le certificat prend la place de ces gestes-là.
+  */
+  const dossierTermine = dossier.statut === "terminee";
+
+  /*
     ── Une place tenue a un terme, et il se lit ──────────────────────────────
     Tant qu'aucun versement n'est parvenu, la place est tenue sept jours puis
     rendue au catalogue. Le dire n'est pas une précaution juridique : c'est la
@@ -252,34 +258,75 @@ export default async function Dossier({ params, searchParams }: Props) {
               devait payer, trois lignes sous une phrase lui disant que rien ne
               l'engageait. Les deux premières étapes n'apparaissent donc que tant
               qu'elles restent à faire.
+
+              ⚠️ Et elle disparaît tout à fait une fois le dossier clos —
+              « terminée » ou « annulée ». Sans cette garde, un diplômé relisait
+              « nous vérifions le transfert et confirmons votre place » sous la
+              phrase lui disant que son parcours était suivi : quatre étapes
+              redevenues sans objet, montrées comme si elles restaient à faire.
             */}
-            <ol className="text-ivory-dim flex flex-col gap-3 text-[0.9rem]">
-              {!dossier.contratSigneLe && (
+            {dossier.statut !== "terminee" && dossier.statut !== "annulee" && (
+              <ol className="text-ivory-dim flex flex-col gap-3 text-[0.9rem]">
+                {!dossier.contratSigneLe && (
+                  <li>
+                    <strong className="text-ivory">1.</strong>{" "}
+                    {dossier.contratDemandeLe
+                      ? "Signer votre contrat de formation, ci-dessous."
+                      : "Demander votre contrat de formation quand vous serez décidé."}
+                  </li>
+                )}
                 <li>
-                  <strong className="text-ivory">1.</strong>{" "}
-                  {dossier.contratDemandeLe
-                    ? "Signer votre contrat de formation, ci-dessous."
-                    : "Demander votre contrat de formation quand vous serez décidé."}
+                  <strong className="text-ivory">{dossier.contratSigneLe ? "1." : "2."}</strong>{" "}
+                  Recevoir par courriel de quoi régler, puis envoyer le montant de la première
+                  échéance.
                 </li>
-              )}
-              <li>
-                <strong className="text-ivory">{dossier.contratSigneLe ? "1." : "2."}</strong>{" "}
-                Recevoir par courriel de quoi régler, puis envoyer le montant de la première
-                échéance.
-              </li>
-              <li>
-                <strong className="text-ivory">{dossier.contratSigneLe ? "2." : "3."}</strong> Nous
-                indiquer le numéro de transfert{" "}
-                {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — il arrive
-                rattaché à votre dossier, sans que vous ayez à citer sa référence.
-              </li>
-              <li>
-                <strong className="text-ivory">{dossier.contratSigneLe ? "3." : "4."}</strong> Nous
-                vérifions le transfert et confirmons votre place — vous recevez alors le lien de
-                connexion.
-              </li>
-            </ol>
+                <li>
+                  <strong className="text-ivory">{dossier.contratSigneLe ? "2." : "3."}</strong>{" "}
+                  Nous indiquer le numéro de transfert{" "}
+                  {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — il arrive
+                  rattaché à votre dossier, sans que vous ayez à citer sa référence.
+                </li>
+                <li>
+                  <strong className="text-ivory">{dossier.contratSigneLe ? "3." : "4."}</strong>{" "}
+                  Nous vérifions le transfert et confirmons votre place — vous recevez alors le lien
+                  de connexion.
+                </li>
+              </ol>
+            )}
           </div>
+
+          {/*
+            ── Le certificat, une fois le parcours suivi ─────────────────────
+            Composé depuis ce dossier, comme le contrat : le nom, le parcours
+            et les dates y sont déjà. Ce document n'existe qu'une fois le
+            statut passé « Terminée » — la route elle-même le refuse avant.
+          */}
+          {dossierTermine && (
+            <div className="border-gold bg-panel mb-9 border p-6">
+              <h2 className="font-display mb-3 text-[1.15rem]">Votre certificat</h2>
+              <p className="text-ivory mb-4 text-[0.92rem] leading-relaxed">
+                Votre parcours <strong>« {dossier.programmeTitre} »</strong> est marqué terminé.
+                {dossier.certificatEmisLe && (
+                  <>
+                    {" "}
+                    Certificat établi le{" "}
+                    <strong className="text-ivory">
+                      {JOUR.format(new Date(dossier.certificatEmisLe))}
+                    </strong>
+                    .
+                  </>
+                )}
+              </p>
+              <a
+                href={`/inscription/${dossier.reference}/certificat`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gold text-ink rounded-clixa hover:bg-gold-bright inline-flex min-h-11 items-center px-5 text-[0.9rem] font-semibold transition-colors"
+              >
+                Télécharger mon certificat (PDF) ↗
+              </a>
+            </div>
+          )}
 
           {/* ── Les échéances ── */}
           <h2 className="font-display mb-4 text-[1.15rem]">Votre échéancier</h2>

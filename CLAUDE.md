@@ -40,6 +40,7 @@ npx payload run scripts/verifier-session.ts       # la connexion sans mot de pas
 npx payload run scripts/verifier-google.ts        # une personne, un compte
 npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
 npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
+npx payload run scripts/verifier-certificat.ts    # le certificat ne se réclame pas avant d'être mérité
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
@@ -251,7 +252,10 @@ l'import entraînait Payload dans le paquet navigateur et le build échouait.
 `src/lib/types.ts` porte huit décisions. Les trois qui comptent :
 
 1. **Ne jamais fusionner `Programme` / `Session` / `Inscription`.**
-2. **`Inscription` est le pivot** — le LMS y accrochera progression et certificat.
+2. **`Inscription` est le pivot** — le LMS y accrochera la progression détaillée.
+   Le certificat, lui, n'a pas attendu : depuis le 3 septembre 2026 il se
+   compose dès que l'équipe pose le statut « Terminée », sans rien devoir à la
+   progression leçon par leçon.
 3. **Garder l'arbre `Module → Leçon`**, même si la V1 ne l'affiche qu'en plan de cours.
 
 **Décision A — pas de e-learning cette année.** Une `Lecon` ne porte que titre et
@@ -723,6 +727,64 @@ La juridiction est celle d'**Agadir**, où la société a son siège — tranch�
 la direction le 29 août 2026. Le modèle transmis désignait Casablanca, quand les
 mentions légales du site renvoyaient déjà aux tribunaux du siège : deux
 documents de la même maison ne pouvaient pas se contredire là-dessus.
+
+**Le certificat professionnel se compose depuis le dossier**
+(`inscription/[reference]/certificat`, `lib/societe.ts`, depuis le 3 septembre
+2026), comme le contrat. Il ne dépend d'aucune progression suivie leçon par
+leçon — `Inscriptions.ts` le renvoyait pourtant à plus tard, « quand le LMS
+viendra », en le confondant avec Décision A (pas de e-learning cette année).
+Il ne lui doit rien : il dépend du seul statut **« Terminée »**, posé à la
+main par l'équipe, exactement comme le contrat ne dépend que d'une signature
+simple et non d'un tiers de confiance qualifié.
+
+Le dessin reprend exactement celui que la direction délivre déjà à la main
+(référence `CLIXA-DAF0626-2026-066`, vue le 3 septembre 2026) : mêmes
+couleurs, mêmes blocs, mêmes deux signataires — vérifié à l'œil après
+génération, pas seulement au code, la même leçon que le PDF de la plaquette.
+
+- ⚠️ **La date « Fait le » se pose une fois, dans `beforeChange`, jamais
+  recalculée.** Deux téléchargements du même certificat, à des mois
+  d'intervalle, doivent porter la même date. Elle est posée dans le même
+  écrit que le passage à « Terminée » plutôt que dans un second aller-retour
+  `afterChange` : rouvrir la même ligne juste après l'avoir écrite est
+  exactement le chemin qui a produit l'interblocage que `lib/interblocage.ts`
+  existe pour rattraper ailleurs — inutile de le retenter ici.
+- **Le participant en est prévenu par courriel**, avec la même garde « vide
+  avant, rempli maintenant » que le contrat vérifié et les instructions de
+  paiement : sans elle, l'équipe coche un statut dans /admin et personne ne
+  l'apprend.
+- ⚠️ **Aucun nom n'est imprimé pour « Responsable pédagogique ».** Le
+  certificat vu en exemple portait « Hajar El Khadiri » ; rien dans le
+  catalogue ne dit qu'elle encadre les douze parcours, et l'inventer pour les
+  onze autres aurait été deviner un fait — ce que `lib/reseaux.ts` et
+  `lib/moyens.ts` existent déjà pour empêcher ailleurs. La case reste une
+  ligne de signature.
+- ⚠️ **Le sous-titre ne porte pas « EN ».** L'exemple disait « EN DIRECTION
+  ADMINISTRATIVE ET FINANCIÈRE » — un nom de domaine, réécrit à la main depuis
+  le titre « Directeur Administratif et Financier ». Aucune règle ne
+  transforme les douze intitulés réels du catalogue en nom de domaine sans se
+  casser sur l'un d'eux : la préparation PMP ne suit pas le moule
+  « Directeur X ». Le titre du parcours, seul, reste juste dans tous les cas.
+- **La référence imprimée se dérive de celle du dossier** (`CLX-73WR8CVT`
+  devient `CLIXA-73WR8CVT`) plutôt que d'ouvrir un compteur par parcours et
+  par cohorte : rien de plus à stocker, rien qui puisse se désynchroniser.
+- **`SOCIETE` a quitté `contrat/route.tsx` pour `lib/societe.ts`.** Le
+  certificat avait besoin du même nom de gérant pour sa signature ; l'y
+  retaper aurait ouvert une seconde copie, exactement le défaut déjà vu sur le
+  numéro d'admissions et les moyens de paiement affichés sur la fiche.
+
+⚠️ **En le câblant sur la page du dossier, une liste s'est révélée fausse pour
+un parcours terminé.** Le bloc « Ce qu'il reste à faire » affichait toujours
+ses quatre étapes — signer le contrat, envoyer le règlement, annoncer le
+transfert, attendre la vérification — même une fois `prochaineEtape` réduite à
+« Parcours suivi. Merci de votre confiance. » Un diplômé relisait sous cette
+phrase qu'il lui restait à vérifier un transfert. La liste ne s'affiche plus
+pour un dossier « terminée » ou « annulée ».
+
+**Trois certificats existants ont été retirés** avant d'écrire celui-ci : un
+spécimen déjà refait à la main (JPG, PNG, deux PDF) et sa source, aucun ne
+suivi par git, aucun référencé par la moindre page — ni lien, ni bouton, nulle
+part. Un visiteur ne pouvait pas tomber dessus ; seul `git status` le pouvait.
 
 **Le participant joint son justificatif** (`lib/recus.ts`, collection `Recus`,
 `api/recu/[id]`, depuis le 29 août 2026). Une photo du reçu du guichet ou le PDF

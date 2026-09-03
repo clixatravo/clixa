@@ -1129,3 +1129,53 @@ export async function courrielInstructionsEnvoyees(
     }),
   });
 }
+
+/**
+ * Au participant : son certificat est prêt.
+ *
+ * ── Pourquoi ce message existe ───────────────────────────────────────────────
+ * L'équipe passe un dossier à « Terminée » depuis /admin ; sans ce message, le
+ * participant n'a aucun moyen de savoir que ce geste a eu lieu, ni que le PDF
+ * existe désormais sur son dossier. C'est le même défaut que celui déjà
+ * corrigé pour le contrat vérifié et les instructions de paiement : un état
+ * qui change sans que personne n'en soit prévenu.
+ */
+export async function courrielCertificatDisponible(
+  payload: Payload,
+  d: { reference: string; apprenantNom: string; apprenantEmail: string; programmeTitre: string },
+): Promise<boolean> {
+  const url = `${SITE}/inscription/${d.reference}`;
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `Votre certificat est disponible — ${d.programmeTitre} [${d.reference}]`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Votre parcours « ${d.programmeTitre} » est marqué terminé, et votre certificat`,
+      "professionnel est prêt.",
+      "",
+      "Vous le trouverez sur la page de votre dossier :",
+      `  ${url}`,
+      "",
+      "Merci de votre confiance.",
+      "",
+      "CLIXA Institute — Direction des Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Votre certificat est disponible",
+      soustitre: d.programmeTitre,
+      badgeRef: d.reference,
+      corpsHtml: `
+        <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+        <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;">
+          Votre parcours <strong>« ${echapper(d.programmeTitre)} »</strong> est marqué terminé, et votre <strong>certificat professionnel est prêt</strong>.
+        </p>
+        <p>Vous le trouverez sur la page de votre dossier, en PDF.</p>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">Merci de votre confiance.</p>
+      `,
+      boutonTexte: "Ouvrir mon dossier",
+      boutonLien: url,
+    }),
+  });
+}
