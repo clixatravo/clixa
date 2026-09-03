@@ -65,6 +65,7 @@ export async function GET(request: Request) {
       "Programme / Session",
       "Statut",
       "Montant / Échéances",
+      "Certificat émis",
     ],
   ];
 
@@ -87,6 +88,7 @@ export async function GET(request: Request) {
       sessionTitre,
       String(ins.statut || "en_cours"),
       `${totalRegle} EUR réglé(s)`,
+      ins.certificatEmisLe ? String(ins.certificatEmisLe).slice(0, 10) : "—",
     ]);
   }
 
@@ -106,6 +108,9 @@ export async function GET(request: Request) {
       progTitre,
       String(dem.statut || "nouvelle"),
       `Pays : ${dem.pays || "—"}`,
+      // Une demande de rappel n'a pas de certificat : la colonne existe pour
+      // que les deux sections du tableur gardent le même nombre de colonnes.
+      "—",
     ]);
   }
 

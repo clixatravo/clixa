@@ -46,7 +46,10 @@ const COMME_UN_NAVIGATEUR = {
 };
 
 const marque = Date.now();
-const aSupprimer: { collection: "apprenants" | "utilisateurs"; id: string | number }[] = [];
+const aSupprimer: {
+  collection: "apprenants" | "utilisateurs" | "inscriptions";
+  id: string | number;
+}[] = [];
 
 /** Appelle la route comme le ferait le navigateur porteur de ce cookie. */
 const appeler = async (cookie?: string) => {
@@ -106,11 +109,54 @@ try {
   aSupprimer.push({ collection: "utilisateurs", id: membre.id });
   const cookieEquipe = await ouvrirSession(payload, "utilisateurs", membre.id);
 
+  /*
+    ── Un dossier terminé, pour prouver la colonne « Certificat émis » ────────
+    Elle a été ajoutée après coup, à la demande de l'équipe qui rapproche les
+    versements depuis ce tableur. Une colonne présente dans l'en-tête mais
+    toujours vide passerait ce même « ✓ il porte l'en-tête » sans que la
+    valeur soit jamais sortie — on va donc chercher la vraie date, sur un vrai
+    dossier terminé.
+  */
+  const { docs: sessions } = await payload.find({
+    collection: "sessions",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    where: { fin: { exists: true } },
+  });
+  const dossierTermine = sessions[0]
+    ? await payload.create({
+        collection: "inscriptions",
+        overrideAccess: true,
+        data: {
+          session: sessions[0].id,
+          statut: "terminee",
+          apprenantNom: "Épreuve Export Certificat",
+          apprenantEmail: `export.certificat.${marque}@epreuve.invalid`,
+          apprenantWhatsapp: "+212600000000",
+          apprenantPays: "Maroc",
+          planPaiement: "P1",
+          echeances: [{ montant: 423, statut: "regle" }],
+        } as never,
+      })
+    : undefined;
+  if (dossierTermine) aSupprimer.push({ collection: "inscriptions", id: dossierTermine.id });
+
   const equipe = await appeler(cookieEquipe);
   dire("l'équipe obtient le fichier", equipe.status === 200, `reçu ${equipe.status}`);
   if (equipe.status === 200) {
     const texte = await equipe.text();
     dire("il porte l'en-tête des colonnes", texte.includes("Nom & Prénom"));
+    dire("dont « Certificat émis »", texte.includes("Certificat émis"));
+    if (dossierTermine) {
+      const ligne = texte.split("\r\n").find((l) => l.includes(String(dossierTermine.reference)));
+      const aujourdhui = new Date().toISOString().slice(0, 10);
+      dire(
+        "un dossier terminé porte sa vraie date d'émission",
+        Boolean(ligne?.includes(aujourdhui)),
+        ligne ? "" : "aucune ligne trouvée pour ce dossier",
+      );
+    }
     dire(
       "il s'annonce comme un téléchargement",
       (equipe.headers.get("content-disposition") ?? "").includes("attachment"),
