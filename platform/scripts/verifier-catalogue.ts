@@ -16,6 +16,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { MOYENS } from "../src/lib/moyens.js";
+import { etiquetteOG } from "../src/lib/og.js";
 
 const payload = await getPayload({ config });
 
@@ -146,6 +147,25 @@ verifier(
   MOYENS.every((m) => ["carte", "virement", "transfert"].includes(m.valeur)),
   "chaque moyen proposé est un moyen que le système sait instruire",
 );
+
+/*
+  ── Ce que montre un lien partagé ──────────────────────────────────────────
+  L'image de partage est la seule chose que voit quelqu'un qui n'a pas encore
+  cliqué — sur WhatsApp, sur LinkedIn, dans une publicité Facebook.
+
+  ⚠️ Son étiquette lisait « 32 HEURES · 8 SÉANCES LIVE • 4H CHACUNE · 32
+  HEURES » : le champ `rythme` porte déjà la durée, et le code l'ajoutait une
+  seconde fois. Rien ne cassait — ni type, ni compilation, ni épreuve — et
+  l'image restait un PNG parfaitement valide, de la bonne taille. Vu à l'œil
+  seulement, sur l'image que la direction s'apprêtait à mettre en publicité.
+*/
+titre("Ce que montre un lien partagé");
+
+for (const p of programmes) {
+  const etiquette = etiquetteOG(p.rythme ?? "", p.dureeHeures ?? 0);
+  const fois = (etiquette.match(new RegExp(`\\b${p.dureeHeures}\\s*h`, "gi")) ?? []).length;
+  verifier(fois <= 1, `${p.slug} : la durée n'est pas dite deux fois`);
+}
 
 /* ── Les rattachements ────────────────────────────────────────────────── */
 

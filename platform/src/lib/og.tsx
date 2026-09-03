@@ -185,3 +185,22 @@ export function CarteOG({
     </div>
   );
 }
+
+/**
+ * L'étiquette de l'image de partage : le rythme, et la durée quand elle manque.
+ *
+ * ⚠️ Le rythme dit parfois déjà la durée. Le champ a été pensé pour la seule
+ * cadence — son exemple, dans le type comme dans /admin, est « 8 semaines ·
+ * mardi soir » — mais les douze parcours y portent aujourd'hui la durée en
+ * tête. Concaténer sans regarder donnait la même valeur aux deux bouts d'une
+ * seule ligne : « 32 HEURES · 8 SÉANCES LIVE • 4H CHACUNE · 32 HEURES ».
+ *
+ * On ne réécrit pas la saisie de la direction pour autant : on regarde avant
+ * d'ajouter, ce qui reste juste dans les deux cas. C'est cette image que
+ * WhatsApp, LinkedIn et Facebook affichent d'un lien — la seule chose que voit
+ * quelqu'un qui n'a pas encore cliqué.
+ */
+export function etiquetteOG(rythme: string, dureeHeures: number): string {
+  const ditDejaLaDuree = new RegExp(`\\b${dureeHeures}\\s*h(eures?)?\\b`, "i").test(rythme);
+  return ditDejaLaDuree ? rythme : `${rythme} · ${dureeHeures} heures`;
+}

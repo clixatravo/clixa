@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { CarteOG, tailleOG, policesOG } from "@/lib/og";
+import { CarteOG, etiquetteOG, tailleOG, policesOG } from "@/lib/og";
 import {
   formatPrix,
   getProgramme,
@@ -36,7 +36,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   return new ImageResponse(
     <CarteOG
       badge={p.certification ?? "Formation certifiante"}
-      etiquette={`${p.rythme} · ${p.dureeHeures} heures`}
+      etiquette={etiquetteOG(p.rythme, p.dureeHeures)}
       titre={p.titre}
       piedGauche={modes.map((m) => libelleMode[m]).join("  ·  ")}
       piedDroit={
