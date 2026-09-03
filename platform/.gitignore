@@ -28,3 +28,10 @@ apercus/
 
 # Réglage local du serveur de développement (panneau navigateur)
 .claude/
+
+# Le spécimen du certificat est fabriqué à la demande, jamais suivi.
+#   npx payload run scripts/specimen-certificat.tsx [slug]
+# Un exemplaire déposé en dur vieillit au premier changement du document réel :
+# c'est exactement ce qui était arrivé au spécimen refait à la main, qui dormait
+# ici sans lien depuis aucune page.
+public/images/marketing/certificat-specimen.*
