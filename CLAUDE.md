@@ -1662,6 +1662,21 @@ traceur qui n'existe pas.
   mesure. Il ne s'y affichait pas jusque-là.
 - ⚠️ **Meta comptera moins de conversions que de clics** : ceux qui refusent ne
   sont pas suivis. Ce n'est pas une panne du pixel.
+- ⚠️ **On ne peut pas valider le pixel depuis un navigateur piloté.** Vérifié
+  sur la production : `fbevents.js` se charge, `signals/config` part, la file
+  de `fbq` se vide et `Lead` est bien émis — puis **rien** n'arrive à Meta. La
+  troisième requête dit pourquoi :
+
+  ```
+  connect.facebook.net/log/error?p=pixel&e=[Meta pixel] Bot traffic detected
+  ```
+
+  Le script de Meta reconnaît un navigateur automatisé et écarte ses
+  événements. C'est le comportement voulu de leur côté, et cela veut dire que
+  **l'étape « tester/valider » de l'Events Manager demande une vraie visite,
+  faite à la main**. Ne pas conclure d'un tableau de bord vide que le pixel est
+  cassé : regarder d'abord `localStorage["clixa.lead.v1"]`, qui dit ce que
+  *notre* code a émis, et la file `window.fbq.queue`, qui doit être à zéro.
 
 ⚠️ **Et la proposition de rappel ne se réveillait jamais.** Son effet ne lisait
 le consentement qu'au montage : quelqu'un qui répondait au bandeau puis restait
