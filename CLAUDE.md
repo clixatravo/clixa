@@ -340,11 +340,28 @@ qui tombe un samedi. L'intitulé, lui, se recompose tout seul dans un crochet de
 confrontait.** En regroupant les douze, les ressources humaines se sont
 révélées enregistrées à **12:00** quand leur cadence promettait 13h00–17h00 —
 avec une fin à 12:00 elle aussi, soit une séance longue de zéro minute.
-`HeureLocale` convertit `debut` et `fin` dans le fuseau du visiteur : il lisait
-« 13h00–13h00 chez vous ». La cadence est du texte, les instants sont des
-dates, et chacun avait l'air juste tout seul. La seconde passe du script recale
-les instants sur la cadence — qui fait foi, étant ce que le visiteur lit
-d'abord et ce que porte la campagne.
+La cadence est du texte, les instants sont des dates, et chacun avait l'air
+juste tout seul. La seconde passe du script recale les instants sur la cadence
+— qui fait foi, étant ce que le visiteur lit d'abord et ce que porte la
+campagne.
+
+⚠️ **L'écart se voyait alors à l'écran, et ne s'y verrait plus.** Un composant
+`HeureLocale` affichait la conversion dans le fuseau du visiteur, et rendait
+donc « 13h00–13h00 chez vous » sous une cadence qui promettait quatre heures.
+Il a été retiré le 4 septembre 2026 (voir plus bas) : les instants ne se lisent
+désormais que par `seancesHebdomadaires`, qui n'en montre que les jours. Une
+heure fausse en base ne laisse plus aucune trace visible — c'est le script qui
+la rattrape, ou personne.
+
+⚠️ **L'horaire n'est annoncé qu'une seule fois** (depuis le 4 septembre 2026).
+La ligne portait la cadence puis sa conversion : « 8 samedis · 9h00–13h00 ·
+UTC · 10h00–14h00 chez vous ». Deux fourchettes d'heures côte à côte, séparées
+du même point médian que le reste, se lisent comme **deux créneaux au choix** —
+et le second, en or, tirait davantage l'œil. L'attention d'origine était bonne
+(Abidjan et Casablanca ne lisent pas la même heure sous une annonce en UTC),
+mais elle se payait d'une ambiguïté sur la seule information qui décide si l'on
+peut suivre. Décision de la direction : une seule heure, celle de la cadence,
+avec son fuseau écrit à côté.
 
 La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
