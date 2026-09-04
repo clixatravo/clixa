@@ -125,3 +125,59 @@ test("un numéro sans indicatif est refusé, aux deux portes", async ({ request 
     "erreur=indicatif",
   );
 });
+
+/**
+ * ⚠️ Rien ne pose de cookie de mesure avant que le visiteur ait répondu.
+ *
+ * L'invariant vaut dans les deux configurations, et c'est ce qui le rend utile :
+ *
+ *  - aujourd'hui, `NEXT_PUBLIC_POSTHOG_KEY` n'est pas posée en production. Aucune
+ *    mesure ne tourne, et le bandeau ne paraît pas — demander l'accord pour des
+ *    traceurs qu'on n'utilise pas ferait cliquer sans lire ;
+ *  - le jour où la direction branchera la mesure, le bandeau paraîtra et la
+ *    librairie ne se chargera qu'après un « Accepter ».
+ *
+ * Ce que cette épreuve attrape, c'est le cas qu'on redoute entre les deux :
+ * quelqu'un pose la clef, la mesure démarre, et personne ne s'aperçoit que le
+ * bandeau n'a pas suivi.
+ */
+test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ page }) => {
+  /*
+    ⚠️ On guette les requêtes vers **le serveur de mesure**, pas les fichiers
+    servis par le site. Un premier jet visait toute URL contenant « posthog » :
+    il tombait en rouge sur `_next/static/chunks/…posthog-js….js`, que
+    Turbopack sert d'avance en développement — un fichier téléchargé mais
+    jamais exécuté, qui ne mesure rien et ne pose aucun cookie. L'épreuve
+    accusait le paquet au lieu du traceur.
+
+    Ce qui compte est ce qui sort vers l'extérieur, et ce qui se dépose sur
+    l'appareil du visiteur.
+  */
+  const versLeServeurDeMesure: string[] = [];
+  page.on("request", (r) => {
+    if (/posthog\.com/i.test(new URL(r.url()).hostname)) versLeServeurDeMesure.push(r.url());
+  });
+
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  expect(versLeServeurDeMesure, "aucune requête de mesure avant réponse").toHaveLength(0);
+
+  const cookies = await page.context().cookies();
+  const mesure = cookies.filter((c) => /^ph_/.test(c.name));
+  expect(
+    mesure.map((c) => c.name),
+    "aucun cookie de mesure",
+  ).toHaveLength(0);
+
+  /*
+    Et si le bandeau est là — donc la mesure branchée — il doit offrir les deux
+    réponses avec le même poids. Un « Refuser » absent est un consentement
+    arraché, pas donné.
+  */
+  const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
+  if (await bandeau.isVisible().catch(() => false)) {
+    await expect(bandeau.getByRole("button", { name: "Accepter" })).toBeVisible();
+    await expect(bandeau.getByRole("button", { name: "Refuser" })).toBeVisible();
+  }
+});

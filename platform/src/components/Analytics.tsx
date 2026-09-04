@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useSyncExternalStore } from "react";
+import { consentementAuServeur, lireConsentement, souscrireConsentement } from "@/lib/consentement";
 
 /**
  * SOC-07 — Mesure d'audience.
@@ -14,6 +15,15 @@ import { Suspense, useEffect } from "react";
  *
  * Ce qu'on cherche à mesurer, ce sont les KPI de la V1 :
  * visiteur → fiche formation → réservation initiée.
+ *
+ * ── ⚠️ Rien ne part avant l'accord ──────────────────────────────────────────
+ * `posthog.init` pose un cookie. Tant que le visiteur n'a pas répondu au
+ * bandeau, la librairie n'est même pas téléchargée : ce n'est pas un traceur
+ * qu'on démarre puis qu'on éteint, c'est un traceur qui n'existe pas.
+ *
+ * Un refus vaut pour toute la visite et les suivantes — il est retenu dans
+ * `localStorage`, pas dans un cookie, pour ne pas poser ce qu'on vient de
+ * refuser. Voir `lib/consentement.ts`.
  */
 type PostHog = (typeof import("posthog-js"))["default"];
 
@@ -42,8 +52,17 @@ function charger(): Promise<PostHog | null> {
 function SuiviPages() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  /*
+    Relu à chaque réponse du bandeau : quelqu'un qui accepte ne doit pas avoir
+    à recharger la page pour que sa visite compte.
+  */
+  const accepte =
+    useSyncExternalStore(souscrireConsentement, lireConsentement, consentementAuServeur) ===
+    "accepte";
 
   useEffect(() => {
+    if (!accepte) return;
+
     // Avec le routeur d'app, naviguer ne recharge pas la page : sans capture
     // manuelle, seule la première vue serait comptée.
     const url = searchParams.toString() ? `${pathname}?${searchParams}` : pathname;
@@ -51,7 +70,7 @@ function SuiviPages() {
     void charger().then((posthog) => {
       posthog?.capture("$pageview", { $current_url: window.location.origin + url });
     });
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, accepte]);
 
   return null;
 }
