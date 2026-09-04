@@ -7,7 +7,7 @@ import React from "react";
 */
 /* eslint-disable jsx-a11y/alt-text */
 import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
-import { CACHET_CLIXA } from "@/lib/cachet";
+import { CACHET_CLIXA, SIGNATURE_DIRECTEUR } from "@/lib/cachet";
 import { SOCIETE } from "@/lib/societe";
 import type { Dossier } from "@/lib/inscriptions";
 
@@ -140,6 +140,20 @@ const s = StyleSheet.create({
   // Un espace fixe, pas une marge sur le texte : les deux colonnes gardent
   // ainsi le même trait à la même hauteur, quelle que soit la longueur du rôle.
   signatureEspace: { height: 34 },
+  /*
+    ⚠️ Le tracé chevauche légèrement le trait, comme une vraie signature posée
+    sur une ligne. Aligné à droite dans sa colonne, et de la largeur du trait :
+    une signature centrée sous un trait aligné à droite se lit comme une image
+    tombée là.
+  */
+  /*
+    ⚠️ 40 de haut moins 6 de marge = 34, exactement la hauteur de
+    `signatureEspace` en face. Sans cette compensation, la colonne signée
+    avançait de six points de moins que l'autre et les deux traits ne
+    tombaient plus à la même hauteur — un décalage qu'on ne voit pas dans le
+    code, seulement sur la page.
+  */
+  signatureTrace: { width: 96, height: 40, marginBottom: -6, alignSelf: "flex-end" },
   signatureTrait: { borderTopWidth: 0.7, borderTopColor: OR, width: "76%" },
   signatureTraitDroite: { alignSelf: "flex-end" },
   // Hauteur réservée même vide, côté gauche : sans elle, la colonne sans nom
@@ -334,7 +348,7 @@ export function CertificatPDF({
 
               <View style={[s.signatureCol, s.signatureDroite]}>
                 <Text style={s.signatureRole}>Directeur Général de CLIXA Institute</Text>
-                <View style={s.signatureEspace} />
+                <Image style={s.signatureTrace} src={SIGNATURE_DIRECTEUR} />
                 <View style={[s.signatureTrait, s.signatureTraitDroite]} />
                 {/*
                   Repris tel quel, comme sur le contrat : une même personne
