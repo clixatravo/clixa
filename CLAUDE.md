@@ -45,6 +45,7 @@ npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
+npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
 npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
@@ -350,8 +351,29 @@ campagne.
 donc « 13h00–13h00 chez vous » sous une cadence qui promettait quatre heures.
 Il a été retiré le 4 septembre 2026 (voir plus bas) : les instants ne se lisent
 désormais que par `seancesHebdomadaires`, qui n'en montre que les jours. Une
-heure fausse en base ne laisse plus aucune trace visible — c'est le script qui
-la rattrape, ou personne.
+heure fausse en base ne laisserait donc plus aucune trace visible.
+
+⚠️ **D'où un crochet, et non un script à se rappeler de lancer**
+(`Sessions.ts`, depuis le 4 septembre 2026). La cadence fait foi et les
+instants s'y recalent à chaque écriture : les deux ne peuvent plus diverger.
+
+- ⚠️ **Midi n'était pas un hasard.** `debut` et `fin` sont en
+  `pickerAppearance: "dayOnly"` : le sélecteur ne montre pas d'heure et
+  enregistre **midi UTC**. Toucher à la date d'une session depuis /admin
+  effaçait donc son horaire — un geste qui ne prétendait toucher qu'au jour.
+  C'est très probablement ce qui est arrivé aux ressources humaines.
+- **`ouvrir-cohorte.ts` écrivait lui aussi les deux** — ses heures *et* sa
+  phrase. La même faille, une porte plus loin ; le crochet les réconcilie.
+- **Le crochet se tait** devant une cadence sans horaire, une session hors
+  UTC, ou pas de cadence du tout. Corriger ce qu'on n'a pas su lire fait plus
+  de dégâts que s'abstenir.
+- ⚠️ **La garde a été éprouvée en remettant le défaut** : trois contrôles
+  passent au rouge, et ils affichent « 12:00–12:00 » — la forme exacte du
+  défaut de production. Une garde qui n'a jamais vu la panne qu'elle prétend
+  arrêter ne prouve rien.
+- **`verifier-horaires.ts` regarde aussi les vraies sessions**, pas seulement
+  celles qu'il fabrique : c'est le seul de ses sept contrôles qui aurait
+  attrapé les ressources humaines.
 
 ⚠️ **L'horaire n'est annoncé qu'une seule fois** (depuis le 4 septembre 2026).
 La ligne portait la cadence puis sa conversion : « 8 samedis · 9h00–13h00 ·

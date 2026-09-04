@@ -66,6 +66,93 @@ export const Sessions: CollectionConfig = {
 
         return { ...data, reference: `${titreProgramme} — ${lieu} — ${date}` };
       },
+
+      /**
+       * Aligne l'heure enregistrée sur l'heure annoncée.
+       *
+       * ── Le défaut ─────────────────────────────────────────────────────
+       * L'horaire d'une séance était déclaré **deux fois** : en toutes
+       * lettres dans la cadence (« 8 samedis · 13h00–17h00 »), et en
+       * silence dans les instants `debut` / `fin`. Rien ne les confrontait,
+       * et le 4 septembre 2026 les ressources humaines se sont révélées
+       * enregistrées à **12:00** sous une cadence qui promettait 13h00 —
+       * avec une fin à 12:00 elle aussi, soit une séance de zéro minute.
+       *
+       * ⚠️ **Midi n'est pas un hasard.** Les deux champs sont en
+       * `pickerAppearance: "dayOnly"` : le sélecteur du back-office ne
+       * montre pas d'heure et enregistre midi UTC. Toucher à la date d'une
+       * session depuis /admin efface donc son horaire, sans rien afficher
+       * qui le laisse deviner. Et `ouvrir-cohorte.ts` écrit lui aussi les
+       * deux — ses heures et sa phrase — ce qui est la même faille, une
+       * porte plus loin.
+       *
+       * ── La règle ──────────────────────────────────────────────────────
+       * La cadence fait foi : c'est elle que le visiteur lit, elle que
+       * porte la campagne, et la seule des deux qu'un membre de l'équipe
+       * corrigerait s'il voyait l'écart. Les instants s'y recalent.
+       *
+       * ⚠️ On ne touche qu'aux sessions en UTC : ailleurs la cadence est
+       * écrite dans le fuseau de la session, et comparer des heures nues
+       * conclurait à un écart qui n'existe pas.
+       *
+       * ⚠️ Une cadence sans horaire n'est pas une faute — on passe, sans
+       * rien changer. Un crochet qui « corrige » ce qu'il n'a pas su lire
+       * fait plus de dégâts que celui qui s'abstient.
+       */
+      ({ data, originalDoc }) => {
+        /*
+          ⚠️ On ne se réveille que si l'écriture touche à l'un des quatre
+          champs concernés. Sans ce filtre, le crochet réécrivait `debut` et
+          `fin` à *chaque* enregistrement d'une session — dont ceux du crochet
+          `recompter`, qui met à jour le décompte de places à chaque
+          inscription. Les valeurs auraient été identiques, mais on n'élargit
+          pas une écriture sur la ligne `sessions` sans raison : c'est celle
+          autour de laquelle tourne l'interblocage que `lib/interblocage.ts`
+          existe pour rattraper.
+        */
+        const concerne =
+          data.cadence !== undefined ||
+          data.debut !== undefined ||
+          data.fin !== undefined ||
+          data.fuseau !== undefined;
+        if (!concerne) return data;
+
+        const brute: unknown = data.cadence ?? originalDoc?.cadence;
+        /*
+          `cadence` est traduisible : selon la locale de la requête, Payload
+          passe la chaîne ou l'objet de toutes les langues. Le français fait
+          référence — c'est la langue du catalogue.
+        */
+        const cadence =
+          typeof brute === "string"
+            ? brute
+            : typeof (brute as { fr?: unknown })?.fr === "string"
+              ? (brute as { fr: string }).fr
+              : undefined;
+
+        const fuseau = data.fuseau ?? originalDoc?.fuseau ?? "UTC";
+        if (!cadence || fuseau !== "UTC") return data;
+
+        const dits = /(\d{1,2})h(\d{2})\D+(\d{1,2})h(\d{2})/.exec(cadence);
+        if (!dits) return data;
+
+        const aLHeure = (valeur: unknown, h: number, m: number) => {
+          if (!valeur) return undefined;
+          const d = new Date(valeur as string);
+          if (Number.isNaN(d.getTime())) return undefined;
+          d.setUTCHours(h, m, 0, 0);
+          return d.toISOString();
+        };
+
+        const debut = aLHeure(data.debut ?? originalDoc?.debut, Number(dits[1]), Number(dits[2]));
+        const fin = aLHeure(data.fin ?? originalDoc?.fin, Number(dits[3]), Number(dits[4]));
+
+        return {
+          ...data,
+          ...(debut ? { debut } : {}),
+          ...(fin ? { fin } : {}),
+        };
+      },
     ],
   },
   fields: [
