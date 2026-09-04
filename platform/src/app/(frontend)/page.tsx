@@ -480,9 +480,23 @@ export default async function Accueil() {
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
+                {/*
+                  ⚠️ « Double Certification » a été retiré. Il n'y a qu'un
+                  document, décerné par une seule maison : CLIXA Institute et
+                  SkillAfrique sont deux marques du même établissement — le
+                  certificat porte d'ailleurs « SkillAfrique **by** CLIXA
+                  Institute ». Deux marques sur un papier ne sont pas deux
+                  certifications, et l'affirmer au-dessus de l'image du
+                  document, où l'on ne voit qu'un certificat, se contredisait
+                  tout seul.
+
+                  La pastille reste — les trois cartes en portent une, et la
+                  retirer d'une seule aurait laissé un trou — mais elle dit
+                  maintenant ce que le document dit de lui-même.
+                */}
                 <div className="absolute top-3 left-3">
                   <span className="bg-ink/80 rounded-clixa border border-[#0077b5]/40 px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider text-[#38bdf8] uppercase backdrop-blur-md">
-                    Double Certification
+                    Certificat professionnel
                   </span>
                 </div>
               </div>
