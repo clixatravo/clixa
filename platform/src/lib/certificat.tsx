@@ -7,7 +7,7 @@ import React from "react";
 */
 /* eslint-disable jsx-a11y/alt-text */
 import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
-import { CACHET_CLIXA, SIGNATURE_DIRECTEUR } from "@/lib/cachet";
+import { CACHET_CLIXA, LOGO_CLIXA, LOGO_SKILLAFRIQUE, SIGNATURE_DIRECTEUR } from "@/lib/cachet";
 import { SOCIETE } from "@/lib/societe";
 import type { Dossier } from "@/lib/inscriptions";
 
@@ -65,8 +65,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 22,
     paddingBottom: 18,
   },
-  logo: { fontSize: 20, fontFamily: "Times-Bold", color: NAVY },
-  logoPoint: { color: OR },
+  /*
+    ⚠️ La hauteur se déduit du dessin, elle ne se choisit pas : le sigle fait
+    234 × 47 px, soit très exactement 4,98 de rapport. Poser les deux à la main
+    l'écraserait ou l'étirerait — ce qui, sur une marque, se voit avant tout le
+    reste.
+  */
+  logo: { width: 78, height: 78 / 4.98 },
   accroche: { marginTop: 6, fontSize: 7, lineHeight: 1.4, color: GRIS },
   coteBloc: {
     paddingHorizontal: 22,
@@ -88,10 +93,7 @@ const s = StyleSheet.create({
     borderTopWidth: 0.7,
     borderTopColor: "#e7c979",
   },
-  skillLigne: { flexDirection: "row", fontSize: 12, fontFamily: "Helvetica-Bold" },
-  skillNoir: { color: "#111111" },
-  skillOrange: { color: "#ee840e" },
-  souscrit: { marginTop: 2, fontSize: 6.5, color: GRIS },
+  skillLogo: { width: 132, height: 132 / 2.66 },
   cotePied: {
     paddingHorizontal: 22,
     paddingVertical: 10,
@@ -111,8 +113,6 @@ const s = StyleSheet.create({
     color: NAVY_DOUX,
     letterSpacing: 1.5,
   },
-  mini: { marginTop: 14, fontSize: 10, fontFamily: "Times-Bold", color: NAVY },
-  etoile: { color: OR },
   intro: { marginTop: 12, fontSize: 9.5, color: NAVY_DOUX },
   nom: { marginTop: 8, fontSize: 24, fontFamily: "Times-Bold", color: NAVY, textAlign: "center" },
   mention: { marginTop: 14, fontSize: 9.5, color: NAVY_DOUX, textAlign: "center", maxWidth: 420 },
@@ -189,6 +189,36 @@ const s = StyleSheet.create({
     la date et la moitié de la colonne latérale ; il marquait le document en
     le rendant illisible.
   */
+  /*
+    ⚠️ Centré à la main, pas par `alignItems` : le médaillon est en position
+    absolue, donc hors du flux, et son parent ne le centre plus. La moitié de
+    sa largeur retranchée du milieu est ce qui reste.
+  */
+  medaillon: {
+    position: "absolute",
+    top: 128,
+    left: "50%",
+    marginLeft: -95,
+    width: 190,
+    height: 190,
+    opacity: 0.055,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  medaillonAnneau: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 190,
+    height: 190,
+    borderWidth: 1.6,
+    borderColor: NAVY,
+    borderRadius: 95,
+  },
+  medaillonHaut: { fontSize: 11, fontFamily: "Times-Roman", color: NAVY, letterSpacing: 2 },
+  medaillonNom: { marginTop: 2, fontSize: 40, fontFamily: "Times-Bold", color: NAVY },
+  medaillonBas: { fontSize: 15, fontFamily: "Times-Bold", color: NAVY, letterSpacing: 1 },
+
   filigraneSpecimen: {
     position: "absolute",
     /*
@@ -259,9 +289,7 @@ export function CertificatPDF({
         <View style={s.corps}>
           <View style={s.cote}>
             <View style={s.coteEntete}>
-              <Text style={s.logo}>
-                CLIXA<Text style={s.logoPoint}>.</Text>
-              </Text>
+              <Image style={s.logo} src={LOGO_CLIXA} />
               <Text style={s.accroche}>
                 Centre de Leadership,{"\n"}Innovation &amp; eXcellence in Africa
               </Text>
@@ -290,11 +318,7 @@ export function CertificatPDF({
             </View>
 
             <View style={s.marqueSkill}>
-              <Text style={s.skillLigne}>
-                <Text style={s.skillNoir}>SKILL</Text>
-                <Text style={s.skillOrange}>AFRIQUE</Text>
-              </Text>
-              <Text style={s.souscrit}>By CLIXA Institute</Text>
+              <Image style={s.skillLogo} src={LOGO_SKILLAFRIQUE} />
             </View>
             <Text style={s.cotePied}>www.clixa.africa</Text>
           </View>
@@ -314,9 +338,33 @@ export function CertificatPDF({
             */}
             <Text style={s.sousTitre}>{dossier.programmeTitre.toUpperCase()}</Text>
 
-            <Text style={s.mini}>
-              <Text style={s.etoile}>★ </Text>CLIXA
-            </Text>
+            {/*
+              ── Le médaillon de fond ────────────────────────────────────────
+              Il remplace une ligne « ★ CLIXA » composée au texte, dont
+              **l'étoile ne s'imprimait pas** : U+2605 n'existe ni dans Times
+              ni dans Helvetica, les seules polices intégrées à react-pdf, et
+              un glyphe absent est abandonné sans un mot. Il restait « CLIXA »
+              seul sous le titre, qui se lisait comme une coquille. Le modèle
+              de la direction ne l'imprimait pas davantage — l'étoile y est un
+              carré vide, la même absence, un cran plus tôt.
+
+              ⚠️ **Dessiné, et non inséré comme image.** Le médaillon du modèle
+              est du bleu nuit à 14/255 d'opacité. Réduit et mis en palette pour
+              tenir dans un module, sa transparence s'est effondrée : il est
+              ressorti beige et opaque, aussi lisible que le texte qu'il doit
+              passer derrière — constaté sur le rendu, pas déduit. Deux cercles
+              et trois mots ne pèsent rien, ne dépendent d'aucune palette, et
+              leur opacité se règle au centième.
+
+              ⚠️ En position absolue, donc hors du flux : posé avant le titre,
+              il aurait poussé tout le corps vers le bas.
+            */}
+            <View style={s.medaillon} fixed>
+              <View style={s.medaillonAnneau} />
+              <Text style={s.medaillonHaut}>CERTIFICAT</Text>
+              <Text style={s.medaillonNom}>CLIXA</Text>
+              <Text style={s.medaillonBas}>INSTITUTE</Text>
+            </View>
 
             <Text style={s.intro}>Ce certificat est décerné à</Text>
             <Text style={s.nom}>{dossier.apprenantNom ?? "—"}</Text>

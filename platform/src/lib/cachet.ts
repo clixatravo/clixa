@@ -388,3 +388,134 @@ export const SIGNATURE_DIRECTEUR =
   "461wdE9ACIHgA4n88Qvdnhbna2kwYHQPQA8Irz+bEYT7YrXpE8AKIHgPeJ3kj+B5IHQPQA8DLR9+l6JA+A6AHgJaIXsgfJAy" +
   "B6AHhtRG92tSN5AEQPAM8XvVhuquNMHgDRA8Ab2uuE/BNdql5akqe6HgDRA8BTZa+G8bCzfnokD4DoAeBFkb0t/Nr8HMkDIH" +
   "oAeJnwR3hPABA9AAAAIHoAAABEDwAAAIgeAAAAED0AAAAgegAAADie/ym9Vs1GGNNHAAAAAElFTkSuQmCC";
+/**
+ * Le sigle de la maison, tel qu'il est imprimé sur le certificat manuel.
+ *
+ * ── Pourquoi une image, et non du texte ─────────────────────────────────────
+ * Il était composé en Times-Bold, avec un point doré posé à côté : de loin cela
+ * ressemblait au sigle, de près c'était une autre lettre. Le vrai dessin a ses
+ * empattements, ses proportions et son point à lui, et un certificat est
+ * justement le document qu'on regarde de près — on l'encadre, on le montre, on
+ * le fait vérifier.
+ *
+ * Extrait du modèle de la direction, détouré au pixel près de son fond
+ * transparent, réduit à 234 px de large et postérisé : un kilo-octet.
+ */
+export const LOGO_CLIXA =
+  "data:image/png;base64,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";
+/**
+ * La marque SkillAfrique, « By CLIXA Institute ».
+ *
+ * Elle était elle aussi composée au texte — « SKILL » en noir, « AFRIQUE » en
+ * orange — ce qui perdait la flèche qui traverse le A, seul élément dessiné du
+ * logo, et donc la seule chose qui le rende reconnaissable.
+ *
+ * ⚠️ La mention « By CLIXA Institute » fait partie de l'image : c'est ainsi
+ * qu'elle est dessinée dans le modèle, alignée sur la droite du logo. La
+ * réécrire en dessous en produirait deux.
+ *
+ * ⚠️ Son fond est blanc, pas transparent, et il doit l'être **exactement**.
+ * Sorti de la réduction, il valait (254, 254, 254) : une marche d'un cran sur
+ * le blanc du bloc qui le porte, invisible à la lecture du code et parfaitement
+ * visible sur le rendu — un rectangle gris pâle encadrait le logo. Les pixels
+ * quasi blancs sont donc ramenés à 255 avant la mise en palette.
+ *
+ * ⚠️ Ce qui suppose que le bloc reste blanc. Le jour où il changerait de
+ * couleur, il faudrait détourer le fond plutôt que le repeindre : un logo
+ * dessiné en bleu nuit sur un bloc bleu nuit disparaîtrait.
+ */
+export const LOGO_SKILLAFRIQUE =
+  "data:image/png;base64,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" +
+  "5CYII=";
