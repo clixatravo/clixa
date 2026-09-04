@@ -59,8 +59,7 @@ export const EVENEMENT_CONSENTEMENT = "clixa:consentement";
  * ⚠️ C'est le primitif prévu pour ça : une valeur que seul le navigateur
  * connaît, avec un instantané serveur explicite. `useState` rempli dans un
  * effet ferait la même chose en apparence, mais rendrait deux fois et
- * déclenche `react-hooks/set-state-in-effect` — c'est déjà la raison pour
- * laquelle `HeureLocale` s'en sert.
+ * déclenche `react-hooks/set-state-in-effect`.
  *
  * ⚠️ L'instantané doit rester stable d'un appel à l'autre. Une chaîne ou
  * `undefined` le sont ; un objet reconstruit à chaque lecture ferait boucler

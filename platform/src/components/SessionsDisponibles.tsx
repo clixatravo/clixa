@@ -9,7 +9,6 @@ import {
   seancesHebdomadaires,
 } from "@/lib/catalogue";
 import { PlacesBadge } from "@/components/ui/Badge";
-import { HeureLocale } from "@/components/HeureLocale";
 
 /**
  * FE-07 — Bloc de sélection de session.
@@ -53,13 +52,28 @@ export function SessionsDisponibles({
                 <span className="font-display text-ivory block text-base font-semibold">
                   {formatPeriode(s.debut, s.fin)}
                 </span>
+                {/*
+                  ⚠️ **L'horaire n'est annoncé qu'une fois.** La ligne portait
+                  aussi la conversion dans le fuseau du visiteur : « 8 samedis ·
+                  9h00–13h00 · UTC · 10h00–14h00 chez vous ». Deux fourchettes
+                  d'heures côte à côte, séparées d'un point médian comme le
+                  reste, se lisent comme **deux créneaux au choix** — et non
+                  comme le même créneau dit deux fois. Le second, en or, tirait
+                  même l'œil davantage.
+
+                  L'attention était bonne : un participant à Abidjan et un autre
+                  à Casablanca ne lisent pas la même heure. Elle se paie d'une
+                  ambiguïté sur la seule information qui décide si l'on peut
+                  suivre, et la direction a tranché le 4 septembre 2026 : une
+                  seule heure, celle de la cadence, avec son fuseau écrit à
+                  côté.
+                */}
                 {(() => {
                   const zone = s.mode === "presentiel" ? undefined : s.fuseau;
                   const bas = [s.cadence, zone && libelleFuseau(zone)].filter(Boolean);
                   return bas.length > 0 ? (
                     <small className="font-body text-ivory-dim mt-0.5 block text-[0.74rem]">
                       {bas.join(" · ")}
-                      {zone && <HeureLocale debut={s.debut} fin={s.fin} />}
                     </small>
                   ) : null;
                 })()}
