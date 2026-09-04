@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
 import { Button } from "@/components/ui/Button";
 import { getAgenda, getProgrammes, getSpecialisations, libelleMode } from "@/lib/catalogue";
+import { DEVISE } from "@/lib/societe";
 
 export const metadata: Metadata = {
   title: "À propos",
-  description:
-    "CLIXA Institute — Center of Leadership, Innovation & Excellence in Africa. Former, certifier et accompagner les dirigeants et les organisations du continent.",
+  description: `CLIXA Institute — ${DEVISE}. Former, certifier et accompagner les dirigeants et les organisations du continent.`,
 };
 
 const leviers = [
@@ -75,9 +75,7 @@ export default async function APropos() {
       <section className="border-line relative overflow-hidden border-b px-8 py-16 lg:py-20">
         <div className="ambient-glow-top" aria-hidden="true" />
         <div className="relative z-10 mx-auto max-w-[1180px]">
-          <div className="eyebrow mono-label mb-5">
-            Center of Leadership, Innovation &amp; Excellence in Africa
-          </div>
+          <div className="eyebrow mono-label mb-5">{DEVISE}</div>
           <h1 className="mb-6 max-w-[18ch] text-[clamp(2.2rem,4.6vw,3.4rem)] font-bold">
             Former ceux qui font bouger les{" "}
             <span className="gold-gradient-text">organisations africaines</span>.

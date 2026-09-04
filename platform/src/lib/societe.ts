@@ -19,3 +19,23 @@ export const SOCIETE = {
   if: "71921918",
   gerant: "Mounir MOUKHTARI",
 } as const;
+
+/**
+ * La devise de la marque — celle qui explique le nom.
+ *
+ * ⚠️ **Le X majuscule n'est pas une coquette.** CLIXA se lit dans cette
+ * phrase : **C**enter of **L**eadership, **I**nnovation & e**X**cellence in
+ * **A**frica. Écrite « Excellence », elle cesse d'expliquer quoi que ce soit —
+ * il reste une devise en anglais sous un nom qu'elle ne justifie plus.
+ *
+ * Le site l'écrivait ainsi à trois endroits — le pied de page, le chapeau de
+ * la page « À propos » et sa description pour les moteurs — quand le
+ * certificat de la direction porte bien le X. Trois copies d'une même phrase,
+ * et c'est la copie qui avait raison qui était minoritaire.
+ *
+ * ⚠️ Le certificat garde sa propre formulation, « **Centre** de Leadership »,
+ * et ne lit donc pas cette constante. Il reproduit un document que la
+ * direction délivre à la main : en aligner la langue serait retoucher son
+ * document, pas corriger le site. L'écart Center / Centre lui revient.
+ */
+export const DEVISE = "Center of Leadership, Innovation & eXcellence in Africa";
