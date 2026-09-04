@@ -357,7 +357,7 @@ export default async function Accueil() {
               Au cœur de l&apos;Institut <span className="gold-gradient-text">CLIXA</span>.
             </h2>
             <p className="text-ivory-dim/80 mx-auto mt-3 max-w-[62ch] text-[0.94rem] leading-relaxed">
-              De la salle de conseil exécutive à la délivrance des diplômes officiels : découvrez
+              De la salle de conseil exécutive à la remise du certificat professionnel : découvrez
               les standards pédagogiques panafricains.
             </p>
           </div>
@@ -393,9 +393,24 @@ export default async function Accueil() {
                   <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
                     Le Catalogue Exécutif
                   </h3>
+                  {/*
+                    ⚠️ Le nombre vient du catalogue, il ne s'écrit pas. La règle
+                    est déjà posée plus haut pour les repères du héros — « aucun
+                    n'est écrit à la main, aucun ne peut donc survivre à ce qu'il
+                    décrit » — et ce « 12 » y échappait, quatre lignes sous le
+                    commentaire qui l'interdit.
+
+                    ⚠️ Et « modalités de financement entreprise » promettait ce
+                    que le catalogue ne contient pas. Le champ `payeurType`
+                    existe bien sur l'inscription, mais son propre commentaire
+                    dit à quoi il sert : « permettre d'ajouter l'offre entreprise
+                    sans refaire le tunnel ». Elle n'est donc pas encore là.
+                    À sa place, la plaquette — qui existe pour les douze, et que
+                    la fiche offre en téléchargement.
+                  */}
                   <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
-                    Syllabus complets des 12 filières d&apos;excellence, plans de cours et modalités
-                    de financement entreprise.
+                    Syllabus complets des {total} parcours, plans de cours détaillés et une
+                    plaquette PDF à télécharger pour chacun.
                   </p>
                 </div>
                 <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
@@ -449,7 +464,7 @@ export default async function Accueil() {
               </div>
             </div>
 
-            {/* Carte 3 : Certification Diplômante */}
+            {/* Carte 3 : le certificat */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
               <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
                 {/*
@@ -503,7 +518,7 @@ export default async function Accueil() {
               <div className="flex flex-1 flex-col justify-between p-6">
                 <div>
                   <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
-                    Diplôme &amp; Reconnaissance
+                    Certificat &amp; Reconnaissance
                   </h3>
                   {/*
                     ⚠️ « Titres certifiants » a été retiré. Un *titre* a un sens
