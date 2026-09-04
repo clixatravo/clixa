@@ -17,6 +17,7 @@
 import { prochaineEtape } from "../src/lib/inscriptions.js";
 import { pasDansLeFutur } from "../src/collections/champs.js";
 import type { Dossier } from "../src/lib/inscriptions.js";
+import { pageAcceptelaProposition } from "../src/lib/rappel-propose.js";
 
 let manques = 0;
 const dire = (q: string, v: boolean) => {
@@ -117,6 +118,42 @@ dire("aujourd'hui passe, quelle que soit l'heure", valide(new Date().toISOString
 const midi = new Date();
 midi.setUTCHours(12, 0, 0, 0);
 dire("⚠️ y compris midi UTC, ce que pose le sélecteur « jour seul »", valide(midi.toISOString()));
+
+/*
+  ── Où l'on propose le rappel, et où l'on se tait ──────────────────────────
+  Même nature que `prochaineEtape` : une règle pure, qui décide de ce que la
+  page demande et quand. Elle s'éprouve sans base et sans réseau.
+
+  ⚠️ Ce qui compte ici, c'est le silence. Proposer « laissez vos coordonnées »
+  à quelqu'un qui remplit déjà le formulaire d'inscription est un obstacle posé
+  devant la conversion qu'on cherche — et c'est le genre de règle qu'une
+  refonte de routes casse sans bruit.
+*/
+console.log("\n── Où l'on propose le rappel ───────────────────────────────\n");
+
+for (const chemin of [
+  "/inscription",
+  "/inscription?formation=directeur-marketing",
+  "/inscription/CLX-ABCD1234",
+  "/contact",
+  "/compte",
+  "/compte/creer",
+  "/mentions-legales",
+  "/confidentialite",
+]) {
+  dire(`silence sur ${chemin}`, !pageAcceptelaProposition(chemin.split("?")[0] as string));
+}
+
+for (const chemin of [
+  "/",
+  "/formations",
+  "/formations/directeur-marketing",
+  "/blog",
+  "/specialisations/finance-controle",
+  "/campus",
+]) {
+  dire(`proposée sur ${chemin}`, pageAcceptelaProposition(chemin));
+}
 
 console.log(manques === 0 ? "\nÉtapes : tout tient." : `\nÉtapes : ${manques} manque(s).`);
 process.exit(manques === 0 ? 0 : 1);

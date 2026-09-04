@@ -125,3 +125,40 @@ test.describe("Apparitions", () => {
     await contexte.close();
   });
 });
+
+/**
+ * La proposition de rappel — celle qui rattrape le trafic acheté.
+ *
+ * ⚠️ Elle ne s'ouvre pas à l'arrivée, et c'est tout ce qui la sépare de la
+ * fenêtre qu'on déteste. Elle attend un signe d'intérêt : vingt-cinq secondes
+ * de lecture, ou la moitié de la page. L'épreuve paie donc cette attente —
+ * une trentaine de secondes — parce que c'est justement le délai qui fait la
+ * différence entre une proposition et une agression.
+ */
+test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ page }) => {
+  test.setTimeout(90_000);
+
+  await page.goto("/formations/directeur-marketing");
+
+  const fenetre = page.getByRole("dialog", { name: /Une question avant de vous décider/i });
+  await expect(fenetre, "rien à l'arrivée").toBeHidden();
+
+  // Le signe d'intérêt : on lit.
+  await expect(fenetre).toBeVisible({ timeout: 40_000 });
+
+  /*
+    Ce qu'elle demande, et rien de plus : de quoi rappeler, et l'accord pour
+    le faire. Une fenêtre qui réclame l'adresse, l'entreprise et le budget se
+    fait fermer.
+  */
+  await expect(fenetre.locator('input[name="nom"]')).toBeVisible();
+  await expect(fenetre.locator('input[name="whatsapp"]')).toBeVisible();
+
+  const accord = fenetre.locator('input[name="consentement"]');
+  await expect(accord).toBeVisible();
+  await expect(accord, "jamais cochée d'avance").not.toBeChecked();
+
+  // Et elle se ferme, sans rien laisser derrière.
+  await fenetre.getByRole("button", { name: "Fermer" }).click();
+  await expect(fenetre).toBeHidden();
+});
