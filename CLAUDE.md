@@ -313,11 +313,38 @@ découvrir l'écart au paiement — exactement ce que le tableau des rythmes exi
 pour éviter. Les trois montants restent affichés côte à côte sur la fiche ;
 c'est la vignette, la carte et l'image de partage qui portent le maximum.
 
-**La cohorte de septembre est ouverte** : douze sessions, samedi 19 septembre
-pour les parcours exécutifs et dimanche 20 pour la préparation PMP, huit
-séances hebdomadaires jusqu'au 7 et 8 novembre. Mode « visio » — les séances
-sont live à heure fixe ; « en ligne » afficherait « Accès permanent » et
-promettrait au visiteur de suivre à son rythme.
+**La cohorte du 3 octobre est ouverte** : douze sessions, toutes le **samedi
+3 octobre 2026**, huit séances hebdomadaires jusqu'au 21 novembre. Dix parcours
+le matin (9h00–13h00 UTC), les ressources humaines et la préparation PMP
+l'après-midi (13h00–17h00). Mode « visio » — les séances sont live à heure
+fixe ; « en ligne » afficherait « Accès permanent » et promettrait au visiteur
+de suivre à son rythme.
+
+⚠️ **Une seule date, parce que la campagne n'en annonce qu'une.** L'annonce
+Facebook lancée le 3 septembre 2026 promet « du 03 octobre au 21 novembre » ;
+le catalogue disait encore septembre, et deux parcours partaient le dimanche.
+Qui cliquait sur l'annonce tombait sur une fiche qui ne disait pas la même
+chose — sur la page qui décide de son achat.
+`scripts/decaler-cohorte.ts` a porté la bascule et reste rejouable : il vise
+des dates de départ, jamais un décalage en jours — un script qui ajoute
+« quatorze jours » déplace de vingt-huit si on le lance deux fois, et la
+seconde cohorte a l'air aussi plausible que la première.
+
+⚠️ **La cadence est du texte saisi à la main, et rien ne la recalcule.** Elle
+porte le nom du jour (« 8 samedis · 9h00–13h00 ») : déplacer un dimanche au
+samedi sans y toucher laisse la fiche annoncer « 8 dimanches » sous une date
+qui tombe un samedi. L'intitulé, lui, se recompose tout seul dans un crochet de
+`Sessions.ts` — le réécrire à la main est du travail aussitôt écrasé.
+
+⚠️ **L'heure enregistrée n'est pas l'heure annoncée, et personne ne les
+confrontait.** En regroupant les douze, les ressources humaines se sont
+révélées enregistrées à **12:00** quand leur cadence promettait 13h00–17h00 —
+avec une fin à 12:00 elle aussi, soit une séance longue de zéro minute.
+`HeureLocale` convertit `debut` et `fin` dans le fuseau du visiteur : il lisait
+« 13h00–13h00 chez vous ». La cadence est du texte, les instants sont des
+dates, et chacun avait l'air juste tout seul. La seconde passe du script recale
+les instants sur la cadence — qui fait foi, étant ce que le visiteur lit
+d'abord et ce que porte la campagne.
 
 La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
