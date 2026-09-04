@@ -800,6 +800,32 @@ génération, pas seulement au code, la même leçon que le PDF de la plaquette.
   retaper aurait ouvert une seconde copie, exactement le défaut déjà vu sur le
   numéro d'admissions et les moyens de paiement affichés sur la fiche.
 
+⚠️ **Les marques sont les vrais dessins, pas des imitations au texte** (depuis
+le 4 septembre 2026, `lib/cachet.ts`). Le sigle était composé en Times-Bold
+avec un point doré à côté, SkillAfrique en deux morceaux de texte : de loin
+cela ressemblait aux logos, de près c'étaient d'autres lettres, et la flèche
+qui traverse le A de SkillAfrique — son seul élément dessiné — n'existait pas.
+Un certificat est justement le document qu'on regarde de près.
+
+- ⚠️ **Le blanc doit être exactement celui du bloc qui porte le logo.** Sorti
+  de la réduction, le fond de SkillAfrique valait (254, 254, 254) : une marche
+  d'un cran, invisible dans le code, et un rectangle gris pâle encadrait le
+  logo sur le rendu. Les pixels quasi blancs sont ramenés à 255 avant la mise
+  en palette.
+- ⚠️ **Une étoile ne s'imprimait pas.** Le corps portait « ★ CLIXA » ; U+2605
+  n'existe ni dans Times ni dans Helvetica, les seules polices intégrées à
+  react-pdf, et un glyphe absent est abandonné **sans un mot**. Il restait
+  « CLIXA » seul sous le titre, qui se lisait comme une coquille. Le modèle de
+  la direction ne l'imprimait pas davantage — l'étoile y est un carré vide.
+- ⚠️ **Le médaillon de fond est dessiné, pas inséré comme image.** Réduit et
+  mis en palette pour tenir dans un module, du bleu nuit à 14/255 d'opacité
+  ressort **beige et opaque** — aussi lisible que le texte qu'il doit passer
+  derrière. Deux cercles et trois mots ne pèsent rien et leur opacité se règle
+  au centième.
+
+Aucun de ces trois défauts ne se voit au type, à la compilation ni au grep :
+il faut générer le PDF et le regarder (`qlmanage -t -s 1800 -o <dossier>`).
+
 ⚠️ **En le câblant sur la page du dossier, une liste s'est révélée fausse pour
 un parcours terminé.** Le bloc « Ce qu'il reste à faire » affichait toujours
 ses quatre étapes — signer le contrat, envoyer le règlement, annoncer le
