@@ -452,11 +452,31 @@ export default async function Accueil() {
             {/* Carte 3 : Certification Diplômante */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
               <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
+                {/*
+                  ⚠️ Le spécimen du certificat réel, celui que `lib/certificat.tsx`
+                  compose — et non plus une vue d'artiste.
+
+                  L'image précédente montrait un diplôme **en anglais**, décerné
+                  à « Eliza J. Reed » et signé par deux personnes qui n'existent
+                  pas — « Dr. Alastair Finch, Director » et « Sarah Jenkins,
+                  Chair » — à côté d'un écran affichant un tableau de bord
+                  d'apprentissage à « 100 % ». Or nos certificats sont en
+                  français, signés du gérant, et la décision A dit qu'il n'y a
+                  pas de e-learning cette année : la page d'accueil promettait
+                  donc un document et une plateforme que la maison ne délivre
+                  pas. Elle a été remplacée par le rendu du vrai certificat,
+                  composé sur fond d'encre pour tenir dans le cadre 16/10 sans
+                  qu'aucun bord ne soit rogné.
+
+                  ⚠️ Le filigrane « SPÉCIMEN » n'est pas décoratif : une image
+                  de certificat qui circule sans lui est un modèle offert à qui
+                  voudrait s'en fabriquer un.
+                */}
                 <Image
                   src="/images/marketing/certification-diplome-clixa.jpg"
-                  alt="Diplôme Officiel et Certification Exécutive CLIXA"
-                  width={1200}
-                  height={896}
+                  alt="Spécimen du certificat professionnel délivré par CLIXA Institute, barré de la mention SPÉCIMEN"
+                  width={1600}
+                  height={1000}
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
