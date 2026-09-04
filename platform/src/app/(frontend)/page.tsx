@@ -505,9 +505,23 @@ export default async function Accueil() {
                   <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
                     Diplôme &amp; Reconnaissance
                   </h3>
+                  {/*
+                    ⚠️ « Titres certifiants » a été retiré. Un *titre* a un sens
+                    précis et enregistré ; ce que la maison délivre est un
+                    **certificat professionnel**, et c'est ainsi que le document
+                    se nomme lui-même. Le « médaillon officiel » suivait le même
+                    penchant : ce qui atteste le document est le cachet de la
+                    société et la signature du gérant, pas une médaille.
+
+                    La phrase dit maintenant ce qui est imprimé sur le papier —
+                    et cela se vend mieux, parce que c'est vérifiable : un
+                    document nominatif, référencé, qui détaille les modules et
+                    les heures se dépose dans un dossier.
+                  */}
                   <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
-                    Délivrance de titres certifiants avec médaillon officiel pour valoriser votre
-                    trajectoire professionnelle et vos appels d&apos;offres.
+                    Un certificat professionnel nominatif et référencé, portant le cachet de la
+                    société et la signature du gérant, avec le détail des modules et le volume
+                    horaire.
                   </p>
                 </div>
                 <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
