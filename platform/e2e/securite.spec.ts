@@ -28,7 +28,7 @@ test.describe("Sécurité", () => {
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/inscription\/CLX-/);
-    const reference = page.url().split("/").pop()!;
+    const reference = new URL(page.url()).pathname.split("/").pop()!;
 
     const doc = await (await request.get(`/api/attestation/${reference}`)).text();
     expect(doc, "la balise ne doit pas être servie telle quelle").not.toContain(
@@ -54,7 +54,7 @@ test.describe("Sécurité", () => {
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/inscription\/CLX-/);
 
-    const reference = page.url().split("/").pop()!;
+    const reference = new URL(page.url()).pathname.split("/").pop()!;
     // Huit symboles sur trente-deux : quarante bits.
     expect(reference).toMatch(/^CLX-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/);
     // I, O, 0 et 1 sont exclus : une référence se dicte au téléphone.
@@ -159,9 +159,17 @@ test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ 
     Ce qui compte est ce qui sort vers l'extérieur, et ce qui se dépose sur
     l'appareil du visiteur.
   */
+  /*
+    ⚠️ **Deux traceurs, une seule règle.** L'épreuve ne visait que PostHog. Le
+    jour où le Pixel Meta a été branché, elle serait restée verte pendant qu'un
+    pixel partait sans accord — c'est mot pour mot ce qui est arrivé à la garde
+    de `api/recu`, écrite une fois et absente deux portes plus loin. On guette
+    donc les deux serveurs, et les cookies des deux.
+  */
+  const MESUREURS = /(^|\.)(posthog\.com|facebook\.net|facebook\.com)$/i;
   const versLeServeurDeMesure: string[] = [];
   page.on("request", (r) => {
-    if (/posthog\.com/i.test(new URL(r.url()).hostname)) versLeServeurDeMesure.push(r.url());
+    if (MESUREURS.test(new URL(r.url()).hostname)) versLeServeurDeMesure.push(r.url());
   });
 
   await page.goto("/");
@@ -170,7 +178,7 @@ test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ 
   expect(versLeServeurDeMesure, "aucune requête de mesure avant réponse").toHaveLength(0);
 
   const cookies = await page.context().cookies();
-  const mesure = cookies.filter((c) => /^ph_/.test(c.name));
+  const mesure = cookies.filter((c) => /^(ph_|_fbp$|_fbc$)/.test(c.name));
   expect(
     mesure.map((c) => c.name),
     "aucun cookie de mesure",
@@ -181,6 +189,17 @@ test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ 
     réponses avec le même poids. Un « Refuser » absent est un consentement
     arraché, pas donné.
   */
+  /*
+    ⚠️ Et le `<noscript><img>` du code de Meta ne doit être nulle part. Il
+    appelle `facebook.com/tr` à l'affichage, **sans passer par le moindre
+    script** : aucune vérification de consentement ne peut l'arrêter, et il
+    signalerait la visite de ceux qui ont refusé. C'est le seul morceau du
+    snippet officiel qu'aucune garde ne rattrape — d'où une épreuve sur le
+    HTML lui-même, et non sur le comportement.
+  */
+  const html = await page.content();
+  expect(html, "pas de pixel en noscript").not.toContain("facebook.com/tr");
+
   const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
   if (await bandeau.isVisible().catch(() => false)) {
     await expect(bandeau.getByRole("button", { name: "Accepter" })).toBeVisible();
@@ -246,4 +265,49 @@ test("sans consentement, ni le rappel ni la pré-inscription n'aboutissent", asy
     maxRedirects: 0,
   });
   expect(avecAccord.headers()["location"], "avec l'accord, la demande passe").toContain("envoye=1");
+});
+
+/**
+ * ⚠️ Le Pixel Meta ne part qu'après un accord — et il part alors vraiment.
+ *
+ * L'épreuve au-dessus prouve qu'il ne part pas. Celle-ci prouve l'autre
+ * moitié, sans laquelle la première serait satisfaite par un pixel cassé : une
+ * garde qui n'a jamais vu la chose qu'elle laisse passer ne dit rien de plus
+ * qu'un traceur en panne.
+ *
+ * ⚠️ **Aucune requête n'atteint Meta.** Elles sont interceptées et coupées :
+ * on observe la tentative, pas son arrivée. Sans cela, chaque série d'épreuves
+ * ajouterait des conversions inventées au tableau de bord de la campagne — et
+ * l'identifiant employé ici est faux de toute façon, en développement comme en
+ * intégration continue.
+ */
+test("le pixel Meta attend l'accord, puis se charge", async ({ page }) => {
+  const tentatives: string[] = [];
+  await page.route(/facebook\.(net|com)/, async (route) => {
+    tentatives.push(route.request().url());
+    await route.abort();
+  });
+
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
+  await expect(
+    bandeau,
+    "sans bandeau, cette épreuve ne prouve rien : le pixel n'est pas configuré",
+  ).toBeVisible();
+
+  expect(tentatives, "rien vers Meta tant que la question est posée").toHaveLength(0);
+
+  await bandeau.getByRole("button", { name: "Accepter" }).click();
+
+  /*
+    Et sans recharger la page : quelqu'un qui accepte ne doit pas avoir à le
+    faire pour que sa visite compte. C'est ce que `useSyncExternalStore` sert à
+    obtenir dans `PixelMeta`, et c'est ce qu'on vérifie ici.
+  */
+  await expect
+    .poll(() => tentatives.length, { message: "le script de Meta doit être demandé" })
+    .toBeGreaterThan(0);
+  expect(tentatives.some((u) => u.includes("fbevents.js"))).toBe(true);
 });

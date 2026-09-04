@@ -143,6 +143,23 @@ test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ 
   const fenetre = page.getByRole("dialog", { name: /Une question avant de vous décider/i });
   await expect(fenetre, "rien à l'arrivée").toBeHidden();
 
+  /*
+    ⚠️ **Une seule question à la fois, et le bandeau passe devant.** Depuis que
+    le Pixel Meta est branché, le bandeau de consentement paraît — et la
+    proposition de rappel se tait tant qu'il attend une réponse. C'est la règle
+    voulue : deux fenêtres qui demandent deux choses en même temps, en bas du
+    même écran, se chevauchent et se font refuser ensemble.
+
+    L'épreuve répond donc d'abord, comme un visiteur. Elle est tombée le jour
+    où le pixel a été posé, et elle avait raison de tomber : c'est bien le
+    comportement qui a changé.
+  */
+  const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
+  if (await bandeau.isVisible().catch(() => false)) {
+    await bandeau.getByRole("button", { name: "Refuser" }).click();
+    await expect(bandeau).toBeHidden();
+  }
+
   // Le signe d'intérêt : on lit.
   await expect(fenetre).toBeVisible({ timeout: 40_000 });
 

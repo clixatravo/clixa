@@ -70,7 +70,7 @@ async function espaceAvecDossier(page: Page): Promise<string> {
   await page.check('input[name="consentement"]');
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/inscription\/CLX-/);
-  const reference = page.url().split("/").pop()!;
+  const reference = new URL(page.url()).pathname.split("/").pop()!;
 
   // Le compte se crée avec la même adresse, puis réclame son dossier par sa
   // référence — la double exigence que le formulaire impose.

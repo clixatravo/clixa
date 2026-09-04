@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@/components/Analytics";
+import { PixelMeta } from "@/components/PixelMeta";
 import { BandeauCookies } from "@/components/BandeauCookies";
 import { PopupRappel } from "@/components/PopupRappel";
 import { Apparitions } from "@/components/Apparitions";
@@ -107,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteFooter />
         </div>
         <Analytics />
+        <PixelMeta />
         <BandeauCookies />
         <PopupRappel />
         <Apparitions />

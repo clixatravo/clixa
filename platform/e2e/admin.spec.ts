@@ -83,7 +83,7 @@ test.describe("Back-office", () => {
       page.waitForURL(/\/inscription\/CLX-/, { timeout: 60_000 }),
       page.click('button[type="submit"]'),
     ]);
-    const reference = page.url().split("/").pop()!;
+    const reference = new URL(page.url()).pathname.split("/").pop()!;
 
     // Demander le contrat, puis le signer.
     await page.click('button:has-text("Demander mon contrat")');

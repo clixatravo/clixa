@@ -33,7 +33,7 @@ async function preInscrire(page: Page): Promise<string> {
   ]);
   expect(reponse.status(), `la pré-inscription a répondu ${reponse.status()}`).toBe(303);
   await page.waitForURL(/\/inscription\/CLX-/);
-  return page.url().split("/").pop()!;
+  return new URL(page.url()).pathname.split("/").pop()!;
 }
 
 test("le contrat se demande, puis se signe", async ({ page }) => {

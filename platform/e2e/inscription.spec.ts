@@ -39,7 +39,13 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   );
   await page.waitForURL(/\/inscription\/CLX-/);
 
-  const reference = page.url().split("/").pop()!;
+  /*
+    ⚠️ Le chemin, pas l'URL entière. La redirection porte maintenant
+    `?nouveau=1` — le marqueur qui dit à Meta qu'une pré-inscription vient
+    d'aboutir — et découper l'URL brute rendait « CLX-XXXXXXXX?nouveau=1 ».
+    Six épreuves lisaient la référence ainsi, et dix sont tombées d'un coup.
+  */
+  const reference = new URL(page.url()).pathname.split("/").pop()!;
   expect(reference, "la référence doit suivre le format attendu").toMatch(
     /^CLX-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/,
   );

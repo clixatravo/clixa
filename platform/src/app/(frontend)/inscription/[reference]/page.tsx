@@ -7,6 +7,8 @@ import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
+import { SignalerLead } from "@/components/SignalerLead";
+import { Suspense } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -151,6 +153,15 @@ export default async function Dossier({ params, searchParams }: Props) {
 
   return (
     <>
+      {/*
+        La conversion n'est signalée à Meta que d'ici : cette page n'existe
+        qu'après un enregistrement réussi. `useSearchParams` impose une
+        frontière Suspense sous le routeur d'app.
+      */}
+      <Suspense fallback={null}>
+        <SignalerLead reference={dossier.reference} />
+      </Suspense>
+
       <FilAriane items={[{ label: "Votre dossier" }]} />
 
       <section className="px-8 py-13">

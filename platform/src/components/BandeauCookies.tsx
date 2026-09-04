@@ -5,6 +5,7 @@ import {
   consentementAuServeur,
   ecrireConsentement,
   lireConsentement,
+  MESURE_ACTIVE,
   souscrireConsentement,
 } from "@/lib/consentement";
 
@@ -12,7 +13,7 @@ import {
  * Le bandeau de consentement à la mesure d'audience.
  *
  * ── ⚠️ Il ne paraît que s'il y a quelque chose à consentir ──────────────────
- * Sans `NEXT_PUBLIC_POSTHOG_KEY`, aucune mesure ne tourne, aucun cookie n'est
+ * Sans traceur configuré, aucune mesure ne tourne, aucun cookie n'est
  * posé — et le bandeau ne s'affiche pas du tout. Demander l'accord pour des
  * traceurs qu'on n'utilise pas serait du théâtre : le visiteur clique sans
  * lire, et le jour où l'on mesurera vraiment, son clic d'aujourd'hui aurait
@@ -34,7 +35,7 @@ import {
  * et c'est précisément ce que la CNIL reproche aux bandeaux qu'on connaît.
  */
 export function BandeauCookies() {
-  const mesureActive = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY);
+  const mesureActive = MESURE_ACTIVE;
 
   /*
     ⚠️ Rien au premier rendu, et c'est voulu. `localStorage` n'existe pas au

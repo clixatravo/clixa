@@ -118,6 +118,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           NEXT_PUBLIC_SITE_ENV: preview
+          # ⚠️ Faux exprès. Il ne sert qu'à allumer le chemin de code : sans
+          # lui, la garde « aucune mesure sans accord » resterait verte en
+          # mesurant un pixel éteint. L'épreuve coupe de toute façon les
+          # requêtes vers Meta — le vrai identifiant ne doit jamais recevoir
+          # d'événements d'épreuve.
+          NEXT_PUBLIC_META_PIXEL_ID: "0000000000000000"
 
       # Le rapport ne sert qu'en cas d'échec : c'est là qu'on veut la capture
       # d'écran et la trace, pas dans les vingt exécutions qui passent.

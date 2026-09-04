@@ -261,5 +261,11 @@ export async function POST(request: Request) {
   await courrielParticipant(payload, details);
   await courrielEquipe(payload, details);
 
-  redirect(`/inscription/${reference}` as Route);
+  /*
+    ⚠️ `?nouveau=1` n'est pas décoratif : la page du dossier signale la
+    conversion à Meta, et c'est ce paramètre qui distingue l'arrivée après
+    envoi des visites suivantes — le participant rouvre cette page pendant des
+    semaines pour suivre son dossier. Voir `components/SignalerLead.tsx`.
+  */
+  redirect(`/inscription/${reference}?nouveau=1` as Route);
 }

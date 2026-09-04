@@ -17,6 +17,31 @@
  */
 export const CLEF_CONSENTEMENT = "clixa.mesure.v1";
 
+/**
+ * L'identifiant du Pixel Meta, et pourquoi il vit dans une variable.
+ *
+ * Il n'a rien d'un secret — il paraît en clair dans le source de chaque page,
+ * et c'est ainsi que Meta le lit. La variable ne sert donc pas à le cacher :
+ * elle sert à **ne pas l'allumer en développement**. Sans elle, chaque série
+ * d'épreuves et chaque page ouverte sur le poste de travail compteraient comme
+ * du trafic dans le tableau de bord de la campagne — et le bandeau de
+ * consentement, qui ne paraît que si quelque chose mesure, se mettrait en
+ * travers des quatre-vingts épreuves.
+ */
+export const PIXEL_META = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+
+/**
+ * Y a-t-il quelque chose à faire accepter ?
+ *
+ * ⚠️ Trois endroits posaient cette question — le bandeau, la proposition de
+ * rappel qui se tait tant qu'il attend, et la mesure elle-même — et **chacun
+ * l'écrivait à sa façon**, en ne regardant que la clef PostHog. Brancher un
+ * second traceur sans toucher aux trois aurait donné exactement ce qu'on
+ * cherche à empêcher : un pixel qui part sans que personne n'ait rien demandé,
+ * sous un bandeau qui ne s'affiche pas.
+ */
+export const MESURE_ACTIVE = Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY) || Boolean(PIXEL_META);
+
 export type Consentement = "accepte" | "refuse";
 
 /**

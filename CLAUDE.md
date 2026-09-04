@@ -1601,6 +1601,57 @@ et `EMAIL_EQUIPE` (qui reçoit la copie interne).
 
 Le lien « Mot de passe oublié » de `/admin` passe par ce même adaptateur.
 
+## Le Pixel Meta
+
+**Il ne part qu'après un accord** (`components/PixelMeta.tsx`, depuis le
+4 septembre 2026). Meta demande de coller son code dans le `<head>` : c'est
+exactement ce qu'il ne faut pas faire ici. Le code de base pose `_fbp` / `_fbc`
+et signale la page **au chargement**, avant que le visiteur ait pu dire quoi
+que ce soit — sous un bandeau de consentement écrit pour l'empêcher.
+
+Le pixel suit donc le chemin de PostHog : sans accord, le script n'est pas même
+téléchargé. Ce n'est pas un traceur qu'on démarre puis qu'on éteint, c'est un
+traceur qui n'existe pas.
+
+- ⚠️ **Le `<noscript><img>` du snippet officiel n'est nulle part.** Il appelle
+  `facebook.com/tr` à l'affichage, **sans passer par le moindre script** :
+  aucune vérification de consentement ne peut l'arrêter. C'est le seul morceau
+  du code de Meta qu'aucune garde ne rattrape — d'où une épreuve sur le HTML
+  lui-même, et non sur le comportement.
+- ⚠️ **`Lead` part à l'arrivée sur le dossier, jamais à l'ouverture du
+  formulaire.** Meta optimise la diffusion sur l'événement déclaré : le
+  brancher sur la visite de `/inscription?formation=…` lui apprendrait à
+  chercher des gens qui ouvrent un formulaire et s'en vont, et l'argent
+  suivrait cette leçon.
+- **Deux verrous pour ne compter qu'une fois** : `?nouveau=1`, posé par la
+  redirection de `api/inscription`, distingue l'arrivée après envoi des
+  visites suivantes — le participant rouvre cette page pendant des semaines ;
+  et la référence est retenue dans `localStorage`, ce qui tient le
+  rechargement. ⚠️ **Six épreuves lisaient la référence en découpant l'URL
+  entière** et rendaient « CLX-XXXXXXXX?nouveau=1 » : dix sont tombées d'un
+  coup. Elles lisent le chemin.
+- ⚠️ **L'identifiant est faux en développement et en intégration continue**
+  (`0000000000000000`), et l'épreuve **coupe** les requêtes vers Meta. Sans
+  cela, chaque série ajouterait des conversions inventées au tableau de bord
+  de la campagne. Le vrai identifiant ne vit qu'en production.
+- ⚠️ **Un faux identifiant reste indispensable** : sans lui, la garde « aucune
+  mesure sans accord » resterait verte en mesurant un pixel éteint.
+- ⚠️ **Trois endroits demandaient « la mesure est-elle active ? »** — le
+  bandeau, la proposition de rappel, la mesure — et chacun ne regardait que la
+  clef PostHog. `MESURE_ACTIVE` les réunit ; brancher un second traceur sans y
+  toucher aurait donné un pixel qui part sous un bandeau qui ne s'affiche pas.
+- ⚠️ **Le bandeau paraît désormais en production**, puisque quelque chose
+  mesure. Il ne s'y affichait pas jusque-là.
+- ⚠️ **Meta comptera moins de conversions que de clics** : ceux qui refusent ne
+  sont pas suivis. Ce n'est pas une panne du pixel.
+
+⚠️ **Et la proposition de rappel ne se réveillait jamais.** Son effet ne lisait
+le consentement qu'au montage : quelqu'un qui répondait au bandeau puis restait
+sur la page ne voyait **jamais** la fenêtre — c'est-à-dire exactement le
+visiteur venu d'une annonce, qui atterrit sur une fiche et n'en bouge pas. Le
+défaut n'existait pas tant que rien ne mesurait ; il est né avec le pixel, et
+c'est l'épreuve qui l'a trouvé le jour même.
+
 ## La connexion Google
 
 Un participant revient sur son dossier trois fois dans l'année. Il a oublié le
@@ -1774,6 +1825,7 @@ supplémentaire.
 | `EMAIL_EXPEDITEUR` · `EMAIL_EQUIPE` | expéditeur et copie interne manquants |
 | `CRON_SECRET` | `/api/relances` répond 503 |
 | `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` | aucun bouton Google n'est offert |
+| `NEXT_PUBLIC_META_PIXEL_ID` | aucun pixel, et pas de bandeau de consentement |
 
 ⚠️ **`NEXT_PUBLIC_*` ne peut pas être « sensible » en Preview ni en Production.**
 Un `vercel env rm` qui réussit suivi d'un `add` qui échoue sur

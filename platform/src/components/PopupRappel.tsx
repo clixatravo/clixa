@@ -1,8 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
-import { lireConsentement } from "@/lib/consentement";
+import {
+  consentementAuServeur,
+  lireConsentement,
+  MESURE_ACTIVE,
+  souscrireConsentement,
+} from "@/lib/consentement";
 import { pageAcceptelaProposition, peutProposer, retenirReponse } from "@/lib/rappel-propose";
 
 /**
@@ -49,6 +54,20 @@ export function PopupRappel() {
     retenirReponse("ferme");
   }, []);
 
+  /*
+    ⚠️ **Relu à chaque réponse du bandeau, et pas une seule fois au montage.**
+    L'effet ne dépendait que du chemin : quelqu'un qui répondait au bandeau
+    puis restait sur la page ne voyait **jamais** la proposition — l'effet
+    avait déjà renoncé, et rien ne le rappelait. C'est-à-dire précisément le
+    visiteur venu d'une annonce, qui atterrit sur une fiche et n'en bouge pas.
+    Trouvé par l'épreuve, le jour où le bandeau s'est mis à paraître.
+  */
+  const reponse = useSyncExternalStore(
+    souscrireConsentement,
+    lireConsentement,
+    consentementAuServeur,
+  );
+
   useEffect(() => {
     if (!pageAcceptelaProposition(chemin) || !peutProposer()) return;
 
@@ -56,7 +75,7 @@ export function PopupRappel() {
       ⚠️ La mesure d'audience passe avant : tant que son bandeau attend une
       réponse, on ne pose pas une seconde question par-dessus.
     */
-    if (process.env.NEXT_PUBLIC_POSTHOG_KEY && lireConsentement() === undefined) return;
+    if (MESURE_ACTIVE && reponse === undefined) return;
 
     let fait = false;
     const ouvrir = () => {
@@ -76,7 +95,7 @@ export function PopupRappel() {
       window.clearTimeout(minuteur);
       window.removeEventListener("scroll", auDefilement);
     };
-  }, [chemin]);
+  }, [chemin, reponse]);
 
   // Échap ferme, et le premier champ prend le clavier à l'ouverture.
   useEffect(() => {
