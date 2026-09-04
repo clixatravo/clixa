@@ -91,11 +91,13 @@ function charger(): Promise<boolean> {
  * C'est la porte que tout traverse : un appel ajouté plus tard, depuis un
  * endroit qui aurait oublié la règle, ne peut pas la contourner.
  */
-export function signaler(evenement: string): void {
+export function signaler(evenement: string, parametres?: Record<string, unknown>): void {
   if (!PIXEL_META || lireConsentement() !== "accepte") return;
   void charger().then((pret) => {
     if (!pret) return;
-    (window as unknown as { fbq?: Fbq }).fbq?.("track", evenement);
+    const fbq = (window as unknown as { fbq?: Fbq }).fbq;
+    if (parametres) fbq?.("track", evenement, parametres);
+    else fbq?.("track", evenement);
   });
 }
 

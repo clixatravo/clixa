@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FilAriane } from "@/components/FilAriane";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
+import { SignalerLead } from "@/components/SignalerLead";
 
 export const metadata: Metadata = {
   title: "Être rappelé",
@@ -51,6 +52,19 @@ export default async function Contact({ searchParams }: Props) {
           <h1 className="mb-4 text-[clamp(2.1rem,4.4vw,3.2rem)] font-bold">
             Parlons de votre projet de <span className="gold-gradient-text">formation</span>.
           </h1>
+
+          {/*
+            Une demande de rappel est un lead, au même titre qu'une
+            pré-inscription — et c'est même celui que le trafic acheté produit
+            le plus souvent. Sans lui, Meta n'apprendrait à chercher que les
+            rares visiteurs qui vont jusqu'au bout du tunnel du premier coup.
+            L'étiquette les distingue dans le tableau de bord.
+
+            ⚠️ La clef est fixe, et n'inclut donc qu'une demande par navigateur.
+            Il n'existe rien d'unique à quoi l'accrocher — la même règle que la
+            fenêtre de rappel, qui ne se represente jamais après un envoi.
+          */}
+          <SignalerLead actif={Boolean(envoye)} clef="rappel" source="demande-de-rappel" />
 
           {envoye ? (
             <div className="border-emerald/60 bg-emerald/15 rounded-clixa border p-8 shadow-xl backdrop-blur-sm">

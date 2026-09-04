@@ -311,3 +311,71 @@ test("le pixel Meta attend l'accord, puis se charge", async ({ page }) => {
     .toBeGreaterThan(0);
   expect(tentatives.some((u) => u.includes("fbevents.js"))).toBe(true);
 });
+
+/**
+ * ⚠️ `Lead` part après un envoi réussi, et une seule fois.
+ *
+ * L'épreuve précédente prouve que le pixel se charge. Celle-ci prouve ce qu'il
+ * dit — et surtout **quand** : Meta optimise la diffusion sur l'événement
+ * déclaré, si bien qu'un `Lead` posé au chargement du formulaire lui
+ * apprendrait à chercher des gens qui ouvrent un formulaire et s'en vont.
+ *
+ * ⚠️ **`fbq` est remplacé avant le chargement de la page**, et rien ne part sur
+ * le réseau — ni vers Meta, ni vers son CDN. `PixelMeta` s'efface devant un
+ * `fbq` déjà posé : on mesure donc notre propre logique, sans dépendre d'un
+ * script tiers dont l'absence rendrait l'épreuve rouge pour une mauvaise
+ * raison.
+ */
+test("Lead ne part qu'après un envoi réussi, et une seule fois", async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { fbq?: unknown; __appels?: unknown[][] };
+    w.__appels = [];
+    w.fbq = (...args: unknown[]) => w.__appels!.push(args);
+  });
+
+  const leads = async () =>
+    page.evaluate(() =>
+      ((window as unknown as { __appels?: unknown[][] }).__appels ?? []).filter(
+        (a) => a[0] === "track" && a[1] === "Lead",
+      ),
+    );
+
+  await page.goto("/contact");
+
+  const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
+  await expect(bandeau, "le pixel doit être configuré, sinon rien n'est prouvé").toBeVisible();
+  await bandeau.getByRole("button", { name: "Accepter" }).click();
+
+  expect(await leads(), "rien avant l'envoi — ouvrir un formulaire n'est pas un lead").toHaveLength(
+    0,
+  );
+
+  await page.fill('form input[name="nom"]', "Épreuve Lead");
+  await page.fill('form input[name="whatsapp"]', "+212600000000");
+  await page.check('form input[name="consentement"]');
+  await page.click('form button[type="submit"]');
+  await page.waitForURL(/envoye=1/);
+  /*
+    ⚠️ L'envoi recharge le document : l'événement ne peut partir qu'une fois
+    React hydraté. Comparer aussitôt après `waitForURL` mesurait une page qui
+    n'avait pas encore exécuté son effet — et donnait zéro, pour une raison qui
+    n'a rien à voir avec la règle éprouvée.
+  */
+  await expect(page.getByText("Votre demande est bien enregistrée")).toBeVisible();
+  await expect.poll(async () => (await leads()).length).toBe(1);
+
+  const apres = await leads();
+  expect(apres, "un lead, et un seul").toHaveLength(1);
+  expect(apres[0]![2], "étiqueté, pour ne pas se confondre avec une pré-inscription").toMatchObject(
+    { content_name: "demande-de-rappel" },
+  );
+
+  /*
+    Et il ne repart pas au rechargement : `?envoye=1` est toujours dans l'URL,
+    et c'est le verrou de `localStorage` qui tient — celui du paramètre ne
+    suffirait pas.
+  */
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  expect(await leads(), "un rechargement ne compte pas une seconde conversion").toHaveLength(0);
+});

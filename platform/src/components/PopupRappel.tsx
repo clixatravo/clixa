@@ -9,6 +9,7 @@ import {
   souscrireConsentement,
 } from "@/lib/consentement";
 import { pageAcceptelaProposition, peutProposer, retenirReponse } from "@/lib/rappel-propose";
+import { compterLead } from "@/components/SignalerLead";
 
 /**
  * La proposition de rappel, pour le visiteur qui allait repartir sans rien dire.
@@ -134,6 +135,13 @@ export function PopupRappel() {
       const ou = reponse.headers.get("location") ?? "";
       if (ou.includes("envoye=1") || reponse.type === "opaqueredirect") {
         retenirReponse("envoye");
+        /*
+          La même conversion que sur la page de contact, et la même clef :
+          c'est le même geste, fait d'un autre endroit. Cette fenêtre n'a pas
+          d'écran de confirmation à elle — elle répond sur place — d'où
+          l'appel direct plutôt qu'un composant monté sur une page.
+        */
+        compterLead("rappel", "demande-de-rappel");
         setEtat("envoye");
         return;
       }

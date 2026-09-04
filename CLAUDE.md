@@ -1618,11 +1618,29 @@ traceur qui n'existe pas.
   aucune vérification de consentement ne peut l'arrêter. C'est le seul morceau
   du code de Meta qu'aucune garde ne rattrape — d'où une épreuve sur le HTML
   lui-même, et non sur le comportement.
-- ⚠️ **`Lead` part à l'arrivée sur le dossier, jamais à l'ouverture du
+- ⚠️ **`Lead` part après un envoi réussi, jamais à l'ouverture du
   formulaire.** Meta optimise la diffusion sur l'événement déclaré : le
   brancher sur la visite de `/inscription?formation=…` lui apprendrait à
   chercher des gens qui ouvrent un formulaire et s'en vont, et l'argent
-  suivrait cette leçon.
+  suivrait cette leçon. Éprouvé en le posant au chargement — l'épreuve passe
+  au rouge sur « ouvrir un formulaire n'est pas un lead ».
+- **Deux sortes de leads, un seul événement** : la pré-inscription et la
+  demande de rappel envoient toutes deux `Lead`, distinguées par
+  `content_name`. Deux événements séparés diviseraient le volume — Meta a
+  besoin d'un nombre de conversions suffisant pour apprendre quoi que ce soit
+  — et les confondre sans étiquette rendrait le tableau de bord illisible.
+  ⚠️ **La demande de rappel est celle que le trafic acheté produit le plus
+  souvent** : sans elle, Meta n'apprendrait à chercher que les rares visiteurs
+  qui vont jusqu'au bout du tunnel du premier coup.
+- ⚠️ **Aucune valeur monétaire n'est envoyée.** Une pré-inscription vaut plus
+  qu'une demande de rappel, mais de combien est une décision de la direction,
+  pas une constante à inventer dans le code.
+- ⚠️ **L'épreuve remplace `fbq` avant le chargement de la page** plutôt que
+  d'intercepter le réseau : `PixelMeta` s'efface devant un `fbq` déjà posé, si
+  bien qu'on mesure notre logique sans dépendre d'un script tiers dont
+  l'absence rendrait l'épreuve rouge pour une mauvaise raison. Et l'envoi
+  recharge le document : il faut attendre l'hydratation, sinon on mesure une
+  page qui n'a pas encore exécuté son effet.
 - **Deux verrous pour ne compter qu'une fois** : `?nouveau=1`, posé par la
   redirection de `api/inscription`, distingue l'arrivée après envoi des
   visites suivantes — le participant rouvre cette page pendant des semaines ;

@@ -8,7 +8,6 @@ import { participantConnecte } from "@/lib/session-apprenant";
 import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import { SignalerLead } from "@/components/SignalerLead";
-import { Suspense } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -19,7 +18,13 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ reference: string }>;
-  searchParams: Promise<{ annonce?: string; contrat?: string; signature?: string }>;
+  searchParams: Promise<{
+    annonce?: string;
+    contrat?: string;
+    signature?: string;
+    /** Posé par la redirection de `api/inscription` : on arrive d'un envoi. */
+    nouveau?: string;
+  }>;
 }
 
 /** Ce que dit la page au retour d'une annonce de transfert. */
@@ -91,7 +96,7 @@ export default async function Dossier({ params, searchParams }: Props) {
   if (!dossier) notFound();
 
   const participant = await participantConnecte();
-  const { annonce, contrat, signature } = await searchParams;
+  const { annonce, contrat, signature, nouveau } = await searchParams;
 
   /*
     On ne propose d'annoncer que s'il y a quelque chose à annoncer, et seulement
@@ -155,12 +160,11 @@ export default async function Dossier({ params, searchParams }: Props) {
     <>
       {/*
         La conversion n'est signalée à Meta que d'ici : cette page n'existe
-        qu'après un enregistrement réussi. `useSearchParams` impose une
-        frontière Suspense sous le routeur d'app.
+        qu'après un enregistrement réussi. Le marqueur est lu côté serveur —
+        `useSearchParams` aurait imposé une frontière Suspense pour une
+        information que la page a déjà.
       */}
-      <Suspense fallback={null}>
-        <SignalerLead reference={dossier.reference} />
-      </Suspense>
+      <SignalerLead actif={nouveau === "1"} clef={dossier.reference} source="pre-inscription" />
 
       <FilAriane items={[{ label: "Votre dossier" }]} />
 
