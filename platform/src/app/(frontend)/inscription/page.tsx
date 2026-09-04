@@ -34,6 +34,8 @@ const MESSAGES: Record<string, string> = {
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
   indicatif:
     "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal. C'est par ce numéro que nous vous joindrons.",
+  consentement:
+    "Il manque votre accord pour que nous conservions vos coordonnées. Sans lui, nous ne pouvons pas ouvrir votre dossier.",
   technique: "L'enregistrement a échoué. Réessayez — si cela persiste, écrivez-nous.",
 };
 
@@ -287,9 +289,29 @@ export default async function Inscription({ searchParams }: Props) {
                 </div>
               </div>
 
+              {/*
+                ⚠️ Jamais cochée d'avance. Une case pré-cochée n'est pas un
+                consentement, c'est un consentement présumé — et la route le
+                revérifie de toute façon : `required` n'engage que le
+                navigateur, et ne veut rien dire pour qui poste directement.
+              */}
+              <label className="text-ivory-dim mt-7 flex cursor-pointer items-start gap-3 text-[0.86rem] leading-relaxed">
+                <input
+                  type="checkbox"
+                  name="consentement"
+                  value="oui"
+                  required
+                  className="accent-gold mt-1 h-4 w-4 shrink-0 cursor-pointer"
+                />
+                <span>
+                  J&apos;accepte que CLIXA Institute conserve les informations ci-dessus pour
+                  traiter mon dossier et me recontacter. Elles ne sont transmises à personne.
+                </span>
+              </label>
+
               <button
                 type="submit"
-                className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-7 w-full px-6 py-3.5 text-[0.92rem] font-semibold transition-colors sm:w-auto"
+                className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 w-full px-6 py-3.5 text-[0.92rem] font-semibold transition-colors sm:w-auto"
               >
                 Envoyer ma pré-inscription
               </button>

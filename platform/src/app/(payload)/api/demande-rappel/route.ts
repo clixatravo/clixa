@@ -76,6 +76,21 @@ export async function POST(request: Request) {
     l'écart en composant. L'indicatif est de toute façon obligatoire — sans
     lui, le bouton WhatsApp du back-office refuse de composer.
   */
+  /*
+    ⚠️ Vérifié après les champs, et non avant — dans les deux routes, au même
+    endroit. Quelqu'un qui se trompe de numéro *et* oublie la case doit lire
+    d'abord ce qu'il doit corriger dans le formulaire ; la case, elle, se coche
+    d'un clic. Placé en tête, le consentement masquait l'erreur d'indicatif.
+
+    ⚠️ Et il se vérifie ici, pas dans la case : `required` n'engage que le
+    navigateur, se retire depuis les outils de développement, et n'existe pas
+    pour qui poste directement sur cette route. Une preuve de consentement qui
+    tient à un attribut HTML ne prouve rien le jour où on la conteste.
+  */
+  if (texte("consentement") !== "oui") {
+    redirect("/contact?erreur=consentement" as Route);
+  }
+
   const pays = paysDeLIndicatif(whatsapp);
 
   const payload = await getPayload({ config });

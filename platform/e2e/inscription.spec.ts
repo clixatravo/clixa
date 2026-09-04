@@ -21,6 +21,8 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.fill('input[name="email"]', `epreuve.${Date.now()}${MARQUE}`);
   await page.fill('input[name="whatsapp"]', "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
+  // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
+  await page.check('input[name="consentement"]');
 
   /*
     On surveille la réponse plutôt que la seule adresse : quand la place n'est

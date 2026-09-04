@@ -99,6 +99,13 @@ export async function POST(request: Request) {
   if (!aUnIndicatif(whatsapp)) echec("indicatif");
 
   /*
+    ⚠️ Vérifié au serveur, comme l'indicatif. Une case cochée dans le
+    navigateur ne laisse aucune trace : c'est ce passage-ci qui refuse le
+    dossier, et c'est lui qu'on pourra produire.
+  */
+  if (texte("consentement") !== "oui") echec("consentement");
+
+  /*
     Bornes des champs libres.
 
     Ils n'étaient vérifiés que sur un point : ne pas être vides. Rien

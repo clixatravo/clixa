@@ -109,11 +109,13 @@ export default async function Contact({ searchParams }: Props) {
                 >
                   {erreur === "indicatif"
                     ? "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal. C'est par ce numéro que le conseiller vous rappellera."
-                    : erreur === "champs"
-                      ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
-                      : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à " +
-                        RESEAUX_CLIXA.email.adresse +
-                        "."}
+                    : erreur === "consentement"
+                      ? "Il manque votre accord pour que nous conservions vos coordonnées — sans lui, nous ne pouvons pas vous rappeler."
+                      : erreur === "champs"
+                        ? "Il manque une information obligatoire. Vérifiez les champs marqués d'une étoile."
+                        : "Votre demande n'a pas pu être enregistrée. Réessayez, ou écrivez-nous à " +
+                          RESEAUX_CLIXA.email.adresse +
+                          "."}
                 </p>
               )}
 
@@ -157,6 +159,31 @@ export default async function Contact({ searchParams }: Props) {
                   aide="Avec l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal."
                   requis
                 />
+
+                <div className="sm:col-span-2">
+                  {/*
+                    ⚠️ Cochée par personne d'avance. Une case pré-cochée n'est
+                    pas un consentement : c'est un consentement présumé, et
+                    c'est exactement ce que le règlement refuse.
+
+                    Le texte dit ce qu'on fait des données et rien de plus —
+                    traiter la demande. Pas de mention d'un partenaire, pas de
+                    « et nos partenaires » : on ne les transmet à personne.
+                  */}
+                  <label className="text-ivory-dim/90 flex cursor-pointer items-start gap-3 text-[0.86rem] leading-relaxed">
+                    <input
+                      type="checkbox"
+                      name="consentement"
+                      value="oui"
+                      required
+                      className="accent-gold mt-1 h-4 w-4 shrink-0 cursor-pointer"
+                    />
+                    <span>
+                      J&apos;accepte que CLIXA Institute conserve les informations ci-dessus pour
+                      traiter ma demande et me recontacter. Elles ne sont transmises à personne.
+                    </span>
+                  </label>
+                </div>
 
                 <div className="pt-2 sm:col-span-2">
                   <button

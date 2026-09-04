@@ -23,6 +23,8 @@ async function preInscrire(page: Page): Promise<string> {
   await page.fill('input[name="email"]', `contrat.${Date.now()}${MARQUE}`);
   await page.fill('input[name="whatsapp"]', "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
+  // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
+  await page.check('input[name="consentement"]');
   await page.selectOption('select[name="moyen"]', "virement");
 
   const [reponse] = await Promise.all([

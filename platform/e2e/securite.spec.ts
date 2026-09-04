@@ -24,6 +24,8 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="email"]', `xss.${Date.now()}${MARQUE}`);
     await page.fill('input[name="whatsapp"]', "+212600000000");
     await page.fill('input[name="pays"]', "Maroc");
+    // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
+    await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/inscription\/CLX-/);
     const reference = page.url().split("/").pop()!;
@@ -47,6 +49,8 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="email"]', `ref.${Date.now()}${MARQUE}`);
     await page.fill('input[name="whatsapp"]', "+212600000000");
     await page.fill('input[name="pays"]', "Maroc");
+    // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
+    await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/inscription\/CLX-/);
 
@@ -103,6 +107,7 @@ test("un numéro sans indicatif est refusé, aux deux portes", async ({ request 
       email: `indicatif.${Date.now()}${MARQUE}`,
       whatsapp: "0689324243",
       origine: "/contact",
+      consentement: "oui",
     },
     maxRedirects: 0,
   });
@@ -118,6 +123,7 @@ test("un numéro sans indicatif est refusé, aux deux portes", async ({ request 
       plan: "P1",
       moyen: "virement",
       payeur: "particulier",
+      consentement: "oui",
     },
     maxRedirects: 0,
   });
@@ -180,4 +186,64 @@ test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ 
     await expect(bandeau.getByRole("button", { name: "Accepter" })).toBeVisible();
     await expect(bandeau.getByRole("button", { name: "Refuser" })).toBeVisible();
   }
+});
+
+/**
+ * ⚠️ Le consentement se refuse au serveur, pas dans la case.
+ *
+ * Une case `required` n'engage que le navigateur : elle se contourne en
+ * retirant l'attribut depuis les outils de développement, et elle n'existe pas
+ * du tout pour qui poste directement sur la route. Une preuve de consentement
+ * qui ne tient qu'à un attribut HTML ne prouve rien le jour où quelqu'un la
+ * conteste — ce qui est précisément le jour où elle sert.
+ *
+ * L'épreuve poste donc **sans la case**, comme le ferait un script, et vérifie
+ * que les deux portes refusent.
+ */
+test("sans consentement, ni le rappel ni la pré-inscription n'aboutissent", async ({ request }) => {
+  const rappel = await request.post("/api/demande-rappel", {
+    form: {
+      nom: "Épreuve Consentement",
+      email: `consentement.${Date.now()}${MARQUE}`,
+      whatsapp: "+212600000000",
+      origine: "/contact",
+      // pas de champ « consentement » : la case n'a pas été cochée
+    },
+    maxRedirects: 0,
+  });
+  expect(rappel.headers()["location"], "le rappel doit refuser").toContain("erreur=consentement");
+
+  const inscription = await request.post("/api/inscription", {
+    form: {
+      formation: "directeur-audit-interne",
+      nom: "Épreuve Consentement",
+      email: `consentement.${Date.now()}${MARQUE}`,
+      whatsapp: "+212600000000",
+      pays: "Maroc",
+      plan: "P1",
+      moyen: "virement",
+      payeur: "particulier",
+      // pas de champ « consentement » non plus : c'est tout l'objet de l'épreuve
+    },
+    maxRedirects: 0,
+  });
+  expect(inscription.headers()["location"], "la pré-inscription doit refuser").toContain(
+    "erreur=consentement",
+  );
+
+  /*
+    Et la même requête, la case cochée, doit passer : une garde qui refuse tout
+    protégerait aussi bien, et casserait le tunnel sans qu'on le voie.
+  */
+  const avecAccord = await request.post("/api/demande-rappel", {
+    form: {
+      nom: "Épreuve Consentement",
+      email: `consentement.ok.${Date.now()}${MARQUE}`,
+      whatsapp: "+212600000000",
+      origine: "/contact",
+      consentement: "oui",
+    },
+    maxRedirects: 0,
+  });
+  expect(avecAccord.headers()["location"], "avec l'accord, la demande passe").toContain("envoye=1");
 });
