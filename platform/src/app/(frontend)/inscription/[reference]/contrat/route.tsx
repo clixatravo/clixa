@@ -11,6 +11,7 @@ import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from "@
 import { getDossier } from "@/lib/inscriptions";
 import { formatPrix } from "@/lib/catalogue";
 import { SOCIETE } from "@/lib/societe";
+import { CACHET_CLIXA, SIGNATURE_DIRECTEUR } from "@/lib/cachet";
 import type { Dossier } from "@/lib/inscriptions";
 
 /**
@@ -84,6 +85,18 @@ const s = StyleSheet.create({
     l'anti-aliasing une bouillie grise.
   */
   trace: { height: 46, marginTop: 4, backgroundColor: ENCRE, borderRadius: 3 },
+  /*
+    La signature et le cachet côte à côte, comme sur un papier tamponné à la
+    main : le paraphe à gauche, le tampon à sa droite et un peu plus haut.
+
+    ⚠️ Ils sont posés sans fond, contrairement au tracé du client. Celui-là
+    arrive dessiné en clair pour un écran sombre ; ceux-ci sont les vraies
+    empreintes, en encre foncée sur transparent — les poser sur une bande
+    sombre les rendrait invisibles.
+  */
+  paraphe: { flexDirection: "row", alignItems: "center", marginTop: 2 },
+  parapheTrace: { width: 88, height: 40 },
+  parapheCachet: { width: 58, height: 56, marginLeft: 4 },
   intertitre: { fontSize: 7.5, letterSpacing: 1.3, color: OR, marginTop: 16, marginBottom: 6 },
   pied: {
     position: "absolute",
@@ -210,12 +223,42 @@ function Contrat({ dossier }: { dossier: Dossier }) {
         </Text>
 
         <View style={s.signatures}>
+          {/*
+            ⚠️ **Un contrat signé d'un seul côté n'est pas un contrat.** Cette
+            colonne portait un nom, une qualité, et deux lignes de pointillés —
+            pendant que celle du client portait sa signature, sa date et
+            l'empreinte de son engagement. Le participant signait donc un
+            document où la maison, elle, n'avait rien signé.
+
+            ⚠️ **La date est celle du participant, pas celle du téléchargement.**
+            Un contrat se date du jour où l'accord se forme, et un PDF composé à
+            la demande se retéléchargerait des mois plus tard : mettre
+            `new Date()` ici ferait porter au même contrat deux dates
+            différentes selon le moment où on l'ouvre. C'est la même raison qui
+            fige « Fait le » du certificat dans `beforeChange`.
+
+            Tant que le client n'a pas signé, la ligne reste vide : rien n'est
+            encore convenu, et une date d'un côté seulement ne voudrait rien
+            dire.
+          */}
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>POUR CLIXA</Text>
             <Text style={s.champ}>Nom : {SOCIETE.gerant}</Text>
             <Text style={s.champ}>Qualité : Gérant</Text>
-            <Text style={s.champ}>Fait à Agadir, le : ______________</Text>
-            <Text style={s.champ}>Signature et cachet :</Text>
+            <Text style={s.champ}>
+              Fait à Agadir, le :{" "}
+              {dossier.contratSigneLe
+                ? JOUR.format(new Date(dossier.contratSigneLe))
+                : "______________"}
+            </Text>
+            {dossier.contratSigneLe ? (
+              <View style={s.paraphe}>
+                <Image style={s.parapheTrace} src={SIGNATURE_DIRECTEUR} />
+                <Image style={s.parapheCachet} src={CACHET_CLIXA} />
+              </View>
+            ) : (
+              <Text style={s.champ}>Signature et cachet :</Text>
+            )}
           </View>
           <View style={s.colonne}>
             <Text style={s.colonneTitre}>POUR LE CLIENT</Text>
