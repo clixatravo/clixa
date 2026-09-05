@@ -83,7 +83,7 @@ export default async function APropos() {
           <p className="text-ivory-dim/95 mb-4 max-w-[64ch] text-[1.05rem] leading-relaxed">
             CLIXA Institute accompagne dirigeants, managers et organisations à travers des
             programmes certifiants, des parcours exécutifs et des dispositifs sur mesure. Nous
-            opérons depuis Agadir, Abidjan et Dakar.
+            opérons depuis Agadir, et préparons nos implantations d&apos;Abidjan et de Dakar.
           </p>
           <p className="text-ivory-dim/80 max-w-[64ch] text-[1.02rem] leading-relaxed">
             Notre conviction est simple : sur ce continent, la compétence ne manque pas — ce qui

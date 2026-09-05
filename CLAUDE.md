@@ -1953,11 +1953,35 @@ remplir ces cases pour publier un RIB sur une adresse qui circule par WhatsApp.
 Les colonnes restent en base — les retirer demanderait une migration, et elles
 ne coûtent rien.
 
-⚠️ Un article publié — « CLIXA ouvre un rythme régulier de sessions à Abidjan »,
-daté de novembre 2026 — annonce du présentiel dans trois villes où aucune
-session n'est ouverte. Signalé à la direction le 26 août 2026, maintenu par
-décision explicite. C'est la quatrième fois que ces villes reviennent sur le
-site sans qu'une session s'y donne ; les épreuves ne savent pas attraper cela.
+⚠️ **Abidjan et Dakar disent maintenant où elles en sont** (depuis le
+5 septembre 2026). Elles figuraient comme « Hub Afrique de l'Ouest », au même
+rang que le siège, avec une adresse précise — « Cocody, zone administrative »,
+« Plateau, zone d'affaires ». Un visiteur y lisait trois bureaux ouverts ; il
+n'y en a qu'un, et aucune session ne s'est jamais donnée dans les deux autres.
+
+C'était la quatrième fois que ces villes revenaient sur le site sans qu'une
+session s'y donne. La direction a tranché : elles restent — l'ambition est
+réelle — mais elles portent « en cours de finalisation ».
+
+- **L'adresse est partie avec le reste.** Une rue et un quartier, c'est une
+  porte où quelqu'un peut se présenter ; « en préparation » sous une adresse
+  précise se lit comme un bureau qui ouvre la semaine prochaine.
+- **Cinq endroits le disaient**, et tous ont suivi : `/campus`, le pied de
+  page, « À propos », la description lue par les moteurs, et le pied des
+  courriels — qui annonçait « Présence Panafricaine : Agadir · Abidjan ·
+  Dakar » dans chaque message envoyé.
+- **La carte d'accueil aussi.** Elle disait des cohortes « formées en
+  présentiel et en ligne » quand les douze sessions sont en visio. La phrase
+  tenait tant que /campus annonçait trois hubs ouverts ; elle les
+  contredisait dès qu'ils ont dit la vérité.
+- ⚠️ **Une carte en préparation se distingue à l'œil, pas seulement au
+  texte** : le libellé le dit, l'opacité le confirme. On parcourt une grille
+  des yeux avant de la lire.
+
+⚠️ Un article publié — « CLIXA ouvre un rythme régulier de sessions à
+Abidjan », daté de novembre 2026 — annonce toujours du présentiel dans ces
+villes. Signalé le 26 août 2026, maintenu par décision explicite ; il n'a pas
+été revu le 5 septembre. Les épreuves ne savent pas attraper cela.
 
 ## Déploiement
 

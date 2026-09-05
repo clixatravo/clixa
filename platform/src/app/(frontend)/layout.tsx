@@ -58,7 +58,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 const DESCRIPTION =
-  "Programmes certifiants et parcours exécutifs pour dirigeants et managers en Afrique. En présentiel à Agadir, Abidjan et Dakar, ou à distance en classe virtuelle.";
+  "Programmes certifiants et parcours exécutifs pour dirigeants et managers en Afrique. À distance en classe virtuelle, où que vous soyez sur le continent.";
 
 export const metadata: Metadata = {
   // metadataBase rend absolues toutes les URL relatives (canonical, Open Graph).

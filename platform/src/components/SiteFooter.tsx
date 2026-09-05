@@ -124,7 +124,7 @@ export async function SiteFooter() {
           </div>
           <div className="text-ivory-dim flex items-center gap-2 font-mono text-[0.66rem] tracking-wider uppercase">
             <span className="bg-gold inline-block size-1.5 rounded-full" />
-            <span>Agadir · Abidjan · Dakar</span>
+            <span>Agadir · Abidjan et Dakar en préparation</span>
           </div>
         </div>
       </div>

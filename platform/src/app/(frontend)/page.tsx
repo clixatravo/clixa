@@ -448,8 +448,20 @@ export default async function Accueil() {
                     Séminaires &amp; Salle de Conseil
                   </h3>
                   <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
+                    {/*
+                    ⚠️ « En présentiel et en ligne » disait ce qui n'est pas.
+                    Les douze sessions sont en classe virtuelle, et aucune ne
+                    s'est jamais donnée à Abidjan ni à Dakar. La phrase a tenu
+                    tant que /campus annonçait trois hubs ouverts ; depuis que
+                    ces deux-là disent « en cours de finalisation », elle les
+                    contredisait sur la page d'accueil.
+
+                    Décision de la direction, le 5 septembre 2026 : ce qui
+                    existe se dit au présent, ce qui se prépare se dit comme
+                    tel.
+                  */}
                     Des cohortes de cadres et directeurs d&apos;Afrique formés par des praticiens en
-                    exercice en présentiel et en ligne.
+                    exercice, en classe virtuelle — et bientôt en présentiel.
                   </p>
                 </div>
                 <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">

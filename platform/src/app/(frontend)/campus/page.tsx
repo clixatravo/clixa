@@ -9,7 +9,7 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
 export const metadata: Metadata = {
   title: "Campus",
   description:
-    "CLIXA opère depuis Agadir, Abidjan et Dakar pour rester proche des professionnels qu'il forme.",
+    "CLIXA opère depuis Agadir. Les implantations d'Abidjan et de Dakar sont en cours de finalisation.",
 };
 
 /*
@@ -28,22 +28,42 @@ const campus = [
     telephone: RESEAUX_CLIXA.whatsapp.numeroAffiche,
     email: RESEAUX_CLIXA.email.adresse,
     note: null,
+    enPreparation: false,
   },
+  /*
+    ⚠️ **Abidjan et Dakar sont annoncés comme ce qu'ils sont : en cours.**
+    Ils figuraient ici avec une adresse précise — « Cocody, zone
+    administrative », « Plateau, zone d'affaires » — et le rôle « Hub Afrique
+    de l'Ouest », au même rang que le siège. Un visiteur y lisait trois
+    bureaux ouverts ; il n'y en a qu'un, et aucune session ne s'est jamais
+    donnée dans les deux autres.
+
+    C'est la quatrième fois que ces villes reviennent sur le site sans qu'une
+    session s'y donne. La direction a tranché le 5 septembre 2026 : elles
+    restent — l'ambition est réelle — mais elles disent où elles en sont.
+
+    ⚠️ L'adresse a été retirée avec le reste. Une rue et un quartier, c'est
+    une porte où quelqu'un peut se présenter ; « en cours de finalisation »
+    sous une adresse précise se lit comme un bureau qui ouvre la semaine
+    prochaine.
+  */
   {
     ville: "Abidjan, Côte d'Ivoire",
-    role: "Hub Afrique de l'Ouest",
-    adresse: "Cocody, zone administrative",
+    role: "En cours de finalisation",
+    adresse: "Implantation en préparation",
     telephone: null,
     email: null,
-    note: "Antenne partenaire SkillAfrique",
+    note: "Ouverture annoncée ici dès qu'elle sera confirmée",
+    enPreparation: true,
   },
   {
     ville: "Dakar, Sénégal",
-    role: "Hub Afrique de l'Ouest",
-    adresse: "Plateau, zone d'affaires",
+    role: "En cours de finalisation",
+    adresse: "Implantation en préparation",
     telephone: null,
     email: null,
-    note: "Antenne partenaire SkillAfrique",
+    note: "Ouverture annoncée ici dès qu'elle sera confirmée",
+    enPreparation: true,
   },
 ];
 
@@ -73,9 +93,9 @@ export default async function Campus() {
             Un ancrage local, une <span className="gold-gradient-text">ambition continentale</span>.
           </h1>
           <p className="text-ivory-dim/95 max-w-[60ch] text-[1.05rem] leading-relaxed">
-            CLIXA opère depuis plusieurs hubs pour rester proche des professionnels qu&apos;il
-            forme. Les mêmes programmes, les mêmes intervenants, sans imposer un déplacement
-            international.
+            CLIXA opère depuis Agadir, et prépare ses implantations d&apos;Abidjan et de Dakar. Les
+            mêmes programmes, les mêmes intervenants, sans imposer un déplacement international :
+            aujourd&apos;hui en classe virtuelle, demain aussi près de chez vous.
           </p>
         </div>
       </section>
@@ -86,7 +106,15 @@ export default async function Campus() {
             {campus.map((c) => (
               <div
                 key={c.ville}
-                className="executive-card rounded-clixa flex flex-col justify-between gap-4 p-8"
+                /*
+                  Une carte en préparation ne se lit pas comme un bureau
+                  ouvert : le libellé le dit, l'opacité le confirme. Deux
+                  signaux valent mieux qu'un, parce qu'on parcourt une grille
+                  des yeux avant de la lire.
+                */
+                className={`executive-card rounded-clixa flex flex-col justify-between gap-4 p-8 ${
+                  c.enPreparation ? "opacity-75" : ""
+                }`}
               >
                 <div className="space-y-2">
                   <span className="mono-label text-gold block text-[0.62rem] tracking-wider uppercase">
@@ -143,8 +171,8 @@ export default async function Campus() {
                   Toutes les sessions actuelles sont en classe virtuelle (Visio Live)
                 </p>
                 <p className="text-ivory-dim mx-auto max-w-[50ch] text-sm">
-                  Les prochaines dates en présentiel à Agadir, Abidjan et Dakar seront annoncées ici
-                  très prochainement.
+                  Le présentiel se prépare à Agadir ; Abidjan et Dakar sont en cours de
+                  finalisation. Les dates seront annoncées ici dès qu&apos;elles seront confirmées.
                 </p>
               </div>
             ) : (

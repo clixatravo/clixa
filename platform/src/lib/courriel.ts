@@ -256,7 +256,7 @@ export function gabaritHtmlEmail({
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px dashed rgba(243, 239, 228, 0.1); padding-top: 14px;">
                 <tr>
                   <td style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
-                    <span style="color: #e9cd84; font-weight: bold;">Présence Panafricaine :</span> Agadir · Abidjan · Dakar · Classe Virtuelle
+                    <span style="color: #e9cd84; font-weight: bold;">Présence :</span> Agadir · Classe virtuelle · Abidjan et Dakar en préparation
                   </td>
                 </tr>
               </table>
