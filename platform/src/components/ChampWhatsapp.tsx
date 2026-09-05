@@ -21,8 +21,18 @@ import { INDICATIFS_OFFERTS } from "@/lib/indicatifs";
  * son pays et tape ce qu'il connaît par cœur ; le champ envoyé porte la forme
  * internationale complète. La faute devient impossible plutôt que rattrapée.
  *
+ * ── ⚠️ Et une porte de sortie, pour les pays qu'on n'a pas listés ───────────
+ * La liste en compte trente-neuf, choisis d'après la provenance des inscrits.
+ * Elle sera toujours incomplète : quelqu'un écrira un jour depuis un pays qui
+ * n'y figure pas, et une liste fermée le renverrait sans qu'il puisse rien y
+ * faire. « Autre pays » ouvre un champ où il compose son indicatif lui-même.
+ *
+ * C'est la même règle que `lib/indicatifs.ts` applique déjà côté serveur : on
+ * exige la forme, pas l'appartenance à la table. Refuser un pays qu'on n'a pas
+ * listé écarterait un inscrit pour une lacune qui est la nôtre.
+ *
  * ── Un seul champ part au serveur ───────────────────────────────────────────
- * Le `select` et le champ visible ne portent pas de `name` : c'est un champ
+ * Le `select` et les champs visibles ne portent pas de `name` : c'est un champ
  * caché, recomposé à chaque frappe, qui s'appelle `whatsapp`. Les routes ne
  * changent pas, `aUnIndicatif` non plus, et rien d'autre n'a eu à bouger.
  *
@@ -31,6 +41,10 @@ import { INDICATIFS_OFFERTS } from "@/lib/indicatifs";
  * corriger en silence vaut mieux que le refuser : la personne a écrit ce
  * qu'elle avait à écrire.
  */
+
+/** La valeur du choix « je ne trouve pas mon pays ». */
+const AUTRE = "autre";
+
 export function ChampWhatsapp({
   id = "whatsapp",
   defautIndicatif = "212",
@@ -43,8 +57,11 @@ export function ChampWhatsapp({
   /** Les classes du champ texte, pour épouser le formulaire qui l'accueille. */
   classeChamp: string;
 }) {
-  const [indicatif, setIndicatif] = useState(defautIndicatif);
+  const [choix, setChoix] = useState(defautIndicatif);
+  const [saisi, setSaisi] = useState("");
   const [numero, setNumero] = useState("");
+
+  const indicatif = choix === AUTRE ? saisi.replace(/\D/g, "") : choix;
 
   /*
     Ce qui part au serveur. On ne garde que les chiffres du numéro local, et
@@ -52,33 +69,58 @@ export function ChampWhatsapp({
     celle qu'un lien `wa.me` sait composer.
   */
   const chiffres = numero.replace(/\D/g, "").replace(/^0+/, "");
-  const complet = chiffres ? `+${indicatif}${chiffres}` : "";
+  const complet = indicatif && chiffres ? `+${indicatif}${chiffres}` : "";
 
   return (
-    <div className="flex gap-2">
-      <select
-        aria-label="Indicatif du pays"
-        value={indicatif}
-        onChange={(e) => setIndicatif(e.target.value)}
-        className={`${classeChamp} w-[6.5rem] shrink-0`}
-      >
-        {INDICATIFS_OFFERTS.map(({ code, pays }) => (
-          <option key={code} value={code} title={pays}>
-            +{code}
-          </option>
-        ))}
-      </select>
-      <input
-        id={id}
-        type="tel"
-        inputMode="numeric"
-        autoComplete="tel-national"
-        required={requis}
-        value={numero}
-        onChange={(e) => setNumero(e.target.value)}
-        placeholder="6 12 34 56 78"
-        className={`${classeChamp} min-w-0 flex-1`}
-      />
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <select
+          aria-label="Indicatif du pays"
+          value={choix}
+          onChange={(e) => setChoix(e.target.value)}
+          className={`${classeChamp} w-[9.5rem] shrink-0`}
+        >
+          {INDICATIFS_OFFERTS.map(({ code, pays, drapeau }) => (
+            <option key={code} value={code}>
+              {drapeau ? `${drapeau} ` : ""}+{code} {pays}
+            </option>
+          ))}
+          <option value={AUTRE}>🌍 Autre pays</option>
+        </select>
+        <input
+          id={id}
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          required={requis}
+          value={numero}
+          onChange={(e) => setNumero(e.target.value)}
+          placeholder="6 12 34 56 78"
+          className={`${classeChamp} min-w-0 flex-1`}
+        />
+      </div>
+
+      {/*
+        Il n'apparaît que si l'on en a besoin. Un champ « indicatif » toujours
+        visible ferait douter ceux qui viennent de choisir leur pays dans la
+        liste : « faut-il aussi le retaper ici ? »
+      */}
+      {choix === AUTRE && (
+        <div className="flex items-center gap-2">
+          <span className="text-ivory-dim text-[0.9rem]">+</span>
+          <input
+            aria-label="Indicatif de votre pays"
+            type="tel"
+            inputMode="numeric"
+            required={requis}
+            value={saisi}
+            onChange={(e) => setSaisi(e.target.value)}
+            placeholder="Indicatif — 971, 90, 375…"
+            className={`${classeChamp} w-[14rem] min-w-0`}
+          />
+        </div>
+      )}
+
       <input type="hidden" name="whatsapp" value={complet} readOnly />
     </div>
   );

@@ -138,7 +138,75 @@ export function paysDeLIndicatif(numero: string): string {
  * ⚠️ Le Maroc en tête, puis l'Afrique de l'Ouest — c'est d'où viennent les
  * inscrits. Un ordre alphabétique mettrait l'Allemagne avant la Côte d'Ivoire.
  */
-export const INDICATIFS_OFFERTS: { code: string; pays: string }[] = [
+/**
+ * Le code ISO de chaque pays, pour en tirer un drapeau.
+ *
+ * ⚠️ **Le drapeau se calcule, il ne se stocke pas.** Un emoji de drapeau est
+ * la paire de lettres du pays écrite en « indicateurs régionaux » : `MA`
+ * devient 🇲🇦. Ranger les emojis eux-mêmes ferait une seconde table à tenir
+ * juste, alors que celle-ci se déduit.
+ *
+ * ⚠️ **« 1 » n'a pas de drapeau, et c'est voulu.** L'indicatif +1 couvre les
+ * États-Unis et le Canada : en choisir un afficherait le mauvais pays à
+ * l'autre. Mieux vaut pas de drapeau qu'un drapeau faux.
+ */
+const ISO: Record<string, string> = {
+  "212": "MA",
+  "213": "DZ",
+  "216": "TN",
+  "218": "LY",
+  "220": "GM",
+  "221": "SN",
+  "222": "MR",
+  "223": "ML",
+  "224": "GN",
+  "225": "CI",
+  "226": "BF",
+  "227": "NE",
+  "228": "TG",
+  "229": "BJ",
+  "230": "MU",
+  "235": "TD",
+  "236": "CF",
+  "237": "CM",
+  "238": "CV",
+  "240": "GQ",
+  "241": "GA",
+  "242": "CG",
+  "243": "CD",
+  "250": "RW",
+  "253": "DJ",
+  "257": "BI",
+  "261": "MG",
+  "269": "KM",
+  "20": "EG",
+  "27": "ZA",
+  "32": "BE",
+  "33": "FR",
+  "34": "ES",
+  "39": "IT",
+  "31": "NL",
+  "41": "CH",
+  "44": "GB",
+  "49": "DE",
+};
+
+/**
+ * Le drapeau d'un indicatif, ou une chaîne vide.
+ *
+ * ⚠️ Sur Windows, les navigateurs n'ont pas de police de drapeaux : la paire
+ * de lettres s'affiche à la place (« MA » dans deux carrés). Ce n'est pas
+ * cassé — c'est encore lisible, et le code et le nom du pays sont écrits juste
+ * à côté. Sur les téléphones, d'où vient l'essentiel du trafic, le drapeau
+ * s'affiche.
+ */
+export function drapeau(code: string): string {
+  const iso = ISO[code];
+  if (!iso) return "";
+  return String.fromCodePoint(...[...iso].map((l) => 0x1f1e6 + l.charCodeAt(0) - 65));
+}
+
+export const INDICATIFS_OFFERTS: { code: string; pays: string; drapeau: string }[] = [
   "212",
   "225",
   "221",
@@ -172,4 +240,4 @@ export const INDICATIFS_OFFERTS: { code: string; pays: string }[] = [
   "1",
 ]
   .filter((code) => INDICATIFS[code])
-  .map((code) => ({ code, pays: INDICATIFS[code]! }));
+  .map((code) => ({ code, pays: INDICATIFS[code]!, drapeau: drapeau(code) }));

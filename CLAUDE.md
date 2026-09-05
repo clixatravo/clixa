@@ -1512,6 +1512,20 @@ mettre mon numéro, ça ne marche pas ». Il n'avait rien fait de travers.
   écrire.
 - **Les indicatifs sont ordonnés par provenance**, Maroc puis Afrique de
   l'Ouest — un ordre alphabétique mettrait l'Allemagne avant la Côte d'Ivoire.
+- **Le drapeau se calcule, il ne se stocke pas** : un emoji de drapeau est la
+  paire de lettres du pays écrite en indicateurs régionaux, `MA` → 🇲🇦. Ranger
+  les emojis ferait une seconde table à tenir juste.
+  ⚠️ **`+1` n'en porte pas** : il couvre les États-Unis et le Canada, et en
+  choisir un afficherait le mauvais pays à l'autre.
+  ⚠️ Sur Windows, faute de police de drapeaux, la paire de lettres s'affiche à
+  la place. Ce n'est pas cassé — le code et le nom sont écrits à côté — et sur
+  les téléphones, d'où vient l'essentiel du trafic, le drapeau paraît.
+- ⚠️ **« Autre pays » ouvre un champ libre.** La liste sera toujours
+  incomplète : quelqu'un écrira un jour depuis un pays qui n'y figure pas, et
+  une liste fermée le renverrait sans qu'il puisse rien y faire. C'est la même
+  règle que le serveur applique déjà — on exige la forme, pas l'appartenance à
+  la table, parce que refuser un pays non listé écarterait un inscrit pour une
+  lacune qui est la nôtre.
 - ⚠️ **Huit épreuves remplissaient ce champ à la main.** Elles passent par
   `remplirWhatsapp` : une façon de faire copiée huit fois est huit façons de
   tomber le jour où elle change. Même leçon que `referenceDeLAdresse`.
