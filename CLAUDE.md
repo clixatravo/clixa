@@ -865,6 +865,28 @@ génération, pas seulement au code, la même leçon que le PDF de la plaquette.
   retaper aurait ouvert une seconde copie, exactement le défaut déjà vu sur le
   numéro d'admissions et les moyens de paiement affichés sur la fiche.
 
+⚠️ **Le cachet et la signature ont changé le 5 septembre 2026.** La direction
+a transmis un visuel unique — le disque « CLIXA INSTITUTE · AFRICA · 2026 »
+avec la signature du gérant par-dessus. Il remplace le tampon encré de la
+société et le paraphe manuscrit.
+
+- ⚠️ **Le tampon encré portait le RC, l'ICE, l'adresse et le téléphone.** Au
+  Maroc, c'est celui-là qu'une banque ou une administration s'attend à voir
+  sur un contrat. Le nouveau est une marque, pas une empreinte légale ; les
+  mentions restent imprimées dans le corps du contrat, mais plus dans le
+  cachet. C'est une décision de la direction, notée ici pour qu'elle ne se
+  redécouvre pas au guichet.
+- **Les deux ont été séparés par la couleur.** Le visuel les superpose, et le
+  code les emploie séparément — le certificat centre le cachet entre deux
+  colonnes. Découper au ciseau aurait laissé un morceau de l'un dans l'autre :
+  le cachet est bleu nuit et orange, saturés, la signature un gris neutre.
+- ⚠️ **Puis par la densité.** Le tri sur la saturation laissait le *fantôme*
+  du disque : ses bords adoucis sont eux aussi des gris neutres. Le fantôme ne
+  dépasse jamais quatre pixels par ligne, la signature en compte jusqu'à deux
+  cent vingt-quatre. Cela se voit sur le rendu, pas dans le code — le premier
+  jet paraissait propre en vignette et portait, sur fond blanc, un cercle de
+  poussière au-dessus du nom.
+
 ⚠️ **Les marques sont les vrais dessins, pas des imitations au texte** (depuis
 le 4 septembre 2026, `lib/cachet.ts`). Le sigle était composé en Times-Bold
 avec un point doré à côté, SkillAfrique en deux morceaux de texte : de loin
