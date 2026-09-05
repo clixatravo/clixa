@@ -910,32 +910,41 @@ n'est pas le protéger. Le SDK `@vercel/blob`, lui, sait faire du privé : les
 trois fonctions de `lib/recus.ts` sont tout ce qu'il fallait, et la collection
 n'a pas d'`upload`.
 
-⚠️ **Les médias attendent un second magasin, public** (depuis le 30 août 2026).
-Le greffon `@payloadcms/storage-vercel-blob` est installé et branché dans
-`payload.config.ts`, mais **conditionné à `BLOB_MEDIAS_TOKEN`** — une variable
-qui n'existe pas encore. Tant qu'elle manque, rien ne change : le dépôt retombe
-sur le disque, ce qui marche en développement et **perd le fichier en
-production**.
+**Les médias ont leur magasin public, et il fonctionne** (`BLOB_MEDIAS_TOKEN`,
+posé le 2 septembre 2026). Éprouvé de bout en bout le 5 septembre, **sur les
+deux bases** : le fichier part, Payload le convertit en WebP, les trois
+variantes sont produites, et l'adresse rendue **sert vraiment le fichier**
+(200, 7 Ko) depuis le magasin — pas depuis le disque du paquet.
 
-Il faut un magasin **distinct** de celui des justificatifs : celui-là est
+⚠️ **Cette section a dit le contraire pendant trois jours**, et c'était le genre
+d'erreur qui coûte cher : elle annonçait un magasin « qui n'existe pas encore »
+et des fichiers « perdus en production », en donnant la commande pour le créer.
+Or `vercel blob store add` déclenche un `vercel env pull` en sous-main et
+**écrase `.env.local`** — c'est arrivé le 29 août. Un avertissement périmé
+envoyait donc le lecteur refaire, avec un effet de bord connu, ce qui était
+déjà fait. Un journal qui dit « c'est cassé » quand cela marche est pire que
+muet.
+
+Il faut bien un magasin **distinct** de celui des justificatifs : celui-là est
 *privé*, et le greffon refuse net (« Cannot use public access on a private
 store »). Les deux besoins sont opposés — des images faites pour être vues, des
 reçus faits pour ne pas l'être — et un magasin ne porte qu'un seul régime.
+C'est ce qui est en place.
 
-```bash
-npx vercel blob store add medias-public --scope cl-95af
-```
+- ⚠️ **Développement et production partagent le même magasin d'images.** Le
+  jeton est le même des deux côtés : un dépôt fait depuis le poste de travail
+  atterrit à côté de ceux du site public. Sans danger — ce sont des images
+  faites pour être vues, et les identifiants ne se croisent pas — mais les
+  fichiers d'épreuve encombrent le magasin de production. Les séparer demande
+  un second magasin et un second jeton.
+- **Le magasin des justificatifs, lui, reste privé.** Éprouvé le même jour :
+  un tiers sans jeton reçoit **403**, et le fichier quitte le magasin quand le
+  dossier est supprimé.
 
-⚠️ **C'est cette commande qui, le 29 août, a déclenché un `vercel env pull` en
-sous-main** et écrasé `.env.local`. Sauvegarder le fichier avant, le relire
-après. Poser ensuite le jeton du nouveau magasin sous le nom
-`BLOB_MEDIAS_TOKEN`.
-
-`verifier-medias.ts` **échoue tant que ce n'est pas fait**, et le dit en toutes
-lettres. C'est voulu : un vert qui cache une perte de fichiers vaut moins qu'un
-rouge qui nomme ce qui manque. Le script éprouve maintenant ce qu'aucune de ses
-vérifications ne touchait — il va **chercher le fichier à l'adresse rendue**,
-parce qu'une adresse n'est pas un fichier.
+`verifier-medias.ts` **échouerait si le jeton disparaissait**, et le dirait en
+toutes lettres : un vert qui cache une perte de fichiers vaut moins qu'un rouge
+qui nomme ce qui manque. Le script va **chercher le fichier à l'adresse
+rendue**, parce qu'une adresse n'est pas un fichier.
 
 ⚠️ **`numeric` ne se lit pas pareil selon la porte.** `places_reservees` est de
 type `numeric` : le pilote `pg` le rend en **texte**, quand Payload le rend en
@@ -944,9 +953,11 @@ et conclut que tout a changé. Vérifié : le code applicatif passe par Payload 
 ne connaît pas ce piège — mais les scripts d'inspection, eux, doivent convertir.
 
 ⚠️ **Le disque de Vercel ne s'écrit pas.** `staticDir` pointe dans le paquet
-déployé, en lecture seule à l'exécution : un dépôt écrit là disparaît sans
-erreur. C'est pourquoi `Medias` n'a **jamais reçu un seul fichier en
-production** — et que personne ne s'en était aperçu, faute d'avoir essayé.
+déployé, en lecture seule à l'exécution : un dépôt écrit là disparaît **sans
+erreur**. C'est ce qui a fait que `Medias` n'a longtemps reçu aucun fichier en
+production sans que personne s'en aperçoive, faute d'avoir essayé. Le magasin
+règle le cas ; la leçon reste, parce que c'est le repli silencieux qui rend la
+panne invisible — retirer `BLOB_MEDIAS_TOKEN` y ramènerait, sans un mot.
 
 ⚠️ **Un dossier accompagné d'un reçu était indestructible.** La clef étrangère
 de `recus.dossier_id` est en « SET NULL » et la colonne est obligatoire :
