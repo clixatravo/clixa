@@ -58,25 +58,44 @@ export function BandeauCookies() {
       // `role="dialog"` sans `aria-modal` : il informe, il ne piège pas le clavier.
       role="dialog"
       aria-label="Mesure d'audience"
-      className="border-line bg-panel fixed right-3 bottom-3 left-3 z-50 border p-5 shadow-lg sm:left-auto sm:max-w-[420px]"
+      className="border-line bg-panel fixed right-3 bottom-3 left-3 z-50 flex items-center gap-3 border px-4 py-3 shadow-lg sm:left-auto sm:max-w-[420px] sm:flex-col sm:items-start sm:px-5 sm:py-4"
     >
-      <p className="mono-label text-gold mb-2 text-[0.62rem]">Mesure d&apos;audience</p>
-      <p className="text-ivory-dim mb-4 text-[0.86rem] leading-relaxed">
-        Nous aimerions compter les pages vues, pour savoir quels parcours intéressent. Cela pose un
-        cookie sur votre appareil. Vous pouvez refuser : le site fonctionne exactement pareil.
-      </p>
-      <div className="flex flex-wrap gap-2">
+      {/*
+        ⚠️ **Une ligne sur téléphone, un encart sur écran large.** Le premier
+        jet reprenait la même mise en page partout : sur un téléphone, cela
+        faisait un pavé sombre haut de près d'un demi-écran, posé par-dessus le
+        titre d'accueil. La direction l'a ouvert et a cru le site tombé — ce qui
+        se comprend, rien de ce qu'elle connaissait n'était visible.
+
+        Le texte est donc court par défaut et ne se développe qu'à partir de
+        `sm`. Un bandeau qu'on prend pour une panne se fait cliquer au hasard,
+        et cela ne vaut aucun consentement.
+      */}
+      <div className="min-w-0 flex-1">
+        <p className="mono-label text-gold mb-1 hidden text-[0.62rem] sm:block">
+          Mesure d&apos;audience
+        </p>
+        <p className="text-ivory-dim text-[0.78rem] leading-snug sm:mb-4 sm:text-[0.86rem] sm:leading-relaxed">
+          <span className="sm:hidden">Un cookie pour compter les pages vues ?</span>
+          <span className="hidden sm:inline">
+            Nous aimerions compter les pages vues, pour savoir quels parcours intéressent. Cela pose
+            un cookie sur votre appareil. Vous pouvez refuser : le site fonctionne exactement
+            pareil.
+          </span>
+        </p>
+      </div>
+      <div className="flex shrink-0 gap-2">
         <button
           type="button"
           onClick={repondre("accepte")}
-          className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-5 text-[0.86rem] font-semibold transition-colors"
+          className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-4 text-[0.82rem] font-semibold transition-colors sm:px-5 sm:text-[0.86rem]"
         >
           Accepter
         </button>
         <button
           type="button"
           onClick={repondre("refuse")}
-          className="border-line text-ivory hover:border-gold rounded-clixa min-h-11 border px-5 text-[0.86rem] font-semibold transition-colors"
+          className="border-line text-ivory hover:border-gold rounded-clixa min-h-11 border px-4 text-[0.82rem] font-semibold transition-colors sm:px-5 sm:text-[0.86rem]"
         >
           Refuser
         </button>
