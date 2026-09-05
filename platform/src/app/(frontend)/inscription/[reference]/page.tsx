@@ -32,6 +32,14 @@ const RETOUR_ANNONCE: Record<string, string> = {
   ok: "C'est noté. Nous vérifions le transfert et vous confirmons votre place — comptez un jour ouvré.",
   champs: "Il manque le moyen d'envoi ou le numéro de transfert.",
   rien: "Aucune échéance n'attend d'annonce en ce moment.",
+  /*
+    ⚠️ Le message dit ce qui manque **de notre côté**, pas ce qu'il aurait mal
+    fait. À ce stade, c'est nous qui devons lui envoyer de quoi régler ; lui
+    reprocher une annonce prématurée le laisserait chercher une faute qui n'est
+    pas la sienne.
+  */
+  "trop-tot":
+    "Nous ne vous avons pas encore envoyé de quoi régler. Dès que votre contrat est vérifié, les coordonnées vous parviennent par courriel — vous pourrez annoncer votre transfert ici même.",
   format: "Le justificatif doit être une photo (JPG, PNG, HEIC) ou un PDF.",
   lourd: "Le justificatif dépasse 5 Mo. Une photo un peu moins grande suffira.",
   "contrat-ok":
@@ -106,8 +114,29 @@ export default async function Dossier({ params, searchParams }: Props) {
     échéance qu'on n'a pas encore versée.
   */
   const enCours = dossier.echeances.find((e) => e.statut !== "regle");
+  /*
+    ── ⚠️ On n'annonce pas un transfert qu'on n'a pas pu faire ────────────────
+    Le formulaire ne demandait que « une échéance attend ». Il paraissait donc
+    dès la pré-inscription — avant le contrat, avant sa vérification, et
+    surtout **avant que les coordonnées de règlement soient parties**. Or elles
+    ne figurent nulle part sur le site : elles arrivent par courriel, après
+    signature. Le participant se voyait offrir « j'ai fait le transfert »
+    sans que personne lui ait jamais dit où envoyer l'argent.
+
+    Ce n'est pas théorique : le 5 septembre 2026, un vrai prospect venu d'une
+    annonce a annoncé un transfert dans cet état. L'équipe se retrouve à
+    chercher un versement qui n'existe pas, et lui croit avoir fait ce qu'on
+    lui demandait.
+
+    C'est exactement le défaut que `prochaineEtape` a corrigé pour le *texte*
+    de la page — « elle ne réclame rien qu'on n'ait rendu possible ». Le
+    formulaire, lui, était resté.
+  */
   const aAnnoncer =
-    dossier.statut !== "annulee" && dossier.statut !== "terminee" && enCours?.statut === "attendu";
+    dossier.statut !== "annulee" &&
+    dossier.statut !== "terminee" &&
+    enCours?.statut === "attendu" &&
+    Boolean(dossier.coordonneesEnvoyeesLe);
 
   /*
     Un parcours suivi n'a plus de « prochaine échéance » à régler ni de

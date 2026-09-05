@@ -105,6 +105,20 @@ export async function POST(request: Request) {
   if (statut === "annulee" || statut === "terminee") redirect(retour as Route);
 
   /*
+    ⚠️ **On n'annonce pas un transfert qu'on n'a pas pu faire.** Les
+    coordonnées de règlement ne figurent nulle part sur le site : elles
+    partent par courriel, après la signature du contrat. Tant que cet envoi
+    n'a pas eu lieu, le participant n'a aucun moyen d'avoir versé quoi que ce
+    soit — et une annonce à ce stade envoie l'équipe chercher un versement qui
+    n'existe pas, pendant que lui croit avoir fait ce qu'on lui demandait.
+
+    Le formulaire ne paraît plus dans ce cas ; cette garde compte double,
+    parce que la route reste atteignable — par un onglet resté ouvert, ou par
+    un script. C'est la même règle que pour une session complète.
+  */
+  if (!dossier.coordonneesEnvoyeesLe) redirect(`${retour}?annonce=trop-tot` as Route);
+
+  /*
     On règle dans l'ordre, donc on n'annonce que la première échéance non
     réglée — et seulement si elle attend encore. Chercher la première
     « attendue » ne suffisait pas : l'échéance 1 passée en vérification, la

@@ -94,12 +94,43 @@ async function placesReservees(request: {
   return docs.reduce((t, s) => t + (s.placesReservees ?? 0), 0);
 }
 
+/**
+ * Ce que l'équipe fait depuis /admin : « J'ai envoyé les instructions de
+ * paiement ».
+ *
+ * ⚠️ **Sans ce geste, aucune annonce n'est possible — et c'est voulu.** Les
+ * coordonnées de règlement ne figurent nulle part sur le site : elles partent
+ * par courriel, après signature. Tant qu'elles ne sont pas parties, le
+ * participant n'a aucun moyen d'avoir versé quoi que ce soit.
+ *
+ * Les deux épreuves ci-dessous annonçaient sur un dossier tout neuf. Elles
+ * passaient parce que le défaut existait : la page offrait le formulaire, et
+ * la route l'acceptait. Un vrai prospect s'y est laissé prendre le 5 septembre
+ * 2026, et l'équipe a cherché un versement qui n'existait pas.
+ */
+function envoyerLesCoordonnees(reference: string): void {
+  sqlUneValeur(
+    `UPDATE inscriptions SET coordonnees_envoyees_le = now() WHERE reference = '${reference}';`,
+  );
+}
+
 test.describe("Annoncer un transfert", () => {
   test("une annonce à la fois, et dans l'ordre des échéances", async ({ page }) => {
-    await retenirUnePlace(page, "P3");
+    const reference = await retenirUnePlace(page, "P3");
     const formulaire = page.locator('form[action="/api/transfert"]');
 
-    await expect(formulaire, "le formulaire doit être offert dès l'arrivée").toBeVisible();
+    /*
+      ⚠️ Rien à annoncer tant que rien n'est parti de chez nous : le formulaire
+      ne doit pas être là. C'est la moitié de la garde qui manquait.
+    */
+    await expect(
+      formulaire,
+      "aucun formulaire tant que les coordonnées ne sont pas envoyées",
+    ).toHaveCount(0);
+
+    envoyerLesCoordonnees(reference);
+    await page.reload();
+    await expect(formulaire, "le formulaire paraît une fois les coordonnées parties").toBeVisible();
 
     await page.selectOption('select[name="moyen"]', "western-union");
     await page.fill('input[name="numero"]', "8471203954");
@@ -125,6 +156,7 @@ test.describe("Annoncer un transfert", () => {
 
   test("une annonce forcée sur un dossier déjà annoncé est refusée", async ({ page, request }) => {
     const reference = await retenirUnePlace(page, "P3");
+    envoyerLesCoordonnees(reference);
 
     const annoncer = () =>
       request.post("/api/transfert", {
@@ -135,6 +167,42 @@ test.describe("Annoncer un transfert", () => {
     expect((await annoncer()).headers()["location"]).toContain("annonce=ok");
     // Sans passer par la page : la route doit refuser d'elle-même.
     expect((await annoncer()).headers()["location"]).toContain("annonce=rien");
+  });
+
+  /*
+    ⚠️ **La route refuse aussi, et cette moitié-là compte double.** Le
+    formulaire ne paraît plus avant l'envoi des coordonnées, mais
+    `api/transfert` reste atteignable — par un onglet resté ouvert, ou par un
+    script. Sans cette garde, une annonce prématurée continuerait de passer et
+    l'équipe irait chercher un versement qui n'existe pas.
+  */
+  test("annoncer avant que les coordonnées soient parties est refusé", async ({
+    page,
+    request,
+  }) => {
+    const reference = await retenirUnePlace(page, "P1");
+
+    const r = await request.post("/api/transfert", {
+      form: { dossier: reference, moyen: "ria", numero: "999888" },
+      maxRedirects: 0,
+    });
+    expect(r.headers()["location"], "la route doit refuser").toContain("annonce=trop-tot");
+
+    /*
+      Et le message dit ce qui manque **de notre côté**. Lui reprocher son geste
+      le laisserait chercher une faute qui n'est pas la sienne.
+    */
+    await page.goto(`/inscription/${reference}?annonce=trop-tot`);
+    await expect(page.getByRole("status")).toContainText("pas encore envoyé de quoi régler");
+
+    // Et rien n'a bougé sur l'échéance.
+    expect(
+      compterEnBase(
+        "inscriptions_echeances",
+        `_parent_id = (SELECT id FROM inscriptions WHERE reference = '${reference}') AND statut = 'annonce'`,
+      ),
+      "aucune échéance ne passe en vérification",
+    ).toBe(0);
   });
 
   test("une référence inventée n'écrit rien et renvoie à l'accueil", async ({ request }) => {

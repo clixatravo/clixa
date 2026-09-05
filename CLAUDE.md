@@ -983,6 +983,34 @@ même session — le crochet `recompter` la met à jour à chaque écriture — 
 Postgres finit par signaler un interblocage. Ce n'est pas un défaut du code,
 c'est deux processus qui se disputent la même ligne.
 
+⚠️ **On n'annonce pas un transfert qu'on n'a pas pu faire** (depuis le
+5 septembre 2026). Le formulaire d'annonce ne demandait que « une échéance
+attend » : il paraissait donc dès la pré-inscription, avant le contrat, avant
+sa vérification, et surtout **avant que les coordonnées de règlement soient
+parties**. Or elles ne figurent nulle part sur le site — elles arrivent par
+courriel, après signature.
+
+Le participant se voyait donc offrir « j'ai fait le transfert » sans que
+personne lui ait jamais dit où envoyer l'argent. Ce n'est pas théorique : un
+vrai prospect venu d'une annonce l'a fait le jour même. L'équipe se retrouve à
+chercher un versement qui n'existe pas, et lui croit avoir fait ce qu'on lui
+demandait.
+
+C'est exactement le défaut que `prochaineEtape` avait corrigé pour le *texte*
+de la page — « elle ne réclame rien qu'on n'ait rendu possible ». Le
+formulaire, lui, était resté.
+
+- **La route refuse aussi**, et cette moitié compte double : elle reste
+  atteignable par un onglet resté ouvert ou par un script. Les deux moitiés
+  sont éprouvées séparément, et chacune prouvée en cassant la sienne.
+- **Le message dit ce qui manque de notre côté**, pas ce qu'il aurait mal
+  fait : « nous ne vous avons pas encore envoyé de quoi régler ». Lui
+  reprocher son geste le laisserait chercher une faute qui n'est pas la
+  sienne.
+- ⚠️ **Deux épreuves passaient parce que le défaut existait.** Elles
+  annonçaient sur un dossier tout neuf ; elles posent maintenant d'abord
+  `coordonneesEnvoyeesLe`, comme l'équipe le fait depuis /admin.
+
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et
 rien ne l'écrivait : la page demandait d'envoyer le numéro « par WhatsApp »,
