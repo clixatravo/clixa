@@ -1,0 +1,85 @@
+"use client";
+
+import React, { useState } from "react";
+import { INDICATIFS_OFFERTS } from "@/lib/indicatifs";
+
+/**
+ * Le numéro WhatsApp : un pays qu'on choisit, un numéro qu'on tape.
+ *
+ * ── ⚠️ Ce qu'il remplace, et pourquoi ───────────────────────────────────────
+ * Un champ unique, avec « +212 6 00 00 00 00 » en exemple et la consigne
+ * d'écrire l'indicatif. La garde refuse sans lui, à raison : « 0689324243 »
+ * est marocain pour qui le lit et injoignable pour qui appelle.
+ *
+ * Mais `inputMode="tel"` ouvre, sur beaucoup de téléphones Android, un pavé
+ * numérique où le **`+` n'existe que sous une pression longue du zéro**. On
+ * exigeait donc un caractère que le clavier ne propose pas. Un prospect venu
+ * d'une annonce s'en est plaint le 5 septembre 2026 : « je voulais mettre mon
+ * numéro, ça ne marche pas ». Il n'avait rien fait de travers.
+ *
+ * ⚠️ **La règle ne bouge pas, c'est la saisie qui change.** Le visiteur choisit
+ * son pays et tape ce qu'il connaît par cœur ; le champ envoyé porte la forme
+ * internationale complète. La faute devient impossible plutôt que rattrapée.
+ *
+ * ── Un seul champ part au serveur ───────────────────────────────────────────
+ * Le `select` et le champ visible ne portent pas de `name` : c'est un champ
+ * caché, recomposé à chaque frappe, qui s'appelle `whatsapp`. Les routes ne
+ * changent pas, `aUnIndicatif` non plus, et rien d'autre n'a eu à bouger.
+ *
+ * ⚠️ **Le zéro de tête est retiré.** « 06 12 34 56 78 » est la façon dont
+ * chacun connaît son propre numéro, et « +212 06… » n'appelle personne. Le
+ * corriger en silence vaut mieux que le refuser : la personne a écrit ce
+ * qu'elle avait à écrire.
+ */
+export function ChampWhatsapp({
+  id = "whatsapp",
+  defautIndicatif = "212",
+  requis = true,
+  classeChamp,
+}: {
+  id?: string;
+  defautIndicatif?: string;
+  requis?: boolean;
+  /** Les classes du champ texte, pour épouser le formulaire qui l'accueille. */
+  classeChamp: string;
+}) {
+  const [indicatif, setIndicatif] = useState(defautIndicatif);
+  const [numero, setNumero] = useState("");
+
+  /*
+    Ce qui part au serveur. On ne garde que les chiffres du numéro local, et
+    l'on retire son zéro de tête : c'est la forme que `aUnIndicatif` attend, et
+    celle qu'un lien `wa.me` sait composer.
+  */
+  const chiffres = numero.replace(/\D/g, "").replace(/^0+/, "");
+  const complet = chiffres ? `+${indicatif}${chiffres}` : "";
+
+  return (
+    <div className="flex gap-2">
+      <select
+        aria-label="Indicatif du pays"
+        value={indicatif}
+        onChange={(e) => setIndicatif(e.target.value)}
+        className={`${classeChamp} w-[6.5rem] shrink-0`}
+      >
+        {INDICATIFS_OFFERTS.map(({ code, pays }) => (
+          <option key={code} value={code} title={pays}>
+            +{code}
+          </option>
+        ))}
+      </select>
+      <input
+        id={id}
+        type="tel"
+        inputMode="numeric"
+        autoComplete="tel-national"
+        required={requis}
+        value={numero}
+        onChange={(e) => setNumero(e.target.value)}
+        placeholder="6 12 34 56 78"
+        className={`${classeChamp} min-w-0 flex-1`}
+      />
+      <input type="hidden" name="whatsapp" value={complet} readOnly />
+    </div>
+  );
+}

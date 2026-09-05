@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE, referenceDeLAdresse } from "./menage";
+import { MARQUE, referenceDeLAdresse, remplirWhatsapp } from "./menage";
 
 /**
  * Le second temps du tunnel : demander son contrat, puis le signer.
@@ -21,7 +21,7 @@ async function preInscrire(page: Page): Promise<string> {
   await page.goto(`/inscription?formation=${PARCOURS}`);
   await page.fill('input[name="nom"]', NOM);
   await page.fill('input[name="email"]', `contrat.${Date.now()}${MARQUE}`);
-  await page.fill('input[name="whatsapp"]', "+212600000000");
+  await remplirWhatsapp(page, "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');

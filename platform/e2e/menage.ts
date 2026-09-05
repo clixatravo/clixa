@@ -1,4 +1,5 @@
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+import { INDICATIFS_OFFERTS } from "../src/lib/indicatifs";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -102,6 +103,36 @@ export function sqlUneValeur(sql: string): string {
   const url = adresseBase();
   if (!url) throw new Error("DATABASE_URL introuvable.");
   return psql(url, ["-t", "-A", "-c", sql]).trim();
+}
+
+/**
+ * Remplir le numéro WhatsApp comme un visiteur le remplit.
+ *
+ * ⚠️ **Ce n'est plus un champ, c'en est deux.** Le formulaire demandait le
+ * numéro « avec l'indicatif », et `inputMode="tel"` ouvre sur beaucoup de
+ * téléphones Android un pavé où le `+` n'existe que sous une pression longue
+ * du zéro : on exigeait un caractère que le clavier ne propose pas. Un
+ * prospect s'en est plaint le 5 septembre 2026. Le visiteur choisit désormais
+ * son pays et tape le numéro local ; `whatsapp` est un champ caché, recomposé.
+ *
+ * Les épreuves le remplissaient à huit endroits. Elles passent d'ici — comme
+ * pour `referenceDeLAdresse`, une façon de faire copiée huit fois est huit
+ * façons de tomber le jour où elle change.
+ */
+export async function remplirWhatsapp(page: Page, international: string): Promise<void> {
+  const chiffres = international.replace(/\D/g, "").replace(/^00/, "");
+  /*
+    Le plus long indicatif qui colle. « 1 » et « 212 » commencent tous deux le
+    numéro d'un abonné nord-américain : prendre le premier venu choisirait le
+    mauvais pays.
+  */
+  const code = INDICATIFS_OFFERTS.map((i) => i.code)
+    .filter((c) => chiffres.startsWith(c))
+    .sort((a, b) => b.length - a.length)[0];
+  expect(code, `aucun indicatif connu dans « ${international} »`).toBeTruthy();
+
+  await page.selectOption('select[aria-label="Indicatif du pays"]', code!);
+  await page.fill("input#whatsapp, input#rappel-whatsapp", chiffres.slice(code!.length));
 }
 
 export function adresseBase(): string | undefined {

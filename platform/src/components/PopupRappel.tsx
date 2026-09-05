@@ -10,6 +10,7 @@ import {
 } from "@/lib/consentement";
 import { pageAcceptelaProposition, peutProposer, retenirReponse } from "@/lib/rappel-propose";
 import { compterLead } from "@/components/SignalerLead";
+import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 
 /**
  * La proposition de rappel, pour le visiteur qui allait repartir sans rien dire.
@@ -232,14 +233,9 @@ export function PopupRappel() {
               placeholder="Nom complet"
               className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full border px-3.5 py-2.5 text-[0.9rem]"
             />
-            <input
-              name="whatsapp"
-              required
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="+212 6 00 00 00 00"
-              className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full border px-3.5 py-2.5 text-[0.9rem]"
+            <ChampWhatsapp
+              id="rappel-whatsapp"
+              classeChamp="border-line bg-ink rounded-clixa text-ivory focus:border-gold border px-3.5 py-2.5 text-[0.9rem]"
             />
 
             <label className="text-ivory-dim flex cursor-pointer items-start gap-2.5 text-[0.78rem] leading-relaxed">

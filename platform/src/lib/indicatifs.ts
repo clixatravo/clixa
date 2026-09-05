@@ -19,7 +19,7 @@
   n'existent pas tous les deux, mais « 1 » (Amérique du Nord) est le préfixe de
   rien et le suffixe de beaucoup.
 */
-const INDICATIFS: Record<string, string> = {
+export const INDICATIFS: Record<string, string> = {
   "212": "Maroc",
   "213": "Algérie",
   "216": "Tunisie",
@@ -116,3 +116,60 @@ export function paysDeLIndicatif(numero: string): string {
   */
   return "À préciser";
 }
+
+/**
+ * Les indicatifs offerts au visiteur, pays d'abord.
+ *
+ * ── ⚠️ Pourquoi un choix, et non un champ à remplir ─────────────────────────
+ * Le formulaire demandait le numéro « avec l'indicatif », et la garde refuse
+ * sans lui — à raison : « 0689324243 » est marocain pour qui le lit et
+ * injoignable pour qui appelle.
+ *
+ * Mais `inputMode="tel"` ouvre, sur beaucoup de téléphones Android, un pavé
+ * numérique où le **`+` n'existe que sous une pression longue du zéro**. On
+ * exigeait donc un caractère que le clavier ne propose pas. Un prospect venu
+ * d'une annonce s'en est plaint le 5 septembre 2026 : « je voulais mettre mon
+ * numéro, ça ne marche pas ».
+ *
+ * On ne relâche pas la règle : on rend la faute impossible. Le visiteur
+ * choisit son pays et tape le numéro qu'il connaît par cœur ; c'est nous qui
+ * composons la forme internationale.
+ *
+ * ⚠️ Le Maroc en tête, puis l'Afrique de l'Ouest — c'est d'où viennent les
+ * inscrits. Un ordre alphabétique mettrait l'Allemagne avant la Côte d'Ivoire.
+ */
+export const INDICATIFS_OFFERTS: { code: string; pays: string }[] = [
+  "212",
+  "225",
+  "221",
+  "224",
+  "227",
+  "223",
+  "226",
+  "228",
+  "229",
+  "222",
+  "237",
+  "241",
+  "242",
+  "243",
+  "235",
+  "236",
+  "220",
+  "245",
+  "213",
+  "216",
+  "218",
+  "230",
+  "33",
+  "32",
+  "41",
+  "34",
+  "39",
+  "31",
+  "44",
+  "49",
+  "1",
+]
+  .filter((code) => INDICATIFS[code])
+  .map((code) => ({ code, pays: INDICATIFS[code]! }));

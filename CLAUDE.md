@@ -1493,6 +1493,29 @@ garde. `csrf`, `cors` et `serverURL` sont maintenant posés sur
 `NEXT_PUBLIC_SITE_URL`. Vérifié : le même cookie passe depuis l'origine du site
 et est refusé depuis une autre.
 
+⚠️ **On ne demande plus au visiteur de taper le « + »** (depuis le 5 septembre
+2026, `components/ChampWhatsapp.tsx`). Le champ portait « +212 6 00 00 00 00 »
+en exemple et la garde refuse sans indicatif — à raison. Mais `inputMode="tel"`
+ouvre, sur beaucoup de téléphones Android, un pavé numérique où le **`+`
+n'existe que sous une pression longue du zéro**. On exigeait un caractère que
+le clavier ne propose pas.
+
+Un prospect venu d'une annonce s'en est plaint le jour même : « je voulais
+mettre mon numéro, ça ne marche pas ». Il n'avait rien fait de travers.
+
+- **La règle ne bouge pas, la saisie change.** Le visiteur choisit son pays
+  dans une liste et tape le numéro qu'il connaît par cœur ; un champ caché
+  porte la forme internationale. `aUnIndicatif` et les routes sont intactes.
+- **Le zéro de tête est retiré en silence.** « 06 12 34 56 78 » est la façon
+  dont chacun connaît son propre numéro, et « +212 06… » n'appelle personne.
+  Corriger vaut mieux que refuser : la personne a écrit ce qu'elle avait à
+  écrire.
+- **Les indicatifs sont ordonnés par provenance**, Maroc puis Afrique de
+  l'Ouest — un ordre alphabétique mettrait l'Allemagne avant la Côte d'Ivoire.
+- ⚠️ **Huit épreuves remplissaient ce champ à la main.** Elles passent par
+  `remplirWhatsapp` : une façon de faire copiée huit fois est huit façons de
+  tomber le jour où elle change. Même leçon que `referenceDeLAdresse`.
+
 ⚠️ **L'indicatif du pays est obligatoire, aux deux portes** (`lib/indicatifs.ts`,
 depuis le 29 août 2026). Sans lui, le numéro ne désigne personne hors de son
 pays : le bouton WhatsApp du back-office refuse de composer, et l'équipe se

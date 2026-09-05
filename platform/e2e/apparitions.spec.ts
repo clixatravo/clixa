@@ -169,7 +169,14 @@ test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ 
     fait fermer.
   */
   await expect(fenetre.locator('input[name="nom"]')).toBeVisible();
-  await expect(fenetre.locator('input[name="whatsapp"]')).toBeVisible();
+  /*
+    ⚠️ Le champ visible, pas celui qui part. Depuis qu'on demande le pays d'un
+    côté et le numéro de l'autre, `name="whatsapp"` est un champ **caché** :
+    l'attendre visible échouerait sur un formulaire parfaitement utilisable.
+    Ce que le visiteur doit voir, c'est un indicatif et un numéro.
+  */
+  await expect(fenetre.locator('select[aria-label="Indicatif du pays"]')).toBeVisible();
+  await expect(fenetre.locator("input#rappel-whatsapp")).toBeVisible();
 
   const accord = fenetre.locator('input[name="consentement"]');
   await expect(accord).toBeVisible();

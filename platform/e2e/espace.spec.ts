@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { execFileSync } from "node:child_process";
-import { MARQUE, adresseBase, referenceDeLAdresse } from "./menage";
+import { MARQUE, adresseBase, referenceDeLAdresse, remplirWhatsapp } from "./menage";
 
 /**
  * « Mon espace » sur téléphone.
@@ -64,7 +64,7 @@ async function espaceAvecDossier(page: Page): Promise<string> {
   await page.selectOption('select[name="plan"]', "P3");
   await page.fill('input[name="nom"]', "Épreuve Espace");
   await page.fill('input[name="email"]', email);
-  await page.fill('input[name="whatsapp"]', "+212600000000");
+  await remplirWhatsapp(page, "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');

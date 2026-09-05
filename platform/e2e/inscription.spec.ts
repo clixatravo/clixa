@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
-import { compterEnBase, MARQUE, referenceDeLAdresse, sqlUneValeur } from "./menage";
+import {
+  MARQUE,
+  compterEnBase,
+  referenceDeLAdresse,
+  remplirWhatsapp,
+  sqlUneValeur,
+} from "./menage";
 
 /**
  * Le tunnel : retenir une place, puis annoncer son transfert.
@@ -19,7 +25,7 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.selectOption('select[name="plan"]', plan);
   await page.fill('input[name="nom"]', "Épreuve Playwright");
   await page.fill('input[name="email"]', `epreuve.${Date.now()}${MARQUE}`);
-  await page.fill('input[name="whatsapp"]', "+212600000000");
+  await remplirWhatsapp(page, "+212600000000");
   await page.fill('input[name="pays"]', "Maroc");
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');
@@ -240,13 +246,23 @@ test.describe("Un envoi répété", () => {
     page,
     request,
   }) => {
+    /*
+      ⚠️ Elle parcourt le tunnel **deux fois** — c'est tout son objet — et
+      depuis que le numéro se saisit en deux champs, cela fait quatre
+      interactions de plus. Neuf secondes seule, mais la série entière charge
+      la base : le défaut par trente secondes tombait sous la charge, avec
+      pour tout symptôme un contexte de requête déjà fermé. Le temps accordé
+      dit ce que l'épreuve fait, il ne masque rien.
+    */
+    test.setTimeout(90_000);
+
     const email = `double.${Date.now()}${MARQUE}`;
 
     const envoyer = async () => {
       await page.goto(`/inscription?formation=${PARCOURS}`);
       await page.fill('input[name="nom"]', "Épreuve Double");
       await page.fill('input[name="email"]', email);
-      await page.fill('input[name="whatsapp"]', "+212600000000");
+      await remplirWhatsapp(page, "+212600000000");
       await page.fill('input[name="pays"]', "Maroc");
       await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');
@@ -286,7 +302,7 @@ test.describe("Un envoi répété", () => {
       await page.goto(`/inscription?formation=${parcours}`);
       await page.fill('input[name="nom"]', "Épreuve Deux Parcours");
       await page.fill('input[name="email"]', email);
-      await page.fill('input[name="whatsapp"]', "+212600000000");
+      await remplirWhatsapp(page, "+212600000000");
       await page.fill('input[name="pays"]', "Maroc");
       await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');

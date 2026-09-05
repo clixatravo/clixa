@@ -3,6 +3,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import { SignalerLead } from "@/components/SignalerLead";
+import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 
 export const metadata: Metadata = {
   title: "Être rappelé",
@@ -163,16 +164,18 @@ export default async function Contact({ searchParams }: Props) {
                   Le pays se déduit de l'indicatif : deux saisies pour un même
                   fait laissaient écrire « Maroc » sous un numéro ivoirien.
                 */}
-                <Champ
-                  label="Numéro WhatsApp"
-                  name="whatsapp"
-                  type="tel"
-                  autoComplete="tel"
-                  inputMode="tel"
-                  placeholder="+212 6 00 00 00 00"
-                  aide="Avec l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal."
-                  requis
-                />
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="whatsapp"
+                    className="mono-label text-ivory-dim text-[0.68rem] tracking-wider"
+                  >
+                    Numéro WhatsApp <span className="text-gold">*</span>
+                  </label>
+                  <ChampWhatsapp classeChamp="border-line/70 bg-ink/70 rounded-clixa text-ivory focus:border-gold focus:ring-gold border px-4 py-3 text-[0.95rem] transition-all focus:ring-1" />
+                  <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
+                    Choisissez votre pays, puis tapez votre numéro sans le zéro du début.
+                  </p>
+                </div>
 
                 <div className="sm:col-span-2">
                   {/*

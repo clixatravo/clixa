@@ -5,6 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
 import { MOYENS } from "@/lib/moyens";
+import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import {
   formatPeriode,
   formatPrix,
@@ -216,15 +217,18 @@ export default async function Inscription({ searchParams }: Props) {
                   autoComplete="email"
                   valeur={participant?.email}
                 />
-                <Champ
-                  label="WhatsApp"
-                  name="whatsapp"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="+212 6 00 00 00 00"
-                  aide="Avec l'indicatif de votre pays — +212 au Maroc, +225 en Côte d'Ivoire, +221 au Sénégal."
-                  valeur={participant?.telephone}
-                />
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="whatsapp"
+                    className="mono-label text-ivory-dim text-[0.7rem] tracking-wider"
+                  >
+                    WhatsApp <span className="text-gold">*</span>
+                  </label>
+                  <ChampWhatsapp classeChamp="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-w-0 border px-3.5 py-3 text-[0.95rem]" />
+                  <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
+                    Choisissez votre pays, puis tapez votre numéro sans le zéro du début.
+                  </p>
+                </div>
                 <Champ
                   label="Pays"
                   name="pays"
