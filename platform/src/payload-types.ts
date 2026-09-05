@@ -77,6 +77,7 @@ export interface Config {
     pages: Page;
     medias: Media;
     'demandes-rappel': DemandesRappel;
+    conversations: Conversation;
     'rendez-vous': RendezVous;
     inscriptions: Inscription;
     apprenants: Apprenant;
@@ -98,6 +99,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     'rendez-vous': RendezVousSelect<false> | RendezVousSelect<true>;
     inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
@@ -607,6 +609,54 @@ export interface DemandesRappel {
   createdAt: string;
 }
 /**
+ * Les échanges WhatsApp menés par le robot d'orientation.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: number;
+  /**
+   * Composé du nom et du numéro. Ne pas saisir.
+   */
+  intitule?: string | null;
+  /**
+   * Tel que WhatsApp le donne ; le prospect ne l'a pas forcément saisi.
+   */
+  nom?: string | null;
+  whatsapp: string;
+  /**
+   * Passée à « un conseiller », plus aucun message automatique ne part. À remettre sur « terminée » une fois l'échange fini.
+   */
+  conduite: 'robot' | 'humain' | 'close';
+  /**
+   * Posée automatiquement. C'est elle qui déclenche l'alerte à l'équipe.
+   */
+  passeeAlHumainLe?: string | null;
+  /**
+   * Ce que le prospect a écrit en dernier — de quoi savoir sur quoi il attend.
+   */
+  dernierMessage?: string | null;
+  /**
+   * Ce qui s'est dit, dans l'ordre. À lire avant de reprendre la main.
+   */
+  messages?:
+    | {
+        sens: 'entrant' | 'sortant';
+        le: string;
+        texte: string;
+        id?: string | null;
+      }[]
+    | null;
+  demande?: (number | null) | DemandesRappel;
+  /**
+   * Rempli dès qu'un créneau est retenu. Le robot cesse alors d'en proposer.
+   */
+  rendezVous?: (number | null) | RendezVous;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Les appels convenus avec les prospects, par le robot ou à la main.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -882,6 +932,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'demandes-rappel';
         value: number | DemandesRappel;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: number | Conversation;
       } | null)
     | ({
         relationTo: 'rendez-vous';
@@ -1266,6 +1320,30 @@ export interface DemandesRappelSelect<T extends boolean = true> {
   statut?: T;
   notes?: T;
   origine?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  intitule?: T;
+  nom?: T;
+  whatsapp?: T;
+  conduite?: T;
+  passeeAlHumainLe?: T;
+  dernierMessage?: T;
+  messages?:
+    | T
+    | {
+        sens?: T;
+        le?: T;
+        texte?: T;
+        id?: T;
+      };
+  demande?: T;
+  rendezVous?: T;
   updatedAt?: T;
   createdAt?: T;
 }

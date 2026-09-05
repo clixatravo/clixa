@@ -13,6 +13,7 @@ import { Specialisations } from "@/collections/Specialisations";
 import { Tarifs } from "@/collections/Tarifs";
 import { Disponibilites } from "@/collections/Disponibilites";
 import { RendezVous } from "@/collections/RendezVous";
+import { Conversations } from "@/collections/Conversations";
 import { Inscriptions } from "@/collections/Inscriptions";
 import { Apprenants } from "@/collections/Apprenants";
 import { Programmes } from "@/collections/Programmes";
@@ -107,6 +108,7 @@ export default buildConfig({
     Medias,
     // Admissions
     DemandesRappel,
+    Conversations,
     RendezVous,
     Inscriptions,
     Apprenants,

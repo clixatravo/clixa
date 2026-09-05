@@ -90,6 +90,23 @@ export async function Veille() {
     overrideAccess: true,
   });
 
+  /*
+    2 bis. Les conversations WhatsApp qu'un conseiller doit reprendre.
+
+    ⚠️ **C'est le compteur le plus urgent des quatre.** Les trois autres
+    constatent ce qui s'est produit et tiennent jusqu'à l'heure suivante ;
+    celui-ci dit qu'une personne écrit **maintenant**, et qu'un robot vient de
+    lui promettre qu'on lui répondrait. Une promesse tenue vingt minutes plus
+    tard n'est plus la même promesse.
+  */
+  const { totalDocs: conversationsAReprendre } = await payload.find({
+    collection: "conversations",
+    where: { conduite: { equals: "humain" } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+
   // 3. Les prochaines sessions pour le planning et les jauges de remplissage
   const { docs: sessions } = await payload.find({
     collection: "sessions",
@@ -125,9 +142,16 @@ export async function Veille() {
       à passer.
     */
     rappels: "/admin/collections/demandes-rappel?where[statut][equals]=nouvelle",
+    /*
+      Même principe que les autres : le nombre annonce un tri, et le lien doit
+      le faire. Une vignette qui compte trois conversations à reprendre et
+      ouvre la liste entière oblige à les retrouver soi-même.
+    */
+    conversations: "/admin/collections/conversations?where[conduite][equals]=humain",
   } as const;
 
-  const toutEstCalme = aVerifier === 0 && nouvellesDemandes === 0 && enRetard === 0;
+  const toutEstCalme =
+    aVerifier === 0 && nouvellesDemandes === 0 && enRetard === 0 && conversationsAReprendre === 0;
 
   return (
     <section className="clixa-cockpit">
@@ -211,6 +235,42 @@ export async function Veille() {
           </div>
           <div className="clixa-kpi__action">
             <span>{aVerifier > 0 ? "Traiter les reçus →" : "Voir les dossiers →"}</span>
+          </div>
+        </Link>
+
+        {/* KPI 1 bis : Conversations à reprendre — la plus urgente */}
+        <Link
+          href={
+            (conversationsAReprendre > 0
+              ? filtres.conversations
+              : "/admin/collections/conversations") as Route
+          }
+          /*
+            ⚠️ `--alerte-rouge`, pas `--alerte`. Cette dernière n'existe pas :
+            la feuille ne déclare que `-or`, `-rouge` et `-vert`. Une classe
+            inventée ne casse rien et ne fait rien — la vignette serait restée
+            grise pour toujours, sans qu'aucune erreur ne le dise. Le journal
+            met en garde contre ce piège exact ; il fallait encore le vérifier.
+
+            Le rouge est celui de l'urgence, et c'est bien de cela qu'il
+            s'agit : quelqu'un attend une réponse maintenant.
+          */
+          className={`clixa-kpi ${conversationsAReprendre > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">💬</span>
+            <span className="clixa-kpi__tag">Orientation</span>
+          </div>
+          <div className="clixa-kpi__valeur">{conversationsAReprendre}</div>
+          <div className="clixa-kpi__libelle">
+            {conversationsAReprendre > 1 ? "Conversations à reprendre" : "Conversation à reprendre"}
+          </div>
+          <div className="clixa-kpi__action">
+            <span>
+              {conversationsAReprendre > 0
+                ? "Quelqu'un attend une réponse →"
+                : "Voir les échanges →"}
+            </span>
           </div>
         </Link>
 

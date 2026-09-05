@@ -851,22 +851,6 @@ export async function courrielRappel(
   },
 ): Promise<void> {
   /*
-    ⚠️ Celui-ci ne va pas à l'équipe entière, mais à l'adresse affichée sur le
-    site — et il la tient de `lib/reseaux.ts`, la même source que la page de
-    contact et le pied de page.
-
-    Deux raisons. La première est une décision : une demande de rappel n'est pas
-    un événement à constater, c'est un appel à passer. Elle appelle une personne,
-    pas une équipe. Les autres notifications — inscription, contrat, transfert —
-    disent ce qui s'est produit et vont, elles, à tout le monde.
-
-    La seconde est une règle de la maison : qui écrit à l'adresse publique et qui
-    remplit le formulaire aboutissent au même endroit **par construction**. Écrire
-    l'adresse ici en toutes lettres en ferait une seconde copie, et deux copies
-    finissent toujours par diverger — c'est ce qui avait laissé un faux numéro
-    d'admissions dans chaque courriel envoyé.
-  */
-  /*
     ── Où va une demande de rappel ────────────────────────────────────────────
     Elle allait à l'adresse publique du site, `contact@clixa.africa` : une
     demande de rappel n'est pas un événement à constater, c'était l'argument,
@@ -1195,6 +1179,58 @@ export async function courrielCertificatDisponible(
       `,
       boutonTexte: "Ouvrir mon dossier",
       boutonLien: url,
+    }),
+  });
+}
+
+/**
+ * Une conversation WhatsApp attend un conseiller.
+ *
+ * ⚠️ **C'est le message le plus urgent des sept.** Les autres constatent ce qui
+ * s'est produit — une inscription, un contrat, un transfert — et peuvent
+ * attendre l'heure suivante. Celui-ci dit qu'une personne est **en train**
+ * d'écrire, maintenant, et qu'un robot vient de lui promettre qu'on lui
+ * répondrait. Une promesse tenue vingt minutes plus tard n'est plus la même
+ * promesse.
+ *
+ * ⚠️ Il ne part qu'une fois par reprise : la garde « vide avant, rempli
+ * maintenant » vit dans le crochet de `Conversations`, comme pour le contrat
+ * vérifié et le certificat. Sans elle, chaque message reçu la renverrait.
+ */
+export async function courrielMainPassee(
+  payload: Payload,
+  d: { id: string; nom: string; whatsapp: string; dernier: string },
+): Promise<void> {
+  if (!EQUIPE) return;
+
+  const lien = `https://www.clixa.africa/admin/collections/conversations/${d.id}`;
+  const corpsHtml = `
+    <p style="margin: 0 0 16px;">Le robot d'orientation passe la main : quelqu'un demande à parler à un conseiller, et nous sommes dans les heures d'ouverture.</p>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <tr><td style="color: #94a3b8; padding: 4px 0;">Nom :</td><td>${echapper(d.nom)}</td></tr>
+      <tr><td style="color: #94a3b8; padding: 4px 0;">WhatsApp :</td><td>${echapper(d.whatsapp)}</td></tr>
+      <tr><td style="color: #94a3b8; padding: 4px 0; vertical-align: top;">Dernier message :</td><td>${echapper(d.dernier)}</td></tr>
+    </table>
+    <p style="margin: 16px 0 0; color: #94a3b8; font-size: 13px;">Le robot s'est tu : plus aucun message automatique ne partira sur ce fil tant que la conversation reste sur « un conseiller ».</p>
+  `;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `À reprendre — ${d.nom} attend un conseiller`,
+    text: [
+      "Le robot d'orientation passe la main.",
+      "",
+      `Nom : ${d.nom}`,
+      `WhatsApp : ${d.whatsapp}`,
+      `Dernier message : ${d.dernier}`,
+      "",
+      `La conversation : ${lien}`,
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Une conversation attend un conseiller",
+      corpsHtml,
+      boutonTexte: "Lire la conversation",
+      boutonLien: lien,
     }),
   });
 }
