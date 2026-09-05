@@ -73,20 +73,41 @@ export function ChampWhatsapp({
 
   return (
     <div className="flex flex-col gap-2">
+      {/*
+        ⚠️ **Une seule ligne, dans les deux états.** Le premier jet gardait le
+        sélecteur affichant « Autre pays » et ajoutait le champ d'indicatif
+        en dessous : deux cases pour une seule information, et celle qu'il
+        fallait remplir n'était pas là où on la cherchait. Le champ prend donc
+        la place du sélecteur, et un lien ramène à la liste.
+      */}
       <div className="flex gap-2">
-        <select
-          aria-label="Indicatif du pays"
-          value={choix}
-          onChange={(e) => setChoix(e.target.value)}
-          className={`${classeChamp} w-[9.5rem] shrink-0`}
-        >
-          {INDICATIFS_OFFERTS.map(({ code, pays, drapeau }) => (
-            <option key={code} value={code}>
-              {drapeau ? `${drapeau} ` : ""}+{code} {pays}
-            </option>
-          ))}
-          <option value={AUTRE}>🌍 Autre pays</option>
-        </select>
+        {choix === AUTRE ? (
+          <input
+            aria-label="Indicatif de votre pays"
+            type="tel"
+            inputMode="numeric"
+            required={requis}
+            autoFocus
+            value={saisi}
+            onChange={(e) => setSaisi(e.target.value)}
+            placeholder="+ indicatif"
+            className={`${classeChamp} w-[9.5rem] shrink-0`}
+          />
+        ) : (
+          <select
+            aria-label="Indicatif du pays"
+            value={choix}
+            onChange={(e) => setChoix(e.target.value)}
+            className={`${classeChamp} w-[9.5rem] shrink-0`}
+          >
+            {INDICATIFS_OFFERTS.map(({ code, pays, drapeau }) => (
+              <option key={code} value={code}>
+                {drapeau ? `${drapeau} ` : ""}+{code} {pays}
+              </option>
+            ))}
+            <option value={AUTRE}>🌍 Autre pays</option>
+          </select>
+        )}
         <input
           id={id}
           type="tel"
@@ -101,24 +122,20 @@ export function ChampWhatsapp({
       </div>
 
       {/*
-        Il n'apparaît que si l'on en a besoin. Un champ « indicatif » toujours
-        visible ferait douter ceux qui viennent de choisir leur pays dans la
-        liste : « faut-il aussi le retaper ici ? »
+        Le chemin du retour. Sans lui, qui a choisi « Autre pays » par erreur
+        n'a plus aucun moyen de revenir à la liste : le sélecteur a disparu.
       */}
       {choix === AUTRE && (
-        <div className="flex items-center gap-2">
-          <span className="text-ivory-dim text-[0.9rem]">+</span>
-          <input
-            aria-label="Indicatif de votre pays"
-            type="tel"
-            inputMode="numeric"
-            required={requis}
-            value={saisi}
-            onChange={(e) => setSaisi(e.target.value)}
-            placeholder="Indicatif — 971, 90, 375…"
-            className={`${classeChamp} w-[14rem] min-w-0`}
-          />
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setChoix(defautIndicatif);
+            setSaisi("");
+          }}
+          className="text-ivory-dim hover:text-gold self-start text-[0.78rem] underline underline-offset-2"
+        >
+          ← Choisir dans la liste des pays
+        </button>
       )}
 
       <input type="hidden" name="whatsapp" value={complet} readOnly />
