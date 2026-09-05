@@ -82,17 +82,38 @@ export function ChampWhatsapp({
       */}
       <div className="flex gap-2">
         {choix === AUTRE ? (
-          <input
-            aria-label="Indicatif de votre pays"
-            type="tel"
-            inputMode="numeric"
-            required={requis}
-            autoFocus
-            value={saisi}
-            onChange={(e) => setSaisi(e.target.value)}
-            placeholder="+ indicatif"
-            className={`${classeChamp} w-[9.5rem] shrink-0`}
-          />
+          /*
+            ⚠️ **Le « + » est imprimé, pas à taper.** Sans lui, le champ est une
+            case vide où le visiteur croit devoir écrire « +998 » — et c'est
+            exactement le caractère que son clavier ne lui propose pas. On
+            retomberait, un cran plus bas, sur le défaut qu'on vient de
+            corriger. Il ne tape que des chiffres.
+
+            ⚠️ Le décalage du texte est posé en style, pas en classe : la
+            classe reçue porte déjà un `px-*`, et deux règles de padding se
+            départagent par l'ordre d'émission de Tailwind — un ordre qu'on ne
+            contrôle pas d'ici.
+          */
+          <div className="relative w-[9.5rem] shrink-0">
+            <span
+              aria-hidden="true"
+              className="text-ivory-dim pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[0.95rem]"
+            >
+              +
+            </span>
+            <input
+              aria-label="Indicatif de votre pays"
+              type="tel"
+              inputMode="numeric"
+              required={requis}
+              autoFocus
+              value={saisi}
+              onChange={(e) => setSaisi(e.target.value)}
+              placeholder="indicatif"
+              style={{ paddingLeft: "1.75rem" }}
+              className={`${classeChamp} w-full`}
+            />
+          </div>
         ) : (
           <select
             aria-label="Indicatif du pays"

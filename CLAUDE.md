@@ -109,6 +109,16 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   *porte* sur cette forme, et s'appuyer sur le helper ferait reposer une garde
   de sécurité sur un outil d'épreuve, qu'on pourrait assouplir sans rien voir
   passer au rouge.
+- ⚠️ **`admin.spec` — « le bouton Contrat vérifié » — expire par intermittence**
+  (constaté trois fois le 5 septembre 2026). Sa signature est nette : la série
+  entière passe de quatre à près de huit minutes, et cette épreuve-là seule
+  atteint ses quatre minutes. Seule, elle tient en vingt secondes ; la série
+  suivante est verte sans qu'on ait rien touché.
+
+  Ce n'est pas l'épreuve : c'est la base qui répond lentement — Neon suspend
+  son calcul, et le journal décrit déjà des pages à onze minutes pour cette
+  raison. Lui donner encore plus de temps ne prouverait rien de plus ; la
+  reconnaître évite de la chercher dans le code.
 - ⚠️ **Un échec resté inexpliqué**, le 5 septembre 2026 : `contrat.spec` a rendu
   404 sur le PDF du contrat, dans une série complète, une seule fois. Non
   reproduit — l'épreuve seule passe, et deux séries entières sont vertes
