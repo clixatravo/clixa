@@ -1261,7 +1261,44 @@ ce que `INT-07` laisse ouvert est une décision de dessin, notée plus haut.
 seulement en conditions de bureau. Le premier affichage arrive à 4,2 s sur
 l'accueil, 2,7 s sur une fiche — au-dessus des 2,5 s qui font une bonne note.
 
-⚠️ **Ce sont les polices, et rien d'autre** : 80 Ko sur 86 transférés. 36 Ko
+⚠️ **Ce n'est pas ce qu'on croyait, et la mesure le dit** (refait le 5 septembre
+2026, sur la fiche où atterrit le trafic acheté). Les polices pèsent, mais elles
+portent `display: "swap"` : elles **ne bloquent pas** le premier affichage.
+
+Le bloqueur est **la feuille de style**, et elle arrive dernière. Sur 3G lente,
+en production :
+
+```
+1 442 ms  HTML reçu (19 Ko)
+1 585 →  3 840 ms  six morceaux de JavaScript, puis quatre fichiers de police
+3 956 ms  la feuille de style (13 Ko)
+4 040 ms  premier affichage — immédiatement après elle
+```
+
+Deux secondes et demie passées à télécharger ce qui ne bloque rien, pendant que
+ce qui bloque attend son tour. Les quatre préchargements de police partent
+d'ailleurs **avant** le lien vers la feuille.
+
+⚠️ **`experimental.inlineCss` est le remède documenté pour ce cas exact — et il
+casse le site en silence.** Next le recommande pour Tailwind et les premières
+visites, ce qui décrit précisément le trafic d'une campagne. Essayé sur Next
+16.3.1 : `npm run build` réussit sans un mot, la feuille servie tombe à **21
+octets**, aucune balise `<style>` n'est écrite, et la page se rend **sans une
+seule règle CSS**. Le premier affichage passe alors de 2 724 à 1 436 ms — le
+temps d'affichage d'une page nue.
+
+Un déploiement sur la foi de ce chiffre aurait mis le site en ligne
+déshabillé. **Vérifier `document.styleSheets` avant de croire un gain de
+performance** : une page plus rapide parce qu'elle a perdu sa mise en forme est
+un rendu plus rapide de rien.
+
+⚠️ **Et `pkill -f "next start"` ne tue pas ce serveur.** Le processus survit
+sous un autre nom, et les mesures suivantes portent alors sur l'ancien build —
+c'est ce qui a d'abord fait croire au gain. `lsof -ti :3000 | xargs kill -9`.
+
+⚠️ **Retirer le préchargement de la chasse fixe** (`preload: false`) fait gagner
+une cinquantaine de millisecondes : à l'intérieur de l'écart entre deux mesures.
+Mesuré, pas déduit. 36 Ko
 pour Fraunces, 24 pour Manrope, 2 × 10 pour la chasse fixe. Le HTML pèse moins
 de 1 Ko compressé et le JavaScript ne bloque pas le premier rendu.
 
