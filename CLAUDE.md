@@ -91,6 +91,12 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   qu'ouvre `espace.spec.ts` (`/compte` réclame une session : il n'y a pas
   d'autre façon d'y entrer). `e2e/garde.ts` refuse de démarrer si
   `DATABASE_URL` désigne l'hôte de production ; éprouvé en l'y pointant.
+- ⚠️ **Un seul endroit lance `psql`** (`e2e/menage.ts`). L'erreur
+  d'`execFileSync` reprend la commande entière — donc la chaîne de connexion,
+  donc **le mot de passe**. Une épreuve qui échoue en intégration continue
+  l'écrirait dans le journal de GitHub, où il resterait ; le mot de passe de
+  `dev` a déjà dû être régénéré une fois pour cette raison. Le helper garde ce
+  que dit le serveur et jette le reste.
 - ⚠️ **La référence se lit par `referenceDeLAdresse`**, jamais en découpant
   l'adresse à la main. Six épreuves le faisaient et rendaient
   « CLX-XXXXXXXX?nouveau=1 » le jour où la redirection a pris un paramètre :
@@ -992,6 +998,30 @@ de temps.
   annonce marquait la 2 alors qu'un seul transfert avait été fait.
 - La clef reste la référence du dossier, comme pour le consulter. Annoncer
   n'ouvre donc rien de plus que lire.
+
+⚠️ **« Aucune session ouverte » et « toutes complètes » ne sont pas la même
+chose** (depuis le 5 septembre 2026). La liste des sessions était filtrée avant
+d'être regardée : une cohorte pleine se lisait « aucune session n'est ouverte
+pour ce parcours », suivi de « nous vous préviendrons à l'ouverture de la
+prochaine ».
+
+C'est faux, et cela tombe au pire moment — quelqu'un arrive d'une annonce qui
+promet le 3 octobre et lit que le parcours n'a pas de date. Il en conclut que
+l'annonce ment, ou que la formation n'existe pas, alors qu'il s'en est fallu
+d'une place et qu'il aurait écrit s'il l'avait su. La page dit maintenant
+« Cette session est complète » et propose la liste d'attente.
+
+- **La garde de la route reste, et compte double.** Le formulaire n'est plus
+  affiché, mais `api/inscription` demeure atteignable — par quelqu'un dont
+  l'onglet est resté ouvert pendant que la dernière place partait, ou par un
+  script. Les deux moitiés sont éprouvées séparément.
+- ⚠️ **L'épreuve remplit les places, elle ne met pas la capacité à zéro.** Une
+  session de capacité nulle n'est pas complète, elle n'existe pas
+  commercialement — et la page renvoie alors vers la fiche, ce qui n'éprouve
+  rien. Le premier jet passait seul et tombait dans la série entière, avec
+  pour tout symptôme un `waitForURL` qui expire.
+- ⚠️ **Le moment le plus conséquent d'une campagne n'était exercé nulle part.**
+  Deux lignes gardaient le remplissage d'une cohorte, et rien ne les touchait.
 
 ⚠️ **Un double envoi ne retient pas deux places** (depuis le 5 septembre 2026).
 Les deux formulaires postent puis redirigent : rien n'empêchait d'envoyer deux

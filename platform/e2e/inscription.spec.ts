@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { compterEnBase, MARQUE, referenceDeLAdresse } from "./menage";
+import { compterEnBase, MARQUE, referenceDeLAdresse, sqlUneValeur } from "./menage";
 
 /**
  * Le tunnel : retenir une place, puis annoncer son transfert.
@@ -277,4 +277,87 @@ test("une demande de rappel répétée aussitôt n'en crée qu'une", async ({ re
     compterEnBase("demandes_rappel", `whatsapp = '${numero}'`),
     "une seule ligne pour deux envois",
   ).toBe(1);
+});
+
+/**
+ * ⚠️ Une session complète le dit, et n'accepte plus personne.
+ *
+ * C'est le moment le plus conséquent d'une campagne — celui où les trente
+ * places sont prises — et il n'était exercé nulle part.
+ *
+ * Deux choses distinctes s'y jouent, et l'épreuve garde les deux :
+ *
+ *  - **ce que le visiteur lit.** La liste des sessions était filtrée avant
+ *    d'être regardée, si bien qu'une cohorte pleine se lisait « aucune session
+ *    n'est ouverte pour ce parcours ». Quelqu'un qui arrive d'une annonce
+ *    promettant le 3 octobre en conclut que l'annonce ment ;
+ *  - **ce que la route accepte.** Le formulaire n'est plus affiché, mais la
+ *    route reste atteignable — par quelqu'un dont l'onglet est resté ouvert
+ *    pendant que la dernière place partait, ou par un script.
+ *
+ * ⚠️ **On remplit les places, on ne met pas la capacité à zéro.** Une session
+ * de capacité nulle n'est pas complète, elle n'existe pas commercialement — et
+ * la page renvoie alors vers la fiche, ce qui n'éprouve rien.
+ */
+test("une session complète le dit, et n'accepte plus personne", async ({ page, request }) => {
+  const slug = "directeur-qhse";
+  const idsBruts = sqlUneValeur(
+    // ⚠️ `programme_id`, pas `programme` : Payload suffixe ses clefs étrangères.
+    `SELECT string_agg(s.id::text, ',') FROM sessions s
+     JOIN programmes p ON p.id = s.programme_id WHERE p.slug = '${slug}';`,
+  );
+  expect(idsBruts, "le parcours doit avoir au moins une session").toMatch(/\d/);
+
+  const avant = sqlUneValeur(
+    `SELECT string_agg(id || ':' || places_reservees, ',') FROM sessions WHERE id IN (${idsBruts});`,
+  );
+  const debut = sqlUneValeur(
+    `SELECT to_char(min(debut), 'YYYY-MM-DD') FROM sessions WHERE id IN (${idsBruts});`,
+  );
+
+  try {
+    sqlUneValeur(`UPDATE sessions SET places_reservees = capacite WHERE id IN (${idsBruts});`);
+
+    // ── Ce que le visiteur lit
+    await page.goto(`/inscription?formation=${slug}`);
+    await expect(page.getByText("Cette session est complète")).toBeVisible();
+    await expect(
+      page.getByText(/liste d'attente/i),
+      "on doit lui dire quoi faire, pas seulement qu'il ne peut rien faire",
+    ).toBeVisible();
+    await expect(
+      page.getByText("Aucune session n'est ouverte"),
+      "⚠️ et surtout pas qu'aucune date n'existe : l'annonce en promet une",
+    ).toHaveCount(0);
+
+    // ── Ce que la route accepte
+    const poste = await request.post("/api/inscription", {
+      form: {
+        formation: slug,
+        debut,
+        nom: "Épreuve Complet",
+        email: `complet.${Date.now()}${MARQUE}`,
+        whatsapp: "+212600000000",
+        pays: "Maroc",
+        plan: "P1",
+        moyen: "virement",
+        payeur: "particulier",
+        consentement: "oui",
+      },
+      maxRedirects: 0,
+    });
+    expect(poste.headers()["location"], "la route refuse une place qui n'existe pas").toContain(
+      "erreur=complet",
+    );
+    expect(
+      compterEnBase("inscriptions", `apprenant_nom = 'Épreuve Complet'`),
+      "et rien n'est écrit",
+    ).toBe(0);
+  } finally {
+    // Chaque session retrouve son décompte, même si l'épreuve a échoué.
+    for (const paire of avant.split(",")) {
+      const [id, places] = paire.split(":");
+      sqlUneValeur(`UPDATE sessions SET places_reservees = ${places} WHERE id = ${id};`);
+    }
+  }
 });

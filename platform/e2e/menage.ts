@@ -60,18 +60,48 @@ export function referenceDeLAdresse(url: string): string {
  * Il faut compter les lignes. C'est aussi ce que fait le ménage, par la même
  * porte : `psql` avec la chaîne de `.env.local`.
  */
+/**
+ * Le seul endroit qui lance `psql`.
+ *
+ * ⚠️ **Son erreur ne doit jamais remonter telle quelle.** `execFileSync` met
+ * la commande entière dans le message — donc la chaîne de connexion, donc le
+ * **mot de passe**. Une épreuve qui échoue en intégration continue l'écrirait
+ * dans le journal de GitHub, où il resterait ; c'est arrivé une fois en local,
+ * et le mot de passe de `dev` a déjà dû être régénéré pour cette raison.
+ *
+ * On garde ce que dit le serveur, on jette le reste.
+ */
+function psql(url: string, args: string[]): string {
+  try {
+    return execFileSync("psql", [url, ...args], {
+      encoding: "utf8",
+      env: { ...process.env, PGSSLROOTCERT: "system" },
+    });
+  } catch (e) {
+    const dit = String((e as { stderr?: unknown }).stderr ?? "").trim();
+    throw new Error(`psql a refusé : ${dit.split("\n").slice(0, 3).join(" · ") || "sans détail"}`);
+  }
+}
+
 export function compterEnBase(table: string, condition: string): number {
   const url = adresseBase();
   if (!url) throw new Error("DATABASE_URL introuvable : impossible de compter.");
-  const sortie = execFileSync(
-    "psql",
-    [url, "-t", "-A", "-c", `SELECT count(*) FROM ${table} WHERE ${condition};`],
-    {
-      encoding: "utf8",
-      env: { ...process.env, PGSSLROOTCERT: "system" },
-    },
+  return Number(
+    psql(url, ["-t", "-A", "-c", `SELECT count(*) FROM ${table} WHERE ${condition};`]).trim(),
   );
-  return Number(sortie.trim());
+}
+
+/**
+ * Exécute du SQL et rend la première colonne de la première ligne.
+ *
+ * ⚠️ Réservé aux épreuves qui doivent **mettre la base dans un état** que le
+ * site ne sait pas produire — une session complète, par exemple : la remplir
+ * par le tunnel demanderait trente inscriptions, et trente courriels.
+ */
+export function sqlUneValeur(sql: string): string {
+  const url = adresseBase();
+  if (!url) throw new Error("DATABASE_URL introuvable.");
+  return psql(url, ["-t", "-A", "-c", sql]).trim();
 }
 
 export function adresseBase(): string | undefined {
@@ -91,15 +121,12 @@ export default function menage(): void {
   if (!url) return;
 
   try {
-    execFileSync(
-      "psql",
-      [
-        url,
-        "-q",
-        "-c",
-        `DELETE FROM inscriptions WHERE apprenant_email LIKE '%${MARQUE}';`,
-        "-c",
-        /*
+    psql(url, [
+      "-q",
+      "-c",
+      `DELETE FROM inscriptions WHERE apprenant_email LIKE '%${MARQUE}';`,
+      "-c",
+      /*
           Les comptes participants aussi, depuis que `espace.spec.ts` en ouvre
           pour atteindre `/compte` — cette page réclame une session, et il n'y
           a pas d'autre façon d'y entrer.
@@ -109,9 +136,9 @@ export default function menage(): void {
           compte de plus, et la table finissait par ne contenir que des
           fantômes d'épreuves.
         */
-        `DELETE FROM apprenants WHERE email LIKE '%${MARQUE}';`,
-        "-c",
-        /*
+      `DELETE FROM apprenants WHERE email LIKE '%${MARQUE}';`,
+      "-c",
+      /*
           ⚠️ Même règle que le crochet `recompter` et que la tâche quotidienne :
           une place se prend en payant, pas en s'inscrivant. Ce recompte existe
           parce qu'une suppression en SQL ne déclenche aucun crochet.
@@ -120,24 +147,11 @@ export default function menage(): void {
           Elle l'était, et deux textes tenus à la main finissent par diverger —
           en silence, le décompte des places restant simplement faux.
         */
-        `UPDATE sessions s SET places_reservees = (
+      `UPDATE sessions s SET places_reservees = (
            SELECT count(*) FROM inscriptions i
            WHERE i.session_id = s.id AND ${OCCUPE_UNE_PLACE_SQL}
          );`,
-      ],
-      {
-        stdio: "pipe",
-        /*
-          `psql` cherche son autorité de certification dans `~/.postgresql/`,
-          qui n'existe sur aucune machine de développeur. Depuis que la chaîne
-          de connexion demande `verify-full`, il refusait donc de se connecter
-          et le ménage échouait en silence — les dossiers d'épreuve
-          s'accumulaient. `system` le renvoie au magasin du système, celui que
-          le navigateur et le pilote Node utilisent déjà.
-        */
-        env: { ...process.env, PGSSLROOTCERT: "system" },
-      },
-    );
+    ]);
   } catch (e) {
     // Sans psql sous la main, on le dit plutôt que d'échouer la suite : les
     // épreuves ont déjà rendu leur verdict, le ménage n'en fait pas partie.

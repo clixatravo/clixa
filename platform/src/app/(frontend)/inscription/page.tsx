@@ -65,7 +65,20 @@ export default async function Inscription({ searchParams }: Props) {
   const programme = await getProgramme(formation);
   if (!programme) notFound();
 
-  const sessions = (await getSessions(formation)).filter((s) => placesRestantes(s) > 0);
+  /*
+    ⚠️ **« Aucune session ouverte » et « toutes complètes » ne sont pas la même
+    chose.** La liste était filtrée avant d'être regardée, si bien qu'une
+    cohorte pleine se lisait « aucune session n'est ouverte pour ce parcours »,
+    suivi de « nous vous préviendrons à l'ouverture de la prochaine ».
+
+    C'est faux, et cela tombe au pire moment : quelqu'un arrive d'une annonce
+    qui promet le 3 octobre, et lit que le parcours n'a pas de date. Il en
+    conclut que l'annonce ment, ou que la formation n'existe pas — alors qu'il
+    s'en est fallu d'une place, et qu'il aurait écrit s'il l'avait su.
+  */
+  const toutes = await getSessions(formation);
+  const sessions = toutes.filter((s) => placesRestantes(s) > 0);
+  const toutesCompletes = toutes.length > 0 && sessions.length === 0;
 
   /*
     Quelqu'un qui revient s'inscrire à un second parcours a déjà donné son nom,
@@ -121,11 +134,24 @@ export default async function Inscription({ searchParams }: Props) {
 
           {sessions.length === 0 ? (
             <p className="border-line bg-panel border p-6 text-[0.95rem]">
-              Aucune session n&apos;est ouverte pour ce parcours.{" "}
-              <Link href="/contact" className="border-gold border-b">
-                Laissez-nous vos coordonnées
-              </Link>{" "}
-              : nous vous préviendrons à l&apos;ouverture de la prochaine.
+              {toutesCompletes ? (
+                <>
+                  Cette session est complète.{" "}
+                  <Link href="/contact" className="border-gold border-b">
+                    Écrivez-nous
+                  </Link>{" "}
+                  : nous vous plaçons sur la liste d&apos;attente, et nous vous prévenons dès
+                  qu&apos;une place se libère ou qu&apos;une date s&apos;ouvre.
+                </>
+              ) : (
+                <>
+                  Aucune session n&apos;est ouverte pour ce parcours.{" "}
+                  <Link href="/contact" className="border-gold border-b">
+                    Laissez-nous vos coordonnées
+                  </Link>{" "}
+                  : nous vous préviendrons à l&apos;ouverture de la prochaine.
+                </>
+              )}
             </p>
           ) : (
             <form
