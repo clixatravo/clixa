@@ -4,7 +4,7 @@ import React from "react";
 import type { DefaultCellComponentProps } from "payload";
 
 /**
- * Ouvrir WhatsApp depuis la liste des inscriptions.
+ * Ouvrir WhatsApp depuis la liste des inscriptions — et des demandes de rappel.
  *
  * ── Ce que ça remplace ──────────────────────────────────────────────────────
  * Ouvrir le dossier, copier le numéro, basculer sur WhatsApp, coller, écrire
@@ -60,14 +60,39 @@ export function BoutonWhatsapp(props: DefaultCellComponentProps) {
     );
   }
 
-  const texte = [
-    `Bonjour ${prenom(rowData?.apprenantNom)},`,
-    "",
-    "Ici l'équipe admissions de CLIXA Institute.",
-    `Nous avons bien reçu votre demande d'inscription (référence ${rowData?.reference ?? ""}).`,
-    "",
-    "Nous restons à votre disposition pour toute question.",
-  ].join("\n");
+  /*
+    ⚠️ **Le message doit dire ce que la personne a réellement fait.** Les deux
+    collections ne portent pas les mêmes champs — `apprenantNom` et une
+    référence d'un côté, `nom` seul de l'autre — et surtout pas le même geste :
+    une demande de rappel n'est pas une inscription. Écrire « nous avons bien
+    reçu votre demande d'inscription » à quelqu'un qui a seulement laissé son
+    numéro le ferait se croire engagé, ou nous croire distraits.
+
+    La référence est ce qui distingue les deux, et elle vient des données —
+    rien à passer en propriété, rien à oublier de brancher.
+  */
+  const reference = rowData?.reference ? String(rowData.reference) : undefined;
+  const nom = prenom(rowData?.apprenantNom ?? rowData?.nom);
+
+  const texte = (
+    reference
+      ? [
+          `Bonjour ${nom},`,
+          "",
+          "Ici l'équipe admissions de CLIXA Institute.",
+          `Nous avons bien reçu votre demande d'inscription (référence ${reference}).`,
+          "",
+          "Nous restons à votre disposition pour toute question.",
+        ]
+      : [
+          `Bonjour ${nom},`,
+          "",
+          "Ici l'équipe admissions de CLIXA Institute.",
+          "Vous avez demandé à être rappelé : je reviens vers vous comme convenu.",
+          "",
+          "Quand vous conviendrait-il d'échanger quelques minutes ?",
+        ]
+  ).join("\n");
 
   return (
     <span className="clixa-wa">
@@ -78,7 +103,7 @@ export function BoutonWhatsapp(props: DefaultCellComponentProps) {
         className="clixa-wa__bouton"
         // Sans cela, un clic sur la cellule ouvrirait aussi la fiche derrière.
         onClick={(e) => e.stopPropagation()}
-        title={`Écrire à ${prenom(rowData?.apprenantNom)} sur WhatsApp`}
+        title={`Écrire à ${nom} sur WhatsApp`}
       >
         <svg
           width="13"

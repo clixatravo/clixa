@@ -866,7 +866,26 @@ export async function courrielRappel(
     finissent toujours par diverger — c'est ce qui avait laissé un faux numéro
     d'admissions dans chaque courriel envoyé.
   */
-  const destinataire = RESEAUX_CLIXA.email.adresse;
+  /*
+    ── Où va une demande de rappel ────────────────────────────────────────────
+    Elle allait à l'adresse publique du site, `contact@clixa.africa` : une
+    demande de rappel n'est pas un événement à constater, c'était l'argument,
+    c'est un appel à passer, et un appel se donne à une personne.
+
+    ⚠️ Le risque annoncé s'est vérifié dans l'autre sens : la boîte publique
+    n'est pas relevée tous les jours, et la première demande venue de la
+    fenêtre de rappel — le 5 septembre 2026, depuis une fiche de parcours —
+    est arrivée là où personne ne la cherchait. C'est le message qui supporte
+    le moins de rester sans réponse : quelqu'un qui n'a encore rien décidé.
+
+    Elle va donc au groupe que toute l'équipe relève, comme les cinq autres
+    notifications. Décision de la direction, le 5 septembre 2026.
+
+    ⚠️ Sans `EMAIL_EQUIPE`, rien ne part — comme pour les autres. La garde est
+    juste en dessous : mieux vaut ne pas envoyer que d'envoyer à personne.
+  */
+  const destinataire = EQUIPE;
+  if (!destinataire) return;
 
   const corpsHtml = `
     <p>Une nouvelle demande de rappel téléphonique a été déposée :</p>

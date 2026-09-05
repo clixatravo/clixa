@@ -72,6 +72,19 @@ export const DemandesRappel: CollectionConfig = {
           admin: {
             width: "50%",
             description: "Format international avec indicatif (ex: +212612345678).",
+            /*
+              Le même bouton que sur les inscriptions : rappeler quelqu'un est
+              *le* geste de cette collection, et il demandait d'ouvrir la fiche,
+              copier le numéro, changer d'application et écrire depuis le début.
+
+              ⚠️ Il refuse de composer un numéro sans indicatif — « 0689324243 »
+              est marocain pour qui le lit, mais `wa.me` sans indicatif ouvre
+              une conversation avec un inconnu. Les demandes déjà en base en
+              portent de tels : elles s'afficheront en texte, à compléter.
+            */
+            components: {
+              Cell: "@/components/admin/BoutonWhatsapp#BoutonWhatsapp",
+            },
           },
         },
         { name: "pays", type: "text", label: "Pays", required: true, admin: { width: "50%" } },

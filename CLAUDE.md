@@ -1073,8 +1073,17 @@ journalise : la recherche est un raffinement du catalogue, pas le catalogue.
   partir du catalogue*, pas déposée en média : un tarif corrigé dans /admin
   change le PDF sans que personne pense à le régénérer. C'est ce qu'un
   prospect fait suivre à qui décide du budget.
-- **Un bouton WhatsApp dans la liste des inscriptions**
-  (`components/admin/BoutonWhatsapp.tsx`). ⚠️ Il refuse de construire un lien
+- **Un bouton WhatsApp dans la liste des inscriptions et dans celle des
+  demandes de rappel** (`components/admin/BoutonWhatsapp.tsx`). Sur les
+  demandes, c'est *le* geste de la collection : il demandait d'ouvrir la fiche,
+  copier le numéro, changer d'application et écrire depuis le début.
+  ⚠️ **Le message dit ce que la personne a réellement fait.** Les deux
+  collections ne portent ni les mêmes champs — `apprenantNom` et une référence
+  d'un côté, `nom` seul de l'autre — ni le même geste. Écrire « nous avons bien
+  reçu votre demande d'inscription » à quelqu'un qui a seulement laissé son
+  numéro le ferait se croire engagé, ou nous croire distraits. La référence
+  distingue les deux, et elle vient des données : rien à brancher, rien à
+  oublier. ⚠️ Il refuse de construire un lien
   quand le numéro n'a pas d'indicatif : `0689324243` est marocain pour qui le
   lit, mais `wa.me` sans indicatif ouvre une conversation avec un inconnu —
   ou avec personne. Un tiret affiché vaut mieux qu'un mauvais numéro composé.
@@ -1467,23 +1476,30 @@ panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », don
 l'équivalent a été retiré du site faute de pouvoir l'étayer.
 
 
-**Les notifications internes ne vont pas toutes au même endroit** (depuis le
-30 août 2026). Cinq d'entre elles — inscription, contrat demandé, contrat signé,
-transfert annoncé, bilan des relances — vont à `EMAIL_EQUIPE`, le groupe Zoho
-que relève toute l'équipe. La **demande de rappel** va à l'adresse affichée sur
-le site, et elle la tient de `lib/reseaux.ts`.
+**Les six notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
+que relève toute l'équipe : inscription, contrat demandé, contrat signé,
+transfert annoncé, bilan des relances, et **demande de rappel**.
 
-C'est une décision, pas un oubli : une demande de rappel n'est pas un événement
-à constater, c'est **un appel à passer**. Elle appelle une personne, pas une
-équipe — et qui écrit à l'adresse publique et qui remplit le formulaire
-aboutissent ainsi au même endroit, par construction. L'écrire en toutes lettres
-dans `courriel.ts` en ferait une seconde copie ; c'est ce genre de copie qui
-avait laissé un faux numéro d'admissions dans chaque courriel envoyé.
+⚠️ **La sixième y est revenue le 5 septembre 2026, et le détour valait leçon.**
+Elle allait à l'adresse publique du site, tenue de `lib/reseaux.ts` : une
+demande de rappel n'est pas un événement à constater, disait l'argument, c'est
+un appel à passer, et un appel se donne à une personne. Le risque était noté
+ici même — « si personne ne relève cette adresse un jour donné, la demande y
+reste seule ».
 
-⚠️ **Le risque assumé** : si personne ne relève cette adresse un jour donné, la
-demande y reste seule. C'est le premier contact de quelqu'un qui n'a pas encore
-décidé — le message qui supporte le moins de rester sans réponse. Si cela se
-produit, la remettre sur `EMAIL_EQUIPE` est une ligne.
+Il s'est produit. La première demande venue de la fenêtre de rappel, déposée
+depuis une fiche de parcours, est arrivée là où personne ne la cherchait :
+l'équipe surveillait le groupe. C'est justement le message qui supporte le
+moins de rester sans réponse — quelqu'un qui n'a encore rien décidé. La
+direction a tranché : elle rejoint les cinq autres.
+
+⚠️ **Le raisonnement d'origine n'était pas faux, il était incomplet** : il
+optimisait la *nature* du message (un appel personnel) sans regarder l'*habitude*
+de ceux qui le reçoivent. Une boîte que personne n'ouvre ne devient pas relevée
+parce qu'un message y mérite une réponse rapide.
+
+⚠️ **Sans `EMAIL_EQUIPE`, rien ne part** — comme pour les cinq autres. Mieux
+vaut ne pas envoyer que d'envoyer à personne.
 
 ⚠️ **Un envoi réussi laisse une trace, lui aussi** (depuis le 30 août 2026).
 Seul l'échec en laissait une. Le jour où quelqu'un dit « je n'ai rien reçu »,
