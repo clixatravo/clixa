@@ -50,6 +50,41 @@ function enMinutes(heure: unknown): number | undefined {
 const jourDe = (d: Date) => d.toISOString().slice(0, 10);
 
 /**
+ * Y a-t-il quelqu'un, à cet instant précis ?
+ *
+ * ⚠️ **La même déclaration sert à deux choses**, et c'est voulu : les heures
+ * qui produisent les créneaux sont celles qui disent si l'on peut passer la
+ * main tout de suite. Deux réglages séparés finiraient par diverger, et le
+ * robot proposerait « je vous passe un conseiller » à une heure où il n'y en
+ * a pas — la promesse qu'on peut le moins se permettre.
+ *
+ * ⚠️ Les fermetures comptent ici aussi. Un jour de congé n'est pas une heure
+ * d'ouverture, même à 10h un mardi.
+ */
+export function ouvertMaintenant(reglages: Reglages, maintenant: Date): boolean {
+  if (!reglages.actif) return false;
+  if (jourFerme(reglages, maintenant)) return false;
+
+  const minutes = maintenant.getUTCHours() * 60 + maintenant.getUTCMinutes();
+  const numero = String(maintenant.getUTCDay());
+
+  return (reglages.semaine ?? []).some((plage) => {
+    if (String(plage?.jour) !== numero) return false;
+    const ouvre = enMinutes(plage.debut);
+    const ferme = enMinutes(plage.fin);
+    if (ouvre === undefined || ferme === undefined || ferme <= ouvre) return false;
+    return minutes >= ouvre && minutes < ferme;
+  });
+}
+
+/** Ce jour-là est-il déclaré fermé ? */
+function jourFerme(reglages: Reglages, quand: Date): boolean {
+  return (reglages.fermetures ?? []).some(
+    (f) => f?.jour && jourDe(new Date(f.jour)) === jourDe(quand),
+  );
+}
+
+/**
  * Les prochains créneaux libres, au plus `combien`.
  *
  * ⚠️ **Rien n'est proposé si `actif` est faux**, même avec des heures
@@ -82,12 +117,6 @@ export function prochainsCreneaux(
 
   const plages = (reglages.semaine ?? []).filter(Boolean);
   if (plages.length === 0) return [];
-
-  const fermes = new Set(
-    (reglages.fermetures ?? [])
-      .map((f) => (f?.jour ? jourDe(new Date(f.jour)) : undefined))
-      .filter(Boolean) as string[],
-  );
 
   /*
     Le plancher : on ne propose rien avant que le prospect ait eu le temps de
@@ -122,7 +151,7 @@ export function prochainsCreneaux(
 
   for (let i = 0; i < joursExplores && trouves.length < combien; i += 1) {
     const ceJour = new Date(jour.getTime() + i * 24 * 60 * MINUTE);
-    if (fermes.has(jourDe(ceJour))) continue;
+    if (jourFerme(reglages, ceJour)) continue;
 
     const numero = String(ceJour.getUTCDay());
     for (const plage of plages.filter((p) => String(p.jour) === numero)) {
