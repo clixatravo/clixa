@@ -91,6 +91,24 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   qu'ouvre `espace.spec.ts` (`/compte` réclame une session : il n'y a pas
   d'autre façon d'y entrer). `e2e/garde.ts` refuse de démarrer si
   `DATABASE_URL` désigne l'hôte de production ; éprouvé en l'y pointant.
+- ⚠️ **La référence se lit par `referenceDeLAdresse`**, jamais en découpant
+  l'adresse à la main. Six épreuves le faisaient et rendaient
+  « CLX-XXXXXXXX?nouveau=1 » le jour où la redirection a pris un paramètre :
+  dix sont tombées d'un coup. Le helper vérifie la forme sur place — une
+  extraction fautive ressortait sinon douze lignes plus loin en « reçu 404 »,
+  c'est-à-dire comme un dossier qui n'existe pas.
+  ⚠️ `securite.spec.ts` extrait la référence lui-même, exprès : son épreuve
+  *porte* sur cette forme, et s'appuyer sur le helper ferait reposer une garde
+  de sécurité sur un outil d'épreuve, qu'on pourrait assouplir sans rien voir
+  passer au rouge.
+- ⚠️ **Un échec resté inexpliqué**, le 5 septembre 2026 : `contrat.spec` a rendu
+  404 sur le PDF du contrat, dans une série complète, une seule fois. Non
+  reproduit — l'épreuve seule passe, et deux séries entières sont vertes
+  depuis. Ce qui a été écarté : le ménage ne tourne qu'en fin de série et
+  Playwright n'a qu'un ouvrier, donc rien ne supprimait la ligne en route ;
+  et `getDossier` ne gobe pas les erreurs — une base injoignable lèverait au
+  lieu de rendre 404. La ligne n'a donc pas été trouvée. Si cela revient,
+  l'épreuve dira désormais quelle adresse elle a lue.
 - **Le ménage refait à la main ce que fait le crochet `recompter`** : une
   suppression en SQL ne le déclenche pas, et le décompte de places resterait
   gonflé. Les deux règles doivent rester identiques.

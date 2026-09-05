@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE } from "./menage";
+import { MARQUE, referenceDeLAdresse } from "./menage";
 
 /**
  * Le tunnel : retenir une place, puis annoncer son transfert.
@@ -39,13 +39,7 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   );
   await page.waitForURL(/\/inscription\/CLX-/);
 
-  /*
-    ⚠️ Le chemin, pas l'URL entière. La redirection porte maintenant
-    `?nouveau=1` — le marqueur qui dit à Meta qu'une pré-inscription vient
-    d'aboutir — et découper l'URL brute rendait « CLX-XXXXXXXX?nouveau=1 ».
-    Six épreuves lisaient la référence ainsi, et dix sont tombées d'un coup.
-  */
-  const reference = new URL(page.url()).pathname.split("/").pop()!;
+  const reference = referenceDeLAdresse(page.url());
   expect(reference, "la référence doit suivre le format attendu").toMatch(
     /^CLX-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/,
   );

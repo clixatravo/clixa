@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -21,6 +22,30 @@ import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
  * épreuves.
  */
 export const MARQUE = "@epreuve.invalid";
+
+/**
+ * La référence du dossier, lue dans l'adresse où la pré-inscription a mené.
+ *
+ * ⚠️ **Le chemin, jamais l'adresse entière.** La redirection porte
+ * `?nouveau=1` — le marqueur qui dit à Meta qu'une pré-inscription vient
+ * d'aboutir — et découper l'adresse brute rendait « CLX-XXXXXXXX?nouveau=1 ».
+ * Six épreuves lisaient la référence ainsi, et dix sont tombées d'un coup le
+ * jour où le paramètre est apparu. Elles le lisent maintenant d'ici.
+ *
+ * ⚠️ **Et la forme est vérifiée sur place.** Une extraction fautive ne se
+ * voyait pas : elle ressortait douze lignes plus loin en « le contrat doit se
+ * composer — reçu 404 », c'est-à-dire comme un dossier qui n'existe pas. Une
+ * série a échoué ainsi sans qu'on puisse dire laquelle des deux causes
+ * c'était, et sans jamais se reproduire. Si cela revient, l'épreuve dira
+ * maintenant quelle adresse elle a lue.
+ */
+export function referenceDeLAdresse(url: string): string {
+  const reference = new URL(url).pathname.split("/").pop() ?? "";
+  expect(reference, `référence illisible dans « ${url} »`).toMatch(
+    /^CLX-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/,
+  );
+  return reference;
+}
 
 export function adresseBase(): string | undefined {
   const chemin = path.join(process.cwd(), ".env.local");

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE } from "./menage";
+import { MARQUE, referenceDeLAdresse } from "./menage";
 
 /**
  * Le second temps du tunnel : demander son contrat, puis le signer.
@@ -33,7 +33,7 @@ async function preInscrire(page: Page): Promise<string> {
   ]);
   expect(reponse.status(), `la pré-inscription a répondu ${reponse.status()}`).toBe(303);
   await page.waitForURL(/\/inscription\/CLX-/);
-  return new URL(page.url()).pathname.split("/").pop()!;
+  return referenceDeLAdresse(page.url());
 }
 
 test("le contrat se demande, puis se signe", async ({ page }) => {

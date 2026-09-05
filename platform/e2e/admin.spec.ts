@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE } from "./menage";
+import { MARQUE, referenceDeLAdresse } from "./menage";
 
 /**
  * Les boutons du back-office enregistrent-ils vraiment ?
@@ -83,7 +83,7 @@ test.describe("Back-office", () => {
       page.waitForURL(/\/inscription\/CLX-/, { timeout: 60_000 }),
       page.click('button[type="submit"]'),
     ]);
-    const reference = new URL(page.url()).pathname.split("/").pop()!;
+    const reference = referenceDeLAdresse(page.url());
 
     // Demander le contrat, puis le signer.
     await page.click('button:has-text("Demander mon contrat")');

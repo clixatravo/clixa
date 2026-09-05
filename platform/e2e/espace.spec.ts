@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { execFileSync } from "node:child_process";
-import { MARQUE, adresseBase } from "./menage";
+import { MARQUE, adresseBase, referenceDeLAdresse } from "./menage";
 
 /**
  * « Mon espace » sur téléphone.
@@ -70,7 +70,7 @@ async function espaceAvecDossier(page: Page): Promise<string> {
   await page.check('input[name="consentement"]');
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/inscription\/CLX-/);
-  const reference = new URL(page.url()).pathname.split("/").pop()!;
+  const reference = referenceDeLAdresse(page.url());
 
   // Le compte se crée avec la même adresse, puis réclame son dossier par sa
   // référence — la double exigence que le formulaire impose.

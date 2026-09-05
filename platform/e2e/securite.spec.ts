@@ -43,6 +43,13 @@ test.describe("Sécurité", () => {
     tirée avec `Math.random()`, dont l'état interne se reconstitue à partir de
     quelques sorties, sur cinq caractères en base 36.
   */
+  /*
+    ⚠️ **Cette épreuve extrait la référence elle-même**, alors que les autres
+    passent par `referenceDeLAdresse`. Ce n'est pas un oubli : ce helper
+    vérifie la même forme, et s'en servir ici ferait reposer la garde de
+    sécurité sur un outil d'épreuve. Le jour où quelqu'un l'assouplirait, cette
+    épreuve cesserait de prouver quoi que ce soit — sans passer au rouge.
+  */
   test("la référence est longue et tirée sur un alphabet sans confusion", async ({ page }) => {
     await page.goto(`/inscription?formation=${PARCOURS}`);
     await page.fill('input[name="nom"]', "Épreuve Référence");
