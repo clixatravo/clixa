@@ -77,6 +77,7 @@ export interface Config {
     pages: Page;
     medias: Media;
     'demandes-rappel': DemandesRappel;
+    'rendez-vous': RendezVous;
     inscriptions: Inscription;
     apprenants: Apprenant;
     recus: Recus;
@@ -97,6 +98,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
+    'rendez-vous': RendezVousSelect<false> | RendezVousSelect<true>;
     inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
     recus: RecusSelect<false> | RecusSelect<true>;
@@ -112,9 +114,11 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('fr' | 'en') | ('fr' | 'en')[];
   globals: {
     tarifs: Tarif;
+    disponibilites: Disponibilite;
   };
   globalsSelect: {
     tarifs: TarifsSelect<false> | TarifsSelect<true>;
+    disponibilites: DisponibilitesSelect<false> | DisponibilitesSelect<true>;
   };
   locale: 'fr' | 'en';
   widgets: {
@@ -603,6 +607,37 @@ export interface DemandesRappel {
   createdAt: string;
 }
 /**
+ * Les appels convenus avec les prospects, par le robot ou à la main.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rendez-vous".
+ */
+export interface RendezVous {
+  id: number;
+  /**
+   * Composé à partir du nom et de la date. Ne pas saisir.
+   */
+  intitule?: string | null;
+  nom: string;
+  /**
+   * Format international avec indicatif.
+   */
+  whatsapp: string;
+  debut: string;
+  dureeMinutes: number;
+  /**
+   * « Absent » n'est pas « annulé » : l'un se rappelle, l'autre non. Le décompte des créneaux ne libère que les annulés.
+   */
+  statut: 'convenu' | 'passe' | 'absent' | 'annule';
+  /**
+   * La demande de rappel qui a mené à cet appel, quand il y en a une.
+   */
+  demande?: (number | null) | DemandesRappel;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Une ligne par place demandée. Le paiement arrive par transfert : c'est ici qu'on le rapproche.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -847,6 +882,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'demandes-rappel';
         value: number | DemandesRappel;
+      } | null)
+    | ({
+        relationTo: 'rendez-vous';
+        value: number | RendezVous;
       } | null)
     | ({
         relationTo: 'inscriptions';
@@ -1232,6 +1271,22 @@ export interface DemandesRappelSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rendez-vous_select".
+ */
+export interface RendezVousSelect<T extends boolean = true> {
+  intitule?: T;
+  nom?: T;
+  whatsapp?: T;
+  debut?: T;
+  dureeMinutes?: T;
+  statut?: T;
+  demande?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inscriptions_select".
  */
 export interface InscriptionsSelect<T extends boolean = true> {
@@ -1437,6 +1492,47 @@ export interface Tarif {
   createdAt?: string | null;
 }
 /**
+ * Les heures où un conseiller peut être appelé. Le robot ne propose que des créneaux pris là-dedans.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disponibilites".
+ */
+export interface Disponibilite {
+  id: number;
+  /**
+   * Décoché, le robot ne propose aucun créneau et invite à écrire. À cocher une fois les heures renseignées.
+   */
+  actif?: boolean | null;
+  dureeMinutes: number;
+  /**
+   * Un créneau dans dix minutes ne laisse le temps à personne de s'y rendre.
+   */
+  delaiMinimumHeures: number;
+  /**
+   * Une ligne par plage. « Lundi 9h00–12h00 » et « Lundi 14h00–17h00 » font deux lignes.
+   */
+  semaine?:
+    | {
+        jour: '1' | '2' | '3' | '4' | '5' | '6' | '0';
+        debut: string;
+        fin: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Congés, déplacements, jours fériés. Aucun créneau n'y est proposé.
+   */
+  fermetures?:
+    | {
+        jour: string;
+        motif?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tarifs_select".
  */
@@ -1468,6 +1564,33 @@ export interface TarifsSelect<T extends boolean = true> {
   beneficiaireVille?: T;
   beneficiairePays?: T;
   consignesPaiement?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disponibilites_select".
+ */
+export interface DisponibilitesSelect<T extends boolean = true> {
+  actif?: T;
+  dureeMinutes?: T;
+  delaiMinimumHeures?: T;
+  semaine?:
+    | T
+    | {
+        jour?: T;
+        debut?: T;
+        fin?: T;
+        id?: T;
+      };
+  fermetures?:
+    | T
+    | {
+        jour?: T;
+        motif?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

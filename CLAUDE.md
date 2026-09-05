@@ -46,6 +46,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
+npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
 npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant

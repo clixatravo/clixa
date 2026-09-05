@@ -11,6 +11,8 @@ import { fr } from "@payloadcms/translations/languages/fr";
 import { Utilisateurs } from "@/collections/Utilisateurs";
 import { Specialisations } from "@/collections/Specialisations";
 import { Tarifs } from "@/collections/Tarifs";
+import { Disponibilites } from "@/collections/Disponibilites";
+import { RendezVous } from "@/collections/RendezVous";
 import { Inscriptions } from "@/collections/Inscriptions";
 import { Apprenants } from "@/collections/Apprenants";
 import { Programmes } from "@/collections/Programmes";
@@ -105,6 +107,7 @@ export default buildConfig({
     Medias,
     // Admissions
     DemandesRappel,
+    RendezVous,
     Inscriptions,
     Apprenants,
     Recus,
@@ -116,7 +119,7 @@ export default buildConfig({
    * Le barème vaut pour tout le catalogue : un réglage, pas une donnée de
    * session. Seule la direction peut le modifier.
    */
-  globals: [Tarifs],
+  globals: [Tarifs, Disponibilites],
 
   editor: lexicalEditor(),
 
