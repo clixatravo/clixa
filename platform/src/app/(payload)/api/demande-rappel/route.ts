@@ -114,6 +114,43 @@ export async function POST(request: Request) {
     if (trouve && typeof trouve.id === "number") programme = trouve.id;
   }
 
+  /*
+    ── ⚠️ Deux clics ne font pas deux appels à passer ─────────────────────────
+    Le formulaire poste puis redirige : rien n'empêchait d'envoyer deux fois,
+    et la production en porte la trace — deux demandes identiques à moins de
+    deux minutes d'écart. Ce n'est pas qu'une ligne en trop : le bandeau du
+    back-office compte les demandes « nouvelle » pour dire **ce qu'il reste à
+    faire aujourd'hui**, et un doublon y ajoute un appel qui n'existe pas.
+
+    ⚠️ **Une fenêtre, pas une règle définitive.** Redemander à être rappelé
+    trois semaines plus tard est légitime — c'est même le signe de quelqu'un
+    qui attend toujours. Seule la répétition immédiate est écartée.
+
+    ⚠️ **La clef est le numéro**, pas l'adresse : le courriel est facultatif
+    sur ce formulaire, et une clef qui peut être vide ne distingue rien.
+  */
+  const RECEMMENT = 10 * 60 * 1000;
+  const { docs: recentes } = await payload.find({
+    collection: "demandes-rappel",
+    where: {
+      and: [
+        { whatsapp: { equals: whatsapp } },
+        { createdAt: { greater_than: new Date(Date.now() - RECEMMENT).toISOString() } },
+      ],
+    },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  if (recentes.length > 0) {
+    /*
+      On répond comme si c'était passé : de son côté, c'est vrai — sa demande
+      est bien enregistrée. Lui annoncer un doublon l'inquiéterait sans rien
+      lui apprendre d'utile.
+    */
+    redirect("/contact?envoye=1" as Route);
+  }
+
   try {
     await payload.create({
       collection: "demandes-rappel",

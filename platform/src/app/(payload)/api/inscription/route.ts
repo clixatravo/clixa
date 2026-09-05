@@ -183,6 +183,50 @@ export async function POST(request: Request) {
   */
   const participant = await participantConnecte();
 
+  /*
+    ── ⚠️ Un double clic ne retient pas deux places ───────────────────────────
+    Le formulaire poste puis redirige : rien n'empêchait d'envoyer deux fois.
+    Ici la conséquence n'est pas un doublon de plus dans une liste — **chaque
+    inscription retient une place**. Deux clics, et ce sont deux places sur
+    trente qui sortent du catalogue pour une seule personne, avec deux
+    références, deux courriels au participant et deux notifications à
+    l'équipe. La place se rendrait d'elle-même au bout de sept jours, mais
+    d'ici là la session paraît plus pleine qu'elle ne l'est — et c'est le
+    décompte qui fait décider.
+
+    ⚠️ **La clef est l'adresse *et* la session**, pas l'adresse seule :
+    quelqu'un peut légitimement s'inscrire à deux parcours différents.
+
+    ⚠️ **Et un dossier annulé ne bloque pas.** Se réinscrire après une
+    annulation est un geste normal ; le refuser laisserait la personne devant
+    un formulaire qui ne répond plus, sans rien lui expliquer.
+
+    On ne crée donc pas un second dossier : on renvoie vers celui qui existe.
+    Le participant retrouve sa référence, ce qu'il cherchait de toute façon.
+  */
+  const { docs: dejaLa } = await payload.find({
+    collection: "inscriptions",
+    where: {
+      and: [
+        { apprenantEmail: { equals: email } },
+        { session: { equals: session!.id } },
+        { statut: { not_equals: "annulee" } },
+      ],
+    },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const existant = dejaLa[0];
+  if (existant?.reference) {
+    /*
+      Sans `nouveau=1` : ce n'est pas une pré-inscription de plus, et la
+      compter comme telle donnerait à Meta une conversion pour un clic en
+      trop. Voir `components/SignalerLead.tsx`.
+    */
+    redirect(`/inscription/${existant.reference}` as Route);
+  }
+
   let reference: string;
   try {
     /*

@@ -47,6 +47,33 @@ export function referenceDeLAdresse(url: string): string {
   return reference;
 }
 
+/**
+ * Combien de lignes répondent à cette condition, comptées en base.
+ *
+ * ⚠️ **Certaines règles ne se voient pas dans la réponse HTTP.** Une demande
+ * de rappel répétée doit être écartée — mais le site répond « c'est
+ * enregistré » dans les deux cas, et c'est voulu : annoncer un doublon
+ * inquiéterait sans rien apprendre. Une épreuve qui ne regarde que la
+ * redirection reste donc verte avec ou sans la garde. Éprouvé : le défaut a
+ * été remis, et elle n'a rien vu.
+ *
+ * Il faut compter les lignes. C'est aussi ce que fait le ménage, par la même
+ * porte : `psql` avec la chaîne de `.env.local`.
+ */
+export function compterEnBase(table: string, condition: string): number {
+  const url = adresseBase();
+  if (!url) throw new Error("DATABASE_URL introuvable : impossible de compter.");
+  const sortie = execFileSync(
+    "psql",
+    [url, "-t", "-A", "-c", `SELECT count(*) FROM ${table} WHERE ${condition};`],
+    {
+      encoding: "utf8",
+      env: { ...process.env, PGSSLROOTCERT: "system" },
+    },
+  );
+  return Number(sortie.trim());
+}
+
 export function adresseBase(): string | undefined {
   const chemin = path.join(process.cwd(), ".env.local");
   if (!existsSync(chemin)) return process.env.DATABASE_URL;

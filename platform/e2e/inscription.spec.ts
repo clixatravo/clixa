@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE, referenceDeLAdresse } from "./menage";
+import { compterEnBase, MARQUE, referenceDeLAdresse } from "./menage";
 
 /**
  * Le tunnel : retenir une place, puis annoncer son transfert.
@@ -153,4 +153,128 @@ test.describe("Annoncer un transfert", () => {
     });
     expect(r.headers()["location"]).toContain("annonce=champs");
   });
+});
+
+/**
+ * ⚠️ Un double envoi ne retient pas deux places.
+ *
+ * Le formulaire poste puis redirige : rien n'empêchait d'envoyer deux fois.
+ * Ici la conséquence n'est pas une ligne en trop — **chaque inscription retient
+ * une place**. Deux clics, et ce sont deux places sur trente qui sortent du
+ * catalogue pour une seule personne, avec deux références, deux courriels au
+ * participant et deux notifications à l'équipe.
+ *
+ * La production porte la trace du même geste sur les demandes de rappel : deux
+ * lignes identiques à moins de deux minutes d'écart.
+ */
+test.describe("Un envoi répété", () => {
+  test("ne crée pas un second dossier, et ne retient pas une seconde place", async ({
+    page,
+    request,
+  }) => {
+    const email = `double.${Date.now()}${MARQUE}`;
+
+    const envoyer = async () => {
+      await page.goto(`/inscription?formation=${PARCOURS}`);
+      await page.fill('input[name="nom"]', "Épreuve Double");
+      await page.fill('input[name="email"]', email);
+      await page.fill('input[name="whatsapp"]', "+212600000000");
+      await page.fill('input[name="pays"]', "Maroc");
+      await page.check('input[name="consentement"]');
+      await page.click('button[type="submit"]');
+      await page.waitForURL(/\/inscription\/CLX-/);
+      return referenceDeLAdresse(page.url());
+    };
+
+    const premiere = await envoyer();
+    const seconde = await envoyer();
+
+    expect(seconde, "le second envoi ramène au même dossier").toBe(premiere);
+
+    /*
+      ⚠️ Et le second n'est pas compté comme une conversion : il arrive sans
+      `nouveau=1`. Sans cette distinction, un clic en trop vaudrait un lead de
+      plus dans le tableau de bord de la campagne.
+    */
+    expect(page.url(), "un renvoi n'est pas une nouvelle pré-inscription").not.toContain(
+      "nouveau=1",
+    );
+
+    // Et le dossier existe bel et bien, une seule fois.
+    const fiche = await request.get(`/inscription/${premiere}`);
+    expect(fiche.status()).toBe(200);
+  });
+
+  /*
+    ⚠️ Ce que la garde ne doit pas casser : s'inscrire à un **autre** parcours
+    avec la même adresse reste normal. Une clef posée sur l'adresse seule
+    l'aurait interdit, et personne ne s'en serait aperçu avant qu'un candidat
+    ne se plaigne.
+  */
+  test("mais une seconde inscription à un autre parcours passe", async ({ page }) => {
+    const email = `deuxparcours.${Date.now()}${MARQUE}`;
+
+    const envoyer = async (parcours: string) => {
+      await page.goto(`/inscription?formation=${parcours}`);
+      await page.fill('input[name="nom"]', "Épreuve Deux Parcours");
+      await page.fill('input[name="email"]', email);
+      await page.fill('input[name="whatsapp"]', "+212600000000");
+      await page.fill('input[name="pays"]', "Maroc");
+      await page.check('input[name="consentement"]');
+      await page.click('button[type="submit"]');
+      await page.waitForURL(/\/inscription\/CLX-/);
+      return referenceDeLAdresse(page.url());
+    };
+
+    const a = await envoyer(PARCOURS);
+    // ⚠️ Un slug réellement différent de `PARCOURS`, sinon l'épreuve se compare
+    // à elle-même et passerait au vert quoi qu'il arrive.
+    const b = await envoyer("directeur-marketing");
+    expect(b, "deux parcours différents, deux dossiers").not.toBe(a);
+  });
+});
+
+/**
+ * ⚠️ Deux clics ne font pas deux appels à passer.
+ *
+ * Le bandeau du back-office compte les demandes « nouvelle » pour dire ce
+ * qu'il reste à faire aujourd'hui : un doublon y ajoute un appel qui n'existe
+ * pas. La production en porte deux, à moins de deux minutes d'écart.
+ */
+test("une demande de rappel répétée aussitôt n'en crée qu'une", async ({ request }) => {
+  const numero = `+21260${String(Date.now()).slice(-7)}`;
+  const poster = () =>
+    request.post("/api/demande-rappel", {
+      form: {
+        nom: "Épreuve Rappel Double",
+        email: `rappel.double.${Date.now()}${MARQUE}`,
+        whatsapp: numero,
+        origine: "/contact",
+        consentement: "oui",
+      },
+      maxRedirects: 0,
+    });
+
+  const premiere = await poster();
+  const seconde = await poster();
+
+  /*
+    Les deux répondent pareil : de son côté, sa demande est bien enregistrée.
+    Lui annoncer un doublon l'inquiéterait sans rien lui apprendre d'utile.
+  */
+  expect(premiere.headers()["location"]).toContain("envoye=1");
+  expect(seconde.headers()["location"], "la seconde répond comme la première").toContain(
+    "envoye=1",
+  );
+
+  /*
+    ⚠️ **Et c'est pourquoi il faut compter en base.** Les deux réponses étant
+    identiques par construction, une épreuve qui s'arrête ici reste verte sans
+    la garde — vérifié en remettant le défaut : elle n'a rien vu. Seul le
+    nombre de lignes dit ce qui s'est réellement passé.
+  */
+  expect(
+    compterEnBase("demandes_rappel", `whatsapp = '${numero}'`),
+    "une seule ligne pour deux envois",
+  ).toBe(1);
 });

@@ -993,6 +993,40 @@ de temps.
 - La clef reste la référence du dossier, comme pour le consulter. Annoncer
   n'ouvre donc rien de plus que lire.
 
+⚠️ **Un double envoi ne retient pas deux places** (depuis le 5 septembre 2026).
+Les deux formulaires postent puis redirigent : rien n'empêchait d'envoyer deux
+fois. Sur l'inscription, la conséquence n'est pas une ligne en trop — **chaque
+inscription retient une place**. Deux clics, et ce sont deux places sur trente
+qui sortent du catalogue pour une seule personne, avec deux références, deux
+courriels au participant et deux notifications à l'équipe. La place se rendrait
+d'elle-même au bout de sept jours, mais d'ici là la session paraît plus pleine
+qu'elle ne l'est — et c'est le décompte qui fait décider.
+
+- **La clef de l'inscription est l'adresse *et* la session**, pas l'adresse
+  seule : quelqu'un peut légitimement s'inscrire à deux parcours. Une épreuve
+  garde ce cas, avec deux slugs réellement différents — se comparer à
+  soi-même passerait au vert quoi qu'il arrive.
+- **Un dossier annulé ne bloque pas** : se réinscrire après une annulation est
+  normal, et le refuser laisserait la personne devant un formulaire muet.
+- **On ne crée pas un second dossier, on renvoie vers celui qui existe** — et
+  sans `nouveau=1`, sinon un clic en trop vaudrait une conversion de plus dans
+  le tableau de bord de la campagne.
+- **Pour la demande de rappel, une fenêtre de dix minutes** : redemander trois
+  semaines plus tard est légitime, c'est même le signe de quelqu'un qui attend
+  toujours. La clef y est le **numéro**, le courriel étant facultatif — une
+  clef qui peut être vide ne distingue rien.
+- ⚠️ **La production portait déjà le défaut** : deux demandes identiques à
+  moins de deux minutes d'écart, le 24 août 2026. Le bandeau du back-office
+  compte les demandes « nouvelle » pour dire ce qu'il reste à faire
+  aujourd'hui, et un doublon y ajoute un appel qui n'existe pas.
+
+⚠️ **Et la première épreuve du rappel ne prouvait rien.** Les deux envois
+répondent « c'est enregistré », par choix — annoncer un doublon inquiéterait
+sans rien apprendre. Une épreuve qui ne regarde que la redirection reste donc
+verte **avec ou sans la garde** : vérifié en remettant le défaut, elle n'a rien
+vu. Elle compte maintenant les lignes en base (`compterEnBase`, dans
+`e2e/menage.ts`), et passe alors au rouge sur « 2 au lieu de 1 ».
+
 ⚠️ **Une adresse saisie n'est pas une adresse prouvée.** Créer un compte
 rattachait tous les dossiers portant la même adresse : il suffisait de connaître
 l'adresse de quelqu'un pour voir son nom, son téléphone, son échéancier et la
