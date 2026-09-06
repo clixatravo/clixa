@@ -27,6 +27,15 @@ const dire = (q: string, v: boolean, detail = "") => {
 
 const JOUR = "2026-09-05T12:00:00.000Z";
 
+/**
+ * L'instant depuis lequel on regarde.
+ *
+ * ⚠️ **Passé, jamais lu par le calcul.** C'est ce qui permet de dérouler la
+ * tenue d'une place sur trois semaines sans attendre trois semaines — et ce
+ * qui rend l'épreuve identique demain matin. Même raison que `prochainGeste`.
+ */
+const MAINTENANT = new Date("2026-09-06T12:00:00.000Z");
+
 /** Un dossier au tout début : rien de demandé, rien de versé. */
 const neuf: FaitsDuDossier = {
   statut: "demandee",
@@ -39,7 +48,7 @@ const attendu = (
   libelle: string,
   ton: "nous" | "attente" | "fait" | "clos",
 ) => {
-  const a = avancementDuDossier(d);
+  const a = avancementDuDossier(d, MAINTENANT);
   dire(quoi, a.libelle === libelle && a.ton === ton, `rendu « ${a.libelle} » (${a.ton})`);
 };
 
@@ -165,6 +174,72 @@ attendu(
   "attente",
 );
 
+// ── 4 bis. ⚠️ La place tenue, puis repartie ─────────────────────────────────
+/*
+  Sept jours après le dépôt, sans contrat demandé, la place retourne au
+  catalogue — la tâche quotidienne s'en charge. La page du participant le lui
+  dit en toutes lettres ; la colonne de l'équipe affichait encore « rien ne
+  l'engage encore ». Deux versions du même dossier, et c'est la sienne qui
+  était juste.
+
+  ⚠️ Sur les quatorze dossiers de production du 6 septembre 2026, **neuf**
+  étaient dans cet état. Au 13 septembre, la liste de l'équipe en aurait montré
+  neuf identiques dont plus aucun ne réservait quoi que ce soit.
+*/
+const ilYA = (jours: number) => new Date(MAINTENANT.getTime() - jours * 86_400_000).toISOString();
+
+attendu(
+  "une pré-inscription d'hier tient toujours sa place",
+  { statut: "demandee", createdAt: ilYA(1), echeances: [{ statut: "attendu" }] },
+  "Pré-inscription — rien ne l'engage encore",
+  "attente",
+);
+attendu(
+  "⚠️ passé sept jours, la place est repartie",
+  { statut: "demandee", createdAt: ilYA(8), echeances: [{ statut: "attendu" }] },
+  "Pré-inscription expirée — sa place est repartie",
+  "attente",
+);
+/*
+  ⚠️ La veille du terme, rien n'a expiré. Sans ce cas, un calcul décalé d'un
+  jour passerait inaperçu — et annoncerait à l'équipe une place perdue que le
+  participant voit encore tenue.
+*/
+attendu(
+  "⚠️ la veille du terme, elle tient encore",
+  { statut: "demandee", createdAt: ilYA(6), echeances: [{ statut: "attendu" }] },
+  "Pré-inscription — rien ne l'engage encore",
+  "attente",
+);
+/*
+  ⚠️ **Un contrat signé n'expire jamais**, si vieux soit-il : la balle est chez
+  nous tant que les coordonnées ne sont pas parties, et `departDeLaTenue` rend
+  alors `undefined`. Le confondre avec une pré-inscription dormante ferait
+  perdre de vue le dossier le plus engagé qui soit.
+*/
+attendu(
+  "⚠️ un contrat signé de longue date n'expire pas",
+  {
+    statut: "demandee",
+    createdAt: ilYA(30),
+    contratDemandeLe: ilYA(29),
+    contratSigneLe: ilYA(28),
+    echeances: [{ statut: "attendu" }],
+  },
+  "Contrat signé — à relire",
+  "nous",
+);
+/*
+  ⚠️ Et sans date de dépôt, on n'invente pas une expiration : une ligne qu'on
+  n'a pas su lire vaut mieux qu'un état affirmé de travers.
+*/
+attendu(
+  "⚠️ sans date de dépôt, rien n'est déclaré expiré",
+  { statut: "demandee", echeances: [{ statut: "attendu" }] },
+  "Pré-inscription — rien ne l'engage encore",
+  "attente",
+);
+
 // ── 5. Le ton, qui est la vraie sortie ──────────────────────────────────────
 /*
   ⚠️ C'est le ton `nous` qui fait la file de travail. Trois moments seulement
@@ -187,7 +262,7 @@ const files = [
   { statut: "payee", echeances: [{ statut: "regle" }] },
   { statut: "annulee" },
 ];
-const aNous = files.filter((d) => avancementDuDossier(d).ton === "nous").length;
+const aNous = files.filter((d) => avancementDuDossier(d, MAINTENANT).ton === "nous").length;
 dire(
   "⚠️ trois moments seulement appellent un geste de l'équipe",
   aNous === 3,
@@ -203,7 +278,7 @@ dire(
   `Veille.tsx` viderait la vignette en silence.
 */
 const clefsANous = files
-  .map((d) => avancementDuDossier(d))
+  .map((d) => avancementDuDossier(d, MAINTENANT))
   .filter((a) => a.ton === "nous")
   .map((a) => a.clef)
   .sort();
@@ -221,7 +296,7 @@ const toutes = [
   ...files,
   { statut: "demandee", echeances: [{ statut: "regle" }, { statut: "attendu" }] },
   { statut: "terminee" },
-].map((d) => avancementDuDossier(d));
+].map((d) => avancementDuDossier(d, MAINTENANT));
 const parClef = new Map(toutes.map((a) => [a.clef, a.libelle]));
 dire(
   "⚠️ chaque clef ne porte qu'un seul libellé",
@@ -262,7 +337,7 @@ const enDossier = (f: FaitsDuDossier): Dossier => ({
 });
 
 for (const f of files) {
-  const av = avancementDuDossier(f);
+  const av = avancementDuDossier(f, MAINTENANT);
   if (av.ton !== "nous") continue;
   const phrase = prochaineEtape(enDossier(f));
   dire(
@@ -281,7 +356,7 @@ for (const f of files) {
 const reclamants = files.filter((f) => RECLAME.test(prochaineEtape(enDossier(f))));
 dire(
   "⚠️ aucun dossier réclamant n'attend un geste de notre côté",
-  reclamants.every((f) => avancementDuDossier(f).ton !== "nous"),
+  reclamants.every((f) => avancementDuDossier(f, MAINTENANT).ton !== "nous"),
   `${reclamants.length} dossier(s) réclament quelque chose`,
 );
 

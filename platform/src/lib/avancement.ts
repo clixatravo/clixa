@@ -42,9 +42,21 @@
  * qu'il lit.
  */
 
-/** Ce que le calcul a besoin de savoir. Rien de plus, rien de Payload. */
+import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
+
+/**
+ * Ce que le calcul a besoin de savoir. Rien de plus, rien de Payload.
+ *
+ * ⚠️ `lib/places.ts` n'importe que des **types** de Payload, effacés à la
+ * compilation : l'importer ici n'entraîne rien dans le paquet navigateur. La
+ * règle de la tenue ne se recopie donc pas — c'est elle qui décide déjà du
+ * décompte des places et de ce que lit le participant, et une troisième
+ * formulation divergerait en silence.
+ */
 export type FaitsDuDossier = {
   statut?: string | null;
+  /** Le dépôt du dossier — c'est de là que court la tenue d'une pré-inscription. */
+  createdAt?: string | null;
   contratDemandeLe?: string | null;
   contratSigneLe?: string | null;
   contratVerifieLe?: string | null;
@@ -79,12 +91,13 @@ export type Clef =
   | "paye"
   | "contrat-a-signer"
   | "preinscription"
+  | "place-expiree"
   | "termine"
   | "annule";
 
 export type Avancement = { clef: Clef; libelle: string; ton: Ton };
 
-export function avancementDuDossier(d: FaitsDuDossier): Avancement {
+export function avancementDuDossier(d: FaitsDuDossier, maintenant: Date): Avancement {
   if (d.statut === "annulee") return { clef: "annule", libelle: "Annulé", ton: "clos" };
   if (d.statut === "terminee")
     return { clef: "termine", libelle: "Terminé — certificat émis", ton: "fait" };
@@ -115,6 +128,31 @@ export function avancementDuDossier(d: FaitsDuDossier): Avancement {
     l'équipe lit une tâche — et c'est le même moment.
   */
   if (!d.contratDemandeLe) {
+    /*
+      ── ⚠️ Une place tenue et une place repartie ne se disent pas pareil ─────
+      Sept jours après le dépôt, sans contrat demandé, la place retourne au
+      catalogue — la tâche quotidienne s'en charge. La page du participant le
+      lui dit en toutes lettres : « le délai de sept jours est passé et votre
+      place est repartie au catalogue ». La colonne de l'équipe, elle,
+      affichait encore « rien ne l'engage encore ».
+
+      Deux versions du même dossier, et c'est la sienne qui était juste. Sur
+      les quatorze dossiers du 6 septembre 2026, **neuf** étaient dans cet
+      état : au 13 septembre, la liste de l'équipe en aurait montré neuf
+      identiques dont plus aucun ne réservait quoi que ce soit.
+
+      ⚠️ **Le ton reste `attente`, pas `nous`.** L'or est une file de travail
+      du jour ; y verser neuf dossiers dormants la viderait de son sens. La
+      personne peut toujours revenir — c'est elle qu'on attend, comme avant.
+    */
+    const depart = departDeLaTenue(d);
+    if (depart && finDeLaTenue(depart).getTime() <= maintenant.getTime()) {
+      return {
+        clef: "place-expiree",
+        libelle: "Pré-inscription expirée — sa place est repartie",
+        ton: "attente",
+      };
+    }
     return {
       clef: "preinscription",
       libelle: "Pré-inscription — rien ne l'engage encore",

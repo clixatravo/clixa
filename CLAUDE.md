@@ -559,6 +559,36 @@ après le même délai se bloqueraient de nouveau.
 transactions croisées, et vérifie que le code rendu est bien celui qu'on guette.
 Une garde qui n'a jamais vu la panne qu'elle prétend arrêter ne prouve rien.
 
+⚠️ **La liste de l'équipe dit maintenant qu'une place est repartie** (depuis
+le 7 septembre 2026). La page du participant le lui annonçait déjà — « le délai
+de sept jours est passé et votre place est repartie au catalogue » — quand la
+colonne « Où en est » affichait encore « rien ne l'engage encore ». Deux
+versions du même dossier, et c'est la sienne qui était juste.
+
+Sur les quatorze dossiers de production du 6 septembre, **neuf** étaient des
+pré-inscriptions sans suite : au 13 septembre, la liste en aurait montré neuf
+identiques dont plusieurs ne réservaient plus rien.
+
+- **La règle n'est pas recopiée** : `avancement.ts` importe `departDeLaTenue`
+  et `finDeLaTenue`. `lib/places.ts` n'importe que des *types* de Payload,
+  effacés à la compilation — rien n'entre dans le paquet navigateur.
+- ⚠️ **Le ton reste « attente », pas « nous ».** L'or est une file de travail
+  du jour ; y verser neuf dossiers dormants la viderait de son sens.
+- ⚠️ **L'horloge est passée, jamais lue par le calcul** — c'est ce qui permet
+  de dérouler la tenue sur trois semaines sans attendre trois semaines, et ce
+  qui rend l'épreuve identique demain matin. Le compilateur a d'ailleurs
+  désigné lui-même les quatre appels à corriger.
+- ⚠️ **Un contrat signé n'expire jamais**, si vieux soit-il : la balle est chez
+  nous, et `departDeLaTenue` rend `undefined`. Une épreuve garde ce cas.
+
+⚠️ **Ce qu'il reste à trancher : personne ne le lui dit.** Le participant
+apprend que sa place est repartie **s'il rouvre sa page**. Aucun courriel ne
+part — ni avant le terme, ni après. Les treize gabarits de `lib/courriel.ts`
+couvrent tout le reste du tunnel ; celui-là n'existe pas. C'est une décision de
+la direction, pas un oubli technique : une relance avant expiration est le
+message le plus utile qu'on puisse envoyer à une pré-inscription, et c'est
+aussi un courriel de plus.
+
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche
 quotidienne (`api/relances`, 8 h) qui repasse et recompte — le seul endroit du

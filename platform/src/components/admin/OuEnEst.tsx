@@ -36,7 +36,12 @@ export function OuEnEst(props: DefaultCellComponentProps) {
   */
   if (!ligne || !ligne.statut) return <span className="clixa-ou__vide">—</span>;
 
-  const { libelle, ton } = avancementDuDossier(ligne);
+  /*
+    ⚠️ L'horloge est passée, jamais lue par le calcul : c'est ce qui permet de
+    dérouler la tenue d'une place sur trois semaines sans attendre trois
+    semaines. Même raison que `prochainGeste` et `prochainsCreneaux`.
+  */
+  const { libelle, ton } = avancementDuDossier(ligne, new Date());
 
   return (
     <span className={`clixa-ou clixa-ou--${ton}`} title={libelle}>

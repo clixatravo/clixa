@@ -94,7 +94,7 @@ export async function Veille() {
     la vignette à zéro sans que rien ne passe au rouge.
   */
   for (const dossier of vivantes) {
-    const { clef } = avancementDuDossier(dossier);
+    const { clef } = avancementDuDossier(dossier, new Date());
 
     /*
       ⚠️ La partition tient toujours : un dossier ne compte qu'une fois, par
