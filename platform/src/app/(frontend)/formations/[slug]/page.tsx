@@ -99,6 +99,47 @@ export default async function FicheFormation({ params }: Props) {
               </span>
             </div>
           )}
+
+          {/*
+            ── ⚠️ Parler à quelqu'un se propose dès le premier écran ──────────
+            Les deux actions vivaient dans la colonne latérale. Sur un
+            ordinateur elle est à droite, en vue ; **sur un téléphone, d'où
+            vient tout le trafic acheté, elle passe sous le corps entier de la
+            page** — mesuré sur la production : « Me pré-inscrire » à 4 195 px
+            du haut, « Être rappelé par un conseiller » à 6 431 px, sur une
+            fiche qui en compte 7 815. Le premier écran, celui où l'on décide
+            de rester ou de partir, ne portait aucune action.
+
+            Le seul geste qu'un visiteur finissait donc par rencontrer était
+            « Me pré-inscrire », en or, au milieu de la page. La direction l'a
+            dit dans ces termes le 6 septembre 2026 : pour poser une question,
+            on avait l'air de devoir d'abord s'inscrire et signer le contrat.
+            Ce n'était pas vrai — la demande de rappel a toujours existé — mais
+            c'est ce que la page donnait à lire, et c'est la page qui décide.
+
+            ⚠️ **Deux actions, pas une seule ni trois.** Le second bouton reste
+            en contour : il est offert, il ne concurrence pas. Deux boutons de
+            même poids ne diraient plus lequel est l'action principale — la
+            même règle que les boutons du back-office.
+          */}
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {prochaine && (
+              <Button
+                href={
+                  `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}` as Route
+                }
+                className="px-7 py-4 text-xs font-bold tracking-wider uppercase"
+              >
+                Me pré-inscrire
+              </Button>
+            )}
+            <Button href="/contact" variante="contour" className="px-6 py-3.5 text-xs">
+              Parler à un conseiller
+            </Button>
+            <span className="text-ivory-dim/80 text-[0.8rem] sm:ml-1">
+              Sans engagement : on répond à vos questions avant toute inscription.
+            </span>
+          </div>
         </div>
       </section>
 
