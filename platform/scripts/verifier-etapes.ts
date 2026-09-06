@@ -17,7 +17,7 @@
 import { prochaineEtape } from "../src/lib/inscriptions.js";
 import { pasDansLeFutur } from "../src/collections/champs.js";
 import type { Dossier } from "../src/lib/inscriptions.js";
-import { pageAcceptelaProposition } from "../src/lib/rappel-propose.js";
+import { pageAcceptelaProposition } from "../src/lib/proposition.js";
 
 let manques = 0;
 const dire = (q: string, v: boolean) => {

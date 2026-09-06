@@ -127,32 +127,34 @@ test.describe("Apparitions", () => {
 });
 
 /**
- * La proposition de rappel — celle qui rattrape le trafic acheté.
+ * La proposition — celle qui rattrape le trafic acheté.
  *
  * ⚠️ Elle ne s'ouvre pas à l'arrivée, et c'est tout ce qui la sépare de la
  * fenêtre qu'on déteste. Elle attend un signe d'intérêt : vingt-cinq secondes
  * de lecture, ou la moitié de la page. L'épreuve paie donc cette attente —
  * une trentaine de secondes — parce que c'est justement le délai qui fait la
  * différence entre une proposition et une agression.
+ *
+ * ⚠️ **Elle demandait un numéro de téléphone jusqu'au 6 septembre 2026.**
+ * C'était le geste le plus facile à obtenir, et c'est ce qui n'allait pas :
+ * beaucoup le laissaient sans intention d'aller plus loin, et chacun coûtait
+ * un courriel à l'équipe et un appel à passer. Décision de la direction — elle
+ * mène à la pré-inscription, qui est le geste qu'on cherche.
  */
-test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ page }) => {
+test("la proposition attend, puis mène à la pré-inscription", async ({ page }) => {
   test.setTimeout(90_000);
 
   await page.goto("/formations/directeur-marketing");
 
-  const fenetre = page.getByRole("dialog", { name: /Une question avant de vous décider/i });
+  const fenetre = page.getByRole("dialog", { name: /Gardez votre place/i });
   await expect(fenetre, "rien à l'arrivée").toBeHidden();
 
   /*
     ⚠️ **Une seule question à la fois, et le bandeau passe devant.** Depuis que
     le Pixel Meta est branché, le bandeau de consentement paraît — et la
-    proposition de rappel se tait tant qu'il attend une réponse. C'est la règle
-    voulue : deux fenêtres qui demandent deux choses en même temps, en bas du
-    même écran, se chevauchent et se font refuser ensemble.
-
-    L'épreuve répond donc d'abord, comme un visiteur. Elle est tombée le jour
-    où le pixel a été posé, et elle avait raison de tomber : c'est bien le
-    comportement qui a changé.
+    proposition se tait tant qu'il attend une réponse. C'est la règle voulue :
+    deux fenêtres qui demandent deux choses en même temps, en bas du même
+    écran, se chevauchent et se font refuser ensemble.
   */
   const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
   if (await bandeau.isVisible().catch(() => false)) {
@@ -164,36 +166,17 @@ test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ 
   await expect(fenetre).toBeVisible({ timeout: 40_000 });
 
   /*
-    Ce qu'elle demande, et rien de plus : de quoi rappeler, et l'accord pour
-    le faire. Une fenêtre qui réclame l'adresse, l'entreprise et le budget se
-    fait fermer.
+    ⚠️ **Elle ne demande plus rien sur place.** Un champ resté là voudrait dire
+    que le geste proposé est encore de laisser ses coordonnées — c'est
+    exactement ce que la direction a retiré. L'épreuve garde l'absence, parce
+    qu'un formulaire oublié ne casse ni type ni compilation.
   */
-  await expect(fenetre.locator('input[name="nom"]')).toBeVisible();
-  /*
-    ⚠️ Le champ visible, pas celui qui part. Depuis qu'on demande le pays d'un
-    côté et le numéro de l'autre, `name="whatsapp"` est un champ **caché** :
-    l'attendre visible échouerait sur un formulaire parfaitement utilisable.
-    Ce que le visiteur doit voir, c'est un indicatif et un numéro.
-  */
-  await expect(fenetre.locator('select[aria-label="Indicatif du pays"]')).toBeVisible();
-  await expect(fenetre.locator("input#rappel-whatsapp")).toBeVisible();
-
-  const accord = fenetre.locator('input[name="consentement"]');
-  await expect(accord).toBeVisible();
-  await expect(accord, "jamais cochée d'avance").not.toBeChecked();
+  await expect(fenetre.locator("input, select, textarea")).toHaveCount(0);
 
   /*
-    ── ⚠️ La porte d'à côté, pour qui n'a plus de question ───────────────────
-    La fenêtre ne savait proposer qu'une chose : laisser un numéro et attendre
-    24 h. Or elle paraît devant quelqu'un qui vient de lire le programme, les
-    dates et le prix — et parmi eux il y en a qui sont déjà décidés. À
-    ceux-là, elle ajoutait un jour d'attente devant l'inscription qu'ils
-    voulaient faire tout de suite.
-
     ⚠️ **Le lien doit porter la formation qu'on est en train de lire.** Sans
     elle, `/inscription` renvoie au catalogue — et l'on ferait recommencer le
-    choix à quelqu'un qui l'a déjà fait. C'est le seul endroit où la fenêtre
-    sait de quoi parle la page ; l'épreuve le vérifie plutôt que de le croire.
+    choix à quelqu'un qui vient de lire la fiche entière.
   */
   const versInscription = fenetre.getByRole("link", { name: "Me pré-inscrire" });
   await expect(versInscription).toBeVisible();
