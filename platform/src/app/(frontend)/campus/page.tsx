@@ -9,7 +9,7 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
 export const metadata: Metadata = {
   title: "Campus",
   description:
-    "CLIXA opère depuis Agadir. Les implantations d'Abidjan et de Dakar sont en cours de finalisation.",
+    "CLIXA opère depuis Agadir. Les implantations d'Abidjan et de Dakar ouvrent prochainement.",
 };
 
 /*
@@ -31,7 +31,14 @@ const campus = [
     enPreparation: false,
   },
   /*
-    ⚠️ **Abidjan et Dakar sont annoncés comme ce qu'ils sont : en cours.**
+    ⚠️ **Abidjan et Dakar sont annoncés comme ce qu'ils sont : à venir.**
+
+    ⚠️ Le mot est « prochainement », choisi par la direction le 6 septembre
+    2026 — et il vaut mieux qu'une date. Ces deux villes ont figuré quatre fois
+    sur le site sans qu'une seule session s'y donne ; annoncer « ouverture le
+    mois prochain » ferait de la page un démenti d'elle-même le mois suivant.
+    « Prochainement » dit l'intention sans engager un calendrier que personne
+    ne tient encore.
     Ils figuraient ici avec une adresse précise — « Cocody, zone
     administrative », « Plateau, zone d'affaires » — et le rôle « Hub Afrique
     de l'Ouest », au même rang que le siège. Un visiteur y lisait trois
@@ -43,14 +50,14 @@ const campus = [
     restent — l'ambition est réelle — mais elles disent où elles en sont.
 
     ⚠️ L'adresse a été retirée avec le reste. Une rue et un quartier, c'est
-    une porte où quelqu'un peut se présenter ; « en cours de finalisation »
+    une porte où quelqu'un peut se présenter ; « prochainement »
     sous une adresse précise se lit comme un bureau qui ouvre la semaine
     prochaine.
   */
   {
     ville: "Abidjan, Côte d'Ivoire",
-    role: "En cours de finalisation",
-    adresse: "Implantation en préparation",
+    role: "Prochainement",
+    adresse: "Implantation à venir",
     telephone: null,
     email: null,
     note: "Ouverture annoncée ici dès qu'elle sera confirmée",
@@ -58,8 +65,8 @@ const campus = [
   },
   {
     ville: "Dakar, Sénégal",
-    role: "En cours de finalisation",
-    adresse: "Implantation en préparation",
+    role: "Prochainement",
+    adresse: "Implantation à venir",
     telephone: null,
     email: null,
     note: "Ouverture annoncée ici dès qu'elle sera confirmée",
@@ -93,8 +100,8 @@ export default async function Campus() {
             Un ancrage local, une <span className="gold-gradient-text">ambition continentale</span>.
           </h1>
           <p className="text-ivory-dim/95 max-w-[60ch] text-[1.05rem] leading-relaxed">
-            CLIXA opère depuis Agadir, et prépare ses implantations d&apos;Abidjan et de Dakar. Les
-            mêmes programmes, les mêmes intervenants, sans imposer un déplacement international :
+            CLIXA opère depuis Agadir ; Abidjan et Dakar ouvrent prochainement. Les mêmes
+            programmes, les mêmes intervenants, sans imposer un déplacement international :
             aujourd&apos;hui en classe virtuelle, demain aussi près de chez vous.
           </p>
         </div>
@@ -107,7 +114,7 @@ export default async function Campus() {
               <div
                 key={c.ville}
                 /*
-                  Une carte en préparation ne se lit pas comme un bureau
+                  Une carte à venir ne se lit pas comme un bureau
                   ouvert : le libellé le dit, l'opacité le confirme. Deux
                   signaux valent mieux qu'un, parce qu'on parcourt une grille
                   des yeux avant de la lire.
@@ -171,8 +178,8 @@ export default async function Campus() {
                   Toutes les sessions actuelles sont en classe virtuelle (Visio Live)
                 </p>
                 <p className="text-ivory-dim mx-auto max-w-[50ch] text-sm">
-                  Le présentiel se prépare à Agadir ; Abidjan et Dakar sont en cours de
-                  finalisation. Les dates seront annoncées ici dès qu&apos;elles seront confirmées.
+                  Le présentiel se prépare à Agadir ; Abidjan et Dakar ouvrent prochainement. Les
+                  dates seront annoncées ici dès qu&apos;elles seront confirmées.
                 </p>
               </div>
             ) : (

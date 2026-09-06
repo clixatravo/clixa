@@ -453,7 +453,7 @@ export default async function Accueil() {
                     Les douze sessions sont en classe virtuelle, et aucune ne
                     s'est jamais donnée à Abidjan ni à Dakar. La phrase a tenu
                     tant que /campus annonçait trois hubs ouverts ; depuis que
-                    ces deux-là disent « en cours de finalisation », elle les
+                    ces deux-là disent « prochainement », elle les
                     contredisait sur la page d'accueil.
 
                     Décision de la direction, le 5 septembre 2026 : ce qui

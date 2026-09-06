@@ -124,8 +124,14 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   son calcul, et le journal décrit déjà des pages à onze minutes pour cette
   raison. Lui donner encore plus de temps ne prouverait rien de plus ; la
   reconnaître évite de la chercher dans le code.
-- ⚠️ **Un échec resté inexpliqué**, le 5 septembre 2026 : `contrat.spec` a rendu
-  404 sur le PDF du contrat, dans une série complète, une seule fois. Non
+- ⚠️ **Un échec resté inexpliqué**, le 5 septembre 2026 puis le 6 :
+  `contrat.spec` échoue dans une série complète, une fois, et passe seule
+  aussitôt après (2/2 en 28 s) ; la série suivante est verte sans qu'on ait
+  rien touché. ⚠️ **Le 6, le détail a été perdu** : le rapport d'échec est
+  effacé au lancement suivant, et j'ai relancé avant de le lire. On sait donc
+  qu'il revient, pas ce qu'il dit. La prochaine fois, lire
+  `test-results/` **avant** de relancer quoi que ce soit. La première fois,
+  c'était un 404 sur le PDF du contrat. Non
   reproduit — l'épreuve seule passe, et deux séries entières sont vertes
   depuis. Ce qui a été écarté : le ménage ne tourne qu'en fin de série et
   Playwright n'a qu'un ouvrier, donc rien ne supprimait la ligne en route ;
@@ -2121,6 +2127,13 @@ ne coûtent rien.
 rang que le siège, avec une adresse précise — « Cocody, zone administrative »,
 « Plateau, zone d'affaires ». Un visiteur y lisait trois bureaux ouverts ; il
 n'y en a qu'un, et aucune session ne s'est jamais donnée dans les deux autres.
+
+⚠️ **Le mot est « prochainement »**, choisi par la direction le 6 septembre
+2026 — il a remplacé « en cours de finalisation », plus long et moins clair.
+Une date aurait été pire : ces deux villes ont figuré quatre fois sur le site
+sans qu'une seule session s'y donne, et « ouverture le mois prochain » ferait
+de la page un démenti d'elle-même le mois suivant. « Prochainement » dit
+l'intention sans engager un calendrier que personne ne tient encore.
 
 C'était la quatrième fois que ces villes revenaient sur le site sans qu'une
 session s'y donne. La direction a tranché : elles restent — l'ambition est
