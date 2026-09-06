@@ -138,6 +138,14 @@ export const Inscriptions: CollectionConfig = {
     defaultColumns: [
       "reference",
       "apprenantNom",
+      /*
+        ⚠️ **« Où en est » vient avant « Statut », et ce n'est pas cosmétique.**
+        C'est la colonne qu'on lit pour savoir quoi faire ; `statut` ne dit que
+        si l'argent est arrivé. Le 6 septembre 2026, les douze dossiers de
+        production affichaient tous « Demandée — en attente de paiement » alors
+        qu'ils étaient dans cinq états différents. Voir `lib/avancement.ts`.
+      */
+      "ouEnEst",
       "apprenantEmail",
       "apprenantWhatsapp",
       "session",
@@ -360,6 +368,29 @@ export const Inscriptions: CollectionConfig = {
             { label: "Annulée", value: "annulee" },
           ],
           admin: { width: "40%" },
+        },
+        {
+          /*
+            ── Ce qu'il reste à faire, déduit et jamais saisi ─────────────────
+            Un champ `ui` : il ne porte aucune donnée et n'ajoute pas une
+            colonne en base. Il lit la ligne — contrat, coordonnées, échéances
+            — et rend une phrase. Le calcul vit dans `lib/avancement.ts`,
+            séparé pour pouvoir se dérouler sans navigateur ni session ;
+            `verifier-avancement.ts` l'y éprouve sur tous ses cas.
+
+            ⚠️ **On n'a pas fait avancer `statut` à la place.** Il commande le
+            décompte des places, la tâche des relances et le bandeau du tableau
+            de bord, qui lisent tous ses cinq valeurs. Y glisser « contrat
+            signé » rendrait au catalogue la place de quelqu'un qui vient de
+            s'engager. On ajoute une lecture, on ne déforme pas la donnée qui
+            porte l'argent.
+          */
+          name: "ouEnEst",
+          type: "ui",
+          label: "Où en est",
+          admin: {
+            components: { Cell: "@/components/admin/OuEnEst#OuEnEst" },
+          },
         },
         {
           name: "prochaineEcheance",

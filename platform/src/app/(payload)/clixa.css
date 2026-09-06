@@ -1279,6 +1279,63 @@ h3,
   font-family: var(--font-mono);
 }
 
+/* ── « Où en est » : la colonne qui dit ce qu'il reste à faire ──────────── */
+
+/*
+  ⚠️ **Les deux tons qui portent un sens ont leur propre fond**, les autres
+  héritent de la couleur du tableau. Les deux thèmes de Payload restent offerts
+  et l'équipe choisit (voir CLAUDE.md) : un texte ivoire posé sans fond serait
+  illisible sur le thème clair, et c'est le genre de défaut qu'on ne trouve
+  qu'en changeant de thème un matin. Une pastille qui porte son fond se lit des
+  deux côtés.
+*/
+.clixa-ou {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  display: inline-block;
+}
+
+/*
+  ⚠️ « Nous » n'est pas une couleur, c'est une file de travail : ce sont les
+  seuls dossiers qui appellent un geste aujourd'hui. C'est pour eux que la
+  colonne existe, et c'est le seul ton qui doive attraper l'œil au survol de la
+  liste. L'or sur l'encre est mesuré à 8,14:1.
+*/
+.clixa-ou--nous {
+  background: var(--clixa-or);
+  color: var(--clixa-encre);
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+
+.clixa-ou--fait {
+  background: var(--clixa-emeraude);
+  color: var(--clixa-ivoire);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+
+/* Chez lui : rien à faire de notre côté, donc rien qui tire l'œil. */
+.clixa-ou--attente {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.clixa-ou--clos {
+  color: inherit;
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.clixa-ou__vide {
+  color: inherit;
+  opacity: 0.25;
+  font-family: var(--font-mono);
+}
+
 /* ── Optimisations Responsives Mobile & Tablette ────────────────────────── */
 
 @media (max-width: 768px) {

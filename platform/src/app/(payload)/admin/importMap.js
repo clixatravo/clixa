@@ -1,5 +1,6 @@
 import { EtiquetteModule as EtiquetteModule_daac07ce12c516f15166a33f2bef402c } from '@/collections/EtiquetteModule'
 import { BoutonWhatsapp as BoutonWhatsapp_20484ec4bac2ac1c08d8fb775fb2efc9 } from '@/components/admin/BoutonWhatsapp'
+import { OuEnEst as OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f } from '@/components/admin/OuEnEst'
 import { SignatureVue as SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31 } from '@/components/admin/SignatureVue'
 import { EtapesContrat as EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383 } from '@/components/admin/EtapesContrat'
 import { EtiquetteEcheance as EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e } from '@/components/admin/EtiquetteEcheance'
@@ -14,6 +15,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "@/collections/EtiquetteModule#EtiquetteModule": EtiquetteModule_daac07ce12c516f15166a33f2bef402c,
   "@/components/admin/BoutonWhatsapp#BoutonWhatsapp": BoutonWhatsapp_20484ec4bac2ac1c08d8fb775fb2efc9,
+  "@/components/admin/OuEnEst#OuEnEst": OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f,
   "@/components/admin/SignatureVue#SignatureVue": SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31,
   "@/components/admin/EtapesContrat#EtapesContrat": EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383,
   "@/components/admin/EtiquetteEcheance#EtiquetteEcheance": EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e,

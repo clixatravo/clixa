@@ -45,6 +45,7 @@ npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
+npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
 npx payload run scripts/verifier-orientation.ts   # quand il parle, quand il se tait
