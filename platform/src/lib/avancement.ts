@@ -62,11 +62,32 @@ export type FaitsDuDossier = {
  */
 export type Ton = "nous" | "attente" | "fait" | "clos";
 
-export type Avancement = { libelle: string; ton: Ton };
+/**
+ * La clef stable de l'état, pour compter sans lire une phrase.
+ *
+ * ⚠️ **Le bandeau du tableau de bord compte là-dessus, pas sur le libellé.**
+ * Comparer des phrases ferait dépendre un compteur d'une virgule : le jour où
+ * l'on réécrit « Contrat signé — à relire », la vignette tomberait à zéro sans
+ * que rien ne passe au rouge, et l'équipe conclurait qu'il n'y a rien à faire.
+ */
+export type Clef =
+  | "annonce"
+  | "a-relire"
+  | "a-envoyer"
+  | "attente-transfert"
+  | "acompte"
+  | "paye"
+  | "contrat-a-signer"
+  | "preinscription"
+  | "termine"
+  | "annule";
+
+export type Avancement = { clef: Clef; libelle: string; ton: Ton };
 
 export function avancementDuDossier(d: FaitsDuDossier): Avancement {
-  if (d.statut === "annulee") return { libelle: "Annulé", ton: "clos" };
-  if (d.statut === "terminee") return { libelle: "Terminé — certificat émis", ton: "fait" };
+  if (d.statut === "annulee") return { clef: "annule", libelle: "Annulé", ton: "clos" };
+  if (d.statut === "terminee")
+    return { clef: "termine", libelle: "Terminé — certificat émis", ton: "fait" };
 
   const echeances = (d.echeances ?? []).filter(Boolean);
   const annoncee = echeances.some((e) => e?.statut === "annonce");
@@ -77,13 +98,14 @@ export function avancementDuDossier(d: FaitsDuDossier): Avancement {
     c'est celui qui coûte le plus cher à laisser traîner : le participant a
     fait ce qu'on lui demandait et attend qu'on le lui confirme.
   */
-  if (annoncee) return { libelle: "Transfert annoncé — à vérifier", ton: "nous" };
+  if (annoncee) return { clef: "annonce", libelle: "Transfert annoncé — à vérifier", ton: "nous" };
 
   const toutRegle = echeances.length > 0 && echeances.every((e) => e?.statut === "regle");
-  if (toutRegle) return { libelle: "Payé intégralement", ton: "fait" };
+  if (toutRegle) return { clef: "paye", libelle: "Payé intégralement", ton: "fait" };
 
   const unePayee = echeances.some((e) => e?.statut === "regle");
-  if (unePayee) return { libelle: "Acompte reçu — reste à solder", ton: "attente" };
+  if (unePayee)
+    return { clef: "acompte", libelle: "Acompte reçu — reste à solder", ton: "attente" };
 
   /*
     ── Rien n'est versé : c'est le contrat qui dit où l'on en est ────────────
@@ -93,16 +115,24 @@ export function avancementDuDossier(d: FaitsDuDossier): Avancement {
     l'équipe lit une tâche — et c'est le même moment.
   */
   if (!d.contratDemandeLe) {
-    return { libelle: "Pré-inscription — rien ne l'engage encore", ton: "attente" };
+    return {
+      clef: "preinscription",
+      libelle: "Pré-inscription — rien ne l'engage encore",
+      ton: "attente",
+    };
   }
   if (!d.contratSigneLe) {
-    return { libelle: "Contrat demandé — attend sa signature", ton: "attente" };
+    return {
+      clef: "contrat-a-signer",
+      libelle: "Contrat demandé — attend sa signature",
+      ton: "attente",
+    };
   }
   if (!d.contratVerifieLe) {
-    return { libelle: "Contrat signé — à relire", ton: "nous" };
+    return { clef: "a-relire", libelle: "Contrat signé — à relire", ton: "nous" };
   }
   if (!d.coordonneesEnvoyeesLe) {
-    return { libelle: "Contrat vérifié — envoyer de quoi régler", ton: "nous" };
+    return { clef: "a-envoyer", libelle: "Contrat vérifié — envoyer de quoi régler", ton: "nous" };
   }
-  return { libelle: "En attente de son transfert", ton: "attente" };
+  return { clef: "attente-transfert", libelle: "En attente de son transfert", ton: "attente" };
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { avancementDuDossier } from "@/lib/avancement";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -65,15 +66,53 @@ export async function Veille() {
   const echeancesDe = (d: (typeof vivantes)[number]) => (d.echeances ?? []) as Echeance[];
 
   let aVerifier = 0;
+  let contratsATraiter = 0;
   let enRetard = 0;
 
-  for (const dossier of vivantes) {
-    const echeances = echeancesDe(dossier);
+  /*
+    ── ⚠️ Ce que « ce qui attend de nous » recouvrait, et ce qu'il oubliait ───
+    Le bandeau comptait les transferts annoncés et les échéances dépassées. Il
+    ne comptait **ni un contrat signé qui attend notre relecture, ni un contrat
+    vérifié dont les coordonnées de règlement ne sont pas parties** — les deux
+    moments où le participant s'est engagé et ne peut plus rien faire sans
+    nous.
 
-    if (echeances.some((e) => e.statut === "annonce")) {
+    Le journal du projet affirmait pourtant le contraire, et s'appuyait dessus
+    pour justifier qu'une place signée soit tenue **sans terme** : « le bandeau
+    du tableau de bord compte ces dossiers, c'est là que le rattrapage se
+    fait ». Le rattrapage n'existait pas. Un dossier signé pouvait dormir
+    indéfiniment, place retenue, sans que rien nulle part ne le signale — la
+    tâche quotidienne ne regarde que les échéances, et elle ne les relance pas
+    non plus depuis le 6 septembre 2026, justement parce qu'ils ne peuvent pas
+    payer.
+
+    ⚠️ **Le calcul est celui de la colonne « Où en est »**, pas une seconde
+    lecture des mêmes champs. Deux implémentations du même état finissent par
+    diverger, et l'équipe lirait alors deux vérités : trois dossiers dans la
+    vignette, quatre pastilles dorées dans la liste. On compte sur `clef`, qui
+    est stable, et jamais sur le libellé — une virgule réécrite ferait tomber
+    la vignette à zéro sans que rien ne passe au rouge.
+  */
+  for (const dossier of vivantes) {
+    const { clef } = avancementDuDossier(dossier);
+
+    /*
+      ⚠️ La partition tient toujours : un dossier ne compte qu'une fois, par
+      ordre d'urgence — ce qui attend de nous, puis ce qui est en retard. Trois
+      compteurs indépendants feraient additionner cinq choses à faire pour
+      trois dossiers.
+
+      ⚠️ Et « attend de nous » passe **avant** « en retard ». Un contrat signé
+      dont les coordonnées ne sont pas parties peut très bien avoir une
+      échéance dépassée : le compter parmi les retards ferait relancer
+      quelqu'un pour un versement que nous l'empêchons de faire.
+    */
+    if (clef === "annonce") {
       aVerifier += 1;
+    } else if (clef === "a-relire" || clef === "a-envoyer") {
+      contratsATraiter += 1;
     } else if (
-      echeances.some(
+      echeancesDe(dossier).some(
         (e) => e.statut !== "regle" && e.dateLimite && e.dateLimite.slice(0, 10) < aujourdhui,
       )
     ) {
@@ -135,6 +174,15 @@ export async function Veille() {
   const filtres = {
     aVerifier: "/admin/collections/inscriptions?where[echeances.statut][equals]=annonce",
     enRetard: `/admin/collections/inscriptions?where[prochaineEcheance][less_than]=${aujourdhui}`,
+    /*
+      ⚠️ Le tri le plus proche que sache faire une URL : les contrats signés.
+      Il ramène en plus ceux dont les coordonnées sont déjà parties — un `where`
+      ne sait pas dire « signé mais pas encore relu, ou relu mais pas encore
+      servi ». L'écart se voit d'un coup d'œil dans la colonne « Où en est »,
+      qui est justement là pour cela ; renvoyer sur la liste entière, comme
+      c'était l'usage avant le 1er septembre, coûterait bien plus.
+    */
+    contrats: "/admin/collections/inscriptions?where[contratSigneLe][exists]=true",
     recentes: `/admin/collections/inscriptions?where[createdAt][greater_than]=${ilYASeptJours}`,
     /*
       Le compteur ne relève que les demandes « nouvelle » ; le lien menait à
@@ -150,8 +198,18 @@ export async function Veille() {
     conversations: "/admin/collections/conversations?where[conduite][equals]=humain",
   } as const;
 
+  /*
+    ⚠️ « Tout est à jour » doit couvrir tout ce qu'on compte. Oublier un
+    compteur ici fait afficher le message de sérénité **au-dessus** d'une
+    vignette qui réclame un geste — et c'est le message, pas la vignette, qu'on
+    croit.
+  */
   const toutEstCalme =
-    aVerifier === 0 && nouvellesDemandes === 0 && enRetard === 0 && conversationsAReprendre === 0;
+    aVerifier === 0 &&
+    contratsATraiter === 0 &&
+    nouvellesDemandes === 0 &&
+    enRetard === 0 &&
+    conversationsAReprendre === 0;
 
   return (
     <section className="clixa-cockpit">
@@ -235,6 +293,26 @@ export async function Veille() {
           </div>
           <div className="clixa-kpi__action">
             <span>{aVerifier > 0 ? "Traiter les reçus →" : "Voir les dossiers →"}</span>
+          </div>
+        </Link>
+
+        {/* KPI 1 ter : Contrats qui attendent un geste de notre côté */}
+        <Link
+          href={
+            (contratsATraiter > 0 ? filtres.contrats : "/admin/collections/inscriptions") as Route
+          }
+          className={`clixa-kpi ${contratsATraiter > 0 ? "clixa-kpi--alerte-or" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">✍️</span>
+            <span className="clixa-kpi__tag">Contrats</span>
+          </div>
+          <div className="clixa-kpi__valeur">{contratsATraiter}</div>
+          <div className="clixa-kpi__libelle">
+            {contratsATraiter > 1 ? "Contrats à traiter" : "Contrat à traiter"}
+          </div>
+          <div className="clixa-kpi__action">
+            <span>{contratsATraiter > 0 ? "Relire et servir →" : "Voir les dossiers →"}</span>
           </div>
         </Link>
 

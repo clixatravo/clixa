@@ -92,11 +92,57 @@ export async function GET(request: Request) {
 
   const bilan: string[] = [];
   const manques: string[] = [];
+  /** Ceux qu'on ne relance pas parce qu'ils ne peuvent pas encore payer. */
+  const enAttenteDeNous: string[] = [];
   let examinees = 0;
 
   for (const dossier of docs) {
     const echeances = dossier.echeances ?? [];
     let modifie = false;
+
+    /*
+      ── ⚠️ On ne réclame pas de l'argent à qui n'a nulle part où l'envoyer ───
+      Cette tâche ne regardait que le statut du dossier et la date de
+      l'échéance. Or les coordonnées de règlement — RIB, lien bancaire ou
+      bénéficiaire du transfert — **ne figurent nulle part sur le site** : elles
+      partent par courriel, composées par l'équipe, après la signature du
+      contrat. Un participant qui n'a pas reçu ce message n'a aucun moyen de
+      payer.
+
+      Le 6 septembre 2026, dix des douze dossiers de production étaient dans ce
+      cas, et leur première échéance tombait toute le 3 octobre. La tâche
+      relance trois jours avant : le 30 septembre, dix personnes auraient reçu
+      « nous attendons votre versement de 224 € » sans savoir où l'envoyer —
+      dont sept qui n'avaient même pas demandé leur contrat.
+
+      C'est exactement le défaut que `prochaineEtape` a corrigé pour le texte de
+      la page, et le formulaire d'annonce pour le geste : « on ne réclame rien
+      qu'on n'ait rendu possible ». La troisième porte était restée ouverte.
+
+      ⚠️ **La condition n'est pas « pas de coordonnées » seule.** Un dossier
+      dont une échéance est réglée a manifestement trouvé le chemin — l'équipe
+      a pu tout mener de vive voix. Lui taire sa seconde échéance serait une
+      faute symétrique. Même règle que `prochaineEtape`, et pour la même raison.
+    */
+    const rienDeRegle = echeances.every((e) => e.statut !== "regle");
+    if (rienDeRegle && !dossier.coordonneesEnvoyeesLe) {
+      /*
+        ⚠️ **On se tait pour lui, pas pour l'équipe.** Ne rien envoyer et ne
+        rien dire laisserait ces dossiers dormir : la place est tenue sans
+        terme tant que la balle est chez nous (`lib/places.ts`), donc rien ne
+        les ferait jamais remonter. Le bilan les nomme — c'est là que le
+        rattrapage se fait.
+      */
+      enAttenteDeNous.push(
+        `${dossier.reference} · ${dossier.apprenantNom} · ` +
+          (dossier.contratSigneLe
+            ? "contrat signé, coordonnées jamais envoyées"
+            : dossier.contratDemandeLe
+              ? "contrat demandé, jamais signé"
+              : "pré-inscription seule"),
+      );
+      continue;
+    }
 
     /*
       ⚠️ Une boucle, pas un `map`. Il faut attendre chaque envoi pour savoir
@@ -206,23 +252,38 @@ export async function GET(request: Request) {
     faites. Ces échéances seront reprises demain, mais quelqu'un doit savoir
     que le service de courriel a refusé aujourd'hui.
   */
-  await courrielBilanRelances(
-    payload,
-    manques.length === 0
-      ? bilan
-      : [...bilan, "", `⚠️ ${manques.length} envoi(s) impossible(s), repris demain :`, ...manques],
-  );
+  await courrielBilanRelances(payload, [
+    ...bilan,
+    ...(manques.length === 0
+      ? []
+      : ["", `⚠️ ${manques.length} envoi(s) impossible(s), repris demain :`, ...manques]),
+    /*
+      ⚠️ Ceux-là ne sont pas un incident : c'est la file de travail de
+      l'équipe. Ils attendent un geste de notre côté, et tant qu'il n'est pas
+      fait leur place reste tenue sans terme — donc rien d'autre ne les
+      signalera.
+    */
+    ...(enAttenteDeNous.length === 0
+      ? []
+      : [
+          "",
+          `${enAttenteDeNous.length} dossier(s) non relancé(s) : ils attendent de nous de quoi payer.`,
+          ...enAttenteDeNous,
+        ]),
+  ]);
 
   const alerte = manques.length > 0 ? `, ${manques.length} envoi(s) IMPOSSIBLE(S)` : "";
   payload.logger.info(
     `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ` +
-      `${bilan.length} relance(s)${alerte}`,
+      `${bilan.length} relance(s), ${enAttenteDeNous.length} en attente de nous${alerte}`,
   );
 
   return Response.json({
     dossiers: docs.length,
     echeancesExaminees: examinees,
     relances: bilan.length,
+    // Ceux qu'on n'a pas relancés faute de leur avoir envoyé de quoi payer.
+    enAttenteDeNous: enAttenteDeNous.length,
     // Ce que le planificateur verra dans son journal si le courriel flanche.
     envoisImpossibles: manques.length,
     placesRendues: rendues,

@@ -193,6 +193,41 @@ dire(
   `${aNous} trouvé(s)`,
 );
 
+/*
+  ── ⚠️ Les clefs que le tableau de bord compte ────────────────────────────────
+  Le bandeau ne lit pas les libellés — une virgule réécrite ferait tomber sa
+  vignette à zéro sans que rien ne passe au rouge, et l'équipe conclurait qu'il
+  n'y a rien à faire. Il compte `annonce` d'un côté, `a-relire` et `a-envoyer`
+  de l'autre. Ces trois noms sont donc une interface : les changer sans changer
+  `Veille.tsx` viderait la vignette en silence.
+*/
+const clefsANous = files
+  .map((d) => avancementDuDossier(d))
+  .filter((a) => a.ton === "nous")
+  .map((a) => a.clef)
+  .sort();
+dire(
+  "⚠️ ce sont bien les trois clefs que compte le tableau de bord",
+  JSON.stringify(clefsANous) === JSON.stringify(["a-envoyer", "a-relire", "annonce"]),
+  clefsANous.join(", "),
+);
+
+/*
+  ⚠️ Une clef par état, et jamais deux états sous la même clef : le bandeau
+  additionnerait alors deux files distinctes sous un seul nombre.
+*/
+const toutes = [
+  ...files,
+  { statut: "demandee", echeances: [{ statut: "regle" }, { statut: "attendu" }] },
+  { statut: "terminee" },
+].map((d) => avancementDuDossier(d));
+const parClef = new Map(toutes.map((a) => [a.clef, a.libelle]));
+dire(
+  "⚠️ chaque clef ne porte qu'un seul libellé",
+  parClef.size === new Set(toutes.map((a) => a.libelle)).size,
+  `${parClef.size} clef(s) pour ${new Set(toutes.map((a) => a.libelle)).size} libellé(s)`,
+);
+
 console.log(
   manques === 0 ? "\n  La liste dit où en est chaque dossier.\n" : `\n  ${manques} manque(s).\n`,
 );

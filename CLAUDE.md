@@ -46,6 +46,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
+                                                  # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
 npx payload run scripts/verifier-orientation.ts   # quand il parle, quand il se tait
@@ -458,6 +459,15 @@ Rendre au catalogue la place de quelqu'un qui s'est engagé par écrit, parce qu
 *nous* n'avons pas envoyé un courriel, serait lui faire payer notre retard. Le
 bandeau du tableau de bord compte ces dossiers : c'est là que le rattrapage se
 fait, pas en leur reprenant leur place.
+
+⚠️ **Cette phrase a été fausse pendant huit jours.** Le bandeau ne comptait
+rien de tel — ni les contrats signés à relire, ni les contrats vérifiés dont
+les coordonnées ne sont pas parties. C'est-à-dire que le rattrapage sur lequel
+reposait la tenue *sans terme* d'une place n'existait pas : un dossier signé
+pouvait dormir indéfiniment, place retenue, sans que rien nulle part ne le
+dise. La vignette « Contrats à traiter » a été ajoutée le 6 septembre 2026, et
+elle compte par la même fonction que la colonne « Où en est » — deux lectures
+du même état finissent toujours par diverger.
 
 ⚠️ **La durée exacte reste une décision de la direction.** Sept jours à partir
 de l'envoi des coordonnées est ce qui se défend le mieux aujourd'hui ; c'est un

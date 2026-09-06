@@ -91,6 +91,15 @@ try {
       apprenantWhatsapp: "+212600000000",
       apprenantPays: "Maroc",
       planPaiement: "P1",
+      /*
+        ⚠️ **Les coordonnées de règlement sont parties**, et sans cette ligne
+        rien de ce qui suit n'aurait de sens : depuis le 6 septembre 2026 la
+        tâche ne relance pas quelqu'un qui n'a nulle part où envoyer son
+        argent. Le dossier d'épreuve doit être celui d'un participant qui
+        *peut* payer et ne l'a pas fait — c'est le seul qu'on ait le droit de
+        relancer.
+      */
+      coordonneesEnvoyeesLe: hier,
       echeances: [{ montant: 423, statut: "attendu", dateLimite: hier }],
     } as never,
   });
@@ -142,6 +151,92 @@ try {
   const aussitot = await appeler();
   const bilanAussitot = (await aussitot.json()) as { relances: number };
   dire("un second passage le même jour ne relance pas", bilanAussitot.relances === 0);
+
+  /*
+    ── ⚠️ On ne réclame pas de l'argent à qui n'a nulle part où l'envoyer ─────
+    Les coordonnées de règlement — RIB, lien bancaire, bénéficiaire du
+    transfert — ne figurent nulle part sur le site : elles partent par
+    courriel, composées par l'équipe, après la signature du contrat. Sans ce
+    message, le participant n'a aucun moyen de payer.
+
+    Le 6 septembre 2026, dix des douze dossiers de production étaient dans ce
+    cas, première échéance au 3 octobre. La tâche relance trois jours avant :
+    le 30 septembre, dix personnes auraient reçu « nous attendons votre
+    versement » sans savoir où l'envoyer.
+
+    ⚠️ **Le dossier d'épreuve est identique au précédent, aux coordonnées
+    près.** C'est le seul moyen d'attribuer la différence à la garde et non à
+    autre chose : même session, même montant, même échéance dépassée.
+  */
+  const sansCoordonnees = await payload.create({
+    collection: "inscriptions",
+    overrideAccess: true,
+    data: {
+      session: sessions[0]!.id,
+      statut: "demandee",
+      apprenantNom: "Épreuve Sans Coordonnées",
+      apprenantEmail: `sans-coordonnees.${Date.now()}@epreuve.invalid`,
+      apprenantWhatsapp: "+212600000000",
+      apprenantPays: "Maroc",
+      planPaiement: "P1",
+      echeances: [{ montant: 423, statut: "attendu", dateLimite: hier }],
+    } as never,
+  });
+
+  try {
+    const bilanSans = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    dire(
+      "⚠️ un dossier sans coordonnées de règlement n'est pas relancé",
+      bilanSans.relances === 0 && bilanSans.enAttenteDeNous >= 1,
+    );
+
+    const relu = await payload.findByID({
+      collection: "inscriptions",
+      id: sansCoordonnees.id,
+      overrideAccess: true,
+      depth: 0,
+    });
+    const e = ((relu as { echeances?: { relanceeLe?: string | null }[] }).echeances ?? [])[0];
+    dire("son échéance ne porte aucune date de relance", !(e?.relanceeLe ?? undefined));
+
+    /*
+      ⚠️ **Se taire ne suffit pas.** La place d'un dossier signé est tenue
+      *sans terme* tant que la balle est chez nous : si la tâche l'ignorait en
+      silence, rien au monde ne le ferait plus jamais remonter. Le bilan de
+      l'équipe doit le nommer — c'est là que le rattrapage se fait.
+    */
+    dire("mais le bilan de l'équipe le compte", bilanSans.enAttenteDeNous >= 1);
+
+    /*
+      ⚠️ Et la garde ne doit pas se refermer sur quelqu'un qui a déjà payé
+      autrement : l'équipe peut avoir tout mené de vive voix. Un acompte réglé
+      prouve qu'il a trouvé le chemin ; lui taire sa seconde échéance serait la
+      faute symétrique.
+    */
+    await payload.update({
+      collection: "inscriptions",
+      id: sansCoordonnees.id,
+      overrideAccess: true,
+      data: {
+        echeances: [
+          { montant: 211, statut: "regle", dateLimite: hier },
+          { montant: 212, statut: "attendu", dateLimite: hier },
+        ],
+      } as never,
+    });
+    const bilanAcompte = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    dire(
+      "⚠️ un acompte déjà réglé rouvre la relance, coordonnées ou pas",
+      bilanAcompte.relances >= 1,
+    );
+  } finally {
+    await payload.delete({
+      collection: "inscriptions",
+      id: sansCoordonnees.id,
+      overrideAccess: true,
+    });
+    console.log("  · dossier sans coordonnées supprimé");
+  }
 } finally {
   payload.sendEmail = expediteur;
   if (dossierId !== undefined) {
