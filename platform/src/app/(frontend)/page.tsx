@@ -431,8 +431,15 @@ export default async function Accueil() {
                 <Image
                   src="/images/marketing/seminaire-directeur-clixa.jpg"
                   alt="Séminaire Exécutif et Masterclass Dirigeants CLIXA Institute"
-                  width={1376}
-                  height={768}
+                  /*
+                    ⚠️ Les dimensions déclarées sont celles du fichier, pas des
+                    valeurs approchantes : Next s'en sert pour réserver la place
+                    avant que l'image arrive. Un rapport faux fait sauter la
+                    carte au chargement — et la photo a changé le 6 septembre
+                    2026, du 1376 × 768 d'avant au 1600 × 900 d'aujourd'hui.
+                  */
+                  width={1600}
+                  height={900}
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />

@@ -2243,6 +2243,18 @@ régler.
 ce qui prend près d'une minute contre Neon. Une limite par requête tuerait
 chaque script au lancement.
 
+⚠️ **Un `npm run build` peut échouer pour cette seule raison.** Le 6 septembre
+2026 : « Error occurred prerendering page /formations/directeur-qhse », suivi
+d'un `Failed query` sur le global `tarifs`. Aucun code n'était en cause — le
+build suivant, sans rien toucher, est passé. La pré-génération interroge la
+base pour chaque fiche ; une base endormie fait renoncer le pilote, et le
+build tombe. Relancer avant de chercher un défaut.
+
+⚠️ **Et lire le code de sortie, jamais une ligne du journal.** « Compiled
+successfully » s'imprime *avant* la pré-génération : filtrer là-dessus fait
+conclure au succès d'un build qui a échoué trente secondes plus tard.
+`npm run build > /tmp/build.log 2>&1; echo $?` — c'est le zéro qui compte.
+
 ⚠️ Utiliser l'adresse **directe**, pas celle en `-pooler` : Payload interroge
 le schéma au démarrage, ce que le pooler gère mal.
 
