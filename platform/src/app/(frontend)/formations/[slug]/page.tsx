@@ -59,6 +59,19 @@ export default async function FicheFormation({ params }: Props) {
   const temoignages = await getTemoignagesDe(programme.slug);
   const prochaine = await getProchaineSession(programme.slug);
 
+  /*
+    ⚠️ **« Aucune date » et « toutes complètes » ne sont pas la même chose.**
+    `getProchaineSession` ne rend que les sessions où il reste une place : quand
+    la cohorte se remplit, elle rend `undefined` — exactement comme un parcours
+    sans aucune date. Le héros n'offrait alors plus qu'un lien vers un
+    conseiller, et le visiteur venu d'une annonce qui promet le 3 octobre
+    n'avait, en haut de page, rien qui reconnaisse cette date.
+
+    C'est le même défaut que la page d'inscription portait jusqu'au 5 septembre
+    2026, un cran plus haut : la liste était filtrée avant d'être regardée.
+  */
+  const toutesCompletes = sessions.length > 0 && !prochaine;
+
   const parMode = new Map<string, number>();
   for (const s of sessions) {
     const actuel = parMode.get(s.mode);
@@ -123,21 +136,44 @@ export default async function FicheFormation({ params }: Props) {
             même règle que les boutons du back-office.
           */}
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/*
+              ⚠️ **Une action principale dans tous les cas**, et jamais un
+              bouton doré qui mène à un mur. Quand la cohorte est pleine, la
+              liste d'attente *est* l'action : la refuser laisserait le premier
+              écran sans rien à faire, sur la page où atterrit le trafic acheté.
+            */}
+            <Button
+              href={
+                (prochaine
+                  ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}`
+                  : "/contact") as Route
+              }
+              className="px-7 py-4 text-xs font-bold tracking-wider uppercase"
+            >
+              {prochaine
+                ? "Me pré-inscrire"
+                : toutesCompletes
+                  ? "Rejoindre la liste d'attente"
+                  : "Être prévenu de la prochaine session"}
+            </Button>
+
+            {/*
+              Le second bouton disparaît quand le premier mène déjà au
+              conseiller : deux boutons vers la même page ne donnent pas un
+              choix, ils font douter qu'on ait bien lu.
+            */}
             {prochaine && (
-              <Button
-                href={
-                  `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}` as Route
-                }
-                className="px-7 py-4 text-xs font-bold tracking-wider uppercase"
-              >
-                Me pré-inscrire
+              <Button href="/contact" variante="contour" className="px-6 py-3.5 text-xs">
+                Parler à un conseiller
               </Button>
             )}
-            <Button href="/contact" variante="contour" className="px-6 py-3.5 text-xs">
-              Parler à un conseiller
-            </Button>
+
             <span className="text-ivory-dim/80 text-[0.8rem] sm:ml-1">
-              Sans engagement : on répond à vos questions avant toute inscription.
+              {prochaine
+                ? "Sans engagement : on répond à vos questions avant toute inscription."
+                : toutesCompletes
+                  ? "Cette cohorte est complète. Nous vous prévenons dès qu'une place se libère ou qu'une date s'ouvre."
+                  : "Laissez-nous vos coordonnées : nous vous prévenons à l'ouverture des inscriptions."}
             </span>
           </div>
         </div>
@@ -296,23 +332,29 @@ export default async function FicheFormation({ params }: Props) {
               )}
 
               <div className="mb-6 flex flex-col gap-3">
-                {prochaine ? (
-                  <Button
-                    href={
-                      `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}` as Route
-                    }
-                    className="w-full py-4 text-xs font-bold tracking-wider uppercase shadow-lg"
-                  >
-                    Me pré-inscrire en ligne
-                  </Button>
-                ) : (
-                  <Button
-                    href="/contact"
-                    className="w-full py-4 text-xs font-bold tracking-wider uppercase"
-                  >
-                    Être prévenu de la prochaine session
-                  </Button>
-                )}
+                {/*
+                  ⚠️ **La colonne portait le même défaut que le héros**, et
+                  c'est l'épreuve du héros qui l'a trouvé : une cohorte pleine
+                  s'annonçait « Être prévenu de la prochaine session », c'est-
+                  à-dire « il n'y a pas de date ». Le visiteur arrive d'une
+                  annonce qui en promet une ; il en conclut que l'annonce ment.
+                  Complet et sans date sont deux choses, et une seule des deux
+                  se répare en laissant son numéro.
+                */}
+                <Button
+                  href={
+                    (prochaine
+                      ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}`
+                      : "/contact") as Route
+                  }
+                  className="w-full py-4 text-xs font-bold tracking-wider uppercase shadow-lg"
+                >
+                  {prochaine
+                    ? "Me pré-inscrire en ligne"
+                    : toutesCompletes
+                      ? "Rejoindre la liste d'attente"
+                      : "Être prévenu de la prochaine session"}
+                </Button>
                 <Button href="/contact" variante="contour" className="w-full py-3.5 text-xs">
                   Être rappelé par un conseiller
                 </Button>

@@ -112,10 +112,12 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   de sécurité sur un outil d'épreuve, qu'on pourrait assouplir sans rien voir
   passer au rouge.
 - ⚠️ **`admin.spec` — « le bouton Contrat vérifié » — expire par intermittence**
-  (constaté trois fois le 5 septembre 2026). Sa signature est nette : la série
+  (constaté trois fois le 5 septembre 2026, une de plus le 6). Sa signature
+  est nette : la série
   entière passe de quatre à près de huit minutes, et cette épreuve-là seule
   atteint ses quatre minutes. Seule, elle tient en vingt secondes ; la série
-  suivante est verte sans qu'on ait rien touché.
+  suivante est verte sans qu'on ait rien touché. Le 6 septembre : 8 min 18 pour
+  la série, 23 s pour l'épreuve seule aussitôt après.
 
   Ce n'est pas l'épreuve : c'est la base qui répond lentement — Neon suspend
   son calcul, et le journal décrit déjà des pages à onze minutes pour cette

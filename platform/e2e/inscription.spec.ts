@@ -402,6 +402,70 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
   try {
     sqlUneValeur(`UPDATE sessions SET places_reservees = capacite WHERE id IN (${idsBruts});`);
 
+    /*
+      ── ⚠️ La mise en place SQL ne suffit pas, et ne suffisait pas avant ────
+      La fiche et la page d'inscription lisent le catalogue par
+      `unstable_cache` (étiquette `catalogue`, une heure). L'`UPDATE` ci-dessus
+      ne déclenche aucun crochet Payload : il ne lève donc aucune étiquette, et
+      les deux pages continuent de servir l'ancien décompte. Mesuré : session
+      remplie en base, et la fiche rend six fois « Me pré-inscrire ».
+
+      ⚠️ **Cette épreuve passait quand même, par accident.** Une inscription
+      créée plus haut dans le même fichier levait l'étiquette entre-temps.
+      Lancée seule — `-g "complète"` — elle échouait ; lancée dans un autre
+      ordre, elle serait passée au vert sans rien éprouver. Un contrôle vert
+      parce qu'un autre l'a réveillé est pire qu'un contrôle absent : il
+      inspire une confiance que rien ne soutient.
+
+      On lève donc l'étiquette pour de bon, et par le seul chemin qu'un
+      visiteur emprunte : une inscription sur **un autre parcours**. Elle passe
+      par Payload, son crochet `recompter` écrit la session, et
+      `revaliderSession` vide l'étiquette du catalogue entier. Le dossier créé
+      porte la marque des épreuves et repart avec le ménage.
+    */
+    const reveil = await request.post("/api/inscription", {
+      form: {
+        formation: "directeur-marketing",
+        nom: "Épreuve Réveil Cache",
+        email: `reveil.${Date.now()}${MARQUE}`,
+        whatsapp: "+212600000000",
+        pays: "Maroc",
+        plan: "P1",
+        moyen: "virement",
+        payeur: "particulier",
+        consentement: "oui",
+      },
+      maxRedirects: 0,
+    });
+    expect(
+      reveil.headers()["location"],
+      "le réveil du cache doit lui-même aboutir, sinon la suite n'éprouve rien",
+    ).toMatch(/\/inscription\/CLX-/);
+
+    /*
+      ── ⚠️ D'abord la fiche : c'est là qu'atterrit le trafic acheté ─────────
+      Le premier écran porte l'action principale depuis le 6 septembre 2026.
+      Quand la cohorte se remplit, `getProchaineSession` ne rend plus rien —
+      exactement comme un parcours sans aucune date — et le bouton doré
+      disparaissait, laissant le premier écran sans rien à faire. Le visiteur
+      arrive d'une annonce qui promet le 3 octobre : il doit trouver la liste
+      d'attente là où il trouvait l'inscription, pas huit écrans plus bas.
+    */
+    await page.goto(`/formations/${slug}`);
+    const action = page
+      .locator("main a")
+      .filter({ hasText: /liste d'attente/i })
+      .first();
+    await expect(action, "le premier écran doit garder une action").toBeVisible();
+    const haut = await action.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(haut, `l'action est à ${Math.round(haut)} px, hors du premier écran`).toBeLessThan(
+      page.viewportSize()!.height,
+    );
+    await expect(
+      page.getByText("Être prévenu de la prochaine session"),
+      "⚠️ complet n'est pas « pas de date » : l'annonce en promet une",
+    ).toHaveCount(0);
+
     // ── Ce que le visiteur lit
     await page.goto(`/inscription?formation=${slug}`);
     await expect(page.getByText("Cette session est complète")).toBeVisible();
