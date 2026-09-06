@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { INDICATIFS_OFFERTS } from "@/lib/indicatifs";
+import { composerNumero } from "@/lib/telephone";
 
 /**
  * Le numéro WhatsApp : un pays qu'on choisit, un numéro qu'on tape.
@@ -39,7 +40,30 @@ import { INDICATIFS_OFFERTS } from "@/lib/indicatifs";
  * ⚠️ **Le zéro de tête est retiré.** « 06 12 34 56 78 » est la façon dont
  * chacun connaît son propre numéro, et « +212 06… » n'appelle personne. Le
  * corriger en silence vaut mieux que le refuser : la personne a écrit ce
- * qu'elle avait à écrire.
+ * qu'elle avait à écrire. La règle vit dans `lib/telephone.ts`, où elle
+ * s'éprouve sans navigateur.
+ *
+ * ── ⚠️ Aucun pays n'est choisi d'avance, depuis le 6 septembre 2026 ─────────
+ * Le champ s'ouvrait sur « +212 Maroc ». Sur les quatorze demandes de rappel
+ * réelles reçues de la campagne, **trois venaient du Maroc** : les onze autres
+ * de Guinée, du Togo, du Niger, du Bénin, du Cameroun, du Sénégal, du Gabon,
+ * de Mauritanie. Un défaut juste pour un visiteur sur cinq est un piège pour
+ * les quatre autres — et il ne se voit pas, puisqu'il *ressemble* à un choix.
+ *
+ * Il a mordu : une personne au Togo a laissé le sélecteur tranquille et son
+ * numéro est parti en `+21298534397`, qui ne joint personne. Elle a recommencé
+ * deux minutes plus tard, correctement. Elle a eu de la chance de s'en
+ * apercevoir.
+ *
+ * La liste s'ouvre donc sur une invite, et le `required` du navigateur refuse
+ * l'envoi tant que rien n'est choisi. Cela coûte un geste à tout le monde, y
+ * compris aux Marocains ; cela évite un numéro faux et silencieux au reste.
+ *
+ * ── ⚠️ Et le numéro composé se relit à l'écran ──────────────────────────────
+ * Deux cases qui n'en forment qu'une, et le résultat n'était montré nulle
+ * part. C'est ainsi qu'un `+221` a pu être ajouté devant un numéro qui le
+ * portait déjà — quinze chiffres, personne au bout. La ligne sous le champ dit
+ * ce qui partira, et nomme ce qu'on a rattrapé quand on rattrape.
  */
 
 /** La valeur du choix « je ne trouve pas mon pays ». */
@@ -47,29 +71,22 @@ const AUTRE = "autre";
 
 export function ChampWhatsapp({
   id = "whatsapp",
-  defautIndicatif = "212",
   requis = true,
   classeChamp,
 }: {
   id?: string;
-  defautIndicatif?: string;
   requis?: boolean;
   /** Les classes du champ texte, pour épouser le formulaire qui l'accueille. */
   classeChamp: string;
 }) {
-  const [choix, setChoix] = useState(defautIndicatif);
+  const [choix, setChoix] = useState("");
   const [saisi, setSaisi] = useState("");
   const [numero, setNumero] = useState("");
 
   const indicatif = choix === AUTRE ? saisi.replace(/\D/g, "") : choix;
 
-  /*
-    Ce qui part au serveur. On ne garde que les chiffres du numéro local, et
-    l'on retire son zéro de tête : c'est la forme que `aUnIndicatif` attend, et
-    celle qu'un lien `wa.me` sait composer.
-  */
-  const chiffres = numero.replace(/\D/g, "").replace(/^0+/, "");
-  const complet = indicatif && chiffres ? `+${indicatif}${chiffres}` : "";
+  /* Ce qui part au serveur, et ce qu'on en montre. Voir `lib/telephone.ts`. */
+  const { complet, lisible, rattrape } = composerNumero(indicatif, numero);
 
   return (
     <div className="flex flex-col gap-2">
@@ -117,10 +134,18 @@ export function ChampWhatsapp({
         ) : (
           <select
             aria-label="Indicatif du pays"
+            required={requis}
             value={choix}
             onChange={(e) => setChoix(e.target.value)}
             className={`${classeChamp} w-[9.5rem] shrink-0`}
           >
+            {/*
+              ⚠️ Valeur vide et `required` : le navigateur refuse l'envoi tant
+              que rien n'est choisi, et met la mise au point ici. Le `select` n'a
+              pas de `name` — la validation n'en demande pas, elle porte sur le
+              contrôle, pas sur ce qu'il enverrait.
+            */}
+            <option value="">Votre pays…</option>
             {INDICATIFS_OFFERTS.map(({ code, pays, drapeau }) => (
               <option key={code} value={code}>
                 {drapeau ? `${drapeau} ` : ""}+{code} {pays}
@@ -150,13 +175,30 @@ export function ChampWhatsapp({
         <button
           type="button"
           onClick={() => {
-            setChoix(defautIndicatif);
+            setChoix("");
             setSaisi("");
           }}
           className="text-ivory-dim hover:text-gold self-start text-[0.78rem] underline underline-offset-2"
         >
           ← Choisir dans la liste des pays
         </button>
+      )}
+
+      {/*
+        ⚠️ **Le numéro composé se relit.** Deux cases qui n'en forment qu'une,
+        et le résultat n'était montré nulle part : c'est ainsi qu'un indicatif
+        a pu être ajouté devant un numéro qui le portait déjà. On dit aussi ce
+        qu'on a rattrapé — corriger en silence prive la personne du seul moyen
+        qu'elle a de voir qu'on l'a mal comprise.
+      */}
+      {lisible && (
+        <p className="text-ivory-dim text-[0.78rem]" aria-live="polite">
+          Nous vous joindrons au <strong className="text-ivory">{lisible}</strong>
+          {rattrape === "indicatif-en-double" &&
+            " — indicatif déjà présent, il n'a pas été doublé."}
+          {rattrape === "numero-international" &&
+            " — numéro international, tel que vous l'avez écrit."}
+        </p>
       )}
 
       <input type="hidden" name="whatsapp" value={complet} readOnly />

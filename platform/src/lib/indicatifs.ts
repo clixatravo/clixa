@@ -62,6 +62,58 @@ export const INDICATIFS: Record<string, string> = {
 };
 
 /**
+ * Les pays où le zéro de tête est un préfixe interurbain, à retirer.
+ *
+ * ── ⚠️ Le défaut que cette table corrige ────────────────────────────────────
+ * Le zéro de tête était retiré **pour tout le monde**. C'est juste au Maroc —
+ * « 06 12 34 56 78 » s'appelle « +212 6 12 34 56 78 » — et **faux en Côte
+ * d'Ivoire**, où les numéros font dix chiffres depuis 2021 et où le zéro
+ * appartient au numéro : « 07 12 34 56 78 » s'appelle « +225 07 12 34 56 78 ».
+ * Le retirer rendait `+225712345678`, qui ne joint personne.
+ *
+ * La Côte d'Ivoire est nommée sur le site, l'annonce y tourne, et le Bénin
+ * suit la même règle depuis 2022 — un dossier de production en porte un,
+ * `+2290163903882`, dont le zéro est parfaitement à sa place.
+ *
+ * ⚠️ **Le défaut est de garder, pas de retirer.** Un pays absent de cette
+ * table conserve ce que la personne a tapé. Retirer un chiffre qui compte rend
+ * un numéro faux et silencieux ; en garder un de trop se voit à l'appel, et le
+ * numéro se rattrape. Entre les deux fautes, on choisit celle qui se répare.
+ *
+ * ⚠️ Elle n'a pas vocation à être complète, comme `INDICATIFS`. Elle porte les
+ * pays d'où viennent les inscrits et ceux où la règle est certaine.
+ */
+const ZERO_INTERURBAIN = new Set([
+  "212", // Maroc
+  "213", // Algérie
+  "216", // Tunisie
+  "218", // Libye
+  "243", // République démocratique du Congo
+  "261", // Madagascar
+  "20", // Égypte
+  "27", // Afrique du Sud
+  "32", // Belgique
+  "33", // France
+  "39", // Italie — le zéro y est gardé pour les fixes, retiré pour les mobiles
+  "31", // Pays-Bas
+  "41", // Suisse
+  "44", // Royaume-Uni
+  "49", // Allemagne
+]);
+
+/**
+ * Faut-il retirer le zéro de tête d'un numéro local, pour ce pays ?
+ *
+ * ⚠️ Sénégal, Guinée, Togo, Niger, Mauritanie, Cameroun, Gabon, Mali, Burkina
+ * n'ont pas de préfixe interurbain : leurs numéros ne commencent pas par zéro,
+ * et il n'y a donc rien à retirer. Côte d'Ivoire et Bénin en ont un qui fait
+ * partie du numéro. Dans les deux cas, garder est la bonne réponse.
+ */
+export function zeroAretirer(indicatif: string): boolean {
+  return ZERO_INTERURBAIN.has(String(indicatif ?? "").replace(/\D/g, ""));
+}
+
+/**
  * Le numéro porte-t-il un indicatif international ?
  *
  * ── Pourquoi c'est obligatoire, et pas seulement conseillé ──────────────────

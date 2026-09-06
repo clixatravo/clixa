@@ -226,7 +226,16 @@ export default async function Inscription({ searchParams }: Props) {
                   </label>
                   <ChampWhatsapp classeChamp="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-w-0 border px-3.5 py-3 text-[0.95rem]" />
                   <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
-                    Choisissez votre pays, puis tapez votre numéro sans le zéro du début.
+                    {/*
+                      ⚠️ **Cette phrase disait « sans le zéro du début ».** C'est
+                      juste au Maroc et faux en Côte d'Ivoire, où le zéro fait
+                      partie du numéro depuis 2021 — comme au Bénin. On donnait
+                      donc une consigne qui rendait le numéro injoignable, dans
+                      des pays que le site nomme. La règle est désormais dans
+                      `lib/telephone.ts`, par pays ; il n'y a plus rien à
+                      demander au visiteur que son numéro tel qu'il le connaît.
+                    */}
+                    Choisissez votre pays, puis tapez votre numéro comme vous le donnez chez vous.
                   </p>
                 </div>
                 <Champ

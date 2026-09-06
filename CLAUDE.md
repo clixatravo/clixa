@@ -46,6 +46,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
+npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
                                                   # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
@@ -1551,10 +1552,37 @@ mettre mon numéro, ça ne marche pas ». Il n'avait rien fait de travers.
 - **La règle ne bouge pas, la saisie change.** Le visiteur choisit son pays
   dans une liste et tape le numéro qu'il connaît par cœur ; un champ caché
   porte la forme internationale. `aUnIndicatif` et les routes sont intactes.
-- **Le zéro de tête est retiré en silence.** « 06 12 34 56 78 » est la façon
-  dont chacun connaît son propre numéro, et « +212 06… » n'appelle personne.
-  Corriger vaut mieux que refuser : la personne a écrit ce qu'elle avait à
-  écrire.
+- **Le zéro de tête est retiré en silence — mais seulement là où il ne compte
+  pas.** « 06 12 34 56 78 » est la façon dont un Marocain connaît son propre
+  numéro, et « +212 06… » n'appelle personne. ⚠️ **En Côte d'Ivoire le zéro
+  fait partie du numéro** depuis 2021, et au Bénin depuis 2022 : le retirer
+  rendait `+225712345678`, qui ne joint personne, dans un pays que le site
+  nomme et où l'annonce tourne. La règle est par pays (`zeroAretirer`), et son
+  défaut est de **garder** — un chiffre retiré à tort rend un numéro faux et
+  silencieux, un chiffre gardé en trop se voit au premier appel.
+- ⚠️ **Aucun pays n'est choisi d'avance** (depuis le 6 septembre 2026). Le
+  champ s'ouvrait sur « +212 Maroc ». Sur les quatorze demandes de rappel
+  réelles reçues de la campagne, **trois venaient du Maroc** : les onze autres
+  de Guinée, du Togo, du Niger, du Bénin, du Cameroun, du Sénégal, du Gabon et
+  de Mauritanie. Un défaut juste pour un visiteur sur cinq est un piège pour
+  les quatre autres, et il ne se voit pas — il *ressemble* à un choix. Une
+  personne au Togo n'y a pas touché : son numéro est parti en `+21298534397`.
+  Elle a recommencé deux minutes plus tard ; les autres ne le sauront jamais.
+- ⚠️ **L'indicatif tapé deux fois n'est plus doublé.** Une autre a écrit son
+  numéro entier dans la case du numéro local : `+221` + `221770790537` a donné
+  quinze chiffres et personne au bout. Un `+` ou un `00` en tête l'emporte
+  désormais sur le sélecteur, et un indicatif répété est retiré — mais
+  seulement s'il reste de quoi faire un numéro.
+- ⚠️ **Le numéro composé se relit sous le champ.** Deux cases qui n'en forment
+  qu'une, et le résultat n'était montré nulle part : c'est ce qui a permis les
+  deux fautes ci-dessus. La ligne dit ce qui partira et nomme ce qu'on a
+  rattrapé — corriger en silence prive la personne du seul moyen qu'elle a de
+  voir qu'on l'a mal comprise.
+- **La règle vit dans `lib/telephone.ts`**, pure, et `verifier-telephone.ts`
+  l'éprouve sur vingt cas dont les deux numéros réels. Un numéro faux ne casse
+  rien : il s'enregistre, il s'affiche, il a l'air d'un numéro. On ne l'apprend
+  qu'en appelant — c'est-à-dire jamais, puisque l'équipe conclut que la
+  personne ne répond pas.
 - **Les indicatifs sont ordonnés par provenance**, Maroc puis Afrique de
   l'Ouest — un ordre alphabétique mettrait l'Allemagne avant la Côte d'Ivoire.
 - **Le drapeau se calcule, il ne se stocke pas** : un emoji de drapeau est la
