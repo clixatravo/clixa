@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { Route } from "next";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   consentementAuServeur,
@@ -55,6 +57,29 @@ export function PopupRappel() {
     setOuverte(false);
     retenirReponse("ferme");
   }, []);
+
+  /*
+    ── ⚠️ La fenêtre offre aussi la porte d'à côté ───────────────────────────
+    Elle ne savait proposer qu'une chose : laisser un numéro. Or elle paraît
+    surtout sur une fiche, c'est-à-dire devant quelqu'un qui vient de lire le
+    programme, les dates et le prix — et parmi eux il y en a qui sont **déjà
+    décidés**. À ceux-là, « laissez votre numéro, on vous rappelle sous 24 h »
+    ajoute un jour d'attente devant l'inscription qu'ils voulaient faire tout
+    de suite.
+
+    Les deux gestes coexistent donc, dans l'ordre : le rappel d'abord, qui est
+    l'objet de la fenêtre ; l'inscription en dessous, en lien, pour qui n'a
+    plus de question. C'est la même règle que le héros de la fiche — on offre
+    les deux plutôt que d'obliger à passer par l'un pour atteindre l'autre.
+
+    ⚠️ **Aucun `Lead` n'est compté ici.** Ouvrir un formulaire n'est pas une
+    conversion, et l'apprendre à Meta lui ferait chercher des gens qui ouvrent
+    un formulaire et s'en vont. La règle est écrite dans `PixelMeta`.
+  */
+  const surUneFiche = /^\/formations\/[^/]+$/.test(chemin);
+  const versInscription = (
+    surUneFiche ? `/inscription?formation=${chemin.split("/")[2]}` : "/formations"
+  ) as Route;
 
   /*
     ⚠️ **Relu à chaque réponse du bandeau, et pas une seule fois au montage.**
@@ -189,6 +214,11 @@ export function PopupRappel() {
           <p className="text-ivory-dim text-[0.88rem] leading-relaxed">
             Un conseiller vous rappelle sous 24 h ouvrées, sur le numéro que vous venez de laisser.
           </p>
+          <PorteInscription
+            href={versInscription}
+            surUneFiche={surUneFiche}
+            texte="Vous pouvez aussi retenir votre place dès maintenant"
+          />
         </>
       ) : (
         <>
@@ -259,8 +289,55 @@ export function PopupRappel() {
               Être rappelé
             </button>
           </form>
+
+          <PorteInscription
+            href={versInscription}
+            surUneFiche={surUneFiche}
+            texte="Déjà décidé ?"
+            surLeMemeRang
+          />
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Le second geste offert par la fenêtre : s'inscrire sans attendre l'appel.
+ *
+ * ⚠️ **Il reste un lien, jamais un second bouton doré.** Deux boutons de même
+ * poids dans une fenêtre de quatre cents pixels ne diraient plus lequel est
+ * l'action principale — la même règle que les boutons du back-office et que
+ * le héros de la fiche.
+ *
+ * ⚠️ **On retient la réponse en partant.** Quelqu'un qui choisit cette porte a
+ * répondu à la question posée ; lui reposer la fenêtre au retour serait
+ * exactement ce que cette fenêtre existe pour ne pas faire.
+ */
+function PorteInscription({
+  href,
+  surUneFiche,
+  texte,
+  surLeMemeRang = false,
+}: {
+  href: Route;
+  surUneFiche: boolean;
+  texte: string;
+  surLeMemeRang?: boolean;
+}) {
+  return (
+    <p
+      className={`text-ivory-dim border-line/60 mt-4 border-t pt-3 text-[0.8rem] ${surLeMemeRang ? "" : "leading-relaxed"}`}
+    >
+      {texte}{" "}
+      <Link
+        href={href}
+        onClick={() => retenirReponse("ferme")}
+        className="text-gold hover:text-gold-bright underline underline-offset-2"
+      >
+        {surUneFiche ? "Me pré-inscrire" : "Choisir une formation"}
+      </Link>{" "}
+      <span className="text-ivory-dim/70">— rien n&apos;est encaissé.</span>
+    </p>
   );
 }

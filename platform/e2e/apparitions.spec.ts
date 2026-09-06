@@ -182,6 +182,26 @@ test("la proposition de rappel attend, puis demande de quoi rappeler", async ({ 
   await expect(accord).toBeVisible();
   await expect(accord, "jamais cochée d'avance").not.toBeChecked();
 
+  /*
+    ── ⚠️ La porte d'à côté, pour qui n'a plus de question ───────────────────
+    La fenêtre ne savait proposer qu'une chose : laisser un numéro et attendre
+    24 h. Or elle paraît devant quelqu'un qui vient de lire le programme, les
+    dates et le prix — et parmi eux il y en a qui sont déjà décidés. À
+    ceux-là, elle ajoutait un jour d'attente devant l'inscription qu'ils
+    voulaient faire tout de suite.
+
+    ⚠️ **Le lien doit porter la formation qu'on est en train de lire.** Sans
+    elle, `/inscription` renvoie au catalogue — et l'on ferait recommencer le
+    choix à quelqu'un qui l'a déjà fait. C'est le seul endroit où la fenêtre
+    sait de quoi parle la page ; l'épreuve le vérifie plutôt que de le croire.
+  */
+  const versInscription = fenetre.getByRole("link", { name: "Me pré-inscrire" });
+  await expect(versInscription).toBeVisible();
+  await expect(versInscription).toHaveAttribute(
+    "href",
+    "/inscription?formation=directeur-marketing",
+  );
+
   // Et elle se ferme, sans rien laisser derrière.
   await fenetre.getByRole("button", { name: "Fermer" }).click();
   await expect(fenetre).toBeHidden();
