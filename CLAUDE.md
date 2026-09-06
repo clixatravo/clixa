@@ -2078,6 +2078,31 @@ regarder si le service accepte.
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 
+⚠️ **La fiche ne porte qu'un geste : la pré-inscription** (décision de la
+direction, le 6 septembre 2026 au soir). Le héros a porté « Parler à un
+conseiller » à côté du bouton doré pendant quelques heures ce jour-là ; la
+colonne latérale portait « Être rappelé par un conseiller » depuis l'origine.
+Les deux sont retirés.
+
+**La consultation ne disparaît pas, elle change de moment.** Elle vit sur la
+page du dossier — « Parler à notre Responsable Orientation », la référence déjà
+écrite dans le message — c'est-à-dire après un geste qui n'engage à rien et que
+la page dit tel quel : rien n'est encaissé, la place est tenue sept jours,
+aucun compte à créer.
+
+- **Ce que cela évite** : des conversations avec des gens qui n'ont rien
+  retenu, qu'on ne sait ni rappeler ni suivre, et dont chacune coûtait un
+  courriel à l'équipe et un appel à passer. C'est le même raisonnement qui a
+  vidé la fenêtre de rappel de son formulaire le même jour.
+- **Ce que cela coûte** : qui veut parler d'abord doit passer par « Nous
+  contacter », qui reste dans l'en-tête de chaque page, et par `/contact`, qui
+  n'a pas bougé. C'est un arbitrage, pas une contrainte technique.
+- ⚠️ **La plainte d'origine reste vraie, et elle a été entendue autrement.**
+  La direction avait signalé le matin qu'on semblait devoir s'inscrire et
+  signer un contrat avant de pouvoir parler. Ce qui rendait cela vrai n'était
+  pas l'absence de bouton mais le **contrat** : la consultation est désormais
+  offerte dès la pré-inscription, qui ne lie à rien — pas après la signature.
+
 ⚠️ **Les coordonnées de règlement ne paraissent jamais sur le site**, et ce
 n'est plus un point ouvert : c'est la décision de la direction, prise le 29 août
 2026. RIB, lien de paiement bancaire et coordonnées de transfert partent **par

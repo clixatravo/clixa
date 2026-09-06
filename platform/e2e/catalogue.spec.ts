@@ -128,43 +128,40 @@ test.describe("Ce que le catalogue promet", () => {
 });
 
 /**
- * Sur une fiche, on doit pouvoir parler à quelqu'un sans s'inscrire.
+ * Le premier écran d'une fiche porte l'action, pas la page entière.
  *
  * ── ⚠️ Le défaut que ceci garde ─────────────────────────────────────────────
- * Les deux actions vivaient dans la colonne latérale. Sur un ordinateur elle
- * est à droite, en vue ; sur un téléphone — d'où vient tout le trafic acheté —
- * elle passe **sous le corps entier de la page**. Mesuré sur la production le
- * 6 septembre 2026 : « Me pré-inscrire » à 4 195 px du haut, « Être rappelé
- * par un conseiller » à 6 431 px, sur une fiche qui en compte 7 815. Le
- * premier écran ne portait aucune action.
- *
- * Le seul geste qu'un visiteur finissait donc par rencontrer était
- * « Me pré-inscrire ». La direction l'a lu ainsi : pour poser une question, il
- * fallait d'abord s'inscrire et signer le contrat. Ce n'était pas vrai, et
- * c'est bien le problème — c'est ce que la page donnait à lire.
+ * Les actions vivaient dans la colonne latérale. Sur un ordinateur elle est à
+ * droite, en vue ; sur un téléphone — d'où vient tout le trafic acheté — elle
+ * passe **sous le corps entier de la page**. Mesuré sur la production le
+ * 6 septembre 2026 : « Me pré-inscrire » à 4 195 px du haut, sur une fiche qui
+ * en compte 7 815. Le premier écran, celui où l'on décide de rester ou de
+ * partir, ne portait aucune action.
  *
  * ⚠️ **L'épreuve mesure une position, pas une présence.** Vérifier que le lien
  * existe serait resté vert pendant tout le temps où le défaut vivait : il
- * existait, à 6 431 px.
+ * existait, à 4 195 px.
+ *
+ * ⚠️ Elle a un temps vérifié qu'un second bouton, « Parler à un conseiller »,
+ * accompagnait le premier. La direction l'a retiré le soir même : la
+ * consultation ne disparaît pas, elle se fait **après** la pré-inscription,
+ * depuis la page du dossier. La fiche ne porte donc qu'un geste — celui-là.
  */
-test.describe("Parler avant de s'engager", () => {
+test.describe("Le premier écran porte l'action", () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
-  test("les deux actions tiennent dans le premier écran d'un téléphone", async ({ page }) => {
+  test("« Me pré-inscrire » tient dans le premier écran d'un téléphone", async ({ page }) => {
     await page.goto("/formations");
     const fiche = await page.locator('a[href^="/formations/"]').first().getAttribute("href");
     await page.goto(fiche!);
 
-    for (const nom of [/^Me pré-inscrire$/, /Parler à un conseiller/]) {
-      const action = page.getByRole("link", { name: nom }).first();
-      await expect(action).toBeVisible();
+    const action = page.getByRole("link", { name: /^Me pré-inscrire$/ }).first();
+    await expect(action).toBeVisible();
 
-      const haut = await action.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
-      const ecran = page.viewportSize()!.height;
-      expect(
-        haut,
-        `« ${nom.source} » est à ${Math.round(haut)} px, hors du premier écran`,
-      ).toBeLessThan(ecran);
-    }
+    const haut = await action.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const ecran = page.viewportSize()!.height;
+    expect(haut, `l'action est à ${Math.round(haut)} px, hors du premier écran`).toBeLessThan(
+      ecran,
+    );
   });
 });

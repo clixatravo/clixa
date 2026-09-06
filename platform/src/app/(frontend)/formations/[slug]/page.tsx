@@ -158,19 +158,24 @@ export default async function FicheFormation({ params }: Props) {
             </Button>
 
             {/*
-              Le second bouton disparaît quand le premier mène déjà au
-              conseiller : deux boutons vers la même page ne donnent pas un
-              choix, ils font douter qu'on ait bien lu.
-            */}
-            {prochaine && (
-              <Button href="/contact" variante="contour" className="px-6 py-3.5 text-xs">
-                Parler à un conseiller
-              </Button>
-            )}
+              ── ⚠️ Un seul geste sur la fiche, et c'est la pré-inscription ───
+              Le héros a porté « Parler à un conseiller » à côté du bouton doré,
+              du 6 septembre 2026 au soir du même jour. La direction l'a retiré,
+              et son raisonnement est le bon : **la consultation ne disparaît
+              pas, elle change de moment.** Elle vit maintenant sur la page du
+              dossier — « Parler à notre Responsable Orientation », référence
+              déjà écrite dans le message — c'est-à-dire après un geste qui
+              n'engage à rien et que la page dit tel quel.
 
+              Ce que cela évite : des conversations avec des gens qui n'ont rien
+              retenu, et qu'on ne sait ni rappeler ni suivre. Ce que cela coûte :
+              qui veut parler d'abord doit passer par « Nous contacter », qui
+              reste dans l'en-tête de chaque page. C'est un arbitrage de la
+              direction, pas une contrainte technique.
+            */}
             <span className="text-ivory-dim/80 text-[0.8rem] sm:ml-1">
               {prochaine
-                ? "Sans engagement : on répond à vos questions avant toute inscription."
+                ? "Sans engagement : rien n'est encaissé, et votre place est tenue sept jours."
                 : toutesCompletes
                   ? "Cette cohorte est complète. Nous vous prévenons dès qu'une place se libère ou qu'une date s'ouvre."
                   : "Laissez-nous vos coordonnées : nous vous prévenons à l'ouverture des inscriptions."}
@@ -355,10 +360,6 @@ export default async function FicheFormation({ params }: Props) {
                       ? "Rejoindre la liste d'attente"
                       : "Être prévenu de la prochaine session"}
                 </Button>
-                <Button href="/contact" variante="contour" className="w-full py-3.5 text-xs">
-                  Être rappelé par un conseiller
-                </Button>
-
                 {/*
                   La plaquette, pour qui doit faire valider sa formation en interne. Un
                   lien vers une page web ne s'attache pas à une demande adressée aux
