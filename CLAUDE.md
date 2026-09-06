@@ -2141,10 +2141,11 @@ réelle — mais elles portent « en cours de finalisation ».
   texte** : le libellé le dit, l'opacité le confirme. On parcourt une grille
   des yeux avant de la lire.
 
-⚠️ Un article publié — « CLIXA ouvre un rythme régulier de sessions à
-Abidjan », daté de novembre 2026 — annonce toujours du présentiel dans ces
-villes. Signalé le 26 août 2026, maintenu par décision explicite ; il n'a pas
-été revu le 5 septembre. Les épreuves ne savent pas attraper cela.
+L'article du blog a suivi : « CLIXA ouvre un rythme régulier de sessions à
+Abidjan » est devenu « Abidjan et Dakar : où en sont nos implantations », et
+dit la même chose que le reste du site. Vérifié en production le 6 septembre
+2026. ⚠️ Les épreuves ne savent pas attraper une contradiction de ce genre —
+c'est une relecture, pas un contrôle.
 
 ## Déploiement
 
