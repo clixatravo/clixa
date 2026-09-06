@@ -189,3 +189,51 @@ test("la proposition attend, puis mène à la pré-inscription", async ({ page }
   await fenetre.getByRole("button", { name: "Fermer" }).click();
   await expect(fenetre).toBeHidden();
 });
+
+/**
+ * ⚠️ La fenêtre ne suit pas le visiteur d'une page à l'autre.
+ *
+ * ── Le défaut, vu en production le 6 septembre 2026 ─────────────────────────
+ * Le composant vit dans le layout : une navigation interne ne le démonte pas,
+ * et son état « ouverte » n'était qu'un booléen. Une fois ouverte, la fenêtre
+ * restait donc peinte sur **toutes** les pages suivantes — y compris sur
+ * `/inscription` et `/contact`, où `pageAcceptelaProposition` interdit
+ * précisément de la montrer, et y compris sur la page où son propre bouton
+ * venait de mener : on cliquait « Voir les formations », on arrivait sur
+ * `/formations`, et elle proposait toujours d'aller voir les formations.
+ *
+ * ⚠️ **L'effet ne pouvait pas la refermer.** Il ne sait qu'ouvrir, et il
+ * renonce dès la première ligne puisque la réponse est désormais retenue.
+ * Aucune erreur, aucun type fautif : juste une fenêtre qui ne s'en va plus.
+ */
+test("la proposition ne suit pas le visiteur d'une page à l'autre", async ({ page }) => {
+  test.setTimeout(90_000);
+
+  await page.goto("/formations/directeur-marketing");
+
+  const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
+  if (await bandeau.isVisible().catch(() => false)) {
+    await bandeau.getByRole("button", { name: "Refuser" }).click();
+    await expect(bandeau).toBeHidden();
+  }
+
+  const fenetre = page.getByRole("dialog", { name: /Gardez votre place/i });
+  await expect(fenetre).toBeVisible({ timeout: 40_000 });
+
+  /*
+    On suit son propre bouton — le geste exact qui a révélé le défaut. La page
+    d'inscription est justement l'une de celles où la fenêtre n'a rien à faire.
+  */
+  await fenetre.getByRole("link", { name: "Me pré-inscrire" }).click();
+  await page.waitForURL(/\/inscription\?formation=/, { timeout: 30_000 });
+  await expect(fenetre, "elle est restée sur la page d'arrivée").toBeHidden();
+
+  /*
+    ⚠️ Et elle ne revient pas non plus en repassant par une page qui l'accepte :
+    suivre son bouton vaut réponse. Sans cette seconde moitié, une fenêtre qui
+    se referme par accident au chargement passerait pour corrigée.
+  */
+  await page.goto("/formations/directeur-qhse");
+  await page.waitForTimeout(3000);
+  await expect(fenetre, "une réponse donnée vaut pour toujours").toBeHidden();
+});

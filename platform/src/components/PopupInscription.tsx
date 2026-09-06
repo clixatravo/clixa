@@ -84,10 +84,31 @@ const CE_QUE_CELA_ENGAGE = [
 
 export function PopupInscription() {
   const chemin = usePathname();
-  const [ouverte, setOuverte] = useState(false);
+
+  /*
+    ── ⚠️ Ouverte *sur une page*, pas ouverte tout court ─────────────────────
+    L'état était un simple booléen, et le composant vit dans le layout : une
+    navigation interne ne le démonte pas. Une fois ouverte, la fenêtre suivait
+    donc le visiteur de page en page — y compris sur `/inscription` et
+    `/contact`, où `pageAcceptelaProposition` interdit précisément de la
+    montrer, et y compris **sur la page où son propre bouton venait de mener**.
+
+    Constaté le 6 septembre 2026 : on clique « Voir les formations », on arrive
+    sur `/formations`, et la fenêtre est toujours là, proposant d'aller voir
+    les formations. L'effet ne pouvait pas la refermer — il ne sait
+    qu'*ouvrir*, et il renonce avant même d'y arriver puisque la réponse est
+    désormais retenue.
+
+    Retenir **le chemin** plutôt qu'un booléen ferme la fenêtre d'elle-même :
+    `ouverte` se dérive, il n'y a rien à remettre à zéro, et aucun `setState`
+    dans le corps d'un effet — la règle qui interdit ce dernier existe pour
+    éviter exactement ce genre d'état qui se désynchronise de ce qu'on affiche.
+  */
+  const [ouverteSur, setOuverteSur] = useState<string | null>(null);
+  const ouverte = ouverteSur === chemin;
 
   const fermer = useCallback(() => {
-    setOuverte(false);
+    setOuverteSur(null);
     retenirReponse("ferme");
   }, []);
 
@@ -118,7 +139,7 @@ export function PopupInscription() {
     const ouvrir = () => {
       if (fait) return;
       fait = true;
-      setOuverte(true);
+      setOuverteSur(chemin);
     };
 
     const minuteur = window.setTimeout(ouvrir, SECONDES_AVANT * 1000);
@@ -202,7 +223,16 @@ export function PopupInscription() {
       */}
       <Link
         href={cible}
-        onClick={() => retenirReponse("envoye")}
+        /*
+          ⚠️ On ferme **avant** de naviguer, sans attendre que le chemin
+          change. La navigation interne est asynchrone : sans cela, la fenêtre
+          reste peinte le temps que la page suivante se rende — c'est-à-dire
+          exactement le clignotement qu'on remarque.
+        */
+        onClick={() => {
+          setOuverteSur(null);
+          retenirReponse("envoye");
+        }}
         className="bg-gold text-ink rounded-clixa hover:bg-gold-bright flex min-h-11 w-full items-center justify-center px-5 text-[0.88rem] font-semibold transition-colors"
       >
         {surUneFiche ? "Me pré-inscrire" : "Voir les formations"}

@@ -17,6 +17,7 @@
  *   npx payload run scripts/verifier-avancement.ts
  */
 import { avancementDuDossier, type FaitsDuDossier } from "@/lib/avancement";
+import { prochaineEtape, type Dossier } from "@/lib/inscriptions";
 
 let manques = 0;
 const dire = (q: string, v: boolean, detail = "") => {
@@ -226,6 +227,62 @@ dire(
   "⚠️ chaque clef ne porte qu'un seul libellé",
   parClef.size === new Set(toutes.map((a) => a.libelle)).size,
   `${parClef.size} clef(s) pour ${new Set(toutes.map((a) => a.libelle)).size} libellé(s)`,
+);
+
+// ── 6. ⚠️ Les deux moitiés du même dossier ──────────────────────────────────
+/*
+  `avancementDuDossier` dit ce que **l'équipe** doit faire ; `prochaineEtape`
+  dit ce que **le participant** doit faire. Ce sont deux lectures du même
+  moment, écrites séparément — et rien jusqu'ici ne les empêchait de se
+  contredire.
+
+  ⚠️ **L'invariant qui compte : quand la balle est chez nous, la page ne doit
+  rien réclamer.** C'est exactement le défaut corrigé le 30 août pour le texte
+  de la page, le 5 septembre pour le formulaire d'annonce, et le 6 septembre
+  pour la relance quotidienne. Trois portes, la même faute — parce que rien ne
+  tenait la règle en un seul endroit. Ceci la tient.
+*/
+const RECLAME = /nous attendons|il reste à signer|prochaine échéance/i;
+
+/** Un dossier complet, à partir des seuls faits qui décident. */
+const enDossier = (f: FaitsDuDossier): Dossier => ({
+  reference: "CLX-EPREUVE",
+  statut: String(f.statut ?? "demandee"),
+  programmeTitre: "Parcours d'épreuve",
+  sessionLibelle: "Classe virtuelle",
+  sessionDetail: "Classe virtuelle",
+  contratDemandeLe: f.contratDemandeLe ?? undefined,
+  contratSigneLe: f.contratSigneLe ?? undefined,
+  contratVerifieLe: f.contratVerifieLe ?? undefined,
+  coordonneesEnvoyeesLe: f.coordonneesEnvoyeesLe ?? undefined,
+  echeances: (f.echeances ?? []).map((e) => ({
+    montantCentimes: 42300,
+    statut: (e?.statut ?? "attendu") as "attendu" | "annonce" | "regle",
+  })),
+});
+
+for (const f of files) {
+  const av = avancementDuDossier(f);
+  if (av.ton !== "nous") continue;
+  const phrase = prochaineEtape(enDossier(f));
+  dire(
+    `⚠️ « ${av.libelle} » ne réclame rien au participant`,
+    !RECLAME.test(phrase),
+    `la page dit « ${phrase} »`,
+  );
+}
+
+/*
+  ⚠️ Et le contraire : quand la page réclame un transfert, l'équipe ne doit pas
+  lire « à relire » ou « envoyer de quoi régler ». Sans ce second sens, une
+  seule des deux moitiés pourrait dériver — celle qui ne réclame jamais rien
+  passerait toujours.
+*/
+const reclamants = files.filter((f) => RECLAME.test(prochaineEtape(enDossier(f))));
+dire(
+  "⚠️ aucun dossier réclamant n'attend un geste de notre côté",
+  reclamants.every((f) => avancementDuDossier(f).ton !== "nous"),
+  `${reclamants.length} dossier(s) réclament quelque chose`,
 );
 
 console.log(
