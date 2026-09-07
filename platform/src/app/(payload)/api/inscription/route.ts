@@ -228,6 +228,7 @@ export async function POST(request: Request) {
   }
 
   let reference: string;
+  let creeId: number | string;
   try {
     /*
       ⚠️ Réessayé en cas d'interblocage. Deux personnes qui s'inscrivent au même
@@ -262,12 +263,63 @@ export async function POST(request: Request) {
       (m) => console.warn(m),
     );
     reference = String(cree.reference);
+    creeId = cree.id;
   } catch (e) {
     // Le dire plutôt qu'afficher une confirmation à quelqu'un dont la place
     // n'est pas retenue.
     console.error("[inscription] échec de l'enregistrement :", e);
     echec("technique");
     return;
+  }
+
+  /*
+    ── ⚠️ Le contrôle plus haut ne suffit pas : c'est une course ──────────────
+    `dejaLa`, plus haut, lit puis écrit — deux requêtes quasi simultanées
+    peuvent toutes deux le trouver vide et créer chacune un dossier. Trouvé en
+    production le 7 septembre 2026 : deux dossiers pour la même personne, la
+    même session, créés à 257 ms d'écart. La session DAF — celle de
+    l'annonce — affichait 22/30 pour 21 personnes réelles.
+
+    On ne verrouille pas avant l'écriture : cela demanderait de tenir la
+    transaction nous-mêmes autour de `payload.create`, la même réserve que
+    pour l'interblocage, juste au-dessus, sur le même chemin d'écriture.
+
+    On reconcilie donc après, **hors du bloc `try`** : `redirect()` lève une
+    erreur spéciale que Next intercepte lui-même, et un `catch` posé dessus
+    la prendrait pour un échec technique — exactement le défaut que ce bloc
+    corrige une porte plus loin.
+
+    Postgres attribue les identifiants de façon strictement croissante et
+    atomique, et cela suffit à départager les deux sans le moindre verrou
+    applicatif : celui qui porte l'identifiant le plus bas gagne. Un perdant
+    s'annule et renvoie vers le gagnant, **avant** d'envoyer le moindre
+    courriel — sans quoi une personne recevrait deux confirmations pour une
+    seule place.
+  */
+  const { docs: concurrents } = await payload.find({
+    collection: "inscriptions",
+    where: {
+      and: [
+        { apprenantEmail: { equals: email } },
+        { session: { equals: session!.id } },
+        { statut: { not_equals: "annulee" } },
+        { id: { not_equals: creeId } },
+      ],
+    },
+    sort: "id",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const gagnant = concurrents[0];
+  if (gagnant?.reference && Number(gagnant.id) < Number(creeId)) {
+    await payload.update({
+      collection: "inscriptions",
+      id: creeId,
+      overrideAccess: true,
+      data: { statut: "annulee" },
+    });
+    redirect(`/inscription/${gagnant.reference}` as Route);
   }
 
   /*

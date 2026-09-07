@@ -1423,6 +1423,45 @@ courriels au participant et deux notifications à l'équipe. La place se rendrai
 d'elle-même au bout de sept jours, mais d'ici là la session paraît plus pleine
 qu'elle ne l'est — et c'est le décompte qui fait décider.
 
+⚠️ **Le contrôle ne fermait que le double clic, pas la vraie course** (corrigé
+le 7 septembre 2026 au soir). `dejaLa` lit puis écrit — il empêche un second
+envoi séquentiel, mais deux requêtes assez proches peuvent toutes deux trouver
+la table vide avant que l'autre n'y ait rien écrit. Trouvé en **production** :
+deux dossiers pour la même personne, la même session — la cohorte de l'annonce
+Facebook, Directeur Administratif et Financier — créés à **257 ms d'écart**.
+La session affichait 22/30 pour 21 personnes réelles ; c'est ce chiffre-là qui
+a été rapporté à la direction plus tôt dans la journée, avant d'être trouvé
+faux.
+
+- **On ne verrouille pas avant l'écriture** : cela demanderait de tenir la
+  transaction nous-mêmes autour de `payload.create`, la réserve déjà posée
+  pour l'interblocage, sur le même chemin d'écriture.
+- **On reconcilie donc après.** Postgres attribue les identifiants de façon
+  strictement croissante et atomique : cela suffit à départager deux dossiers
+  concurrents sans le moindre verrou applicatif — celui qui porte
+  l'identifiant le plus bas gagne, l'autre s'annule et redirige vers lui,
+  **avant** que le moindre courriel ne parte.
+- ⚠️ **La reconciliation vit hors du bloc `try`.** `redirect()` lève une erreur
+  spéciale que Next intercepte lui-même ; un `catch` posé dessus la prendrait
+  pour un échec technique — exactement le défaut qu'elle corrige une porte
+  plus loin.
+- **Éprouvée par deux requêtes réellement concurrentes** (`Promise.all`, pas
+  deux appels séquentiels) : une seule survit active, prouvé en comptant les
+  lignes en base plutôt qu'en lisant la redirection. Remettre le défaut fait
+  passer le contrôle au rouge sur « toutes les réponses pointent vers le même
+  dossier ».
+- ⚠️ **Six requêtes concurrentes révèlent autre chose : le budget de réessai de
+  `lib/interblocage.ts` peut saturer.** Trois tentatives suffisent à « deux
+  personnes et une annonce qui circule », le cas qu'il documente lui-même ;
+  au-delà, un visiteur peut recevoir une vraie erreur technique. C'est un
+  défaut de capacité distinct, pas encore corrigé — l'épreuve reste à deux
+  requêtes, le nombre qui a coûté une place en production.
+- ⚠️ **Deux dossiers réels restent dupliqués en production** —
+  `CLX-M7TNJVBZ` et `CLX-R93699DD`, même personne, même session DAF, créés le
+  7 septembre à 257 ms d'écart. Ce n'est pas au code de trancher lequel garder
+  ni de contacter la personne : laissé à l'équipe, comme les numéros de
+  téléphone erronés notés plus bas.
+
 - **La clef de l'inscription est l'adresse *et* la session**, pas l'adresse
   seule : quelqu'un peut légitimement s'inscrire à deux parcours. Une épreuve
   garde ce cas, avec deux slugs réellement différents — se comparer à

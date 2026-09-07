@@ -290,6 +290,98 @@ test.describe("Un envoi répété", () => {
   });
 
   /*
+    ── ⚠️ Et une vraie course, pas seulement deux clics l'un après l'autre ────
+    Le test précédent attend chaque réponse avant d'envoyer la suivante : il
+    éprouve `dejaLa`, le contrôle rapide qui lit puis écrit, mais jamais la
+    fenêtre entre les deux. Trouvé en production le 7 septembre 2026 — deux
+    dossiers pour la même personne, la même session, créés à 257 ms d'écart :
+    deux requêtes assez proches pour que chacune trouve la table vide avant
+    que l'autre n'y ait rien écrit.
+
+    On envoie donc plusieurs requêtes **en même temps** (`Promise.all`),
+    directement à la route, sans passer par un navigateur qui les
+    sérialiserait malgré lui. Une seule doit gagner ; toutes les autres
+    doivent renvoyer vers elle sans avoir laissé de dossier actif derrière —
+    c'est `lib/interblocage.ts` qui rejoue déjà l'inverse de cette panne pour
+    le décompte de places, ici c'est l'inscription elle-même qui se dédouble.
+  */
+  test("une vraie course ne retient qu'une seule place", async ({ request }) => {
+    const email = `course.${Date.now()}${MARQUE}`;
+    /*
+      ⚠️ **Deux, pas davantage — c'est le cas réel.** `lib/interblocage.ts`
+      documente lui-même sa limite : trois tentatives, pensées pour « deux
+      personnes et une annonce qui circule ». Monter à six révèle une chose
+      différente — le budget de réessai qui sature, un défaut de capacité
+      distinct de celui qu'on éprouve ici. Deux reste le nombre qui a coûté une
+      place en production le 7 septembre 2026, et le nombre que la garde existe
+      pour couvrir.
+    */
+    const CONCURRENTES = 2;
+
+    const debut = sqlUneValeur(
+      `SELECT to_char(min(s.debut), 'YYYY-MM-DD') FROM sessions s
+       JOIN programmes p ON p.id = s.programme_id WHERE p.slug = '${PARCOURS}';`,
+    );
+
+    const reponses = await Promise.all(
+      Array.from({ length: CONCURRENTES }, () =>
+        request.post("/api/inscription", {
+          form: {
+            formation: PARCOURS,
+            debut,
+            nom: "Épreuve Course",
+            email,
+            whatsapp: "+212600000000",
+            pays: "Maroc",
+            plan: "P1",
+            moyen: "virement",
+            payeur: "particulier",
+            consentement: "oui",
+          },
+          maxRedirects: 0,
+        }),
+      ),
+    );
+
+    /*
+      ⚠️ **L'en-tête `location` est relatif**, et `referenceDeLAdresse` attend
+      une adresse complète — c'est `new URL(page.url())` qu'elle résout
+      d'ordinaire. On la complète ici avec l'origine de la requête elle-même,
+      sans toucher au helper : son contrat reste celui qu'attendent les autres
+      épreuves.
+    */
+    const references = reponses.map((r) => {
+      const loc = r.headers()["location"];
+      return loc ? referenceDeLAdresse(new URL(loc, r.url()).toString()) : undefined;
+    });
+
+    /*
+      ⚠️ Toutes les réponses désignent le même dossier — même la ou les
+      requêtes qui ont perdu la course et créé un dossier voué à s'annuler :
+      c'est tout l'objet de la reconciliation, elles renvoient vers le
+      gagnant plutôt que vers elles-mêmes.
+    */
+    const distinctes = new Set(references);
+    expect(
+      distinctes.size,
+      `toutes les réponses pointent vers le même dossier — reçu ${[...distinctes].join(", ")}`,
+    ).toBe(1);
+
+    /*
+      ⚠️ Et un seul dossier reste actif en base — les autres existent peut-être
+      encore, mais `annulee`, ce qui les retire du décompte de places
+      (`occupeUnePlace`). C'est la preuve qui compte : un compteur juste, pas
+      seulement une redirection qui a l'air juste.
+    */
+    expect(
+      compterEnBase("inscriptions", `apprenant_email = '${email}' AND statut != 'annulee'`),
+      "un seul dossier actif, quel que soit le nombre de requêtes parties en même temps",
+    ).toBe(1);
+
+    sqlUneValeur(`DELETE FROM inscriptions WHERE apprenant_email = '${email}';`);
+  });
+
+  /*
     ⚠️ Ce que la garde ne doit pas casser : s'inscrire à un **autre** parcours
     avec la même adresse reste normal. Une clef posée sur l'adresse seule
     l'aurait interdit, et personne ne s'en serait aperçu avant qu'un candidat
