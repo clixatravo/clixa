@@ -104,7 +104,10 @@ export async function POST(request: Request) {
     (comme « 22222628 »), on nettoie les chiffres et si la valeur saisie est
     invalide ou vide, on retombe sur l'indicatif du numéro WhatsApp.
   */
-  const paysSaisi = texte("pays").replace(/[0-9]/g, "").trim();
+  const paysSaisi = texte("pays")
+    .replace(/<[^>]*>/g, "")
+    .replace(/[^A-Za-zÀ-ÿ\s\-\'.]/g, "")
+    .trim();
   const pays =
     paysSaisi.length >= 2 && tientDans(paysSaisi, LONGUEURS.pays)
       ? paysSaisi
