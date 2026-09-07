@@ -47,6 +47,7 @@ npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit 
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
+npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
                                                   # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
@@ -1540,7 +1541,7 @@ n'y passe pas.
   une session *et* `user.collection === "utilisateurs"`.
 - ⚠️ **Les en-têtes viennent de la requête, pas de `headers()` de Next.** Hors
   contexte de requête `headers()` lève, et la route ne pouvait donc être
-  éprouvée que par le réseau. `verifier-export.ts` l'appelle désormais
+  éprouvée que par le réseau. `verifier-portes.ts` l'appelle désormais
   directement, avec un vrai cookie de chaque sorte — et la garde a été prouvée
   en remettant le défaut : elle passe au rouge, et dit combien de lignes ont été
   servies.
@@ -1585,6 +1586,57 @@ tient pas devant un script, une reprise en base, ou le jour où quelqu'un retire
 appelle `draftMode()` puis `redirect()`, qui exigent le contexte de requête de
 Next. Une session d'équipe se reconnaît donc à ce qu'elle **ne reçoit pas** 401 —
 ce qui suffit, puisque c'est le refus qui protège.
+
+⚠️ **Le fichier des admissions est un classeur, plus un CSV** (depuis le
+7 septembre 2026). La direction l'a demandé « conçu, que n'importe qui le
+comprenne, chaque chose à sa place ». Le CSV portait trois défauts qu'on ne
+pouvait voir sans l'ouvrir :
+
+1. **La colonne « Programme / Session » disait « Session » sur chaque ligne.**
+   Elle lisait `session.titre`, un champ qui n'existe pas — une session porte
+   une `reference` et un `programme`. `"titre" in sessionObj` était donc
+   toujours faux et le repli s'écrivait tel quel. La colonne la plus utile du
+   fichier ne disait rien, sans qu'aucun type ne s'en plaigne.
+2. **Deux tables étaient empilées dans une seule**, avec une colonne « Type »
+   pour les distinguer et des colonnes dont le sens changeait d'une ligne à
+   l'autre : « Montant / Échéances » portait « 0 EUR réglé(s) » sur les
+   inscriptions et « Pays : Maroc » sur les demandes.
+3. **Les statuts sortaient bruts** — `demandee`, `sans-suite` — quand /admin
+   affiche « Demandée — en attente de paiement ».
+
+C'est donc un vrai `.xlsx`, **une feuille par nature de donnée**, en-tête figée
+et filtre posé, montants et dates en nombres — « 0 EUR réglé(s) » ne
+s'additionne pas, « 2026-09-06 » ne se trie pas. La colonne « Où en est le
+dossier » est celle de /admin, importée et non recopiée : le tableur est ce
+qu'on emporte en réunion, il ne peut pas dire autre chose que l'écran d'à côté.
+
+- **Écrit à la main** (`lib/tableur.ts`), sans dépendance : un `.xlsx` est un
+  ZIP de quelques XML, et Node sait déjà compresser (`deflateRawSync`) et
+  signer (`crc32`). Pas de formules, pas de graphiques, pas de
+  `sharedStrings` — le jour où il en faudra un, une bibliothèque sera le bon
+  choix, pas l'extension de ce fichier.
+- ⚠️ **Un `.xlsx` cassé ne casse rien d'autre.** La route répond 200, le
+  fichier a la bonne taille et la bonne extension, et Excel dit « le format est
+  incorrect » sans nommer le fichier fautif. D'où `verifier-tableur.ts`, qui
+  ouvre l'archive et regarde dedans — c'est le seul contrôle qui vaille.
+- ⚠️ **L'ordre des styles compte, et rien ne le signale.** Excel les désigne
+  par leur rang ; les deux premiers remplissages sont imposés par le format
+  (`none`, `gray125`) et glisser le nôtre avant eux ouvrirait un fichier aux
+  couleurs déplacées, sans erreur.
+- ⚠️ **L'origine des dates est le 30 décembre 1899**, pas le 1er janvier 1900 :
+  Excel reproduit un bogue de Lotus 1-2-3 qui tient 1900 pour bissextile. Un
+  jour d'écart ne se remarque pas à la lecture et fausse tous les tris.
+- ⚠️ **`inflateRaw`, jamais `unzip`, pour relire.** Un ZIP stocke du deflate
+  brut, sans l'en-tête de deux octets qu'`unzip` attend : le premier jet de
+  l'épreuve échouait sur « incorrect header check » en accusant un fichier
+  parfaitement bon.
+- ⚠️ **Les caractères de contrôle sont retirés**, et écrits en séquences
+  d'échappement dans la source : posés tels quels ils sont invisibles à la
+  relecture et se perdent au premier copier-coller. Un seul dans un nom — qui
+  vient d'un formulaire public — rend le fichier illisible **en bloc**.
+- **`verifier-portes.ts` lit désormais l'archive** au lieu du texte, par le
+  même lecteur. Ses trois contrôles sont passés au rouge le jour du
+  changement : ils faisaient leur travail.
 
 **Les routes publiques ont un frein** (`lib/cadence.ts`) : inscription 40 par
 minute et par adresse, compte 30, transfert et attestation 20, rappel 10.

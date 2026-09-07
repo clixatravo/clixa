@@ -23,6 +23,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { lireClasseur } from "@/lib/tableur";
 import { ouvrirSession } from "../src/lib/session.js";
 import { GET } from "../src/app/(payload)/api/admin/export-admissions/route.js";
 import { GET as APERCU } from "../src/app/(payload)/api/apercu/route.js";
@@ -145,16 +146,51 @@ try {
   const equipe = await appeler(cookieEquipe);
   dire("l'équipe obtient le fichier", equipe.status === 200, `reçu ${equipe.status}`);
   if (equipe.status === 200) {
-    const texte = await equipe.text();
-    dire("il porte l'en-tête des colonnes", texte.includes("Nom & Prénom"));
-    dire("dont « Certificat émis »", texte.includes("Certificat émis"));
+    /*
+      ── ⚠️ Le fichier est un classeur, plus un CSV ─────────────────────────
+      Ces trois contrôles lisaient du texte, et sont passés au rouge le jour où
+      l'export est devenu un `.xlsx` — c'est-à-dire qu'ils faisaient leur
+      travail. Ils ouvrent maintenant l'archive, par le même lecteur que
+      `verifier-tableur.ts` : deux lecteurs de ZIP finiraient par diverger.
+
+      ⚠️ Le format s'annonce aussi dans l'en-tête : servir un classeur sous
+      `text/csv` le ferait ouvrir en charabia, sans erreur nulle part.
+    */
+    const octets = Buffer.from(await equipe.arrayBuffer());
+    const classeur = lireClasseur(octets);
+    const feuille = classeur.get("xl/worksheets/sheet1.xml") ?? "";
+
+    dire(
+      "il s'annonce comme un classeur",
+      (equipe.headers.get("content-type") ?? "").includes("spreadsheetml.sheet"),
+    );
+    dire("l'archive s'ouvre et porte ses deux feuilles", classeur.has("xl/worksheets/sheet2.xml"));
+    dire("il porte l'en-tête des colonnes", feuille.includes("Où en est le dossier"));
+    dire("dont « Certificat émis »", feuille.includes("Certificat émis"));
+
     if (dossierTermine) {
-      const ligne = texte.split("\r\n").find((l) => l.includes(String(dossierTermine.reference)));
-      const aujourdhui = new Date().toISOString().slice(0, 10);
+      /*
+        ⚠️ **La date sort en nombre**, pas en texte : on compare donc la série
+        d'Excel, pas une chaîne. C'est tout l'intérêt du format — « 2026-09-07 »
+        écrit en chaîne ne se trie ni ne se soustrait.
+      */
+      const serie = Math.floor(
+        (Date.parse(new Date().toISOString().slice(0, 10)) - Date.UTC(1899, 11, 30)) / 86_400_000,
+      );
+      /*
+        ⚠️ **La série porte une fraction, et c'est voulu.** `certificatEmisLe`
+        est en `pickerAppearance: "dayOnly"` : Payload enregistre **midi UTC**,
+        donc la série vaut 46272,5 et non 46272. On compare donc le jour, pas
+        l'instant — le format `dd/mm/yyyy` masque la fraction à l'affichage, et
+        `createdAt`, lui, porte une vraie heure qu'il n'y a aucune raison de
+        raboter.
+      */
       dire(
         "un dossier terminé porte sa vraie date d'émission",
-        Boolean(ligne?.includes(aujourdhui)),
-        ligne ? "" : "aucune ligne trouvée pour ce dossier",
+        feuille.includes(String(dossierTermine.reference)) && feuille.includes(`<v>${serie}`),
+        feuille.includes(String(dossierTermine.reference))
+          ? `série ${serie} attendue`
+          : "aucune ligne trouvée pour ce dossier",
       );
     }
     dire(
