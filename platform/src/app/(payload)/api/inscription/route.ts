@@ -98,16 +98,17 @@ export async function POST(request: Request) {
   if (!aUnIndicatif(whatsapp)) echec("indicatif");
 
   /*
-    ── ⚠️ Le pays vient du numéro, plus d'une saisie séparée ─────────────────
-    Le champ « Pays » a été retiré le 7 septembre 2026 : posé juste en dessous
-    du numéro WhatsApp, il ressemblait au même geste et recevait souvent la
-    même chose — un dossier de production portait « 22222628 » en pays, un
-    numéro recopié par erreur dans la mauvaise case. Deux saisies pour un seul
-    fait finissent toujours par se contredire ; l'indicatif est de toute façon
-    obligatoire, et suffit à lui seul. Même correction que sur `/contact`, le
-    5 septembre 2026.
+    ── Le pays choisi ou précisé en lettres ──────────────────────────────────
+    Le visiteur choisit son pays dans la liste ou précise en toutes lettres via
+    l'option "Autre". Pour empêcher tout chiffre ou numéro recopié par erreur
+    (comme « 22222628 »), on nettoie les chiffres et si la valeur saisie est
+    invalide ou vide, on retombe sur l'indicatif du numéro WhatsApp.
   */
-  const pays = paysDeLIndicatif(whatsapp);
+  const paysSaisi = texte("pays").replace(/[0-9]/g, "").trim();
+  const pays =
+    paysSaisi.length >= 2 && tientDans(paysSaisi, LONGUEURS.pays)
+      ? paysSaisi
+      : paysDeLIndicatif(whatsapp);
 
   /*
     ⚠️ Vérifié au serveur, comme l'indicatif. Une case cochée dans le

@@ -137,6 +137,14 @@ export const Apprenants: CollectionConfig = {
           type: "text",
           label: "Pays",
           admin: { width: "50%" },
+          validate: (val: unknown) => {
+            if (!val) return true;
+            const s = String(val).trim();
+            if (/^\d+$/.test(s)) {
+              return "Le nom du pays doit comporter des lettres, pas uniquement des chiffres.";
+            }
+            return true;
+          },
         },
       ],
     },

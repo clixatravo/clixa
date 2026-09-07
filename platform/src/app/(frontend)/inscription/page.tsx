@@ -7,6 +7,7 @@ import { placesRestantes } from "@/lib/types";
 import { MOYENS } from "@/lib/moyens";
 import { lienListeAttente } from "@/lib/attente";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
+import { ChampPays } from "@/components/ChampPays";
 import {
   formatPeriode,
   formatPrix,
@@ -242,17 +243,10 @@ export default async function Inscription({ searchParams }: Props) {
                     Choisissez votre pays, puis tapez votre numéro comme vous le donnez chez vous.
                   </p>
                 </div>
-                {/*
-                  ⚠️ **Le champ « Pays » a été retiré, le 7 septembre 2026.**
-                  Posé juste sous le numéro WhatsApp, il se remplissait souvent
-                  du même geste que celui d'au-dessus — un dossier de
-                  production portait « 22222628 » en pays, le numéro recopié
-                  par erreur dans la mauvaise case. Le pays se dérive
-                  maintenant de l'indicatif choisi, côté serveur
-                  (`paysDeLIndicatif`) : même correction déjà faite sur
-                  `/contact` le 5 septembre 2026, pour la même raison — deux
-                  saisies pour un seul fait finissent par se contredire.
-                */}
+                <ChampPays
+                  classeChamp="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
+                  valeurParDefaut={participant?.pays}
+                />
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="plan" className="mono-label text-ivory-dim text-[0.7rem]">
                     Rythme de paiement
