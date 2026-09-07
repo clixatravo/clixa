@@ -65,7 +65,6 @@ async function espaceAvecDossier(page: Page): Promise<string> {
   await page.fill('input[name="nom"]', "Épreuve Espace");
   await page.fill('input[name="email"]', email);
   await remplirWhatsapp(page, "+212600000000");
-  await page.fill('input[name="pays"]', "Maroc");
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');
   await page.click('button[type="submit"]');

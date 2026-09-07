@@ -7,7 +7,7 @@ import { malgreUnInterblocage } from "@/lib/interblocage";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
-import { aUnIndicatif } from "@/lib/indicatifs";
+import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -73,7 +73,6 @@ export async function POST(request: Request) {
   const nom = texte("nom");
   const email = texte("email");
   const whatsapp = texte("whatsapp");
-  const pays = texte("pays");
   const plan = PLANS.find((p) => p === texte("plan")) ?? "P1";
   /*
     Le choix vient d'un `<select>`, mais rien n'oblige un client à s'y tenir :
@@ -89,7 +88,7 @@ export async function POST(request: Request) {
     );
 
   if (!formation) redirect("/formations" as Route);
-  if (!nom || !email || !whatsapp || !pays) echec("champs");
+  if (!nom || !email || !whatsapp) echec("champs");
 
   /*
     Même exigence qu'à la demande de rappel, et pour la même raison : un dossier
@@ -97,6 +96,18 @@ export async function POST(request: Request) {
     pour qui appelle. C'est le numéro par lequel l'équipe suit tout le dossier.
   */
   if (!aUnIndicatif(whatsapp)) echec("indicatif");
+
+  /*
+    ── ⚠️ Le pays vient du numéro, plus d'une saisie séparée ─────────────────
+    Le champ « Pays » a été retiré le 7 septembre 2026 : posé juste en dessous
+    du numéro WhatsApp, il ressemblait au même geste et recevait souvent la
+    même chose — un dossier de production portait « 22222628 » en pays, un
+    numéro recopié par erreur dans la mauvaise case. Deux saisies pour un seul
+    fait finissent toujours par se contredire ; l'indicatif est de toute façon
+    obligatoire, et suffit à lui seul. Même correction que sur `/contact`, le
+    5 septembre 2026.
+  */
+  const pays = paysDeLIndicatif(whatsapp);
 
   /*
     ⚠️ Vérifié au serveur, comme l'indicatif. Une case cochée dans le
@@ -113,11 +124,13 @@ export async function POST(request: Request) {
     tableau de bord et dans les deux courriels qu'une inscription déclenche.
     On refuse plutôt que de tronquer : un nom coupé donnerait un dossier au
     nom de quelqu'un d'autre, sans que personne le sache.
+
+    ⚠️ `pays` n'y figure plus : il est dérivé, pas saisi, et ne peut pas
+    dépasser la longueur d'un nom de pays de la table.
   */
   if (
     !tientDans(nom, LONGUEURS.nom) ||
     !tientDans(whatsapp, LONGUEURS.telephone) ||
-    !tientDans(pays, LONGUEURS.pays) ||
     !tientDans(texte("organisation"), LONGUEURS.organisation)
   ) {
     echec("champs");

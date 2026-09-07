@@ -26,7 +26,6 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.fill('input[name="nom"]', "Épreuve Playwright");
   await page.fill('input[name="email"]', `epreuve.${Date.now()}${MARQUE}`);
   await remplirWhatsapp(page, "+212600000000");
-  await page.fill('input[name="pays"]', "Maroc");
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');
 
@@ -263,8 +262,7 @@ test.describe("Un envoi répété", () => {
       await page.fill('input[name="nom"]', "Épreuve Double");
       await page.fill('input[name="email"]', email);
       await remplirWhatsapp(page, "+212600000000");
-      await page.fill('input[name="pays"]', "Maroc");
-      await page.check('input[name="consentement"]');
+        await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');
       await page.waitForURL(/\/inscription\/CLX-/);
       return referenceDeLAdresse(page.url());
@@ -395,8 +393,7 @@ test.describe("Un envoi répété", () => {
       await page.fill('input[name="nom"]', "Épreuve Deux Parcours");
       await page.fill('input[name="email"]', email);
       await remplirWhatsapp(page, "+212600000000");
-      await page.fill('input[name="pays"]', "Maroc");
-      await page.check('input[name="consentement"]');
+        await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');
       await page.waitForURL(/\/inscription\/CLX-/);
       return referenceDeLAdresse(page.url());

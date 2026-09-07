@@ -1967,6 +1967,29 @@ garde. `csrf`, `cors` et `serverURL` sont maintenant posés sur
 `NEXT_PUBLIC_SITE_URL`. Vérifié : le même cookie passe depuis l'origine du site
 et est refusé depuis une autre.
 
+⚠️ **Le formulaire d'inscription posait deux fois la même question**
+(corrigé le 7 septembre 2026 au soir). Juste sous le sélecteur de pays du
+numéro WhatsApp, un second champ libre « Pays » demandait la même chose en
+texte. La direction a trouvé, dans un vrai dossier de production, « 22222628 »
+écrit là — le numéro recopié une seconde fois dans la mauvaise case, deux
+champs qui se ressemblent l'un sous l'autre.
+
+Le champ a été retiré, et le pays se dérive désormais de l'indicatif choisi
+(`paysDeLIndicatif`, `lib/indicatifs.ts`) — exactement la correction déjà
+faite sur `/contact` le 5 septembre 2026, pour la même raison : « deux saisies
+pour un même fait laissaient écrire "Maroc" sous un numéro ivoirien ». La
+donnée reste stockée (`apprenantPays`, l'attestation, l'export) ; c'est la
+saisie qui disparaît, pas le champ.
+
+- **Éprouvé de bout en bout** : le formulaire rempli en Sénégal (`+221`, rien
+  d'autre) enregistre `apprenantPays: "Sénégal"` sans qu'aucune case ne l'ait
+  demandé.
+- ⚠️ **Huit épreuves remplissaient ce champ à la main**, dans cinq fichiers —
+  `admin.spec`, `contrat.spec`, `espace.spec`, `securite.spec.ts`,
+  `inscription.spec.ts`. Toutes utilisaient déjà un numéro marocain juste
+  avant : le retirer ne change ce qu'elles vérifient nulle part, la valeur
+  dérivée est la même que celle qu'on tapait à la main.
+
 ⚠️ **On ne demande plus au visiteur de taper le « + »** (depuis le 5 septembre
 2026, `components/ChampWhatsapp.tsx`). Le champ portait « +212 6 00 00 00 00 »
 en exemple et la garde refuse sans indicatif — à raison. Mais `inputMode="tel"`

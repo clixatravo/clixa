@@ -23,7 +23,6 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="nom"]', "<script>window.__perce=1</script>Épreuve");
     await page.fill('input[name="email"]', `xss.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
-    await page.fill('input[name="pays"]', "Maroc");
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
@@ -55,7 +54,6 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="nom"]', "Épreuve Référence");
     await page.fill('input[name="email"]', `ref.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
-    await page.fill('input[name="pays"]', "Maroc");
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
