@@ -593,6 +593,24 @@ reste du tunnel, celui-là n'existait pas. Trois règles, prises ensemble :
    règlement, et le lui demander serait le défaut corrigé la veille une porte
    plus loin. Il demande le seul geste possible : demander son contrat, ou
    écrire.
+
+   ⚠️ **Et il dit le terme au passé, parce qu'il part après.** Le premier jet
+   annonçait « Votre place est tenue jusqu'au 6 septembre » — dans un message
+   envoyé le 7 : la tâche ne passe qu'à 8 h, et seulement une fois le délai
+   écoulé, si bien que la date promise était **toujours** dans le passé, sujet
+   compris. Le participant lisait une échéance expirée présentée comme à venir.
+   Il dit maintenant ce qui est vrai au moment où on le lit — le délai est
+   atteint, **et la place n'est pas encore repartie** — mot pour mot ce
+   qu'affiche la page du dossier dans la même fenêtre, qu'il ouvrira juste
+   après.
+
+   ⚠️ **Une garde qui mesurait le futur ne voyait rien.** Le premier contrôle
+   relevait les dates nommées et vérifiait qu'aucune n'était à venir : remis à
+   l'essai avec la phrase fautive, il est resté vert — la date était juste,
+   c'était le verbe qui ne l'était pas. Il est gardé, nommé pour ce qu'il garde
+   réellement (une réécriture qui offrirait un nouveau délai), et doublé du
+   contrôle qui attrape la faute d'origine. Les deux passent au rouge quand on
+   la remet.
 2. **La place ne part pas tant que ce courriel n'est pas parti.**
    `placeRappeleeLe` n'est écrite qu'après un envoi réussi, et tant qu'elle est
    vide la place est tenue — si vieux que soit le dossier. Un envoi manqué est
@@ -1643,6 +1661,29 @@ numéro par WhatsApp », quand le tunnel a deux temps et que les coordonnées
 partent par courriel. Qui s'en serait servi pour vérifier ce que reçoit un
 client aurait lu un message que nous n'envoyons plus. `scripts/apercu-courriel.ts`
 rend les **vrais** gabarits, et reste le seul chemin.
+
+⚠️ **Cette phrase a été fausse jusqu'au 7 septembre 2026.** Le script recopiait
+les corps de message à la main — il s'en avertissait lui-même, « une phrase
+ajoutée au vrai courriel et oubliée dans cet aperçu ferait relire, rassuré, un
+message qui n'existe pas » — et il ne montrait que **deux gabarits sur seize**.
+Les quatorze autres n'avaient donc jamais été regardés par personne : le contrat
+vérifié, le certificat, le versement reçu, l'annonce qu'une place va repartir.
+Il appelle maintenant les vraies fonctions avec un faux expéditeur, écrit les
+seize, et pose un sommaire (`apercus/index.html`).
+
+- ⚠️ **`EMAIL_EQUIPE` est posé avant l'import.** Il est lu à l'évaluation du
+  module, et les six notifications internes commencent par `if (!EQUIPE)
+  return` : sans cette ligne, la moitié des gabarits ne rendrait rien — en
+  silence, ce qui se lirait comme « il n'y en a que dix ».
+- ⚠️ **Le dossier est vidé d'abord.** Les aperçus de la version précédente
+  portaient d'autres noms et sont restés à côté des nouveaux, avec leur texte
+  recopié que le site n'envoie plus : deux fichiers plausibles pour le même
+  courriel, et rien pour dire lequel est vrai.
+- ⚠️ **Le pied de page dit encore « Institut Panafricain »**, dont l'équivalent
+  a été retiré du site faute de pouvoir l'étayer. « Présence : Agadir · Classe
+  virtuelle · Abidjan et Dakar prochainement » a bien suivi la décision du
+  6 septembre ; celle-là ne l'a pas suivie. C'est une mention à trancher par la
+  direction, pas au code de la retirer.
 
 ⚠️ **`admin.hidden` n'est pas un contrôle d'accès** (`Tarifs`, depuis le 1er
 septembre 2026). Les coordonnées du bénéficiaire — nom, ville, pays, consignes

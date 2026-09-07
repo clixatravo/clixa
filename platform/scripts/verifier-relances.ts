@@ -19,6 +19,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { finDuBattement } from "@/lib/places";
 
 const payload = await getPayload({ config });
 
@@ -35,8 +36,8 @@ const payload = await getPayload({ config });
 const expediteur = payload.sendEmail.bind(payload);
 
 let manques = 0;
-const dire = (q: string, v: boolean) => {
-  console.log(`  ${v ? "✓" : "✗"} ${q}`);
+const dire = (q: string, v: boolean, detail = "") => {
+  console.log(`  ${v ? "✓" : "✗"} ${q}${detail ? ` — ${detail}` : ""}`);
   if (!v) manques += 1;
 };
 
@@ -297,10 +298,115 @@ try {
     dire("⚠️ et compte la place comme non annoncée", enPanne.placesNonAnnoncees >= 1);
     dire("⚠️ aucune date n'est posée : la place reste tenue", !(await rappelDe()));
 
-    payload.sendEmail = expediteur;
+    /*
+      ── ⚠️ Ce que le message dit, et **quand il le dit** ────────────────────
+      Le premier jet annonçait « Votre place est tenue jusqu'au 6 septembre »
+      dans un courriel envoyé le 7 : la tâche ne passe qu'à 8 h, et seulement
+      une fois le délai écoulé, si bien que la date promise était **toujours
+      dans le passé**, sujet compris. Le participant lisait une échéance déjà
+      expirée présentée comme à venir — le défaut que tout le reste du système
+      existe pour empêcher, revenu par la porte du courrier.
+
+      On garde donc le message lui-même, et pas seulement le fait qu'il parte.
+    */
+    /*
+      ⚠️ **Le même passage envoie aussi le bilan à l'équipe**, et il part en
+      dernier. Ne garder que le dernier message mesurait donc le bilan interne
+      en croyant lire ce que reçoit le participant : le premier jet a échoué sur
+      « aucune date nommée », alors que le courriel en portait une.
+    */
+    const partis: { to: string; subject: string; text: string }[] = [];
+    payload.sendEmail = (async (m: { to?: string; subject?: string; text?: string }) => {
+      partis.push({
+        to: String(m.to ?? ""),
+        subject: String(m.subject ?? ""),
+        text: String(m.text ?? ""),
+      });
+      return {};
+    }) as typeof payload.sendEmail;
+
     const revenu = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    payload.sendEmail = expediteur;
     dire("une fois l'expéditeur revenu, l'annonce part", revenu.placesAnnoncees >= 1);
     dire("⚠️ et la date est enfin posée", Boolean(await rappelDe()));
+
+    const message = partis.find((m) => m.to === vieux.apprenantEmail);
+    dire("⚠️ le message part au participant, pas seulement à l'équipe", Boolean(message));
+    const lu = `${message?.subject ?? ""}\n${message?.text ?? ""}`;
+
+    /*
+      ⚠️ **Celle-ci ne garde pas le défaut d'aujourd'hui, et il faut le dire.**
+      Remise à l'essai avec la phrase fautive, elle est restée verte : la tâche
+      ne passe qu'une fois le délai écoulé, si bien que la date nommée est
+      *toujours* dans le passé. Ce n'était pas une date future, c'était une date
+      passée présentée comme à venir — un temps de verbe, pas un calcul.
+
+      Elle garde le défaut **suivant** : une réécriture bien intentionnée qui,
+      pour adoucir le message, offrirait un nouveau délai. Celui-là serait une
+      promesse, et ce courriel n'a rien à promettre.
+    */
+    const MOIS = [
+      "janvier",
+      "février",
+      "mars",
+      "avril",
+      "mai",
+      "juin",
+      "juillet",
+      "août",
+      "septembre",
+      "octobre",
+      "novembre",
+      "décembre",
+    ];
+    const datesNommees = [...lu.matchAll(/(\d{1,2}) ([a-zû^éûà]+) (\d{4})/gi)]
+      .filter((m) => MOIS.includes(m[2]!.toLowerCase()))
+      .map((m) => Date.UTC(Number(m[3]), MOIS.indexOf(m[2]!.toLowerCase()), Number(m[1])));
+
+    dire("le courriel nomme bien une date", datesNommees.length >= 1);
+    dire(
+      "⚠️ aucune date nommée n'est dans le futur : rien n'y est promis",
+      datesNommees.length >= 1 && datesNommees.every((t) => t <= Date.now()),
+      datesNommees.length
+        ? new Date(Math.max(...datesNommees)).toISOString().slice(0, 10)
+        : "aucune date",
+    );
+
+    /*
+      ⚠️ **Le battement de deux jours ne se promet nulle part.** Une échéance
+      qu'on annonce plus longue est une échéance qu'on repousse : le délai gardé
+      en réserve sert à ne pas punir un retard d'un jour, pas à être offert.
+      C'est le seul endroit du système où il pourrait fuir vers le participant.
+    */
+    const relu = await payload.findByID({
+      collection: "inscriptions",
+      id: vieux.id,
+      overrideAccess: true,
+      depth: 0,
+    });
+    const battement = new Intl.DateTimeFormat("fr-FR", {
+      dateStyle: "long",
+      timeZone: "UTC",
+    }).format(finDuBattement(String(relu.createdAt)));
+    dire("⚠️ et le battement de deux jours n'y figure pas", !lu.includes(battement), battement);
+
+    /*
+      ⚠️ Et il doit dire ce qui est vrai au moment où on le lit — mot pour mot
+      ce qu'affiche la page du dossier dans la même fenêtre, que le participant
+      ouvrira juste après. Deux lectures du même état finissent toujours par
+      diverger si on les écrit deux fois.
+    */
+    /*
+      ⚠️ **C'est ce contrôle-ci qui attrape la faute d'origine**, et il a été
+      prouvé en la remettant : « Votre place est tenue jusqu'au 6 septembre »,
+      lue le 7. La date était juste, le verbe ne l'était pas.
+    */
+    dire(
+      "⚠️ il ne présente pas un délai écoulé comme encore ouvert",
+      !/tenue jusqu'au|tenue jusqu\u2019au/.test(lu),
+    );
+    dire("⚠️ il dit que la place n'est pas encore repartie", /n'est pas encore repartie/.test(lu));
+    dire("et il ne réclame aucun versement", !/transfert|versement|régler vos/i.test(lu));
 
     /*
       ⚠️ Et une seule fois : un second passage le même jour ne réécrit pas la

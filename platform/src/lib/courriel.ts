@@ -992,15 +992,28 @@ export async function courrielRelance(
  * dans ce cas. Décision de la direction, le 7 septembre : on prévient, et la
  * place ne part pas tant que le message n'est pas parti.
  *
+ * ── ⚠️ Il part **au** terme, et il doit le dire comme tel ──────────────────
+ * Le premier jet annonçait « Votre place est tenue jusqu'au 6 septembre » —
+ * dans un message envoyé le 7. La tâche ne passe qu'à 8 h, et seulement une
+ * fois le délai écoulé : la date promise était donc **toujours dans le
+ * passé**, sujet compris. Le participant lisait une échéance déjà expirée
+ * présentée comme à venir.
+ *
+ * Il dit maintenant ce qui est vrai au moment où on le lit : le délai est
+ * atteint, **et la place n'est pas encore repartie**. C'est mot pour mot ce
+ * qu'affiche la page du dossier dans la même fenêtre — les deux ne peuvent pas
+ * se contredire, puisque le participant les lit l'un après l'autre.
+ *
  * ── Ce qu'il dit, et ce qu'il ne dit pas ────────────────────────────────────
  * ⚠️ **Il ne réclame pas d'argent.** Une pré-inscription n'engage à rien et
  * n'a reçu aucune coordonnée de règlement : lui demander de payer serait le
  * même défaut que la relance corrigée la veille. Il demande le seul geste
  * qu'il puisse faire — demander son contrat — ou de nous écrire.
  *
- * ⚠️ **Le battement de deux jours n'y figure pas.** Une échéance qu'on annonce
- * plus longue est une échéance qu'on repousse ; le délai gardé en réserve
- * sert à ne pas punir un retard d'un jour, pas à être promis.
+ * ⚠️ **Le battement de deux jours n'y figure pas**, et aucune nouvelle date
+ * n'est promise. Une échéance qu'on annonce plus longue est une échéance qu'on
+ * repousse ; le délai gardé en réserve sert à ne pas punir un retard d'un
+ * jour, pas à être offert.
  *
  * ⚠️ Rend `true` seulement si le courriel est parti — l'appelant écrit
  * `placeRappeleeLe`, et c'est cette date qui autorise la place à repartir.
@@ -1023,52 +1036,50 @@ export async function courrielPlaceBientotRendue(
     <p>Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
     <p>
       Vous avez retenu une place pour <em>« ${echapper(d.programmeTitre)} »</em>
-      — ${echapper(d.sessionDetail)}. Cette place vous est tenue jusqu'au
-      <strong style="color: #e9cd84;">${quand}</strong>.
-    </p>
-    <p>
-      Rien n'a encore été encaissé et rien ne vous engage : la pré-inscription
-      réserve simplement votre place le temps que vous décidiez.
+      — ${echapper(d.sessionDetail)}. Le délai que nous vous avions indiqué, le
+      ${quand}, est atteint.
     </p>
 
-    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(201, 162, 76, 0.2);">
-      <div style="font-size: 13px; color: #cbd5e1;">Pour la garder, demandez votre <strong>contrat de formation</strong> depuis votre dossier.</div>
-      <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;">Une question d'abord ? Répondez à ce message — un conseiller vous répond.</div>
+    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(201, 162, 76, 0.3);">
+      <div style="font-size: 14px; color: #ffffff;"><strong>Pour la garder, demandez votre contrat de formation</strong> depuis votre dossier — rien n'est encaissé à ce moment-là.</div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;">
+        Une question d'abord ? Répondez à ce message — un conseiller vous répond.
+      </div>
     </div>
 
     <p style="font-size: 13px; color: #94a3b8;">
-      Sans nouvelle de votre part, la place repartira au catalogue et pourra
-      être prise par quelqu'un d'autre. Vous pourrez toujours revenir : ce
-      message ne ferme rien.
+      Sans nouvelle de votre part, elle repartira au catalogue et pourra être
+      prise par quelqu'un d'autre. Vous pourrez toujours revenir : ce message ne
+      ferme rien.
     </p>
   `;
 
   return envoyer(payload, {
     to: d.apprenantEmail,
-    subject: `Votre place est tenue jusqu'au ${quand} — ${d.programmeTitre}`,
+    subject: `Votre place n'est pas encore repartie — ${d.programmeTitre}`,
     text: [
       `Bonjour ${d.apprenantNom},`,
       "",
       `Vous avez retenu une place pour « ${d.programmeTitre} » — ${d.sessionDetail}.`,
-      `Cette place vous est tenue jusqu'au ${quand}.`,
+      `Le délai que nous vous avions indiqué, le ${quand}, est atteint.`,
       "",
-      "Rien n'a été encaissé et rien ne vous engage : la pré-inscription réserve",
-      "simplement votre place le temps que vous décidiez.",
+      "Votre place n'est pas encore repartie.",
       "",
-      "Pour la garder, demandez votre contrat de formation depuis votre dossier :",
+      "Pour la garder, demandez votre contrat de formation depuis votre dossier —",
+      "rien n'est encaissé à ce moment-là :",
       d.urlDossier,
       "",
       "Une question d'abord ? Répondez à ce message.",
       "",
-      "Sans nouvelle, la place repartira au catalogue — vous pourrez toujours revenir.",
+      "Sans nouvelle, elle repartira au catalogue — vous pourrez toujours revenir.",
       "",
       "CLIXA Institute — Admissions",
     ].join("\n"),
     html: gabaritHtmlEmail({
-      titre: "Votre place vous est tenue",
+      titre: "Votre place n'est pas encore repartie",
       badgeRef: d.reference,
       corpsHtml,
-      boutonTexte: "Voir mon dossier",
+      boutonTexte: "Demander mon contrat",
       boutonLien: d.urlDossier,
     }),
   });
