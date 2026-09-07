@@ -48,6 +48,7 @@ npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et 
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
+npx payload run scripts/verifier-attestation.ts   # elle ne promet que ce qui est acquis
                                                   # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
 npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promettre
@@ -914,6 +915,15 @@ la place sans terme.
 - ⚠️ **Le statut sortait brut** (`demandee`), comme le faisait le CSV. Le
   document est lu par une banque : elle n'a pas à déchiffrer le vocabulaire de
   notre base.
+- ⚠️ **Rien ne lisait ce document.** Deux épreuves le touchaient — l'une pour
+  l'échappement du HTML, l'autre pour la cadence — et aucune ne regardait ce
+  qu'il dit. `verifier-attestation.ts` le fait depuis le 7 septembre 2026 :
+  dix-neuf contrôles, prouvés en remettant les défauts du matin (six rouges).
+- ⚠️ **Deux pièges y ont fait accuser un document parfaitement juste.** Le
+  gabarit **coupe ses lignes**, si bien qu'une phrase cherchée d'un bloc ne s'y
+  trouve jamais ; et `Intl.NumberFormat("fr-FR")` sépare le montant du symbole
+  par une **espace insécable étroite** (U+202F), pas par celle qu'on tape. Les
+  comparaisons passent donc par un aplatissement des blancs.
 
 ⚠️ **Le quatrième bouton manquait, et c'était le seul qui compte** (le même
 jour). Le fil des étapes s'arrêtait sur « Le dossier attend maintenant le
