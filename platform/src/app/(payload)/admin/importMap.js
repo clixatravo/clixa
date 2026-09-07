@@ -1,4 +1,5 @@
 import { EtiquetteModule as EtiquetteModule_daac07ce12c516f15166a33f2bef402c } from '@/collections/EtiquetteModule'
+import { Occupation as Occupation_f0834df170577b85d56f1d8f872c6d5a } from '@/components/admin/Occupation'
 import { BoutonWhatsapp as BoutonWhatsapp_20484ec4bac2ac1c08d8fb775fb2efc9 } from '@/components/admin/BoutonWhatsapp'
 import { OuEnEst as OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f } from '@/components/admin/OuEnEst'
 import { SignatureVue as SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31 } from '@/components/admin/SignatureVue'
@@ -14,6 +15,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "@/collections/EtiquetteModule#EtiquetteModule": EtiquetteModule_daac07ce12c516f15166a33f2bef402c,
+  "@/components/admin/Occupation#Occupation": Occupation_f0834df170577b85d56f1d8f872c6d5a,
   "@/components/admin/BoutonWhatsapp#BoutonWhatsapp": BoutonWhatsapp_20484ec4bac2ac1c08d8fb775fb2efc9,
   "@/components/admin/OuEnEst#OuEnEst": OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f,
   "@/components/admin/SignatureVue#SignatureVue": SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31,
