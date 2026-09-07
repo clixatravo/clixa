@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useDocumentInfo, useField, useForm } from "@payloadcms/ui";
+import { useAllFormFields, useDocumentInfo, useField, useForm } from "@payloadcms/ui";
+import { reduceFieldsToValues } from "payload/shared";
 
 /**
  * Les trois temps du dossier, dans l'ordre, sur une seule ligne.
@@ -13,10 +14,23 @@ import { useDocumentInfo, useField, useForm } from "@payloadcms/ui";
  * cette question-là qu'on se pose en premier — et y répondre demandait de lire
  * trois dates éparpillées.
  *
- * ⚠️ Une seule action est offerte à la fois, celle du moment. Les deux gestes
- * ne sont pas interchangeables et leur ordre porte du sens : on relit le
- * contrat avant d'appeler quelqu'un à payer. Afficher les deux boutons côte à
- * côte invitait à sauter la lecture.
+ * ⚠️ Une seule action est offerte à la fois, celle du moment. Les gestes ne
+ * sont pas interchangeables et leur ordre porte du sens : on relit le contrat
+ * avant d'appeler quelqu'un à payer. Afficher les boutons côte à côte invitait
+ * à sauter la lecture.
+ *
+ * ── ⚠️ La quatrième étape manquait, et c'était la seule qui compte ──────────
+ * Le fil s'arrêtait sur « Le dossier attend maintenant le versement », sans
+ * rien à cliquer. L'argent arrivait, et il fallait ouvrir l'échéancier, plier
+ * la bonne ligne, changer un menu, poser une date, enregistrer — cinq gestes,
+ * exactement ce qui a fait ajouter les deux boutons précédents. Signalé par la
+ * direction le 7 septembre 2026 : « quand le client paie, il n'y a aucun
+ * bouton pour lui dire qu'il a payé et que sa place est garantie ».
+ *
+ * Le bouton fait donc les deux : il marque l'échéance réglée **et** le
+ * participant en est prévenu — le crochet d'`Inscriptions` s'en charge, comme
+ * pour le contrat vérifié. Un geste d'équipe dont le participant n'apprend
+ * rien est la moitié d'un geste.
  */
 
 type Etat = "faite" | "courante" | "attente";
@@ -147,6 +161,23 @@ export function EtapesContrat() {
   const envoye = useField<string>({ path: "coordonneesEnvoyeesLe" });
   const reference = useField<string>({ path: "reference" });
 
+  /*
+    ⚠️ **L'échéancier se lit en entier, pas ligne par ligne.** Un tableau ne
+    s'atteint pas par `useField` : ses lignes vivent en champs séparés
+    (`echeances.0.statut`…), et leur nombre change. `reduceFieldsToValues` rend
+    l'objet tel que le formulaire l'enverrait — édits non enregistrés compris,
+    ce qui évite d'écraser ce que quelqu'un vient de saisir juste au-dessus.
+  */
+  const [champs] = useAllFormFields();
+  const donnees = reduceFieldsToValues(champs, true) as {
+    echeances?: { montant?: number; statut?: string; regleLe?: string | null }[];
+  };
+  const echeances = donnees.echeances ?? [];
+  const rangDue = echeances.findIndex((e) => e?.statut !== "regle");
+  const due = rangDue >= 0 ? echeances[rangDue] : undefined;
+  const annonce = due?.statut === "annonce";
+  const toutRegle = echeances.length > 0 && rangDue < 0;
+
   if (!id) return null;
 
   const aSigne = Boolean(signe.value);
@@ -172,6 +203,27 @@ export function EtapesContrat() {
     const maintenant = new Date().toISOString();
     champ.setValue(maintenant);
     void submit({ overrides: { [chemin]: maintenant } });
+  };
+
+  /*
+    ⚠️ **L'échéancier part en entier**, pas en chemins pointés. Les surcharges
+    de `submit` sont fusionnées à plat dans le corps envoyé : `echeances.0.statut`
+    y resterait une clef littérale, que rien ne lirait — l'enregistrement
+    réussirait et il ne se serait rien passé, exactement le défaut du bouton
+    « Contrat vérifié » du 30 août.
+
+    ⚠️ On ne marque que **la première échéance non réglée**. Tout solder d'un
+    clic ferait passer pour encaissé de l'argent qu'on n'a pas vu, sur un
+    dossier en deux ou trois fois — et c'est le statut du dossier qui commande
+    la place et les relances.
+  */
+  const encaisser = () => {
+    if (rangDue < 0) return;
+    const maintenant = new Date().toISOString();
+    const suivantes = echeances.map((e, i) =>
+      i === rangDue ? { ...e, statut: "regle", regleLe: maintenant } : e,
+    );
+    void submit({ overrides: { echeances: suivantes } });
   };
 
   /*
@@ -247,6 +299,20 @@ export function EtapesContrat() {
                   : undefined
             }
             etat={etat(aEnvoye, aVerifie && !aEnvoye)}
+          />
+          <Etape
+            rang={4}
+            titre={toutRegle ? "Formation intégralement réglée" : "Versement reçu"}
+            detail={
+              toutRegle
+                ? "Sa place est acquise, et son attestation devient officielle"
+                : annonce
+                  ? "Il annonce un transfert : à vérifier sur le compte, puis à confirmer"
+                  : aEnvoye
+                    ? "À cliquer quand l'argent est sur le compte"
+                    : undefined
+            }
+            etat={etat(toutRegle, aEnvoye && !toutRegle)}
             dernier
           />
         </ol>
@@ -316,9 +382,38 @@ export function EtapesContrat() {
             </>
           )}
 
-          {aEnvoye && (
+          {aEnvoye && !toutRegle && (
+            <>
+              <button
+                type="button"
+                className="btn btn--style-primary btn--size-small"
+                style={{ margin: 0 }}
+                onClick={encaisser}
+              >
+                {annonce
+                  ? "Transfert vérifié — versement reçu"
+                  : due
+                    ? `Versement de ${due.montant ?? 0} € reçu`
+                    : "Versement reçu"}
+              </button>
+              <p
+                style={{
+                  color: "var(--theme-elevation-500)",
+                  fontSize: "0.8rem",
+                  margin: "8px 0 0",
+                  maxWidth: 460,
+                }}
+              >
+                ⚠️ À cliquer <strong>après</strong> avoir vu l&apos;argent sur le compte. Le
+                participant est prévenu que sa place est acquise, et son attestation devient
+                officielle.
+              </p>
+            </>
+          )}
+
+          {toutRegle && (
             <p style={{ color: "var(--theme-elevation-500)", margin: 0, fontSize: "0.85rem" }}>
-              Le dossier attend maintenant le versement.
+              Tout est réglé — il ne reste que la date de démarrage.
             </p>
           )}
         </div>

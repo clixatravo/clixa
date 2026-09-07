@@ -7,6 +7,7 @@ import {
   courrielCertificatDisponible,
   courrielContratVerifie,
   courrielInstructionsEnvoyees,
+  courrielVersementRecu,
 } from "@/lib/courriel";
 
 /**
@@ -232,6 +233,47 @@ export const Inscriptions: CollectionConfig = {
         */
         if (doc.certificatEmisLe && !previousDoc?.certificatEmisLe) {
           await courrielCertificatDisponible(req.payload, commun);
+        }
+
+        /*
+          ── ⚠️ Un versement vient d'être encaissé ────────────────────────────
+          L'équipe voyait l'argent arriver, marquait la ligne réglée — et le
+          participant n'en savait rien. Il avait fait un transfert international
+          vers un pays qui n'est pas le sien, et attendait une confirmation qui
+          ne venait pas. C'est le seul moment du tunnel où de l'argent change de
+          mains, et le seul qui n'envoyait rien.
+
+          ⚠️ **On compte les échéances réglées, on ne lit pas le statut.** Le
+          statut ne monte qu'une fois : de « demandée » à « confirmée » au
+          premier versement, puis à « payée » au dernier. Sur un échéancier en
+          trois fois, le deuxième versement ne le déplace pas — et se serait
+          encaissé en silence.
+
+          ⚠️ « Vide avant, rempli maintenant », comme le contrat vérifié et le
+          certificat : sans cette comparaison, chaque enregistrement du dossier
+          renverrait le message.
+        */
+        const regleesAvant = (previousDoc?.echeances ?? []).filter(
+          (e: { statut?: string | null }) => e?.statut === "regle",
+        ).length;
+        const regleesMaintenant = (doc.echeances ?? []).filter(
+          (e: { statut?: string | null }) => e?.statut === "regle",
+        ).length;
+
+        if (regleesMaintenant > regleesAvant) {
+          const echeances = (doc.echeances ?? []) as { statut?: string | null; montant?: number }[];
+          /*
+            Le montant annoncé est celui de la dernière échéance passée à
+            « réglé » — pas le total. Écrire « nous confirmons 470 € » à
+            quelqu'un qui vient d'en verser 170 lui ferait croire qu'on a
+            encaissé le reste.
+          */
+          const derniere = echeances.filter((e) => e?.statut === "regle").at(-1);
+          await courrielVersementRecu(req.payload, {
+            ...commun,
+            montant: typeof derniere?.montant === "number" ? derniere.montant : 0,
+            solde: echeances.length > 0 && regleesMaintenant === echeances.length,
+          });
         }
 
         return doc;

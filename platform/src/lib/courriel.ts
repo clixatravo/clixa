@@ -1074,6 +1074,97 @@ export async function courrielPlaceBientotRendue(
   });
 }
 
+/**
+ * Au participant : son versement est enregistré, sa place est acquise.
+ *
+ * ── ⚠️ Le geste d'équipe dont personne ne l'informait ───────────────────────
+ * L'équipe voyait l'argent arriver, ouvrait l'échéancier, marquait la ligne
+ * réglée — et le participant n'en savait rien. Il avait fait un transfert
+ * international vers un pays qui n'est pas le sien, et attendait une
+ * confirmation qui ne venait pas. Chaque autre moment du tunnel en envoie une ;
+ * celui-là, le seul où de l'argent change de mains, n'en envoyait aucune.
+ *
+ * Signalé par la direction le 7 septembre 2026 : « qu'on lui dise qu'il a payé
+ * et que sa place est garantie ».
+ *
+ * ⚠️ **C'est aussi le moment où sa place cesse d'expirer.** Un versement reçu
+ * la retient sans limite (`lib/places.ts`) : le lui dire vaut mieux que de le
+ * laisser compter les jours d'un délai qui ne court plus.
+ */
+export async function courrielVersementRecu(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    montant: number;
+    solde: boolean;
+  },
+): Promise<void> {
+  /*
+    ⚠️ L'adresse se compose ici, comme dans les douze autres gabarits, plutôt
+    que d'être passée par l'appelant : une seconde façon de l'écrire finirait
+    par porter l'apex quand le canonique est `www`, ce qui est arrivé six fois.
+  */
+  const urlDossier = `${SITE}/inscription/${d.reference}`;
+
+  const corpsHtml = `
+    <p>Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+    <p>
+      Nous confirmons la réception de votre versement de
+      <strong style="color: #e9cd84;">${EUROS.format(d.montant)}</strong> pour le parcours
+      <em>« ${echapper(d.programmeTitre)} »</em>.
+    </p>
+
+    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(47, 163, 125, 0.35);">
+      <div style="font-size: 14px; color: #ffffff;"><strong>Votre place est acquise.</strong></div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;">
+        ${
+          d.solde
+            ? "Votre formation est intégralement réglée. Il ne reste que la date de démarrage."
+            : "Elle ne repart plus au catalogue. Votre prochaine échéance figure sur votre dossier."
+        }
+      </div>
+    </div>
+
+    <p style="font-size: 13px; color: #94a3b8;">
+      Votre attestation d'admission, désormais officielle, se télécharge depuis
+      votre dossier.
+    </p>
+  `;
+
+  await envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: d.solde
+      ? `Formation réglée — votre place est acquise [${d.reference}]`
+      : `Versement reçu — votre place est acquise [${d.reference}]`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Nous confirmons la réception de votre versement de ${EUROS.format(d.montant)}`,
+      `pour le parcours « ${d.programmeTitre} ».`,
+      "",
+      "Votre place est acquise et ne repart plus au catalogue.",
+      d.solde
+        ? "Votre formation est intégralement réglée. Il ne reste que la date de démarrage."
+        : "Votre prochaine échéance figure sur votre dossier.",
+      "",
+      "Votre attestation d'admission, désormais officielle :",
+      urlDossier,
+      "",
+      "CLIXA Institute — Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: d.solde ? "Formation intégralement réglée" : "Versement reçu",
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Voir mon dossier",
+      boutonLien: urlDossier,
+    }),
+  });
+}
+
 /** À l'équipe : récapitulatif du traitement des relances. */
 export async function courrielBilanRelances(payload: Payload, lignes: string[]): Promise<void> {
   if (!EQUIPE || lignes.length === 0) return;

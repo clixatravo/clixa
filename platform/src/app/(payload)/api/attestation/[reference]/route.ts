@@ -1,6 +1,7 @@
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { SOCIETE } from "@/lib/societe";
 
 interface Params {
   params: Promise<{ reference: string }>;
@@ -69,11 +70,41 @@ export async function GET(request: Request, { params }: Params) {
     .filter((e) => e && typeof e === "object" && "statut" in e && e.statut === "regle")
     .reduce((acc, cur) => acc + (typeof cur?.montant === "number" ? cur.montant : 0), 0);
 
+  /*
+    ── ⚠️ Provisoire tant que rien n'est réglé ────────────────────────────────
+    Le document s'intitulait « Attestation **Officielle** d'Admission » et
+    affirmait faire foi « pour l'ensemble des démarches institutionnelles,
+    professionnelles et de financement » — sur un dossier qui n'avait rien
+    versé, et dont la place n'est tenue que sept jours.
+
+    Il circule : le participant l'imprime pour son employeur, pour une banque,
+    parfois pour un dossier de visa. Le présenter comme officiel alors que rien
+    n'est acquis engage la maison sur ce qu'elle n'a pas encore accordé, et
+    expose le participant à se le voir refuser au guichet.
+
+    Décision de la direction, le 7 septembre 2026 : **provisoire jusqu'au
+    règlement, officielle après**. C'est le premier versement qui fait bascule
+    — le même fait qui confirme le dossier et retient la place sans terme.
+  */
+  const officielle = totalRegle > 0;
+
+  /** Ce que /admin affiche, jamais le mot de la base. */
+  const STATUT: Record<string, string> = {
+    demandee: "Admission provisoire",
+    confirmee: "Acompte reçu",
+    payee: "Réglée intégralement",
+    terminee: "Parcours suivi",
+    annulee: "Annulée",
+  };
+  const statutLisible = STATUT[String(ins.statut)] ?? String(ins.statut ?? "");
+
+  const EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Attestation d'Admission — ${echapper(refNorm)} — CLIXA Institute</title>
+  <title>${officielle ? "Attestation d'Admission" : "Attestation d'Admission Provisoire"} — ${echapper(refNorm)} — CLIXA Institute</title>
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -195,6 +226,21 @@ export async function GET(request: Request, { params }: Params) {
       color: #080c18;
       margin-bottom: 40px;
     }
+    /*
+      ⚠️ La réserve doit se lire, pas se deviner : encadrée et sur fond, comme
+      les blocs d'information. En petit texte gris au fil de la page, elle
+      passerait pour une mention d'usage — et c'est justement la phrase qui
+      dit ce que le document ne vaut pas.
+    */
+    .reserve {
+      border-left: 3px solid #c9a24c;
+      background: #fdfaf3;
+      padding: 12px 16px;
+      margin: 20px 0;
+      font-size: 12px;
+      color: #0f172a;
+      line-height: 1.6;
+    }
     .footer {
       border-top: 1px solid #e2e8f0;
       padding-top: 15px;
@@ -218,18 +264,18 @@ export async function GET(request: Request, { params }: Params) {
   <div class="header">
     <div>
       <div class="brand-logo">CLIXA<span>.</span></div>
-      <div class="brand-sub">Executive Institute of Technology & Management</div>
+      <div class="brand-sub">Executive Education &middot; Afrique</div>
     </div>
     <div class="doc-meta">
       <div><strong>RÉFÉRENCE :</strong> ${echapper(ins.reference)}</div>
       <div><strong>DATE D'ÉMISSION :</strong> ${echapper(dateDoc)}</div>
-      <div><strong>STATUT :</strong> <span class="badge">${echapper(ins.statut)}</span></div>
+      <div><strong>STATUT :</strong> <span class="badge">${echapper(statutLisible)}</span></div>
     </div>
   </div>
 
   <div class="doc-title">
-    <h1>Attestation Officielle d'Admission</h1>
-    <p>Délivrée par la Direction des Admissions & du Registre Académique</p>
+    <h1>${officielle ? "Attestation Officielle d'Admission" : "Attestation d'Admission Provisoire"}</h1>
+    <p>Délivrée par la Direction des Admissions &amp; du Registre Académique</p>
   </div>
 
   <div class="section-box">
@@ -265,14 +311,33 @@ export async function GET(request: Request, { params }: Params) {
       </div>
       <div>
         <div class="info-label">Règlement enregistré</div>
-        <div class="info-valeur">${totalRegle > 0 ? `${totalRegle} EUR validé(s)` : "En cours de validation"}</div>
+        <div class="info-valeur">${officielle ? `${EUROS.format(totalRegle)} reçus` : "Aucun règlement enregistré à ce jour"}</div>
       </div>
     </div>
   </div>
 
   <p style="font-size: 12px; color: #475569; margin: 25px 0;">
-    La direction académique de CLIXA Institute certifie par la présente l'enregistrement régulier du participant susmentionné au sein de la promotion exécutive désignée. Ce document fait foi pour l'ensemble des démarches institutionnelles, professionnelles et de financement.
+    ${
+      officielle
+        ? "La direction académique de CLIXA Institute certifie par la présente l'admission du participant susmentionné au sein de la promotion exécutive désignée, les formalités d'inscription ayant été accomplies. Ce document fait foi pour l'ensemble des démarches institutionnelles, professionnelles et de financement."
+        : "La direction académique de CLIXA Institute atteste par la présente l'enregistrement de la demande d'admission du participant susmentionné au sein de la promotion exécutive désignée."
+    }
   </p>
+
+  ${
+    officielle
+      ? ""
+      : `<!--
+    ⚠️ La réserve est dictée par la direction, mot pour mot. Elle ne paraît que
+    sur le document provisoire : sur l'attestation définitive, elle décrirait
+    une condition déjà remplie et jetterait un doute sur ce qui est acquis.
+  -->
+  <p class="reserve">
+    Ce document ne vaut admission officielle qu'après l'accomplissement de
+    l'ensemble des formalités d'inscription, y compris le règlement des frais
+    de formation.
+  </p>`
+  }
 
   <div class="signature-area">
     <div class="seal">
@@ -281,12 +346,12 @@ export async function GET(request: Request, { params }: Params) {
     <div class="signature-box">
       <strong>Pour le Conseil Pédagogique & la Direction</strong>
       <div style="font-style: italic; color: #475569; font-family: serif; font-size: 16px;">Le Directeur des Admissions</div>
-      <div style="font-size: 10px; color: #94a3b8; margin-top: 5px;">CLIXA Institute Casablanca Campus</div>
+      <div style="font-size: 10px; color: #94a3b8; margin-top: 5px;">${SOCIETE.nom} &middot; Agadir</div>
     </div>
   </div>
 
   <div class="footer">
-    CLIXA Institute — Campus Casablanca & Hubs Régionaux Panafricains — Document certifié et vérifiable sous la référence ${echapper(ins.reference)}
+    ${SOCIETE.nom} &middot; RC ${SOCIETE.rc} &middot; ICE ${SOCIETE.ice} &middot; ${SOCIETE.siege} — Document vérifiable sous la référence ${echapper(ins.reference)}
   </div>
 </body>
 </html>`;

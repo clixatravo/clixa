@@ -886,6 +886,64 @@ l'équipe porte le même lien. ⚠️ Son cadre est sombre parce que le tracé e
 dessiné en ivoire : sur le thème clair de Payload, une signature ivoire sur
 blanc est invisible, et l'on ne recolore pas un PNG déjà tracé.
 
+⚠️ **L'attestation est provisoire tant que rien n'est réglé** (décision de la
+direction, le 7 septembre 2026). Elle s'intitulait « Attestation **Officielle**
+d'Admission » et affirmait faire foi « pour l'ensemble des démarches
+institutionnelles, professionnelles et de financement » — sur un dossier qui
+n'avait rien versé et dont la place n'est tenue que sept jours.
+
+Elle circule : le participant l'imprime pour son employeur, pour une banque,
+parfois pour un dossier de visa. La donner pour officielle engage la maison sur
+ce qu'elle n'a pas accordé, et l'expose à se la voir refuser au guichet. Le
+premier versement fait bascule — le même fait qui confirme le dossier et retient
+la place sans terme.
+
+- **La réserve est dictée par la direction, mot pour mot** : « Ce document ne
+  vaut admission officielle qu'après l'accomplissement de l'ensemble des
+  formalités d'inscription, y compris le règlement des frais de formation. »
+  Elle est encadrée et sur fond, pas en petit gris : c'est la phrase qui dit ce
+  que le document ne vaut pas.
+- ⚠️ **Elle disparaît sur l'attestation définitive.** L'y laisser décrirait une
+  condition déjà remplie et jetterait un doute sur ce qui est acquis.
+- ⚠️ **Elle portait « Casablanca » à trois endroits** — « CLIXA Institute
+  Casablanca Campus », « Campus Casablanca & Hubs Régionaux Panafricains ». Le
+  siège est à **Agadir** : le contrat le dit, les mentions légales aussi, et
+  les hubs sont « prochainement » depuis le 5 septembre. Un document qui fait
+  foi ne pouvait pas contredire le contrat signé par la même personne. Le pied
+  porte désormais `SOCIETE` — RC, ICE et siège — comme le contrat.
+- ⚠️ **Le statut sortait brut** (`demandee`), comme le faisait le CSV. Le
+  document est lu par une banque : elle n'a pas à déchiffrer le vocabulaire de
+  notre base.
+
+⚠️ **Le quatrième bouton manquait, et c'était le seul qui compte** (le même
+jour). Le fil des étapes s'arrêtait sur « Le dossier attend maintenant le
+versement », sans rien à cliquer. L'argent arrivait, et il fallait ouvrir
+l'échéancier, déplier la bonne ligne, changer un menu, poser une date,
+enregistrer — cinq gestes, exactement ce qui a fait ajouter les deux boutons
+précédents.
+
+- ⚠️ **Le participant en est prévenu**, et c'était la moitié manquante :
+  l'équipe voyait l'argent, marquait la ligne, et lui n'en savait rien. Il
+  avait fait un transfert international vers un pays qui n'est pas le sien.
+  C'est le seul moment du tunnel où de l'argent change de mains, et le seul
+  qui n'envoyait aucun message.
+- ⚠️ **Le crochet compte les échéances réglées, il ne lit pas le statut.**
+  Celui-ci ne monte qu'une fois — « demandée » → « confirmée » au premier
+  versement, « payée » au dernier. Sur un échéancier en trois fois, le deuxième
+  versement ne le déplace pas et se serait encaissé en silence.
+- ⚠️ **L'échéancier part en entier dans la surcharge de `submit`**, jamais en
+  chemins pointés : les surcharges sont fusionnées à plat, et
+  `echeances.0.statut` y resterait une clef littérale que rien ne lirait —
+  l'enregistrement réussirait et il ne se serait rien passé, le défaut exact du
+  bouton « Contrat vérifié » du 30 août.
+- ⚠️ **Un tableau ne se lit pas par `useField`** : ses lignes vivent en champs
+  séparés et leur nombre change. `useAllFormFields` + `reduceFieldsToValues`
+  rendent l'objet tel que le formulaire l'enverrait, édits non enregistrés
+  compris — sinon on écrase ce que quelqu'un vient de saisir au-dessus.
+- **Une seule échéance à la fois.** Tout solder d'un clic ferait passer pour
+  encaissé de l'argent qu'on n'a pas vu, et c'est le statut du dossier qui
+  commande la place et les relances.
+
 **Le bouton « J'ai envoyé les instructions de paiement »**
 (`components/admin/PasserAuPaiement.tsx`) pose la date du jour et enregistre.
 Le champ existait ; il demandait cinq gestes, et ce qui demande cinq gestes
