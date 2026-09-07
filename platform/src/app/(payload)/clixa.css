@@ -333,8 +333,13 @@ h3,
 /* ── Barre Latérale (Sidebar Nav) ────────────────────────────────────────── */
 
 .nav {
-  background: var(--clixa-encre) !important;
-  border-right: 1px solid rgba(243, 239, 228, 0.1) !important;
+  background: linear-gradient(180deg, #090e1c 0%, #060a15 100%) !important;
+  border-right: 1px solid rgba(201, 162, 76, 0.2) !important;
+  box-shadow: 4px 0 24px -4px rgba(0, 0, 0, 0.65) !important;
+}
+
+.nav__wrapper {
+  padding-bottom: 2rem !important;
 }
 
 .nav__header,
@@ -342,62 +347,190 @@ h3,
   display: flex !important;
   align-items: center !important;
   text-decoration: none !important;
-  padding: 0.75rem 1rem !important;
-  margin-bottom: 0.5rem !important;
-  border-bottom: 1px solid rgba(243, 239, 228, 0.08) !important;
+  padding: 0.85rem 1.1rem !important;
+  margin-bottom: 0.75rem !important;
+  border-bottom: 1px solid rgba(201, 162, 76, 0.15) !important;
+  background: rgba(201, 162, 76, 0.04) !important;
   transition: all 0.2s ease !important;
 }
 
 .nav__header a:hover {
-  background: rgba(201, 162, 76, 0.08) !important;
+  background: rgba(201, 162, 76, 0.1) !important;
 }
 
 .nav__group {
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 1.4rem !important;
 }
 
+/* En-tête des Groupes (Catalogue, Éditorial, Admissions, Accès) */
 .nav-group__toggle {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 0.45rem 1rem !important;
+  padding: 0.48rem 0.85rem !important;
+  margin: 0.75rem 0.65rem 0.45rem 0.65rem !important;
   font-family: var(--font-mono) !important;
-  font-size: 0.65rem !important;
+  font-size: 0.66rem !important;
   letter-spacing: 0.16em !important;
   text-transform: uppercase !important;
-  color: var(--clixa-or) !important;
-  font-weight: 600 !important;
-  opacity: 0.95 !important;
-  transition: opacity 0.15s ease !important;
+  color: #e9cd84 !important;
+  font-weight: 700 !important;
+  background: rgba(201, 162, 76, 0.07) !important;
+  border: 1px solid rgba(201, 162, 76, 0.22) !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
 }
 
 .nav-group__toggle:hover {
-  opacity: 1 !important;
+  background: rgba(201, 162, 76, 0.14) !important;
+  border-color: rgba(201, 162, 76, 0.45) !important;
+  color: #ffffff !important;
 }
 
+.nav-group__toggle-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+}
+
+.nav-group__toggle-content::before {
+  content: "✦";
+  color: var(--clixa-or);
+  font-size: 0.65rem;
+}
+
+/* Boutons de Navigation Individuels (Spécialisations, Programmes, etc.) */
 .nav__link {
   display: flex !important;
   align-items: center !important;
-  padding: 0.55rem 1rem !important;
-  margin: 2px 8px !important;
-  font-size: 0.88rem !important;
-  color: rgba(243, 239, 228, 0.72) !important;
-  border-radius: 3px !important;
+  padding: 0.58rem 0.85rem !important;
+  margin: 0.22rem 0.65rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  color: #d8d4cb !important;
+  border-radius: 7px !important;
+  border: 1px solid rgba(243, 239, 228, 0.07) !important;
+  background: rgba(243, 239, 228, 0.02) !important;
   text-decoration: none !important;
-  transition: all 0.16s ease !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
 }
 
+/* Icône badge pour chaque lien */
+.nav__link::before {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-right: 0.65rem !important;
+  font-size: 0.95rem !important;
+  line-height: 1 !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(243, 239, 228, 0.1) !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Icônes spécifiques par collection */
+.nav__link[href*="specialisations"]::before {
+  content: "🎓" !important;
+}
+.nav__link[href*="programmes"]::before {
+  content: "📚" !important;
+}
+.nav__link[href*="sessions"]::before {
+  content: "📅" !important;
+}
+.nav__link[href*="tarifs"]::before {
+  content: "💰" !important;
+}
+.nav__link[href*="articles"]::before {
+  content: "✍️" !important;
+}
+.nav__link[href*="temoignages"]::before {
+  content: "⭐" !important;
+}
+.nav__link[href*="partenaires"]::before {
+  content: "🤝" !important;
+}
+.nav__link[href*="pages"]::before {
+  content: "📄" !important;
+}
+.nav__link[href*="medias"]::before {
+  content: "🖼️" !important;
+}
+.nav__link[href*="demandes-rappel"]::before {
+  content: "📞" !important;
+}
+.nav__link[href*="conversations"]::before {
+  content: "💬" !important;
+}
+.nav__link[href*="rendez-vous"]::before {
+  content: "🗓️" !important;
+}
+.nav__link[href*="inscriptions"]::before {
+  content: "📋" !important;
+}
+.nav__link[href*="apprenants"]::before,
+.nav__link[href*="participants"]::before {
+  content: "👥" !important;
+}
+.nav__link[href*="recus"]::before {
+  content: "🧾" !important;
+}
+.nav__link[href*="disponibilites"]::before {
+  content: "⏰" !important;
+}
+.nav__link[href*="utilisateurs"]::before {
+  content: "🛡️" !important;
+}
+
+/* Effet Hover Élégant */
 .nav__link:hover {
   color: #ffffff !important;
-  background: rgba(201, 162, 76, 0.08) !important;
-  padding-left: 1.15rem !important;
+  background: linear-gradient(
+    90deg,
+    rgba(201, 162, 76, 0.2) 0%,
+    rgba(17, 26, 51, 0.75) 100%
+  ) !important;
+  border-color: rgba(201, 162, 76, 0.5) !important;
+  transform: translateX(4px) !important;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(201, 162, 76, 0.15) !important;
 }
 
-.nav__link.active {
+.nav__link:hover::before {
+  background: rgba(201, 162, 76, 0.25) !important;
+  border-color: rgba(201, 162, 76, 0.6) !important;
+  transform: scale(1.1) !important;
+}
+
+/* État Actif Sélectionné */
+.nav__link.active,
+.nav__link[aria-current="page"] {
   color: var(--clixa-or-clair) !important;
-  background: rgba(201, 162, 76, 0.12) !important;
-  border-left: 2px solid var(--clixa-or) !important;
-  font-weight: 600 !important;
+  background: linear-gradient(
+    90deg,
+    rgba(201, 162, 76, 0.28) 0%,
+    rgba(17, 26, 51, 0.9) 100%
+  ) !important;
+  border-color: var(--clixa-or) !important;
+  border-left: 3px solid #e9cd84 !important;
+  font-weight: 700 !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    0 0 12px rgba(201, 162, 76, 0.2) !important;
+}
+
+.nav__link.active::before,
+.nav__link[aria-current="page"]::before {
+  background: var(--clixa-or) !important;
+  border-color: var(--clixa-or) !important;
+  box-shadow: 0 0 8px rgba(201, 162, 76, 0.4) !important;
 }
 
 /* ── Cockpit Exécutif (Dashboard Header) ─────────────────────────────────── */
