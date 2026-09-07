@@ -25,6 +25,7 @@ import {
   getTarifs,
   getTemoignagesDe,
 } from "@/lib/catalogue";
+import { lienListeAttente } from "@/lib/attente";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -146,7 +147,9 @@ export default async function FicheFormation({ params }: Props) {
               href={
                 (prochaine
                   ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}`
-                  : "/contact") as Route
+                  : toutesCompletes
+                    ? lienListeAttente(programme.slug)
+                    : "/contact") as Route
               }
               className="px-7 py-4 text-xs font-bold tracking-wider uppercase"
             >
@@ -350,7 +353,9 @@ export default async function FicheFormation({ params }: Props) {
                   href={
                     (prochaine
                       ? `/inscription?formation=${programme.slug}&debut=${prochaine.debut.slice(0, 10)}`
-                      : "/contact") as Route
+                      : toutesCompletes
+                        ? lienListeAttente(programme.slug)
+                        : "/contact") as Route
                   }
                   className="w-full py-4 text-xs font-bold tracking-wider uppercase shadow-lg"
                 >

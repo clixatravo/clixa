@@ -34,9 +34,26 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 
+  /*
+    ⚠️ **Où l'on revient, et pourquoi ce n'est pas décoratif.** La route
+    redirigeait toujours vers `/contact?envoye=1`, ce qui perdait la seule chose
+    que le visiteur venait vérifier : qu'il est bien sur la liste d'attente
+    d'une cohorte pleine. Il lisait « un conseiller vous rappelle », sans un mot
+    de la liste.
+
+    ⚠️ **Rien du visiteur n'est réinjecté dans l'adresse** — ni le parcours, ni
+    un message. On reconnaît un littéral que la page a posé, et l'on rend un
+    booléen. Réfléchir une chaîne reçue dans une redirection est le chemin
+    ordinaire vers une adresse forgée ; la garde de `lib/session.ts` le dit déjà
+    pour le retour de Google.
+  */
+  const retour = (
+    texte("attente") === "1" ? "/contact?envoye=1&attente=1" : "/contact?envoye=1"
+  ) as Route;
+
   // Robot : on répond comme si tout allait bien, sans rien enregistrer.
   if (texte(LEURRE) !== "") {
-    redirect("/contact?envoye=1" as Route);
+    redirect(retour);
   }
 
   const nom = texte("nom");
@@ -148,7 +165,7 @@ export async function POST(request: Request) {
       est bien enregistrée. Lui annoncer un doublon l'inquiéterait sans rien
       lui apprendre d'utile.
     */
-    redirect("/contact?envoye=1" as Route);
+    redirect(retour);
   }
 
   try {
@@ -192,5 +209,5 @@ export async function POST(request: Request) {
   // les comptes Resend et WhatsApp Business seront ouverts. La demande est déjà
   // en base et visible dans le back-office : rien n'est perdu d'ici là.
 
-  redirect("/contact?envoye=1" as Route);
+  redirect(retour);
 }

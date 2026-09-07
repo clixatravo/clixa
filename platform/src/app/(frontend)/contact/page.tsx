@@ -11,12 +11,16 @@ export const metadata: Metadata = {
     "Laissez-nous vos coordonnées : un conseiller CLIXA vous rappelle pour vous présenter le programme et les modalités de financement.",
 };
 
+import { origineListeAttente } from "@/lib/attente";
+
 interface Props {
   searchParams: Promise<{
     envoye?: string;
     erreur?: string;
     programme?: string;
     plan?: string;
+    /** Posé par le lien d'une cohorte complète — voir `lib/attente.ts`. */
+    attente?: string;
   }>;
 }
 
@@ -35,23 +39,92 @@ interface Props {
  * Le catalogue et le barème ne sont donc plus lus ici : la page ne se rend
  * plus que sur ce qu'elle contient, et ne dépend plus de la base.
  *
- * ⚠️ `programme` et `plan` restent acceptés dans l'adresse — les anciens liens
- * « Être rappelé » les portaient — mais ils ne préremplissent plus rien. Les
- * retirer du type ferait échouer le build sur ces liens.
+ * ⚠️ `plan` reste accepté dans l'adresse — les anciens liens « Être rappelé »
+ * le portaient — mais il ne préremplit rien. Le retirer du type ferait échouer
+ * le build sur ces liens.
+ *
+ * ── ⚠️ `programme`, lui, arrivait à la porte et personne ne l'ouvrait ────────
+ * Trois endroits proposent de rejoindre la liste d'attente quand une cohorte
+ * est complète — le héros de la fiche, sa colonne latérale, et la page
+ * d'inscription, qui promet même « nous vous **plaçons** sur la liste
+ * d'attente ». Les trois menaient à `/contact` nu, et cette page ignorait le
+ * paramètre de toute façon.
+ *
+ * La demande arrivait donc dans la liste de l'équipe sans rien qui dise **quel
+ * parcours**, ni qu'il s'agissait d'une liste d'attente : une demande de rappel
+ * ordinaire parmi quatorze autres. La promesse « nous vous prévenons dès qu'une
+ * place se libère » ne pouvait être tenue par personne — il n'y avait pas de
+ * liste.
+ *
+ * ⚠️ **Le formulaire garde ses trois champs**, décision de la direction. Le
+ * parcours voyage en champ caché, comme `origine` : rien de plus n'est demandé
+ * au visiteur, et l'équipe sait enfin qui rappeler pour quoi.
  */
 export default async function Contact({ searchParams }: Props) {
-  const { envoye, erreur } = await searchParams;
+  const { envoye, erreur, programme, attente } = await searchParams;
+
+  /*
+    ⚠️ **Le parcours seul ne suffit pas à reconnaître une liste d'attente.** Une
+    demande de rappel ordinaire sur ce même parcours a un tout autre sens : « je
+    me renseigne » n'est pas « je voulais m'inscrire et je n'ai pas pu ». Seule
+    la seconde peut encore se convertir par un appel, et c'est le paramètre
+    `attente` qui les distingue.
+  */
+  /*
+    ⚠️ **`attente` seul, sans le parcours.** La redirection après envoi ne rend
+    qu'`?envoye=1&attente=1` : le slug n'y figure pas, et c'est voulu — rien du
+    visiteur n'est réinjecté dans une adresse. Exiger le parcours ici rendrait
+    donc la page de confirmation muette au moment précis où elle doit parler,
+    puisqu'il vient de disparaître. Le parcours ne sert qu'au champ caché, avant
+    l'envoi.
+  */
+  const surListeDAttente = attente === "1";
 
   return (
     <>
-      <FilAriane items={[{ href: "/", label: "Accueil" }, { label: "Être rappelé" }]} />
+      <FilAriane
+        items={[
+          { href: "/", label: "Accueil" },
+          { label: surListeDAttente ? "Liste d'attente" : "Être rappelé" },
+        ]}
+      />
 
       <section className="relative overflow-hidden px-8 py-16 lg:py-20">
         <div className="ambient-glow-top" aria-hidden="true" />
         <div className="relative z-10 mx-auto max-w-[680px]">
-          <div className="eyebrow mono-label mb-5">Un conseiller vous rappelle</div>
+          {/*
+            ⚠️ **Qui vient de cliquer « Rejoindre la liste d'attente » doit
+            arriver sur ce qu'il a demandé.** Il atterrissait sur « Parlons de
+            votre projet de formation », sans un mot de la cohorte pleine ni de
+            la liste : rien ne confirmait qu'il avait rejoint quoi que ce soit,
+            et rien ne disait que le formulaire servait à cela.
+          */}
+          <div className="eyebrow mono-label mb-5">
+            {surListeDAttente ? "Cohorte complète" : "Un conseiller vous rappelle"}
+          </div>
           <h1 className="mb-4 text-[clamp(2.1rem,4.4vw,3.2rem)] font-bold">
-            Parlons de votre projet de <span className="gold-gradient-text">formation</span>.
+            {/*
+              ⚠️ **Un verbe qui a déjà eu lieu ne se conjugue plus au futur.**
+              Après l'envoi, le titre annonçait encore « Rejoindre la liste
+              d'attente » au-dessus de « votre demande est bien enregistrée » :
+              un geste à faire posé sur un geste fait. Même défaut que le
+              courriel qui annonçait « votre place est tenue jusqu'au » une fois
+              le délai écoulé — la phrase est juste, c'est le moment qui ne
+              l'est pas.
+            */}
+            {surListeDAttente && envoye ? (
+              <>
+                Vous êtes sur la <span className="gold-gradient-text">liste d&apos;attente</span>.
+              </>
+            ) : surListeDAttente ? (
+              <>
+                Rejoindre la <span className="gold-gradient-text">liste d&apos;attente</span>.
+              </>
+            ) : (
+              <>
+                Parlons de votre projet de <span className="gold-gradient-text">formation</span>.
+              </>
+            )}
           </h1>
 
           {/*
@@ -73,15 +146,26 @@ export default async function Contact({ searchParams }: Props) {
                 Votre demande est bien enregistrée.
               </p>
               <p className="text-ivory-dim/95 text-[0.96rem] leading-relaxed">
-                Un conseiller CLIXA vous rappelle sous 24 h ouvrées, sur le numéro WhatsApp que vous
-                avez indiqué. Inutile de renvoyer le formulaire.
+                {surListeDAttente
+                  ? "Vous êtes sur la liste d'attente de ce parcours. Nous vous prévenons dès qu'une place se libère ou qu'une date s'ouvre, et un conseiller vous rappelle sous 24 h ouvrées. Inutile de renvoyer le formulaire."
+                  : "Un conseiller CLIXA vous rappelle sous 24 h ouvrées, sur le numéro WhatsApp que vous avez indiqué. Inutile de renvoyer le formulaire."}
               </p>
             </div>
           ) : (
             <div className="glass-panel-gold rounded-clixa p-8 shadow-2xl sm:p-10">
               <p className="text-ivory-dim/95 mb-8 text-[0.98rem] leading-relaxed">
-                Renseignez vos coordonnées : un conseiller pédagogique revient vers vous sous 24 h
-                ouvrées pour préciser le programme, les dates et les possibilités de financement.
+                {/*
+                  ⚠️ **La page ne parlait pas de ce qu'on venait d'y demander.**
+                  Elle promettait « un conseiller revient vers vous pour
+                  préciser le programme, les dates et les possibilités de
+                  financement » — vrai pour un rappel ordinaire, à côté de la
+                  plaque pour quelqu'un qui vient d'apprendre que la cohorte est
+                  pleine. Ce qu'il attend, c'est de savoir qu'il est sur la
+                  liste ; le reste vient après.
+                */}
+                {surListeDAttente
+                  ? "Cette cohorte est complète. Laissez-nous vos coordonnées : nous vous prévenons dès qu'une place se libère ou qu'une date s'ouvre, et un conseiller vous rappelle sous 24 h ouvrées."
+                  : "Renseignez vos coordonnées : un conseiller pédagogique revient vers vous sous 24 h ouvrées pour préciser le programme, les dates et les possibilités de financement."}
               </p>
 
               {/*
@@ -150,7 +234,38 @@ export default async function Contact({ searchParams }: Props) {
                     autoComplete="off"
                   />
                 </div>
-                <input type="hidden" name="origine" value="/contact" />
+                {/*
+                  ⚠️ **Deux champs cachés, et le second n'existait pas.** Le
+                  parcours voyage jusqu'ici depuis la fiche ; sans lui,
+                  `api/demande-rappel` — qui sait pourtant résoudre un slug et le
+                  ranger en relation — n'avait rien à ranger.
+
+                  ⚠️ Et `origine` nomme la liste d'attente en toutes lettres :
+                  le parcours seul ne la distingue pas d'une demande de rappel
+                  ordinaire, et c'est cette colonne que l'équipe lit dans sa
+                  liste comme dans le classeur des admissions.
+                */}
+                <input
+                  type="hidden"
+                  name="origine"
+                  value={
+                    surListeDAttente && programme ? origineListeAttente(programme) : "/contact"
+                  }
+                />
+                {programme ? <input type="hidden" name="programme" value={programme} /> : null}
+                {/*
+                  ⚠️ **Sans lui, la page de confirmation retombe sur le message
+                  ordinaire.** La route redirige vers `/contact?envoye=1` et
+                  perd tout le reste : celui qui vient de rejoindre la liste
+                  lisait « un conseiller vous rappelle », sans un mot de la
+                  liste — c'est-à-dire sans jamais voir confirmé ce qu'il était
+                  venu faire.
+
+                  ⚠️ La valeur est un littéral, jamais du texte reçu : la route
+                  ne réinjecte dans l'adresse qu'un booléen qu'elle a reconnu,
+                  pas une chaîne du visiteur.
+                */}
+                {surListeDAttente ? <input type="hidden" name="attente" value="1" /> : null}
 
                 <Champ label="Nom complet" name="nom" autoComplete="name" requis />
                 {/*

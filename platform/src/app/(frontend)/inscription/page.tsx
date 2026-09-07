@@ -5,6 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
 import { MOYENS } from "@/lib/moyens";
+import { lienListeAttente } from "@/lib/attente";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import {
   formatPeriode,
@@ -138,7 +139,10 @@ export default async function Inscription({ searchParams }: Props) {
               {toutesCompletes ? (
                 <>
                   Cette session est complète.{" "}
-                  <Link href="/contact" className="border-gold border-b">
+                  <Link
+                    href={lienListeAttente(programme.slug) as Route}
+                    className="border-gold border-b"
+                  >
                     Écrivez-nous
                   </Link>{" "}
                   : nous vous plaçons sur la liste d&apos;attente, et nous vous prévenons dès

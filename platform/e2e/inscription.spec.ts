@@ -501,6 +501,79 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
       compterEnBase("inscriptions", `apprenant_nom = 'Épreuve Complet'`),
       "et rien n'est écrit",
     ).toBe(0);
+
+    /*
+      ── ⚠️ Et la liste d'attente doit exister quelque part ──────────────────
+      Trois endroits proposent de la rejoindre quand la cohorte est pleine — le
+      héros de la fiche, sa colonne latérale, et cette page, qui promet même
+      « nous vous **plaçons** sur la liste d'attente ». Les trois menaient à
+      `/contact` **nu** : la demande arrivait dans la liste de l'équipe sans
+      rien qui dise quel parcours, ni qu'il s'agissait d'une liste d'attente.
+
+      Une demande de rappel ordinaire, parmi quatorze autres. Personne ne
+      pouvait tenir la promesse, faute de savoir qui rappeler pour quoi — et
+      c'est le chemin que **tout le trafic acheté** empruntera le jour où la
+      cohorte de l'annonce se fermera.
+
+      ⚠️ **L'épreuve va jusqu'à la base**, pas jusqu'à la page de confirmation :
+      celle-ci dit « votre demande est bien enregistrée » quoi qu'il arrive —
+      elle le disait déjà quand le parcours se perdait. La même leçon que la
+      garde du double envoi, restée verte parce qu'elle ne regardait que la
+      redirection.
+    */
+    await page.goto(`/inscription?formation=${slug}`);
+    const versAttente = page.getByRole("link", { name: /Écrivez-nous/i });
+    await expect(versAttente).toBeVisible();
+    await versAttente.click();
+    await page.waitForURL(/\/contact\?/);
+
+    await expect(
+      page.getByRole("heading", { name: /liste d'attente/i }),
+      "⚠️ qui clique « rejoindre la liste d'attente » doit arriver sur ce qu'il a demandé",
+    ).toBeVisible();
+
+    /*
+      ⚠️ **Un numéro unique, et c'est indispensable.** La garde anti-doublon de
+      `api/demande-rappel` est indexée sur le **numéro**, avec une fenêtre de dix
+      minutes — et elle répond « c'est enregistré » sans rien écrire, par choix :
+      annoncer un doublon inquiéterait sans rien apprendre. Réutiliser le
+      `+212600000000` des autres épreuves du fichier faisait donc passer le
+      formulaire, atteindre `envoye=1`, et ne rien laisser en base. Le premier
+      jet a échoué ainsi, sur un correctif parfaitement bon.
+    */
+    const marque = String(Date.now()).slice(-8);
+    const nom = `Épreuve Attente ${marque}`;
+    await page.getByLabel("Nom complet").fill(nom);
+    await remplirWhatsapp(page, `+2126${marque}`);
+    await page.getByRole("checkbox").check();
+    await page.getByRole("button", { name: /envoyer|rappel/i }).click();
+    await page.waitForURL(/envoye=1/);
+
+    /*
+      ⚠️ **Le parcours, pas seulement la demande.** `api/demande-rappel` sait
+      résoudre un slug et le ranger en relation — il n'avait simplement jamais
+      rien à ranger, puisque le formulaire ne portait pas le champ.
+    */
+    expect(
+      compterEnBase(
+        "demandes_rappel d JOIN programmes p ON p.id = d.programme_id",
+        `d.nom = '${nom}' AND p.slug = '${slug}'`,
+      ),
+      "⚠️ la demande doit porter le parcours dont la cohorte est pleine",
+    ).toBe(1);
+
+    /*
+      ⚠️ **Et qu'il s'agit d'une liste d'attente.** Le parcours seul ne la
+      distingue pas d'une demande de rappel ordinaire : « je me renseigne » n'est
+      pas « je voulais m'inscrire et je n'ai pas pu ». Seule la seconde peut
+      encore se convertir par un appel.
+    */
+    expect(
+      compterEnBase("demandes_rappel", `nom = '${nom}' AND origine LIKE '%liste d''attente%'`),
+      "⚠️ et le dire, sinon elle se noie parmi les autres",
+    ).toBe(1);
+
+    sqlUneValeur(`DELETE FROM demandes_rappel WHERE nom = '${nom}';`);
   } finally {
     // Chaque session retrouve son décompte, même si l'épreuve a échoué.
     for (const paire of avant.split(",")) {
