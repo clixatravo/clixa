@@ -22,7 +22,16 @@ export const Sessions: CollectionConfig = {
   labels: { singular: "Session", plural: "Sessions" },
   admin: {
     useAsTitle: "reference",
-    defaultColumns: ["reference", "programme", "mode", "debut", "capacite"],
+    /*
+      ⚠️ **« Places au total » ne bouge jamais**, et c'est ce qui a trompé la
+      direction le 7 septembre 2026 : elle vaut la capacité — 30 sur les douze
+      sessions — quand celle du parcours porté par l'annonce Facebook en avait
+      déjà 22 de prises. Rien n'était cassé, le site public affichait bien
+      « 8 places » ; c'est l'écran de l'équipe qui ne montrait que l'invariant.
+      « Remplissage » dit ce qui bouge, et c'est depuis cet écran qu'on décide
+      d'ouvrir une seconde cohorte.
+    */
+    defaultColumns: ["reference", "programme", "mode", "debut", "remplissage"],
     group: "Catalogue",
     description: "Les dates ouvertes à la réservation. Une ligne par ville et par période.",
   },
@@ -307,6 +316,18 @@ export const Sessions: CollectionConfig = {
           admin: { width: "50%" },
         },
         {
+          /*
+            ⚠️ **Ce compteur n'est plus saisi à la main, et sa description
+            disait le contraire.** Elle annonçait « Saisie à la main en V1. À
+            partir de la phase 02, ce compteur sera tenu par les réservations
+            payées » — la phase 02 est ouverte depuis, et le crochet
+            `recompter` le recalcule à chaque écriture d'inscription.
+
+            Une case ouverte sous cette phrase invite à corriger un nombre
+            qu'on croit oublié. La correction ne survit pas : la prochaine
+            inscription l'écrase. Entre-temps, c'est le décompte du site public
+            qui ment — et c'est lui qui fait décider un visiteur.
+          */
           name: "placesReservees",
           type: "number",
           label: "Places déjà prises",
@@ -315,11 +336,28 @@ export const Sessions: CollectionConfig = {
           min: 0,
           admin: {
             width: "50%",
+            readOnly: true,
             description:
-              "Saisie à la main en V1. À partir de la phase 02, ce compteur sera tenu par les réservations payées.",
+              "Tenu automatiquement : chaque inscription le recalcule, et la tâche quotidienne rend les places dont le délai est passé.",
           },
         },
       ],
+    },
+
+    /*
+      ── ⚠️ Ce qui bouge, à côté de ce qui ne bouge pas ────────────────────
+      Les deux nombres ci-dessus ne se lisent qu'ensemble : 22 ne dit rien
+      sans 30, et 30 ne dit rien tout seul — c'est pourtant 30 seul que la
+      liste montrait. Le calcul vit dans `lib/occupation.ts`, où il s'éprouve
+      sans base ni navigateur.
+    */
+    {
+      name: "remplissage",
+      type: "ui",
+      label: "Remplissage",
+      admin: {
+        components: { Cell: "@/components/admin/Occupation#Occupation" },
+      },
     },
 
     /* ── Tarif ──────────────────────────────────────────────────────── */

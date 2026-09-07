@@ -48,6 +48,7 @@ npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et 
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
+npx payload run scripts/verifier-occupation.ts    # la liste des sessions montre ce qui bouge
 npx payload run scripts/verifier-attestation.ts   # elle ne promet que ce qui est acquis
                                                   # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
@@ -437,6 +438,49 @@ avec son fuseau écrit à côté.
 La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
 de places montré au visiteur.
+
+⚠️ **La liste des sessions ne montrait que la capacité** (corrigé le 7 septembre
+2026 au soir). Sa seule colonne de places s'appelait « Places au total » : elle
+vaut 30 sur les douze sessions, et vaudra 30 quoi qu'il arrive. La direction l'a
+lue et en a conclu que les places ne descendaient pas — quand le parcours porté
+par l'annonce Facebook en avait **22 de prises sur 30**.
+
+Rien n'était cassé, et c'est ce qui rend le cas instructif : le décompte était
+exact (12 sessions, 0 écart entre la liste et la base), et la fiche publique
+affichait bien « 8 places ». **Un chiffre juste au mauvais endroit se lit comme
+un chiffre faux** — et cet écran est le seul depuis lequel on décide d'ouvrir
+une seconde cohorte.
+
+- **La colonne « Remplissage » dit « 22 / 30 » puis « 8 restantes ».** Le calcul
+  vit dans `lib/occupation.ts`, pur, où il s'éprouve sans base ni navigateur —
+  même raison que `avancementDuDossier` : une cellule d'administration ne se
+  vérifie autrement qu'en ouvrant un navigateur et en se connectant.
+- ⚠️ **Pas d'émeraude pour « dernières places ».** Elle veut dire « fait » dans
+  la colonne « Où en est », qui se lit sur le même écran : la même couleur
+  dirait « terminé » d'un côté et « presque plein » de l'autre. Le contour doré
+  appartient à la famille de « Complet » sans lui disputer l'œil.
+- ⚠️ **Et le chiffre hérite de la couleur du tableau.** Écrit en or, il
+  ressortait délavé sur le thème clair de Payload — vu en rendant les deux
+  thèmes côte à côte, parce qu'un contraste faible ne casse rien et ne se
+  découvre qu'en changeant de thème un matin.
+- ⚠️ **Une capacité nulle se tait plutôt que d'annoncer « Complet ».** Une
+  session à capacité zéro n'existe pas commercialement — l'épreuve du tunnel l'a
+  déjà appris — et « Complet » enverrait l'équipe ouvrir une cohorte de
+  remplacement pour une session jamais ouverte.
+- ⚠️ **`placesReservees` est passé en lecture seule, et sa description mentait.**
+  Elle annonçait « Saisie à la main en V1. À partir de la phase 02, ce compteur
+  sera tenu par les réservations payées » : la phase 02 est ouverte, le crochet
+  `recompter` le recalcule à chaque écriture. Une case ouverte sous cette phrase
+  invite à corriger un nombre qu'on croit oublié — la correction ne survit pas à
+  la prochaine inscription, et entre-temps c'est le décompte du site public qui
+  ment.
+- ⚠️ **Un contrôle qui mesure les données n'est pas une garde.** Le premier jet
+  exigeait « au moins une session montre un remplissage » : rouge sur `dev`, que
+  le ménage des épreuves vide à chaque série, vert sur la production. Il imprime
+  désormais au lieu d'exiger. Le revers de la leçon de `verifier-veille.ts`,
+  dont le premier jet se félicitait de trois « 0 dossier » sur une base vide.
+- **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne, et
+  `admin.readOnly` ne vaut que pour l'écran — les crochets écrivent toujours.
 
 **Une place est tenue sept jours, puis rendue** (`src/lib/places.ts`, depuis le
 28 août 2026). Une inscription la retient aussitôt — assez pour qu'un transfert

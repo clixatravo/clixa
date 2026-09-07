@@ -1469,6 +1469,73 @@ h3,
   font-family: var(--font-mono);
 }
 
+/* ── Le remplissage d'une session ───────────────────────────────────────── */
+/*
+  ⚠️ **Deux nombres qui ne se lisent qu'ensemble.** La liste montrait « 30 » —
+  la capacité, la même sur les douze sessions, et la même quoi qu'il arrive.
+  On lit d'abord « 22 / 30 », puis ce qu'il en reste ; l'ordre compte, parce
+  qu'un remplissage se juge en proportion avant de se juger en solde.
+
+  Comme pour « Où en est », seuls les tons qui appellent un geste portent un
+  fond : les deux thèmes de Payload restent offerts, et un texte coloré posé
+  sans fond serait illisible sur l'un des deux.
+*/
+.clixa-places {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.clixa-places__compte {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.clixa-places__reste {
+  font-size: 0.66rem;
+  opacity: 0.7;
+}
+
+/* Complet : la cohorte est fermée, et c'est une décision à prendre aujourd'hui. */
+.clixa-places--complet .clixa-places__compte {
+  background: var(--clixa-or);
+  color: var(--clixa-encre);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+}
+
+/*
+  Les dernières places : le moment où l'on prépare la cohorte suivante.
+
+  ⚠️ **Pas d'émeraude ici.** Elle veut dire « fait » dans la colonne « Où en
+  est », qui se lit sur le même écran : la même couleur dirait « terminé » d'un
+  côté et « presque plein » de l'autre. Le contour doré appartient à la même
+  famille que « Complet » sans lui disputer l'œil — deux pastilles pleines côte
+  à côte ne diraient plus laquelle appelle une décision.
+*/
+/*
+  ⚠️ **Le chiffre garde la couleur du tableau, seul le contour est doré.** Écrit
+  en or, il ressortait délavé sur le thème clair de Payload — vérifié en rendant
+  les deux thèmes côte à côte, parce qu'un contraste faible ne casse rien et ne
+  se voit qu'en changeant de thème un matin. C'est la même leçon que
+  `.clixa-ou--attente`, qui hérite pour cette raison.
+*/
+.clixa-places--tension .clixa-places__compte {
+  color: inherit;
+  border: 1px solid var(--clixa-or);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+}
+
+/* Le cours normal, et le vide : rien qui tire l'œil. */
+.clixa-places--vide,
+.clixa-places--inconnu {
+  opacity: 0.45;
+}
+
 /* ── Optimisations Responsives Mobile & Tablette ────────────────────────── */
 
 @media (max-width: 768px) {

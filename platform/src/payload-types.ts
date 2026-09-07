@@ -347,7 +347,7 @@ export interface Session {
   cadence?: string | null;
   capacite: number;
   /**
-   * Saisie à la main en V1. À partir de la phase 02, ce compteur sera tenu par les réservations payées.
+   * Tenu automatiquement : chaque inscription le recalcule, et la tâche quotidienne rend les places dont le délai est passé.
    */
   placesReservees: number;
   /**
