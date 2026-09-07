@@ -41,9 +41,44 @@ import type { Payload, Where } from "payload";
 
 export const JOURS_DE_GRACE = 7;
 
+/**
+ * Ce qu'on garde en plus, sans le dire.
+ *
+ * ── ⚠️ Deux dates, et une seule s'annonce ───────────────────────────────────
+ * Le participant lit « votre place vous est tenue jusqu'au [J+7] » : c'est
+ * cette date-là qui le fait agir, et l'allonger ne ferait que déplacer le
+ * moment où il s'y met. Mais rendre la place à la seconde près punit celui qui
+ * s'y prend le lendemain — pour un parcours qui commence dans un mois, et une
+ * cohorte qui n'est pas pleine.
+ *
+ * La place part donc **deux jours après** la date annoncée. Décision de la
+ * direction, le 7 septembre 2026. Le battement ne se promet nulle part : une
+ * échéance qu'on annonce plus longue est une échéance qu'on repousse.
+ *
+ * ⚠️ **Et la page ne prétend pas que la place est partie tant qu'elle est
+ * là.** Passé J+7 elle change de ton — « le délai est passé, elle n'est pas
+ * encore repartie, écrivez-nous aujourd'hui » — plutôt que d'annoncer une
+ * perte qui n'a pas eu lieu. Faire dire au site le contraire de ce qui est,
+ * même dans le sens généreux, c'est exactement le défaut que la colonne « Où
+ * en est » a corrigé la veille.
+ */
+export const JOURS_DE_BATTEMENT = 2;
+
 /** La limite en deçà de laquelle un dossier « demandée » tient encore sa place. */
 export function limiteDeGrace(): string {
-  return new Date(Date.now() - JOURS_DE_GRACE * 86_400_000).toISOString();
+  const jours = JOURS_DE_GRACE + JOURS_DE_BATTEMENT;
+  return new Date(Date.now() - jours * 86_400_000).toISOString();
+}
+
+/**
+ * Le jour où la place part réellement — la date annoncée, plus le battement.
+ *
+ * ⚠️ À ne jamais afficher au participant : c'est `finDeLaTenue` qu'il lit, et
+ * les deux ne doivent pas se confondre dans un gabarit.
+ */
+export function finDuBattement(depuis: Date | string): Date {
+  const debut = typeof depuis === "string" ? new Date(depuis) : depuis;
+  return new Date(debut.getTime() + (JOURS_DE_GRACE + JOURS_DE_BATTEMENT) * 86_400_000);
 }
 
 /** Ce qu'il faut d'un dossier pour savoir d'où court sa tenue. */
@@ -97,9 +132,11 @@ export const OCCUPE_UNE_PLACE_SQL = `(
   OR (i.statut = 'demandee' AND i.contrat_signe_le IS NOT NULL
         AND i.coordonnees_envoyees_le IS NULL)
   OR (i.statut = 'demandee'
-        AND i.coordonnees_envoyees_le > now() - interval '${JOURS_DE_GRACE} days')
+        AND i.coordonnees_envoyees_le > now() - interval '${JOURS_DE_GRACE + JOURS_DE_BATTEMENT} days')
   OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
-        AND i.created_at > now() - interval '${JOURS_DE_GRACE} days')
+        AND i.created_at > now() - interval '${JOURS_DE_GRACE + JOURS_DE_BATTEMENT} days')
+  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
+        AND i.place_rappelee_le IS NULL)
 )`;
 
 /**
@@ -125,14 +162,37 @@ export function occupeUnePlace(): Where {
           { coordonneesEnvoyeesLe: { exists: false } },
         ],
       },
-      // Coordonnées parties : sept jours pour que le transfert arrive.
+      // Coordonnées parties : sept jours pour que le transfert arrive, plus le battement.
       { and: [demandee, { coordonneesEnvoyeesLe: { greater_than: limite } }] },
-      // Pré-inscription seule : sept jours à partir du dépôt, comme avant.
+      // Pré-inscription seule : sept jours à partir du dépôt, plus le battement.
       {
         and: [
           demandee,
           { contratSigneLe: { exists: false } },
           { createdAt: { greater_than: limite } },
+        ],
+      },
+      /*
+        ── ⚠️ Jamais rendue sans avoir été annoncée ──────────────────────────
+        Une pré-inscription qu'on n'a pas su prévenir garde sa place, si vieille
+        soit-elle. La tâche quotidienne réessaie l'envoi chaque matin et ne pose
+        la date qu'une fois le courriel parti ; tant qu'il ne part pas — quota
+        épuisé, service en panne — c'est **notre** défaillance, et elle ne se
+        paie pas sur la place de quelqu'un qui n'a rien vu venir.
+
+        Décision de la direction, le 7 septembre 2026 : « sa place ne part pas
+        tant qu'un courriel ne lui est pas parvenu ». C'est le même principe que
+        le contrat signé qui attend nos coordonnées — la balle est chez nous.
+
+        ⚠️ Le revers est réel : si l'expédition reste en panne, des places
+        dorment. Le bilan quotidien les nomme, comme il nomme déjà les envois
+        manqués.
+      */
+      {
+        and: [
+          demandee,
+          { contratSigneLe: { exists: false } },
+          { placeRappeleeLe: { exists: false } },
         ],
       },
     ],

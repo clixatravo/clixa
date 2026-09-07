@@ -52,7 +52,7 @@ const creer = async (
   jours: number,
   nom: string,
   acompte = false,
-  options: { signe?: boolean; coordonneesIlYa?: number } = {},
+  options: { signe?: boolean; coordonneesIlYa?: number; jamaisPrevenu?: boolean } = {},
 ) => {
   const d = await payload.create({
     collection: "inscriptions",
@@ -81,6 +81,21 @@ const creer = async (
   if (options.coordonneesIlYa !== undefined) {
     poser.push(`coordonnees_envoyees_le = now() - interval '${options.coordonneesIlYa} days'`);
   }
+  /*
+    ── ⚠️ Une place ne part pas sans qu'on l'ait annoncé ─────────────────────
+    Depuis le 7 septembre 2026, une pré-inscription garde sa place tant que
+    `placeRappeleeLe` est vide : un courriel qui n'est pas parti est notre
+    défaillance, et elle ne se paie pas sur la place de quelqu'un qui n'a rien
+    vu venir. La tâche quotidienne pose la date après l'envoi.
+
+    Les dossiers vieillis de ce script représentent donc des participants
+    **déjà prévenus** — sans quoi ils ne périmeraient jamais, et les épreuves
+    ci-dessous mesureraient la garde au lieu du délai. `jamaisPrevenu` sert au
+    cas qui éprouve justement la garde.
+  */
+  if (jours > 0 && !options.signe && !options.jamaisPrevenu) {
+    poser.push(`place_rappelee_le = now() - interval '${Math.max(jours - 2, 0)} days'`);
+  }
   if (poser.length > 0) {
     await payload.db.drizzle.execute(
       `UPDATE inscriptions SET ${poser.join(", ")} WHERE id = ${d.id}` as never,
@@ -100,7 +115,14 @@ try {
   const apresFraiche = await compter();
   dire("une inscription du jour retient une place", apresFraiche === depart + 1);
 
-  await creer(8, "Épreuve Périmée");
+  /*
+    ⚠️ **Dix jours, pas huit.** Le terme annoncé est de sept jours, mais la
+    place ne part que deux jours plus tard — un battement voulu par la
+    direction le 7 septembre 2026 pour ne pas punir un retard d'un jour. Un
+    dossier de huit jours tient donc encore, et l'épreuve écrite pour sept
+    mesurait désormais le battement en croyant mesurer le délai.
+  */
+  await creer(10, "Épreuve Périmée");
 
   /*
     ⚠️ Le crochet a compté cette inscription : au moment où il s'est exécuté,
@@ -116,6 +138,35 @@ try {
   const rendues = await rendreLesPlacesExpirees(payload);
   dire("la tâche quotidienne rend la place périmée", rendues >= 1);
   dire("le décompte revient à la vérité", (await compter()) === apresFraiche);
+
+  /*
+    ── ⚠️ Les deux règles du 7 septembre 2026, en un seul passage ────────────
+    Le battement de deux jours, et « une place ne part pas sans qu'on l'ait
+    annoncé ». Les deux dossiers sont montés ensemble et `rendreLesPlacesExpirees`
+    ne passe qu'une fois : chaque passage parcourt les sessions à venir et
+    recompte, ce qui coûte plusieurs allers-retours contre Neon — le premier
+    jet en faisait trois de plus et le script est mort en route, sans une
+    ligne, exactement comme le journal le décrit.
+
+    **Le battement** laisse une chance à qui s'y prend le lendemain, et c'est
+    la fenêtre où la page dit « le délai est passé, mais votre place n'est pas
+    encore repartie ». Sans ce contrôle, ramener le battement à zéro ne ferait
+    rien passer au rouge.
+
+    **La seconde** est la décision de la direction : « sa place ne part pas
+    tant qu'un courriel ne lui est pas parvenu ». Un envoi manqué est notre
+    défaillance, et elle ne se paie pas sur la place de quelqu'un qui n'a rien
+    vu venir. Ce dossier-là est vieux de quinze jours — bien au-delà de tout
+    délai — et garde sa place parce que personne ne l'a prévenu.
+  */
+  const avantLesDeux = await compter();
+  await creer(8, "Épreuve Dans Le Battement");
+  await creer(15, "Épreuve Jamais Prévenue", false, { jamaisPrevenu: true });
+  await rendreLesPlacesExpirees(payload);
+  dire(
+    "⚠️ le terme passé et un dossier jamais prévenu tiennent tous deux leur place",
+    (await compter()) === avantLesDeux + 2,
+  );
 
   /*
     ── Le cas qui a coûté une place à quelqu'un qui avait payé ───────────────

@@ -581,13 +581,46 @@ identiques dont plusieurs ne réservaient plus rien.
 - ⚠️ **Un contrat signé n'expire jamais**, si vieux soit-il : la balle est chez
   nous, et `departDeLaTenue` rend `undefined`. Une épreuve garde ce cas.
 
-⚠️ **Ce qu'il reste à trancher : personne ne le lui dit.** Le participant
-apprend que sa place est repartie **s'il rouvre sa page**. Aucun courriel ne
-part — ni avant le terme, ni après. Les treize gabarits de `lib/courriel.ts`
-couvrent tout le reste du tunnel ; celui-là n'existe pas. C'est une décision de
-la direction, pas un oubli technique : une relance avant expiration est le
-message le plus utile qu'on puisse envoyer à une pré-inscription, et c'est
-aussi un courriel de plus.
+⚠️ **Une place ne part plus sans qu'on l'ait annoncé** (décision de la
+direction, le 7 septembre 2026). Le participant l'apprenait **s'il rouvrait sa
+page**, c'est-à-dire à peu près jamais : les treize gabarits couvraient tout le
+reste du tunnel, celui-là n'existait pas. Trois règles, prises ensemble :
+
+1. **Un courriel part au terme annoncé** (`courrielPlaceBientotRendue`). Il ne
+   réclame pas d'argent — une pré-inscription n'a reçu aucune coordonnée de
+   règlement, et le lui demander serait le défaut corrigé la veille une porte
+   plus loin. Il demande le seul geste possible : demander son contrat, ou
+   écrire.
+2. **La place ne part pas tant que ce courriel n'est pas parti.**
+   `placeRappeleeLe` n'est écrite qu'après un envoi réussi, et tant qu'elle est
+   vide la place est tenue — si vieux que soit le dossier. Un envoi manqué est
+   *notre* défaillance ; elle ne se paie pas sur la place de quelqu'un qui n'a
+   rien vu venir. Même principe que le contrat signé qui attend nos
+   coordonnées. ⚠️ Le revers est réel : si l'expédition reste en panne, des
+   places dorment — le bilan quotidien les nomme.
+3. **La place part deux jours après la date annoncée** (`JOURS_DE_BATTEMENT`).
+   Le battement ne se promet nulle part : une échéance qu'on annonce plus
+   longue est une échéance qu'on repousse. Il sert à ne pas punir un retard
+   d'un jour, sur un parcours qui commence dans un mois.
+
+⚠️ **Et la page ne prétend pas que la place est partie tant qu'elle est là.**
+Elle a donc **trois** fenêtres, plus deux : « tenue jusqu'au X », puis « le
+délai est passé, mais votre place n'est pas encore repartie — écrivez-nous
+aujourd'hui », puis « elle est repartie ». Faire dire au site le contraire de
+ce qui est, même dans le sens généreux, fait renoncer quelqu'un qui pouvait
+encore agir. La colonne de l'équipe suit, avec « Dernier délai — sa place part
+sous deux jours ».
+
+⚠️ **`verifier-places.ts` a dû changer de prémisse**, et c'est le signe que la
+règle a bougé pour de bon : son dossier « périmé » datait de huit jours, ce qui
+tombe désormais **dans** le battement. Il en fait dix. Ses dossiers vieillis
+portent aussi `place_rappelee_le`, sans quoi ils ne périmeraient jamais et le
+script mesurerait la garde en croyant mesurer le délai.
+
+⚠️ **Un seul `rendreLesPlacesExpirees` pour les deux nouveaux contrôles.**
+Chaque passage parcourt les sessions et recompte ; le premier jet en ajoutait
+deux, et le script est mort en route contre Neon sans imprimer une ligne — la
+panne décrite plus bas, rencontrée ici.
 
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche

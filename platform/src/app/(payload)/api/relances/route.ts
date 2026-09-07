@@ -1,8 +1,9 @@
-import { rendreLesPlacesExpirees } from "@/lib/places";
+import { finDeLaTenue, JOURS_DE_GRACE, rendreLesPlacesExpirees } from "@/lib/places";
+import { sansLeParcours } from "@/lib/inscriptions";
 import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { courrielBilanRelances, courrielRelance } from "@/lib/courriel";
+import { courrielBilanRelances, courrielPlaceBientotRendue, courrielRelance } from "@/lib/courriel";
 
 /**
  * BE-17 — Relance des échéances.
@@ -235,6 +236,86 @@ export async function GET(request: Request) {
   }
 
   /*
+    ── ⚠️ Prévenir avant de reprendre une place ──────────────────────────────
+    Une pré-inscription retient une place sept jours, puis la tâche la rend au
+    catalogue. Elle le faisait **en silence** : le participant ne l'apprenait
+    qu'en rouvrant sa page, c'est-à-dire à peu près jamais. Sur les quatorze
+    dossiers de production du 6 septembre 2026, neuf étaient dans ce cas.
+
+    Décision de la direction, le 7 septembre : on prévient, et **la place ne
+    part pas tant que le message n'est pas parti**. `placeRappeleeLe` n'est
+    écrite qu'après un envoi réussi — même règle que `relanceeLe`, et pour la
+    même raison : une trace posée sur un envoi manqué perd le message en
+    silence, sauf qu'ici elle ferait en plus rendre la place.
+
+    ⚠️ **On prévient au terme annoncé, pas avant.** Le battement de deux jours
+    (`JOURS_DE_BATTEMENT`) court à partir de là : le participant reçoit le
+    message le jour où sa place devait partir, et il lui reste deux jours pour
+    agir. Prévenir plus tôt ferait lire une date qui n'est pas encore la sienne.
+
+    ⚠️ **Aucune coordonnée de règlement n'y figure**, et le message ne réclame
+    rien : une pré-inscription n'a jamais reçu de quoi payer. Lui demander de
+    l'argent serait le défaut corrigé la veille, une porte plus loin.
+  */
+  const { docs: aPrevenir } = await payload.find({
+    collection: "inscriptions",
+    where: {
+      and: [
+        { statut: { equals: "demandee" } },
+        { contratSigneLe: { exists: false } },
+        { placeRappeleeLe: { exists: false } },
+        { createdAt: { less_than: new Date(maintenant - JOURS_DE_GRACE * JOUR_MS).toISOString() } },
+      ],
+    },
+    limit: 200,
+    depth: 2,
+    overrideAccess: true,
+  });
+
+  const prevenus: string[] = [];
+  const prevenusManques: string[] = [];
+
+  for (const dossier of aPrevenir) {
+    const session = typeof dossier.session === "object" ? dossier.session : undefined;
+    const programme =
+      session && typeof session.programme === "object" ? session.programme : undefined;
+    const ligne = `${dossier.reference} · ${dossier.apprenantNom}`;
+
+    const parti = await courrielPlaceBientotRendue(payload, {
+      reference: String(dossier.reference),
+      apprenantNom: String(dossier.apprenantNom),
+      apprenantEmail: String(dossier.apprenantEmail),
+      programmeTitre: programme?.titre ?? "votre parcours",
+      /*
+        ⚠️ La même composition que la page du dossier, importée plutôt que
+        recopiée : la référence d'une session s'écrit « Parcours — Mode —
+        Date », et la répéter sous un titre qui nomme déjà le parcours donne
+        « Directeur X — Directeur X — Classe virtuelle ».
+      */
+      sessionDetail: sansLeParcours(session?.reference, programme?.titre),
+      tenueJusquau: finDeLaTenue(String(dossier.createdAt)).toISOString(),
+      urlDossier: `${site}/inscription/${dossier.reference}`,
+    });
+
+    if (!parti) {
+      /*
+        ⚠️ Sans date posée, la place reste tenue : c'est la garde. On réessaiera
+        demain, et le bilan dit à l'équipe qui n'a rien reçu.
+      */
+      prevenusManques.push(ligne);
+      continue;
+    }
+
+    await payload.update({
+      collection: "inscriptions",
+      id: dossier.id,
+      overrideAccess: true,
+      data: { placeRappeleeLe: new Date(maintenant).toISOString() },
+    });
+    prevenus.push(ligne);
+  }
+
+  /*
     ── Rendre les places que le temps a libérées ─────────────────────────────
     Une inscription tient sa place sept jours sans versement. Passé ce délai
     elle la rend — mais le temps n'écrit rien : sans repasser, une place
@@ -270,12 +351,32 @@ export async function GET(request: Request) {
           `${enAttenteDeNous.length} dossier(s) non relancé(s) : ils attendent de nous de quoi payer.`,
           ...enAttenteDeNous,
         ]),
+    ...(prevenus.length === 0
+      ? []
+      : [
+          "",
+          `${prevenus.length} pré-inscription(s) prévenue(s) : leur place part dans deux jours.`,
+          ...prevenus,
+        ]),
+    /*
+      ⚠️ Ceux-là gardent leur place tant qu'on n'a pas su les prévenir. Sans
+      cette ligne, une panne d'expédition ferait dormir des places sans que
+      personne le sache.
+    */
+    ...(prevenusManques.length === 0
+      ? []
+      : [
+          "",
+          `⚠️ ${prevenusManques.length} pré-inscription(s) non prévenue(s) : leur place reste tenue, repris demain.`,
+          ...prevenusManques,
+        ]),
   ]);
 
   const alerte = manques.length > 0 ? `, ${manques.length} envoi(s) IMPOSSIBLE(S)` : "";
   payload.logger.info(
     `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ` +
-      `${bilan.length} relance(s), ${enAttenteDeNous.length} en attente de nous${alerte}`,
+      `${bilan.length} relance(s), ${enAttenteDeNous.length} en attente de nous, ` +
+      `${prevenus.length} place(s) annoncée(s)${alerte}`,
   );
 
   return Response.json({
@@ -284,6 +385,9 @@ export async function GET(request: Request) {
     relances: bilan.length,
     // Ceux qu'on n'a pas relancés faute de leur avoir envoyé de quoi payer.
     enAttenteDeNous: enAttenteDeNous.length,
+    // Les pré-inscriptions prévenues que leur place arrive au terme annoncé.
+    placesAnnoncees: prevenus.length,
+    placesNonAnnoncees: prevenusManques.length,
     // Ce que le planificateur verra dans son journal si le courriel flanche.
     envoisImpossibles: manques.length,
     placesRendues: rendues,

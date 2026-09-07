@@ -42,7 +42,7 @@
  * qu'il lit.
  */
 
-import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue, finDuBattement } from "@/lib/places";
 
 /**
  * Ce que le calcul a besoin de savoir. Rien de plus, rien de Payload.
@@ -91,6 +91,7 @@ export type Clef =
   | "paye"
   | "contrat-a-signer"
   | "preinscription"
+  | "dernier-delai"
   | "place-expiree"
   | "termine"
   | "annule";
@@ -146,10 +147,23 @@ export function avancementDuDossier(d: FaitsDuDossier, maintenant: Date): Avance
       personne peut toujours revenir — c'est elle qu'on attend, comme avant.
     */
     const depart = departDeLaTenue(d);
-    if (depart && finDeLaTenue(depart).getTime() <= maintenant.getTime()) {
+    if (depart && finDuBattement(depart).getTime() <= maintenant.getTime()) {
       return {
         clef: "place-expiree",
         libelle: "Pré-inscription expirée — sa place est repartie",
+        ton: "attente",
+      };
+    }
+    /*
+      ⚠️ **Entre la date annoncée et le départ réel**, la place est encore là
+      et le participant vient d'être prévenu par courriel. C'est le seul moment
+      où un appel peut encore la sauver — et il dure deux jours. Le confondre
+      avec une pré-inscription ordinaire le noierait parmi les autres.
+    */
+    if (depart && finDeLaTenue(depart).getTime() <= maintenant.getTime()) {
+      return {
+        clef: "dernier-delai",
+        libelle: "Dernier délai — sa place part sous deux jours",
         ton: "attente",
       };
     }

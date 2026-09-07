@@ -194,9 +194,21 @@ attendu(
   "Pré-inscription — rien ne l'engage encore",
   "attente",
 );
+/*
+  ⚠️ **Le battement de deux jours.** Passé la date annoncée, la place est
+  encore là et le participant vient d'être prévenu : c'est le seul moment où un
+  appel peut la sauver. Le confondre avec une pré-inscription ordinaire — ou
+  avec une place déjà perdue — ferait manquer les deux.
+*/
 attendu(
-  "⚠️ passé sept jours, la place est repartie",
+  "⚠️ passé la date annoncée, la place tient encore deux jours",
   { statut: "demandee", createdAt: ilYA(8), echeances: [{ statut: "attendu" }] },
+  "Dernier délai — sa place part sous deux jours",
+  "attente",
+);
+attendu(
+  "⚠️ passé le battement, la place est repartie",
+  { statut: "demandee", createdAt: ilYA(10), echeances: [{ statut: "attendu" }] },
   "Pré-inscription expirée — sa place est repartie",
   "attente",
 );

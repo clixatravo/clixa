@@ -5,7 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
-import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue, finDuBattement } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import { SignalerLead } from "@/components/SignalerLead";
 import Link from "next/link";
@@ -171,6 +171,15 @@ export default async function Dossier({ params, searchParams }: Props) {
       : undefined;
   const tenueJusquau = depart ? finDeLaTenue(depart) : undefined;
   const tenueExpiree = verifierTenueExpiree(tenueJusquau);
+  /*
+    ⚠️ **Trois fenêtres, pas deux** (depuis le 7 septembre 2026). La place part
+    deux jours après la date annoncée — un battement que la direction a voulu
+    pour ne pas punir un retard d'un jour. Entre les deux, la page annonçait
+    « votre place est repartie » alors qu'elle était encore là : le contraire
+    de ce qui est, dans le sens généreux, mais un mensonge quand même — et
+    celui-là fait renoncer quelqu'un qui pouvait encore agir.
+  */
+  const placeRendue = depart ? verifierTenueExpiree(finDuBattement(depart)) : false;
 
   /*
     ⚠️ Sans terme ne veut pas dire sans nouvelle. Un contrat signé dont les
@@ -275,11 +284,18 @@ export default async function Dossier({ params, searchParams }: Props) {
                 tenueExpiree ? "border-gold text-ivory" : "border-line text-ivory-dim"
               }`}
             >
-              {tenueExpiree ? (
+              {placeRendue ? (
                 <>
-                  Le délai de sept jours est passé et votre place est repartie au catalogue. Elle
-                  vous est rendue dès réception de votre premier versement, si la session n&apos;est
-                  pas complète — écrivez-nous plutôt que d&apos;attendre.
+                  Le délai est passé et votre place est repartie au catalogue. Elle vous est rendue
+                  dès réception de votre premier versement, si la session n&apos;est pas complète —
+                  écrivez-nous plutôt que d&apos;attendre.
+                </>
+              ) : tenueExpiree ? (
+                <>
+                  Le délai est passé, mais{" "}
+                  <strong className="text-ivory">votre place n&apos;est pas encore repartie</strong>
+                  . Demandez votre contrat aujourd&apos;hui, ou écrivez-nous — nous ne pouvons pas
+                  la garder longtemps.
                 </>
               ) : (
                 <>

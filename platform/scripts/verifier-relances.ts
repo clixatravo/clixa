@@ -237,6 +237,82 @@ try {
     });
     console.log("  · dossier sans coordonnées supprimé");
   }
+
+  /*
+    ── ⚠️ Une place ne part pas sans qu'on l'ait annoncé ─────────────────────
+    Une pré-inscription retient une place sept jours, puis la tâche la rend au
+    catalogue. Elle le faisait **en silence** : le participant ne l'apprenait
+    qu'en rouvrant sa page. Sur les quatorze dossiers de production du
+    6 septembre 2026, neuf étaient dans ce cas.
+
+    Décision de la direction, le 7 septembre : on prévient, et la place ne part
+    pas tant que le message n'est pas parti. `placeRappeleeLe` n'est écrite
+    qu'après un envoi réussi — c'est elle qui autorise le départ.
+
+    ⚠️ Le dossier d'épreuve est **vieilli en base**, `created_at` reculé de dix
+    jours : sans cela il faudrait attendre une semaine pour éprouver une règle
+    qui se joue en une semaine.
+  */
+  const vieux = await payload.create({
+    collection: "inscriptions",
+    overrideAccess: true,
+    data: {
+      session: sessions[0]!.id,
+      statut: "demandee",
+      apprenantNom: "Épreuve Place Ancienne",
+      apprenantEmail: `place-ancienne.${Date.now()}@epreuve.invalid`,
+      apprenantWhatsapp: "+212600000000",
+      apprenantPays: "Maroc",
+      planPaiement: "P1",
+      echeances: [{ montant: 423, statut: "attendu", dateLimite: hier }],
+    } as never,
+  });
+  await payload.db.drizzle.execute(
+    `UPDATE inscriptions SET created_at = now() - interval '10 days' WHERE id = ${vieux.id}` as never,
+  );
+
+  const rappelDe = async (): Promise<string | undefined> => {
+    const d = await payload.findByID({
+      collection: "inscriptions",
+      id: vieux.id,
+      overrideAccess: true,
+      depth: 0,
+    });
+    return (d as { placeRappeleeLe?: string | null }).placeRappeleeLe ?? undefined;
+  };
+
+  try {
+    dire("la place n'a pas encore été annoncée", !(await rappelDe()));
+
+    /*
+      ⚠️ **L'expéditeur en panne, d'abord.** C'est la moitié qui compte : si la
+      date se posait quand même, la place partirait alors que personne n'a rien
+      reçu — exactement ce que la direction a demandé d'empêcher.
+    */
+    payload.sendEmail = async () => {
+      throw new Error("expéditeur en panne (épreuve)");
+    };
+    const enPanne = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    dire("la route répond malgré la panne", enPanne.placesAnnoncees === 0);
+    dire("⚠️ et compte la place comme non annoncée", enPanne.placesNonAnnoncees >= 1);
+    dire("⚠️ aucune date n'est posée : la place reste tenue", !(await rappelDe()));
+
+    payload.sendEmail = expediteur;
+    const revenu = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    dire("une fois l'expéditeur revenu, l'annonce part", revenu.placesAnnoncees >= 1);
+    dire("⚠️ et la date est enfin posée", Boolean(await rappelDe()));
+
+    /*
+      ⚠️ Et une seule fois : un second passage le même jour ne réécrit pas la
+      date et ne renvoie pas le message. Sans cette garde, le participant
+      recevrait le même courriel tous les matins jusqu'à ce que sa place parte.
+    */
+    const aussitot = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    dire("⚠️ un second passage n'annonce pas deux fois", aussitot.placesAnnoncees === 0);
+  } finally {
+    await payload.delete({ collection: "inscriptions", id: vieux.id, overrideAccess: true });
+    console.log("  · dossier de place ancienne supprimé");
+  }
 } finally {
   payload.sendEmail = expediteur;
   if (dossierId !== undefined) {

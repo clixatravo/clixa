@@ -978,6 +978,102 @@ export async function courrielRelance(
   });
 }
 
+/**
+ * Au participant : sa place arrive au terme annoncé.
+ *
+ * ── ⚠️ Le seul message que le tunnel n'envoyait pas ─────────────────────────
+ * Une pré-inscription retient une place sept jours. Passé ce délai, la tâche
+ * quotidienne la rend au catalogue — **en silence**. Le participant ne
+ * l'apprenait qu'en rouvrant sa page, c'est-à-dire à peu près jamais : les
+ * treize autres gabarits couvraient tout le reste du tunnel, celui-là
+ * n'existait pas.
+ *
+ * Sur les quatorze dossiers de production du 6 septembre 2026, neuf étaient
+ * dans ce cas. Décision de la direction, le 7 septembre : on prévient, et la
+ * place ne part pas tant que le message n'est pas parti.
+ *
+ * ── Ce qu'il dit, et ce qu'il ne dit pas ────────────────────────────────────
+ * ⚠️ **Il ne réclame pas d'argent.** Une pré-inscription n'engage à rien et
+ * n'a reçu aucune coordonnée de règlement : lui demander de payer serait le
+ * même défaut que la relance corrigée la veille. Il demande le seul geste
+ * qu'il puisse faire — demander son contrat — ou de nous écrire.
+ *
+ * ⚠️ **Le battement de deux jours n'y figure pas.** Une échéance qu'on annonce
+ * plus longue est une échéance qu'on repousse ; le délai gardé en réserve
+ * sert à ne pas punir un retard d'un jour, pas à être promis.
+ *
+ * ⚠️ Rend `true` seulement si le courriel est parti — l'appelant écrit
+ * `placeRappeleeLe`, et c'est cette date qui autorise la place à repartir.
+ */
+export async function courrielPlaceBientotRendue(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    sessionDetail: string;
+    tenueJusquau: string;
+    urlDossier: string;
+  },
+): Promise<boolean> {
+  const quand = JOUR.format(new Date(d.tenueJusquau));
+
+  const corpsHtml = `
+    <p>Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+    <p>
+      Vous avez retenu une place pour <em>« ${echapper(d.programmeTitre)} »</em>
+      — ${echapper(d.sessionDetail)}. Cette place vous est tenue jusqu'au
+      <strong style="color: #e9cd84;">${quand}</strong>.
+    </p>
+    <p>
+      Rien n'a encore été encaissé et rien ne vous engage : la pré-inscription
+      réserve simplement votre place le temps que vous décidiez.
+    </p>
+
+    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(201, 162, 76, 0.2);">
+      <div style="font-size: 13px; color: #cbd5e1;">Pour la garder, demandez votre <strong>contrat de formation</strong> depuis votre dossier.</div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;">Une question d'abord ? Répondez à ce message — un conseiller vous répond.</div>
+    </div>
+
+    <p style="font-size: 13px; color: #94a3b8;">
+      Sans nouvelle de votre part, la place repartira au catalogue et pourra
+      être prise par quelqu'un d'autre. Vous pourrez toujours revenir : ce
+      message ne ferme rien.
+    </p>
+  `;
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `Votre place est tenue jusqu'au ${quand} — ${d.programmeTitre}`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Vous avez retenu une place pour « ${d.programmeTitre} » — ${d.sessionDetail}.`,
+      `Cette place vous est tenue jusqu'au ${quand}.`,
+      "",
+      "Rien n'a été encaissé et rien ne vous engage : la pré-inscription réserve",
+      "simplement votre place le temps que vous décidiez.",
+      "",
+      "Pour la garder, demandez votre contrat de formation depuis votre dossier :",
+      d.urlDossier,
+      "",
+      "Une question d'abord ? Répondez à ce message.",
+      "",
+      "Sans nouvelle, la place repartira au catalogue — vous pourrez toujours revenir.",
+      "",
+      "CLIXA Institute — Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Votre place vous est tenue",
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Voir mon dossier",
+      boutonLien: d.urlDossier,
+    }),
+  });
+}
+
 /** À l'équipe : récapitulatif du traitement des relances. */
 export async function courrielBilanRelances(payload: Payload, lignes: string[]): Promise<void> {
   if (!EQUIPE || lignes.length === 0) return;

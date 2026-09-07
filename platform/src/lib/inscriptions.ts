@@ -113,7 +113,7 @@ export interface Dossier {
  * qu'elle a été saisie à la main, ou que le parcours a été renommé depuis — on
  * rend le libellé entier plutôt qu'un fragment tronqué au mauvais endroit.
  */
-function sansLeParcours(reference?: string | null, titre?: string | null): string {
+export function sansLeParcours(reference?: string | null, titre?: string | null): string {
   const libelle = reference ?? "Session";
   if (!titre) return libelle;
   const prefixe = `${titre} — `;

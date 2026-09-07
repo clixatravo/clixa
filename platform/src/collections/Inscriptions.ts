@@ -760,6 +760,35 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                ── ⚠️ Sa place ne part pas sans qu'il l'ait su ───────────────
+                Posée par la tâche quotidienne, **une fois le courriel parti** —
+                jamais avant. Tant qu'elle est vide, la place d'une
+                pré-inscription est tenue, si vieille soit-elle : un envoi qui
+                échoue est notre défaillance, et elle ne se paie pas sur la
+                place de quelqu'un qui n'a rien vu venir.
+
+                Décision de la direction, le 7 septembre 2026. C'est le même
+                principe que le contrat signé qui attend nos coordonnées : tant
+                que la balle est chez nous, rien n'expire. Voir `lib/places.ts`.
+
+                ⚠️ Elle n'est pas un réglage : la vider **rend** sa place au
+                dossier et fera repartir un courriel le lendemain. Readonly pour
+                cette raison.
+              */
+              name: "placeRappeleeLe",
+              type: "date",
+              label: "Place — rappel envoyé le",
+              index: true,
+              admin: {
+                width: "30%",
+                readOnly: true,
+                description:
+                  "Posée par la tâche quotidienne après l'envoi. Tant qu'elle est vide, la place est tenue.",
+                date: { pickerAppearance: "dayAndTime", displayFormat: "d MMM yyyy · HH:mm" },
+              },
+            },
+            {
+              /*
                 ── Posée une fois, jamais recalculée ────────────────────────
                 Le crochet `beforeChange` la remplit la première fois que le
                 statut passe « Terminée » ; elle reste ensuite fixe, y compris
