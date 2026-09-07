@@ -86,6 +86,8 @@ export interface DossierTenu {
   createdAt?: string | Date | null;
   contratSigneLe?: string | Date | null;
   coordonneesEnvoyeesLe?: string | Date | null;
+  /** Quand l'annonce « votre place n'est pas encore repartie » est partie. */
+  placeRappeleeLe?: string | Date | null;
 }
 
 /**
@@ -117,6 +119,46 @@ export function finDeLaTenue(depuis: Date | string): Date {
 }
 
 /**
+ * Le moment où la place part **réellement** — ou `undefined` si rien ne la fera
+ * partir aujourd'hui.
+ *
+ * ── ⚠️ Pourquoi `finDuBattement` ne suffisait pas ───────────────────────────
+ * Le battement courait depuis le terme annoncé, sur l'hypothèse que l'annonce
+ * part **le jour du terme**. Elle ne part pas toujours : c'est tout l'objet de
+ * `placeRappeleeLe`, qui n'est écrite qu'après un envoi réussi — quota épuisé,
+ * service en panne, tâche interrompue. Une annonce en retard de deux jours
+ * trouvait alors le battement déjà consommé, et **le même passage de 8 h
+ * envoyait le courriel puis rendait la place**.
+ *
+ * Reproduit sur un dossier de douze jours : le participant lit « votre place
+ * n'est pas encore repartie » à 8 h 00, elle est repartie à 8 h 00, et le bilan
+ * annonce à l'équipe « leur place part dans deux jours ». La garde tenait sa
+ * promesse à la lettre — un courriel est bien parti d'abord — et la trahissait
+ * entièrement : ce que la direction a demandé, c'est qu'il ait le temps d'agir.
+ *
+ * ── La règle, et pourquoi elle est plus simple ──────────────────────────────
+ * Le battement court depuis **l'annonce**, pas depuis le terme. Comme l'annonce
+ * ne part jamais avant le terme, cette date est toujours postérieure à
+ * l'ancienne : personne n'y perd un jour, et celui qu'on a prévenu en retard
+ * garde ses deux jours pleins. Deux branches deviennent une.
+ *
+ * `undefined` ne veut pas dire « on ne sait pas », mais « rien n'expire » :
+ * le contrat signé qui attend nos coordonnées, et la pré-inscription qu'on n'a
+ * pas encore su prévenir. L'appelant doit alors se taire.
+ */
+export function finDeLaPlace(dossier: DossierTenu): Date | undefined {
+  const depart = departDeLaTenue(dossier);
+  if (!depart) return undefined;
+
+  // Coordonnées parties : le participant peut payer, et les relances le disent.
+  if (dossier.coordonneesEnvoyeesLe) return finDuBattement(depart);
+
+  // Pré-inscription : rien ne part tant qu'on ne l'a pas prévenue.
+  if (!dossier.placeRappeleeLe) return undefined;
+  return new Date(new Date(dossier.placeRappeleeLe).getTime() + JOURS_DE_BATTEMENT * 86_400_000);
+}
+
+/**
  * La même condition, en SQL — pour qui ne passe pas par Payload.
  *
  * ⚠️ Cette constante existe pour qu'il n'y ait **pas** de troisième
@@ -134,9 +176,9 @@ export const OCCUPE_UNE_PLACE_SQL = `(
   OR (i.statut = 'demandee'
         AND i.coordonnees_envoyees_le > now() - interval '${JOURS_DE_GRACE + JOURS_DE_BATTEMENT} days')
   OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
-        AND i.created_at > now() - interval '${JOURS_DE_GRACE + JOURS_DE_BATTEMENT} days')
-  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
         AND i.place_rappelee_le IS NULL)
+  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
+        AND i.place_rappelee_le > now() - interval '${JOURS_DE_BATTEMENT} days')
 )`;
 
 /**
@@ -164,14 +206,7 @@ export function occupeUnePlace(): Where {
       },
       // Coordonnées parties : sept jours pour que le transfert arrive, plus le battement.
       { and: [demandee, { coordonneesEnvoyeesLe: { greater_than: limite } }] },
-      // Pré-inscription seule : sept jours à partir du dépôt, plus le battement.
-      {
-        and: [
-          demandee,
-          { contratSigneLe: { exists: false } },
-          { createdAt: { greater_than: limite } },
-        ],
-      },
+
       /*
         ── ⚠️ Jamais rendue sans avoir été annoncée ──────────────────────────
         Une pré-inscription qu'on n'a pas su prévenir garde sa place, si vieille
@@ -193,6 +228,24 @@ export function occupeUnePlace(): Where {
           demandee,
           { contratSigneLe: { exists: false } },
           { placeRappeleeLe: { exists: false } },
+        ],
+      },
+      /*
+        ── ⚠️ Et deux jours **après l'annonce**, pas après le terme ──────────
+        Le battement courait depuis la date annoncée, sur l'hypothèse que
+        l'annonce part le jour du terme. Une annonce retardée par une panne
+        d'expédition trouvait le battement déjà écoulé : le même passage de
+        8 h envoyait le courriel *et* rendait la place. Voir `finDeLaPlace`.
+      */
+      {
+        and: [
+          demandee,
+          { contratSigneLe: { exists: false } },
+          {
+            placeRappeleeLe: {
+              greater_than: new Date(Date.now() - JOURS_DE_BATTEMENT * 86_400_000).toISOString(),
+            },
+          },
         ],
       },
     ],

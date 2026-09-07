@@ -618,10 +618,61 @@ reste du tunnel, celui-là n'existait pas. Trois règles, prises ensemble :
    rien vu venir. Même principe que le contrat signé qui attend nos
    coordonnées. ⚠️ Le revers est réel : si l'expédition reste en panne, des
    places dorment — le bilan quotidien les nomme.
-3. **La place part deux jours après la date annoncée** (`JOURS_DE_BATTEMENT`).
-   Le battement ne se promet nulle part : une échéance qu'on annonce plus
-   longue est une échéance qu'on repousse. Il sert à ne pas punir un retard
-   d'un jour, sur un parcours qui commence dans un mois.
+3. **La place part deux jours après l'annonce** (`JOURS_DE_BATTEMENT`,
+   `finDeLaPlace`). Le battement ne se promet nulle part : une échéance qu'on
+   annonce plus longue est une échéance qu'on repousse. Il sert à ne pas punir
+   un retard d'un jour, sur un parcours qui commence dans un mois.
+
+   ⚠️ **Il courait depuis le terme, et c'était un défaut** (corrigé le
+   7 septembre 2026 au soir). Le calcul supposait que l'annonce part *le jour
+   du terme*. Elle ne part pas toujours — c'est tout l'objet de
+   `placeRappeleeLe`, écrite seulement après un envoi réussi. Une annonce
+   retardée de deux jours par une panne d'expédition trouvait donc le battement
+   déjà consommé, et **le même passage de 8 h envoyait le courriel puis rendait
+   la place**.
+
+   Reproduit sur un dossier de douze jours : le participant lit « votre place
+   n'est pas encore repartie » à 8 h 00, elle est repartie à 8 h 00, et le bilan
+   annonce à l'équipe « leur place part dans deux jours ». La garde tenait sa
+   promesse à la lettre — un courriel partait bien d'abord — et la trahissait
+   entièrement : ce que la direction a demandé, c'est qu'il ait le temps d'agir.
+
+   - **La règle en sort plus simple.** L'annonce ne partant jamais avant le
+     terme, la date obtenue est toujours postérieure à l'ancienne : personne n'y
+     perd un jour, et deux branches de `occupeUnePlace` deviennent une.
+   - ⚠️ **Les trois lecteurs de `finDuBattement` ignoraient l'annonce** — la
+     page du participant, la colonne « Où en est », et le décompte SQL. Les deux
+     premiers annonçaient donc « place repartie » sur une place que le troisième
+     tenait toujours. Ils lisent `finDeLaPlace`, qui rend `undefined` tant que
+     rien n'est parti.
+   - **La colonne dit alors « Terme atteint — on la prévient au prochain
+     passage »**, au lieu de « part sous deux jours » : le battement n'a pas
+     commencé.
+   - ⚠️ **`verifier-places.ts` posait `place_rappelee_le` à `jours - 2`**, calé
+     sur l'ancienne règle. Depuis que le battement court depuis l'annonce, cette
+     date décidait de tout — posée deux jours avant aujourd'hui, elle faisait
+     expirer à l'instant une place qui devait tenir. La tâche prévient au terme,
+     soit `jours - 7`.
+   - **Prouvé en remettant le défaut** : le contrôle passe au rouge sur
+     « 2 → 1 place(s) réservée(s) ».
+
+⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
+depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
+`lib/places.ts` sur les dossiers réels et imprime, jour par jour, les courriels
+qui partiront et les places qui repartiront. La tâche quotidienne est le seul
+endroit du système où quelque chose change sans que personne ait agi — on ne
+peut donc pas l'éprouver après coup, le tort est fait, et il est fait à des gens
+venus d'une annonce.
+
+```bash
+cd platform && set -a && . ./.env.prod && set +a \
+  && npx payload run scripts/journal-des-relances.ts 12
+```
+
+⚠️ **Une projection doit rejouer les écritures de la tâche.** Le premier jet
+relisait `placeRappeleeLe` tel qu'il est *aujourd'hui* — vide — à chacun des
+douze jours projetés, et concluait donc que plus aucune place ne partirait
+jamais : onze fausses alertes, qui n'étaient qu'un défaut de son propre calcul.
 
 ⚠️ **Et la page ne prétend pas que la place est partie tant qu'elle est là.**
 Elle a donc **trois** fenêtres, plus deux : « tenue jusqu'au X », puis « le

@@ -199,17 +199,47 @@ attendu(
   encore là et le participant vient d'être prévenu : c'est le seul moment où un
   appel peut la sauver. Le confondre avec une pré-inscription ordinaire — ou
   avec une place déjà perdue — ferait manquer les deux.
+
+  ⚠️ **Ces deux cas portent maintenant `placeRappeleeLe`, et ce n'est pas une
+  formalité.** Le battement court depuis l'annonce, plus depuis le terme : sans
+  cette date, la place n'a pas de terme du tout. C'est le défaut du 7 septembre
+  2026 au soir — une annonce retardée par une panne d'expédition trouvait le
+  battement déjà consommé, et le même passage de 8 h envoyait le courriel puis
+  rendait la place.
 */
 attendu(
   "⚠️ passé la date annoncée, la place tient encore deux jours",
-  { statut: "demandee", createdAt: ilYA(8), echeances: [{ statut: "attendu" }] },
+  {
+    statut: "demandee",
+    createdAt: ilYA(8),
+    placeRappeleeLe: ilYA(1),
+    echeances: [{ statut: "attendu" }],
+  },
   "Dernier délai — sa place part sous deux jours",
   "attente",
 );
 attendu(
   "⚠️ passé le battement, la place est repartie",
-  { statut: "demandee", createdAt: ilYA(10), echeances: [{ statut: "attendu" }] },
+  {
+    statut: "demandee",
+    createdAt: ilYA(10),
+    placeRappeleeLe: ilYA(3),
+    echeances: [{ statut: "attendu" }],
+  },
   "Pré-inscription expirée — sa place est repartie",
+  "attente",
+);
+/*
+  ⚠️ **Le terme atteint, mais rien n'est parti** — l'expéditeur est tombé, ou la
+  tâche n'est pas encore repassée. La colonne disait « sa place est repartie »
+  quand le décompte la tenait toujours : le mensonge inverse de celui qu'on
+  venait de corriger la veille, et celui-là fait renoncer l'équipe sur un
+  dossier qu'un appel peut encore sauver.
+*/
+attendu(
+  "⚠️ le terme atteint sans annonce partie, la place n'est pas perdue",
+  { statut: "demandee", createdAt: ilYA(10), echeances: [{ statut: "attendu" }] },
+  "Terme atteint — on la prévient au prochain passage",
   "attente",
 );
 /*

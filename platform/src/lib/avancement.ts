@@ -42,7 +42,7 @@
  * qu'il lit.
  */
 
-import { departDeLaTenue, finDeLaTenue, finDuBattement } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue, finDeLaPlace } from "@/lib/places";
 
 /**
  * Ce que le calcul a besoin de savoir. Rien de plus, rien de Payload.
@@ -61,6 +61,14 @@ export type FaitsDuDossier = {
   contratSigneLe?: string | null;
   contratVerifieLe?: string | null;
   coordonneesEnvoyeesLe?: string | null;
+  /**
+   * Quand l'annonce « votre place n'est pas encore repartie » est partie.
+   *
+   * ⚠️ Sans elle, la colonne annonçait « sa place est repartie » sur un dossier
+   * dont la place est encore là : le battement court depuis l'annonce, et une
+   * annonce que l'expéditeur n'a pas su faire partir n'a jamais eu lieu.
+   */
+  placeRappeleeLe?: string | null;
   echeances?: { statut?: string | null }[] | null;
 };
 
@@ -147,7 +155,8 @@ export function avancementDuDossier(d: FaitsDuDossier, maintenant: Date): Avance
       personne peut toujours revenir — c'est elle qu'on attend, comme avant.
     */
     const depart = departDeLaTenue(d);
-    if (depart && finDuBattement(depart).getTime() <= maintenant.getTime()) {
+    const partie = finDeLaPlace(d);
+    if (partie && partie.getTime() <= maintenant.getTime()) {
       return {
         clef: "place-expiree",
         libelle: "Pré-inscription expirée — sa place est repartie",
@@ -163,7 +172,14 @@ export function avancementDuDossier(d: FaitsDuDossier, maintenant: Date): Avance
     if (depart && finDeLaTenue(depart).getTime() <= maintenant.getTime()) {
       return {
         clef: "dernier-delai",
-        libelle: "Dernier délai — sa place part sous deux jours",
+        /*
+          ⚠️ « Sous deux jours » est vrai **une fois l'annonce partie**, et le
+          libellé le dit maintenant autrement tant qu'elle ne l'est pas : le
+          battement court depuis l'annonce, pas depuis le terme.
+        */
+        libelle: d.placeRappeleeLe
+          ? "Dernier délai — sa place part sous deux jours"
+          : "Terme atteint — on la prévient au prochain passage",
         ton: "attente",
       };
     }

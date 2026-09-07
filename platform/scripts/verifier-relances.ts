@@ -419,6 +419,78 @@ try {
     await payload.delete({ collection: "inscriptions", id: vieux.id, overrideAccess: true });
     console.log("  · dossier de place ancienne supprimé");
   }
+
+  /*
+    ── ⚠️ Une annonce en retard laisse quand même ses deux jours ─────────────
+    Le battement courait depuis le **terme annoncé**, sur l'hypothèse que
+    l'annonce part le jour du terme. Elle ne part pas toujours — c'est tout
+    l'objet de `placeRappeleeLe`, écrite seulement après un envoi réussi. Une
+    annonce retardée de deux jours par une panne d'expédition trouvait donc le
+    battement déjà consommé, et **le même passage de 8 h envoyait le courriel
+    puis rendait la place**.
+
+    Reproduit avant d'être corrigé, sur un dossier de douze jours : le
+    participant lit « votre place n'est pas encore repartie » à 8 h 00, elle est
+    repartie à 8 h 00, et le bilan annonce à l'équipe « leur place part dans
+    deux jours ». La garde tenait sa promesse à la lettre — un courriel partait
+    bien d'abord — et la trahissait entièrement.
+
+    ⚠️ **Douze jours, pas dix.** À dix, le battement n'est pas encore écoulé au
+    moment de l'annonce et le contrôle passerait au vert avec le défaut présent.
+  */
+  const tardif = await payload.create({
+    collection: "inscriptions",
+    overrideAccess: true,
+    data: {
+      session: sessions[0]!.id,
+      statut: "demandee",
+      apprenantNom: "Épreuve Annonce Tardive",
+      apprenantEmail: `tardive.${Date.now()}@epreuve.invalid`,
+      apprenantWhatsapp: "+212600000000",
+      apprenantPays: "Maroc",
+      planPaiement: "P1",
+      echeances: [{ montant: 423, statut: "attendu" }],
+    } as never,
+  });
+  await payload.db.drizzle.execute(
+    `UPDATE inscriptions SET created_at = now() - interval '12 days' WHERE id = ${tardif.id}` as never,
+  );
+
+  try {
+    const placesDe = async (): Promise<number> =>
+      Number(
+        (
+          await payload.findByID({
+            collection: "sessions",
+            id: sessions[0]!.id,
+            overrideAccess: true,
+            depth: 0,
+          })
+        ).placesReservees ?? 0,
+      );
+
+    const avant = await placesDe();
+    const bilan = await (await appeler({ authorization: `Bearer ${SECRET}` })).json();
+    const apres = await placesDe();
+
+    const relu = await payload.findByID({
+      collection: "inscriptions",
+      id: tardif.id,
+      overrideAccess: true,
+      depth: 0,
+    });
+    const annoncee = Boolean((relu as { placeRappeleeLe?: string | null }).placeRappeleeLe);
+
+    dire("l'annonce en retard part quand même", annoncee && bilan.placesAnnoncees >= 1);
+    dire(
+      "⚠️ et sa place ne repart PAS dans le même passage",
+      apres >= avant,
+      `${avant} → ${apres} place(s) réservée(s)`,
+    );
+  } finally {
+    await payload.delete({ collection: "inscriptions", id: tardif.id, overrideAccess: true });
+    console.log("  · dossier d'annonce tardive supprimé");
+  }
 } finally {
   payload.sendEmail = expediteur;
   if (dossierId !== undefined) {

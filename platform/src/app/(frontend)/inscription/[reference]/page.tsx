@@ -5,7 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
-import { departDeLaTenue, finDeLaTenue, finDuBattement } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue, finDeLaPlace } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import { SignalerLead } from "@/components/SignalerLead";
 import Link from "next/link";
@@ -179,7 +179,17 @@ export default async function Dossier({ params, searchParams }: Props) {
     de ce qui est, dans le sens généreux, mais un mensonge quand même — et
     celui-là fait renoncer quelqu'un qui pouvait encore agir.
   */
-  const placeRendue = depart ? verifierTenueExpiree(finDuBattement(depart)) : false;
+  /*
+    ⚠️ **Et la troisième fenêtre attendait le battement, pas l'annonce.** Une
+    annonce que l'expéditeur n'a pas su faire partir laissait la page dire
+    « votre place est repartie » sur une place que le décompte tenait toujours —
+    le mensonge inverse de celui qu'on venait de corriger, et celui-là fait
+    renoncer quelqu'un qui pouvait encore agir. `finDeLaPlace` rend `undefined`
+    tant que rien ne lui est parvenu : la page reste alors sur « le délai est
+    passé, elle n'est pas encore repartie », ce qui est exactement vrai.
+  */
+  const partie = finDeLaPlace(dossier);
+  const placeRendue = partie ? verifierTenueExpiree(partie) : false;
 
   /*
     ⚠️ Sans terme ne veut pas dire sans nouvelle. Un contrat signé dont les

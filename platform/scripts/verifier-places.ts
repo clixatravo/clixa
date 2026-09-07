@@ -9,6 +9,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import {
+  JOURS_DE_GRACE,
   OCCUPE_UNE_PLACE_SQL,
   occupeUnePlace,
   rendreLesPlacesExpirees,
@@ -93,8 +94,18 @@ const creer = async (
     ci-dessous mesureraient la garde au lieu du délai. `jamaisPrevenu` sert au
     cas qui éprouve justement la garde.
   */
+  /*
+    ⚠️ **L'annonce est posée au terme, pas au battement** (corrigé le
+    7 septembre 2026 au soir). Elle l'était à `jours - 2`, ce qui calait la date
+    sur l'ancienne règle — le battement courant depuis le terme annoncé. Depuis
+    qu'il court depuis **l'annonce**, cette date décidait de tout : posée deux
+    jours avant aujourd'hui, elle faisait expirer à l'instant une place qui
+    devait tenir. La tâche de 8 h prévient au terme, soit `jours - 7`.
+  */
   if (jours > 0 && !options.signe && !options.jamaisPrevenu) {
-    poser.push(`place_rappelee_le = now() - interval '${Math.max(jours - 2, 0)} days'`);
+    poser.push(
+      `place_rappelee_le = now() - interval '${Math.max(jours - JOURS_DE_GRACE, 0)} days'`,
+    );
   }
   if (poser.length > 0) {
     await payload.db.drizzle.execute(
