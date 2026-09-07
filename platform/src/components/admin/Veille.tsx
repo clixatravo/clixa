@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
+import { occupationDeLaSession } from "@/lib/occupation";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -146,11 +147,30 @@ export async function Veille() {
     overrideAccess: true,
   });
 
-  // 3. Les prochaines sessions pour le planning et les jauges de remplissage
-  const { docs: sessions } = await payload.find({
+  /*
+    3. Les cohortes à surveiller.
+
+    ── ⚠️ « Les trois prochaines » ne voulait rien dire ────────────────────────
+    Le tri était `debut`, limité à trois. Or **les douze sessions commencent le
+    même jour** — le 3 octobre 2026, une seule date parce que la campagne n'en
+    annonce qu'une. Le tri était donc une égalité sur les douze, et la base en
+    rendait trois au hasard.
+
+    Le 7 septembre 2026, ces trois-là étaient à 2/30, 0/30 et 0/30, pendant que
+    la cohorte portée par l'annonce Facebook — Directeur Administratif et
+    Financier — était à **22/30** et arrivait dixième. La direction ouvrait donc
+    ce tableau chaque matin, voyait trois jauges à plat, et en concluait que les
+    places ne descendaient pas. C'était la moitié de sa plainte ; l'autre était
+    la colonne « Places au total » de la liste des sessions.
+
+    On trie par ce que l'écran sert à décider : **la plus remplie d'abord**.
+    `debut` reste en second, pour le jour où les cohortes ne partiront plus
+    toutes ensemble.
+  */
+  const { docs: sessions, totalDocs: sessionsAVenir } = await payload.find({
     collection: "sessions",
     where: { debut: { greater_than_equal: aujourdhui } },
-    sort: "debut",
+    sort: ["-placesReservees", "debut"],
     limit: 3,
     depth: 1,
     overrideAccess: true,
@@ -466,15 +486,38 @@ export async function Veille() {
               <span className="clixa-jauges__icon">✦</span>
               <span className="clixa-jauges__titre">CAPACITÉ &amp; REMPLISSAGE DES COHORTES</span>
             </div>
+            {/*
+              ⚠️ **Trois cartes sur douze cohortes.** Sans le dire, l'écran
+              laissait croire qu'il les montrait toutes — et c'est ce qui rendait
+              trois jauges à plat si convaincantes. Le lien mène à la liste, dont
+              la colonne « Remplissage » porte les douze.
+            */}
             <Link href="/admin/collections/sessions" className="clixa-jauges__lien">
-              Voir tout le calendrier →
+              {sessionsAVenir > sessions.length
+                ? `Les ${sessionsAVenir - sessions.length} autres cohortes →`
+                : "Voir tout le calendrier →"}
             </Link>
           </div>
           <div className="clixa-jauges__liste">
             {sessions.map((s) => {
-              const reservees = typeof s.placesReservees === "number" ? s.placesReservees : 0;
-              const max = typeof s.capacite === "number" && s.capacite > 0 ? s.capacite : 20;
-              const pct = Math.min(100, Math.round((reservees / max) * 100));
+              /*
+                ⚠️ **Le même calcul que la colonne de la liste**, importé et non
+                recopié : deux lectures du même état finissent toujours par
+                diverger, et celles-ci se lisent à deux clics l'une de l'autre.
+
+                ⚠️ Le dénominateur était `s.capacite ?? 20` — un nombre inventé.
+                Une session sans capacité affichait donc un pourcentage calculé
+                sur vingt places qui n'existent nulle part. Le repli ne devine
+                pas : `occupationDeLaSession` rend le ton « inconnu », et la
+                carte le dit.
+              */
+              const remplissage = occupationDeLaSession(s);
+              const reservees = Number(s.placesReservees ?? 0);
+              const max = Number(s.capacite ?? Number.NaN);
+              const pct =
+                Number.isFinite(max) && max > 0
+                  ? Math.min(100, Math.round((reservees / max) * 100))
+                  : 0;
               const progObj = s.programme && typeof s.programme === "object" ? s.programme : null;
               const titre =
                 s.reference ||
@@ -485,8 +528,17 @@ export async function Veille() {
                   )
                 : "À venir";
 
-              const estComplet = pct >= 100;
-              const estBientotPlein = pct >= 75 && !estComplet;
+              /*
+                ⚠️ **Un seul seuil, pas deux.** La carte décidait « Dernières
+                places » à 75 % quand la colonne de la liste décide à cinq
+                places restantes : sur une cohorte de trente, la carte alertait
+                dès 23 inscrits et la colonne à 25. Deux écrans à deux clics
+                l'un de l'autre, deux réponses à la même question — c'est la
+                divergence que `avancementDuDossier` a déjà évitée entre la
+                liste et le bandeau. Le ton vient de `lib/occupation.ts`.
+              */
+              const estComplet = remplissage.ton === "complet";
+              const estBientotPlein = remplissage.ton === "tension";
 
               return (
                 <div key={s.id} className="clixa-jauge-carte">
@@ -503,16 +555,30 @@ export async function Veille() {
                             : ""
                       }`}
                     >
+                      {/*
+                        ⚠️ La date ne distinguait rien : les douze cohortes
+                        partent le même jour, et l'afficher sur chaque carte
+                        occupait la seule place où l'on pouvait dire ce qu'il
+                        reste. Elle ne paraît que si elle apprend quelque chose.
+                      */}
                       {estComplet
                         ? "Complet"
                         : estBientotPlein
                           ? "Dernières places"
-                          : `${dateDebut}`}
+                          : remplissage.ton === "inconnu"
+                            ? dateDebut
+                            : remplissage.libelle}
                     </span>
                   </div>
                   <div className="clixa-jauge-carte__chiffres">
                     <span>
-                      <strong>{reservees}</strong> / {max} places réservées
+                      {remplissage.ton === "inconnu" ? (
+                        "Capacité non renseignée"
+                      ) : (
+                        <>
+                          <strong>{reservees}</strong> / {max} places réservées
+                        </>
+                      )}
                     </span>
                     <span className="clixa-jauge-carte__pct">{pct}%</span>
                   </div>

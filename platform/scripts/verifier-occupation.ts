@@ -174,5 +174,114 @@ function s_capacite(o: { compte: string }): number {
   return Number(o.compte.split(" / ")[1] ?? Number.NaN);
 }
 
+/*
+  ⚠️ **Un seul seuil, pas deux.** La carte du tableau de bord décidait
+  « Dernières places » à 75 % de remplissage, quand la colonne de la liste le
+  décide à cinq places restantes. Sur une cohorte de trente, la carte alertait
+  dès 23 inscrits et la colonne seulement à 25 : deux écrans à deux clics l'un
+  de l'autre, deux réponses à la même question. Les deux lisent désormais
+  `occupationDeLaSession`, et ce contrôle garde la frontière.
+*/
+dire(
+  "⚠️ 23 inscrits sur 30 ne sont pas encore les dernières places",
+  occupationDeLaSession({ capacite: 30, placesReservees: 23 }).ton === "ouvert",
+  "75 % — l'ancien seuil de la carte",
+);
+dire(
+  "et 25 sur 30 le sont, sur les deux écrans",
+  occupationDeLaSession({ capacite: 30, placesReservees: 25 }).ton === "tension",
+);
+
+/* ── Ce que le tableau de bord met en tête ────────────────────────────────── */
+/*
+  ⚠️ **« Les trois prochaines » ne voulait rien dire.** Les jauges du tableau de
+  bord triaient par `debut`, limitées à trois — et les douze sessions commencent
+  le même jour, une seule date parce que la campagne n'en annonce qu'une. Le tri
+  était donc une égalité sur les douze, et la base en rendait trois au hasard.
+
+  Le 7 septembre 2026, ces trois-là étaient à 2/30, 0/30 et 0/30 pendant que la
+  cohorte portée par l'annonce était à 22/30 et arrivait **dixième**. La
+  direction ouvrait ce tableau chaque matin et concluait que rien ne bougeait.
+
+  ⚠️ **Le contrôle se fait sur des dossiers fabriqués**, pas sur la production :
+  il doit rester vrai sur une base vide comme sur une base pleine. Trois
+  sessions, des remplissages différents, et l'on demande laquelle vient en tête.
+*/
+/*
+  ⚠️ **Et il faut fabriquer le remplissage, sinon le contrôle ment.** Le premier
+  jet lisait les sessions telles quelles : sur `dev`, que le ménage des épreuves
+  vide, elles sont toutes à 0/30 — et « 0 · 0 · 0 » est trivialement décroissant.
+  Il passait au vert **avec le tri fautif**, vérifié. Même piège que le premier
+  jet de `verifier-veille.ts`, qui se félicitait de trois « 0 dossier ».
+
+  On pose donc trois remplissages différents sur trois sessions à venir, on
+  demande l'ordre, puis on les remet exactement comme ils étaient.
+*/
+{
+  const { docs: candidates } = await payload.find({
+    collection: "sessions",
+    limit: 3,
+    depth: 0,
+    sort: "id",
+    overrideAccess: true,
+    where: { fin: { greater_than: new Date().toISOString() } },
+  });
+
+  if (candidates.length < 3) {
+    console.log("  · moins de trois sessions à venir : l'ordre n'est pas éprouvé");
+  } else {
+    /* Le plus rempli est posé sur la **dernière** par identifiant : un tri qui
+       retomberait sur l'ordre naturel de la base la mettrait en queue. */
+    const poses = [3, 11, 24];
+    const avant = candidates.map((s) => Number(s.placesReservees ?? 0));
+
+    try {
+      for (const [i, s] of candidates.entries()) {
+        await payload.update({
+          collection: "sessions",
+          id: s.id,
+          overrideAccess: true,
+          data: { placesReservees: poses[i] },
+        });
+      }
+
+      const { docs: ordonnees } = await payload.find({
+        collection: "sessions",
+        limit: 3,
+        depth: 0,
+        sort: ["-placesReservees", "debut"],
+        overrideAccess: true,
+        where: { fin: { greater_than: new Date().toISOString() } },
+      });
+
+      const lus = ordonnees.map((s) => occupationDeLaSession(s as never));
+      const tete = pris(lus[0] ?? { compte: "" });
+      const decroissant = lus.every((o, i) => i === 0 || pris(lus[i - 1]!) >= pris(o));
+
+      dire(
+        "⚠️ le tableau de bord met la cohorte la plus remplie en tête",
+        tete === 24 && decroissant,
+        lus.map((o) => o.compte).join(" · ") || "aucune session",
+      );
+    } finally {
+      for (const [i, s] of candidates.entries()) {
+        await payload.update({
+          collection: "sessions",
+          id: s.id,
+          overrideAccess: true,
+          data: { placesReservees: avant[i] },
+        });
+      }
+      console.log("  · remplissages d'épreuve remis comme ils étaient");
+    }
+  }
+}
+
+/** Les places prises, relues depuis le compte affiché — « 22 / 30 » rend 22. */
+function pris(o: { compte: string }): number {
+  const n = Number(o.compte.split(" / ")[0]);
+  return Number.isFinite(n) ? n : -1;
+}
+
 console.log(manques === 0 ? "\n  La liste montre ce qui bouge.\n" : `\n  ${manques} manque(s).\n`);
 process.exit(manques === 0 ? 0 : 1);

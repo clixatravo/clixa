@@ -482,6 +482,39 @@ une seconde cohorte.
 - **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne, et
   `admin.readOnly` ne vaut que pour l'écran — les crochets écrivent toujours.
 
+⚠️ **Et le tableau de bord montrait trois cohortes au hasard** — l'autre moitié
+de la même plainte, sur l'écran où la direction arrive le matin. Les jauges de
+remplissage triaient par `debut`, limitées à trois. Or **les douze sessions
+commencent le même jour**, une seule date parce que la campagne n'en annonce
+qu'une : le tri était une égalité sur les douze, et la base en rendait trois au
+hasard.
+
+Le 7 septembre 2026, ces trois-là étaient à 2/30, 0/30 et 0/30 — pendant que la
+cohorte portée par l'annonce était à 22/30 et arrivait **dixième**. Trois jauges
+à plat, chaque matin, sur un écran qui prétendait montrer le remplissage.
+
+- **Le tri suit ce que l'écran sert à décider** : la plus remplie d'abord
+  (`["-placesReservees", "debut"]`). La date reste en second, pour le jour où
+  les cohortes ne partiront plus toutes ensemble.
+- ⚠️ **Un seul seuil, pas deux.** La carte décidait « Dernières places » à 75 %
+  quand la colonne de la liste le décide à cinq places restantes : sur une
+  cohorte de trente, la carte alertait dès 23 inscrits et la colonne à 25. Les
+  deux lisent `occupationDeLaSession`.
+- ⚠️ **Le dénominateur était inventé** : `s.capacite ?? 20`. Une session sans
+  capacité affichait un pourcentage calculé sur vingt places qui n'existent
+  nulle part. Le repli ne devine pas — la carte dit « Capacité non renseignée ».
+- **La date a quitté le badge.** Les douze cohortes partent le même jour :
+  l'afficher sur chaque carte occupait la seule place où l'on pouvait dire ce
+  qu'il reste.
+- **Le lien nomme ce qui n'est pas montré** — « Les 9 autres cohortes → ». Sans
+  cela, l'écran laissait croire qu'il les montrait toutes, et c'est ce qui
+  rendait trois jauges à plat si convaincantes.
+- ⚠️ **La garde a d'abord passé au vert avec le défaut.** Elle lisait les
+  sessions telles quelles : sur `dev`, que le ménage des épreuves vide, elles
+  sont toutes à 0/30 — et « 0 · 0 · 0 » est trivialement décroissant. Elle pose
+  maintenant trois remplissages différents, demande l'ordre, puis les remet
+  comme ils étaient ; prouvée en restaurant le tri par `debut`.
+
 **Une place est tenue sept jours, puis rendue** (`src/lib/places.ts`, depuis le
 28 août 2026). Une inscription la retient aussitôt — assez pour qu'un transfert
 international parte et arrive, week-end compris — et la rend si rien n'est
