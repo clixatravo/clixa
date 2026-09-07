@@ -239,6 +239,25 @@ simplement à aucun élément. Vérifier qu'une classe existe avant de s'y fier 
 grep -c "btn--style-primary" node_modules/@payloadcms/ui/dist/styles.css
 ```
 
+⚠️ **Un composant absent d'`importMap.js` ne se rend pas non plus, et rien ne le
+dit.** C'est le fichier par lequel Payload résout `"@/components/admin/X#X"` en
+composant réel ; il est généré par `next dev` et par
+`payload generate:importmap`. Le 7 septembre 2026, la colonne « Remplissage » a
+été poussée en production **sans son entrée** : le fichier s'était régénéré
+*après* le `git add`, et le commit est parti sans lui.
+
+Aucune erreur, aucun type fautif, aucun build cassé, aucune épreuve au rouge —
+la cellule ne se rend simplement pas. La direction a rouvert /admin et n'a rien
+vu changer, sur un travail par ailleurs juste et déployé.
+
+`npm run verify` confronte désormais les composants déclarés à la carte
+(`scripts/verifier-carte-composants.ts`) : contrôle statique, sans base ni
+réseau, prouvé en retirant l'entrée — `verify` sort en 1 et nomme le fichier
+qui déclare le composant.
+
+⚠️ **Régénérer ne suffit pas : il faut commiter le fichier généré.** C'est
+l'oubli d'origine, et c'est celui que le message d'erreur rappelle.
+
 Deux scripts servent l'accès au back-office. Ils étaient le seul recours tant
 qu'aucun expéditeur n'existait ; depuis le 26 août 2026 l'adaptateur Resend est
 configuré et le lien « Mot de passe oublié » de `/admin` devrait aboutir. Ce
