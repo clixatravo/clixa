@@ -623,6 +623,18 @@ Chaque passage parcourt les sessions et recompte ; le premier jet en ajoutait
 deux, et le script est mort en route contre Neon sans imprimer une ligne — la
 panne décrite plus bas, rencontrée ici.
 
+⚠️ **La tâche de 8 h tourne bel et bien** — confirmé par la direction le
+7 septembre 2026 : le bilan quotidien arrive dans la boîte de l'équipe. Cela
+n'avait jamais été vérifié, et deux journées de travail en dépendent
+entièrement : le courriel qui prévient qu'une place arrive à son terme, et le
+retour de cette place au catalogue, ne se produisent que là.
+
+⚠️ **On ne peut pas le lire dans les journaux de Vercel** : ils ne couvrent que
+les dernières minutes du déploiement en cours, et un déploiement du jour n'a
+jamais vu 8 h. La seule preuve à portée est la boîte de l'équipe — ou le
+tableau de bord Vercel, *Settings → Cron Jobs*, qui affiche la dernière
+exécution.
+
 ⚠️ **Le temps n'écrit rien.** Une place qui vient d'expirer ne le sait pas :
 aucun crochet ne se déclenche parce qu'un délai s'est écoulé. C'est la tâche
 quotidienne (`api/relances`, 8 h) qui repasse et recompte — le seul endroit du
