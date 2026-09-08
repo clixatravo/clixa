@@ -49,6 +49,7 @@ npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
 npx payload run scripts/verifier-occupation.ts    # la liste des sessions montre ce qui bouge
+npx payload run scripts/verifier-pays.ts          # le pays se choisit, et ne gèle rien
 npx payload run scripts/verifier-attestation.ts   # elle ne promet que ce qui est acquis
                                                   # et ce que le bandeau compte
 npx payload run scripts/verifier-horaires.ts      # l'heure annoncée fait foi
@@ -1967,28 +1968,83 @@ garde. `csrf`, `cors` et `serverURL` sont maintenant posés sur
 `NEXT_PUBLIC_SITE_URL`. Vérifié : le même cookie passe depuis l'origine du site
 et est refusé depuis une autre.
 
-⚠️ **Le formulaire d'inscription posait deux fois la même question**
-(corrigé le 7 septembre 2026 au soir). Juste sous le sélecteur de pays du
-numéro WhatsApp, un second champ libre « Pays » demandait la même chose en
-texte. La direction a trouvé, dans un vrai dossier de production, « 22222628 »
-écrit là — le numéro recopié une seconde fois dans la mauvaise case, deux
-champs qui se ressemblent l'un sous l'autre.
+⚠️ **Le formulaire d'inscription posait deux fois la même question.** Juste
+sous le sélecteur de pays du numéro WhatsApp, un second champ libre « Pays »
+demandait la même chose en texte. La direction a trouvé, dans un vrai dossier
+de production, « 22222628 » écrit là — pour un numéro en `+22222222628` : un
+morceau de son propre numéro, recopié dans la mauvaise case. Ce n'est pas une
+faute de la personne, c'est un formulaire qui pose deux fois la même question,
+l'une sous l'autre.
 
-Le champ a été retiré, et le pays se dérive désormais de l'indicatif choisi
-(`paysDeLIndicatif`, `lib/indicatifs.ts`) — exactement la correction déjà
-faite sur `/contact` le 5 septembre 2026, pour la même raison : « deux saisies
-pour un même fait laissaient écrire "Maroc" sous un numéro ivoirien ». La
-donnée reste stockée (`apprenantPays`, l'attestation, l'export) ; c'est la
-saisie qui disparaît, pas le champ.
+**Le champ reste, et devient une liste** (`lib/pays.ts`, `ChampPays.tsx`,
+décision de la direction le 7 septembre 2026 au soir). Un premier correctif
+l'avait *retiré*, en dérivant le pays de l'indicatif comme sur `/contact` ; la
+direction a tranché autrement, et pour une raison qui tient : on peut habiter
+ailleurs que le pays de son numéro. La liste porte donc « Autre pays », la même
+porte de sortie que le sélecteur d'indicatif — une liste fermée renverrait
+quelqu'un sans qu'il puisse rien y faire.
 
-- **Éprouvé de bout en bout** : le formulaire rempli en Sénégal (`+221`, rien
-  d'autre) enregistre `apprenantPays: "Sénégal"` sans qu'aucune case ne l'ait
-  demandé.
-- ⚠️ **Huit épreuves remplissaient ce champ à la main**, dans cinq fichiers —
-  `admin.spec`, `contrat.spec`, `espace.spec`, `securite.spec.ts`,
-  `inscription.spec.ts`. Toutes utilisaient déjà un numéro marocain juste
-  avant : le retirer ne change ce qu'elles vérifient nulle part, la valeur
-  dérivée est la même que celle qu'on tapait à la main.
+⚠️ **Une seule règle, lue par quatre endroits** (`lib/pays.ts`) : ce que le
+composant propose, ce que la route accepte, ce que trois collections refusent.
+Écrite trois fois, elle avait déjà divergé — le navigateur filtrait sur Latin-1
+quand le serveur acceptait plus large.
+
+- ⚠️ **Un validateur peut geler un document, et celui-ci le faisait.** Le
+  premier jet refusait toute valeur numérique. Il rejouait donc sur **chaque**
+  écriture, y compris celles qui ne touchent pas au pays — et le dossier
+  `CLX-6RFBXYKN` portait déjà `22222628`. Mesuré :
+  `payload.update({ placeRappeleeLe })` → `ValidationError`. C'est-à-dire que
+  la tâche de 8 h n'aurait pas pu annoncer à cette personne que sa place allait
+  repartir **le 15 septembre** ; et comme la place ne part *que* si l'annonce
+  est partie, elle serait restée retenue indéfiniment, le bilan la nommant
+  « non annoncée » chaque matin. Les boutons de /admin auraient échoué de même.
+  Un contrôle ajouté aujourd'hui ne peut pas condamner une donnée d'hier : une
+  valeur **inchangée** passe (`previousValue`), une valeur modifiée est jugée.
+- ⚠️ **« Amérique du Nord » n'est pas un pays.** La liste dérivait de
+  `INDICATIFS_OFFERTS`, qui répond à « quel indicatif composer » — le `+1` y
+  couvre les États-Unis et le Canada, compromis assumé pour le téléphone. Il ne
+  vaut rien pour « où habitez-vous » : les deux pays sont listés séparément.
+- ⚠️ **`\p{L}`, et non `A-Za-zÀ-ÿ`.** Le filtre s'arrêtait à Latin-1 :
+  « Türkiye » et « Côte d'Ivoire » passaient, mais « Česko » ressortait
+  **« esko »** — une réponse juste, silencieusement abîmée.
+- **Ce qui ne passe toujours pas** : les chiffres (la faute d'origine), les
+  chevrons, les guillemets, les caractères de contrôle. Ce dernier n'est pas
+  décoratif — un seul dans un nom rend le classeur des admissions illisible en
+  bloc, et le nom vient d'un formulaire public.
+- **La route nettoie et retombe sur l'indicatif ; /admin refuse et le dit.**
+  Deux gestes différents : corriger en silence vaut mieux que refuser quelqu'un
+  dont le navigateur a déjà barré la route, mais une saisie d'équipe qu'on
+  réécrirait en douce serait une valeur que personne n'a choisie.
+- ⚠️ **Une garde écrite sur une supposition vaut moins qu'une garde mesurée.**
+  J'attendais que `"><img src=x onerror=alert(1)>` laisse « img srcx
+  onerroralert » — le filtre seul. Mais la balise part *avant* : il ne reste
+  rien du tout. L'attente était fausse, pas le code.
+- **Éprouvé côté serveur, pas seulement dans le navigateur** : huit charges
+  postées directement à la route (script, attribut, SQL, 500 caractères,
+  caractère de contrôle, vide). Aucune n'atteint la base, et tous les points de
+  sortie échappaient déjà — `echapper()` dans le courriel et l'attestation,
+  React dans le PDF, XML échappé dans le classeur.
+- ⚠️ **Le champ a changé trois fois en deux jours** — libre, retiré, puis
+  liste — et les épreuves ont suivi à chaque fois, à huit endroits dans cinq
+  fichiers. La fois où elles n'ont pas suivi, **quinze sont tombées d'un
+  coup**, toutes sur le même symptôme illisible : un `waitForURL` qui expire,
+  parce que le `select` est `required` et que plus rien ne le remplissait.
+  `choisirPays` rejoint donc `remplirWhatsapp` et `referenceDeLAdresse` dans
+  `e2e/menage.ts` — et il vérifie le pays contre la liste réellement offerte,
+  sans quoi une épreuve échouerait douze lignes plus loin sur un formulaire qui
+  refuse de partir.
+- ⚠️ **`/contact` n'en a pas**, et c'est voulu : son pays se déduit de
+  l'indicatif depuis le 5 septembre. Le helper y serait tombé sur un `select`
+  qui n'existe pas.
+
+⚠️ **La donnée déjà écrite se corrige, elle ne se devine pas**
+(`scripts/corriger-pays.ts`, rejouable). Il applique la règle que la route
+applique elle-même quand la saisie ne laisse rien : `paysDeLIndicatif`. Pour
+`CLX-6RFBXYKN`, `+222` rend « Mauritanie » — un fait tiré du numéro donné, pas
+une supposition sur la personne. Un indicatif hors table rend « À préciser », et
+le script **s'abstient** : mieux vaut une faute visible qu'un vague que l'équipe
+croira vérifié. Sans `ECRIRE=1` il montre et s'arrête ; c'est de la donnée
+client réelle.
 
 ⚠️ **On ne demande plus au visiteur de taper le « + »** (depuis le 5 septembre
 2026, `components/ChampWhatsapp.tsx`). Le champ portait « +212 6 00 00 00 00 »

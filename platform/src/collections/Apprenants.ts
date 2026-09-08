@@ -1,6 +1,7 @@
 import { echapper, gabaritHtmlEmail } from "@/lib/courriel";
 import type { CollectionConfig } from "payload";
 import { connecte, reserveA } from "@/access/roles";
+import { paysValideFacultatif } from "./champs";
 
 /**
  * BE-18 — Les comptes des participants.
@@ -137,14 +138,7 @@ export const Apprenants: CollectionConfig = {
           type: "text",
           label: "Pays",
           admin: { width: "50%" },
-          validate: (val: unknown) => {
-            if (!val) return true;
-            const s = String(val).trim();
-            if (/^\d+$/.test(s)) {
-              return "Le nom du pays doit comporter des lettres, pas uniquement des chiffres.";
-            }
-            return true;
-          },
+          validate: paysValideFacultatif,
         },
       ],
     },

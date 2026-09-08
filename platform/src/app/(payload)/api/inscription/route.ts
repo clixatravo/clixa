@@ -8,6 +8,7 @@ import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
 import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
+import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -104,12 +105,9 @@ export async function POST(request: Request) {
     (comme « 22222628 »), on nettoie les chiffres et si la valeur saisie est
     invalide ou vide, on retombe sur l'indicatif du numéro WhatsApp.
   */
-  const paysSaisi = texte("pays")
-    .replace(/<[^>]*>/g, "")
-    .replace(/[^A-Za-zÀ-ÿ\s\-\'.]/g, "")
-    .trim();
+  const paysSaisi = assainirPays(texte("pays"));
   const pays =
-    paysSaisi.length >= 2 && tientDans(paysSaisi, LONGUEURS.pays)
+    paysSaisi.length >= MINIMUM_LETTRES && tientDans(paysSaisi, LONGUEURS.pays)
       ? paysSaisi
       : paysDeLIndicatif(whatsapp);
 

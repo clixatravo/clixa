@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { MARQUE, remplirWhatsapp } from "./menage";
+import { MARQUE, remplirWhatsapp, choisirPays } from "./menage";
 
 /**
  * Ce qu'un audit a trouvé, et qui ne doit pas revenir.
@@ -23,6 +23,7 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="nom"]', "<script>window.__perce=1</script>Épreuve");
     await page.fill('input[name="email"]', `xss.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
+    await choisirPays(page);
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
@@ -54,6 +55,7 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="nom"]', "Épreuve Référence");
     await page.fill('input[name="email"]', `ref.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
+    await choisirPays(page);
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
@@ -357,6 +359,8 @@ test("Lead ne part qu'après un envoi réussi, et une seule fois", async ({ page
 
   await page.fill('form input[name="nom"]', "Épreuve Lead");
   await remplirWhatsapp(page, "+212600000000");
+  /* Pas de `choisirPays` ici : c'est `/contact`, dont le pays se déduit de
+     l'indicatif depuis le 5 septembre 2026. Il n'y a pas de champ à remplir. */
   await page.check('form input[name="consentement"]');
   await page.click('form button[type="submit"]');
   await page.waitForURL(/envoye=1/);

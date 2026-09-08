@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
+import { PAYS_OFFERTS } from "../src/lib/pays";
 
 /**
  * Retirer ce que les épreuves ont écrit.
@@ -133,6 +134,29 @@ export async function remplirWhatsapp(page: Page, international: string): Promis
 
   await page.selectOption('select[aria-label="Indicatif du pays"]', code!);
   await page.fill("input#whatsapp, input#rappel-whatsapp", chiffres.slice(code!.length));
+}
+
+/**
+ * Choisir le pays dans la liste du formulaire d'inscription.
+ *
+ * ── ⚠️ Pourquoi un helper, et pas huit `selectOption` ───────────────────────
+ * Le champ « Pays » a changé trois fois en deux jours : champ libre, puis
+ * retiré, puis liste déroulante. À chaque bascule, huit épreuves réparties
+ * dans cinq fichiers ont dû suivre — et la fois où elles n'ont pas suivi,
+ * **quinze** sont tombées d'un coup, toutes sur le même symptôme illisible :
+ * un `waitForURL` qui expire, parce que le `select` est `required` et que rien
+ * ne le remplissait. Même leçon que `remplirWhatsapp` et
+ * `referenceDeLAdresse` : une façon de faire copiée huit fois est huit façons
+ * de tomber le jour où elle change.
+ *
+ * ⚠️ **Le pays est vérifié contre la liste réellement offerte**, pas écrit à
+ * la main : une épreuve qui choisirait un pays absent du `select` échouerait
+ * douze lignes plus loin, sur un formulaire qui refuse de partir.
+ */
+export async function choisirPays(page: Page, nom = "Maroc"): Promise<void> {
+  const connu = PAYS_OFFERTS.some((p) => p.nom === nom);
+  expect(connu, `« ${nom} » n'est pas dans la liste des pays offerte`).toBe(true);
+  await page.selectOption("select#pays", nom);
 }
 
 export function adresseBase(): string | undefined {

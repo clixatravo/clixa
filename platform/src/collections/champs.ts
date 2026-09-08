@@ -1,4 +1,5 @@
 import type { Validate } from "payload";
+import { paysPlausible } from "@/lib/pays";
 
 /**
  * BE-06 — Obligation limitée à la langue de référence.
@@ -78,6 +79,49 @@ export const pasDansLeFutur: Validate = (valeur) => {
   const enJours = (d: Date) => d.toISOString().slice(0, 10);
   if (enJours(jour) > enJours(new Date())) {
     return "Cette date ne peut pas être dans le futur : le participant la voit sur son dossier, et c'est elle qui lui permet de reconnaître nos courriels.";
+  }
+  return true;
+};
+
+/**
+ * Un pays qui tient debout, sans figer ce qui est déjà en base.
+ *
+ * ── ⚠️ Un validateur peut geler un document, et c'en est un ─────────────────
+ * Le premier jet refusait toute valeur entièrement numérique. Il rejouait donc
+ * sur **chaque** écriture, y compris celles qui ne touchent pas au pays — et
+ * un dossier de production portait déjà `22222628`. Mesuré :
+ *
+ *     payload.update({ placeRappeleeLe: … })
+ *       → ValidationError : Le participant > Pays
+ *
+ * C'est-à-dire que la tâche de 8 h n'aurait pas pu annoncer à cette personne
+ * que sa place allait repartir. Et comme la place ne part **que** si l'annonce
+ * est partie, elle serait restée retenue indéfiniment, le bilan la nommant
+ * « non annoncée » chaque matin. Les boutons de /admin — versement reçu,
+ * contrat vérifié — auraient échoué sur ce dossier de la même façon.
+ *
+ * Un contrôle ajouté aujourd'hui ne peut pas condamner une donnée d'hier : on
+ * laisse donc passer une valeur **inchangée**. Elle reste fausse, et se
+ * corrige ; elle ne bloque plus tout ce qui l'entoure.
+ */
+export const paysValide: Validate<string | null | undefined> = (valeur, { previousValue }) => {
+  if (valeur === previousValue) return true;
+  if (!valeur) return "Le pays est obligatoire.";
+  if (!paysPlausible(valeur)) {
+    return "Le nom du pays s'écrit en lettres — deux au moins, et pas un numéro.";
+  }
+  return true;
+};
+
+/** La même règle, là où le pays n'est pas obligatoire. */
+export const paysValideFacultatif: Validate<string | null | undefined> = (
+  valeur,
+  { previousValue },
+) => {
+  if (valeur === previousValue) return true;
+  if (!valeur) return true;
+  if (!paysPlausible(valeur)) {
+    return "Le nom du pays s'écrit en lettres — deux au moins, et pas un numéro.";
   }
   return true;
 };
