@@ -64,6 +64,31 @@ import {
  * `req` est passé aux deux appels — sans lui ils tournent hors de la
  * transaction en cours et ne voient pas le dossier qu'on vient d'écrire.
  */
+/*
+  ── ⚠️ Une session ne se recompte qu'une à la fois, par requête ──────────────
+  Supprimer plusieurs dossiers d'un coup depuis /admin appelle `afterDelete`
+  **une fois par dossier** : `recompter` déduplique les sessions à l'intérieur
+  d'un appel, pas entre plusieurs. Trois dossiers de la même session, c'est
+  donc trois écritures concurrentes sur la même ligne de `sessions`, dans la
+  même transaction — et Payload rend alors « Le champ suivant n'est pas
+  valide : _locale, _parent_id », un message qui ne parle ni de session ni de
+  suppression.
+
+  ⚠️ **C'est exactement le cas où l'on se sert de la suppression en lot.** Les
+  doublons d'une même personne portent forcément la même session ; les
+  dossiers de sessions différentes, eux, partaient déjà sans rien dire.
+
+  ⚠️ **Et l'échec ne se voyait pas.** La route répond 400 avec
+  « Impossible de supprimer 3 sur 3 », mais l'interface referme sa fenêtre sans
+  message : on croit avoir supprimé, et les dossiers sont toujours là. C'est ce
+  que la direction a décrit — « ja tal lakhriin o dar annuler ».
+
+  La file est portée par la requête, pas par le module : deux requêtes
+  simultanées sur la même session restent départagées par la transaction, et
+  rien ne fuit d'une requête à l'autre.
+*/
+const filesDeRecompte = new WeakMap<PayloadRequest, Map<number, Promise<void>>>();
+
 async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
   const ids = new Set<number>();
   for (const d of docs) {
@@ -72,7 +97,31 @@ async function recompter(docs: unknown[], req: PayloadRequest): Promise<void> {
     if (typeof id === "number") ids.add(id);
   }
 
+  let file = filesDeRecompte.get(req);
+  if (!file) {
+    file = new Map();
+    filesDeRecompte.set(req, file);
+  }
+
   for (const id of ids) {
+    /*
+      On s'accroche à la fin de ce qui est déjà en cours pour cette session.
+      Le `catch` est là pour la file, pas pour l'erreur : un recompte qui
+      échoue ne doit pas bloquer les suivants, et son erreur remonte quand
+      même par le `await` de celui qui l'a lancé.
+    */
+    const precedent = file.get(id) ?? Promise.resolve();
+    const suivant = precedent.then(
+      () => recompterUne(id, req),
+      () => recompterUne(id, req),
+    );
+    file.set(id, suivant);
+    await suivant;
+  }
+}
+
+async function recompterUne(id: number, req: PayloadRequest): Promise<void> {
+  {
     const vivantes = await req.payload.count({
       collection: "inscriptions",
       /*

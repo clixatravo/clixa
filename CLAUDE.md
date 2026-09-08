@@ -47,6 +47,7 @@ npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit 
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et depuis la liste
+npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vraiment
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
 npx payload run scripts/verifier-occupation.ts    # la liste des sessions montre ce qui bouge
@@ -1123,6 +1124,49 @@ précédents.
 - **Une seule échéance à la fois.** Tout solder d'un clic ferait passer pour
   encaissé de l'argent qu'on n'a pas vu, et c'est le statut du dossier qui
   commande la place et les relances.
+
+⚠️ **Supprimer plusieurs dossiers d'une même session ne supprimait rien, et ne
+le disait pas** (corrigé le 8 septembre 2026). La direction coche des doublons
+dans la liste, clique « Supprimer », confirme — et la fenêtre se referme sans un
+mot. Les dossiers sont toujours là. Vu de l'écran, cela ressemble exactement à un
+« Annuler », et c'est ainsi que le défaut a été rapporté.
+
+Dessous, la route répondait **400** — « Impossible de supprimer 3 sur 3
+Inscriptions » — avec, pour l'une d'elles, « Le champ suivant n'est pas valide :
+_locale, _parent_id » : un message qui ne parle ni de session, ni de suppression,
+ni de doublon.
+
+- **La cause : `afterDelete` est appelé une fois par dossier.** `recompter`
+  déduplique les sessions **à l'intérieur d'un appel**, pas entre plusieurs.
+  Trois dossiers de la même session, c'est donc trois écritures concurrentes sur
+  la même ligne de `sessions`, dans la même transaction. Le recompte est
+  désormais mis en file, par requête et par session.
+- ⚠️ **C'est précisément le cas où l'on s'en sert.** Les doublons d'une même
+  personne portent forcément la même session ; des dossiers de sessions
+  différentes partaient déjà sans broncher. Une garde qui prendrait trois
+  dossiers au hasard serait restée verte — d'où le **témoin** de
+  `verifier-suppression.ts`, qui vérifie que le cas facile passait déjà.
+- ⚠️ **Et elle doit passer par la route HTTP.** `payload.delete({ where })`
+  appelé depuis un script réussissait **déjà avant le correctif** : il déroule
+  les dossiers l'un après l'autre. Un contrôle écrit par l'API locale aurait été
+  vert des deux côtés du défaut. Prouvé en retirant le correctif : le contrôle
+  passe au rouge sur « 400 · Impossible de supprimer 2 sur 3 », le témoin reste
+  vert.
+- ⚠️ **Le contrôle n'est pas dans Playwright**, et pour une bonne raison : la
+  suppression est réservée à la direction (`delete: reserveA()`) quand le compte
+  des épreuves est en « pédagogie ». La série reçoit un 403, qui est le bon
+  refus. Le script ouvre donc lui-même une session de direction, comme
+  `verifier-portes.ts` — et comme lui, il pose `origin` **et**
+  `sec-fetch-site`, sans quoi `csrf` refuse le cookie et l'on conclut à tort que
+  la session n'authentifie pas.
+- **Un dossier seul se supprimait, lui, sans difficulté** — y compris allé
+  jusqu'au bout du tunnel. C'est ce qui rendait le défaut si difficile à croire :
+  le geste marche, sauf quand on en coche plusieurs.
+- ⚠️ **L'interface n'affiche aucun message sur ce 400.** C'est ce qui a coûté le
+  plus : rien ne distingue « supprimé » de « refusé ». Devant une suppression
+  qui semble n'avoir rien fait, regarder la réponse du réseau avant de douter de
+  ce qu'on a coché.
+
 
 ⚠️ **On sait maintenant qui a déjà appelé, et depuis la liste** (`lib/suivi.ts`,
 `components/admin/Suivi.tsx`, demandé par la direction le 8 septembre 2026).
