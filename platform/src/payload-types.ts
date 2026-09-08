@@ -784,6 +784,17 @@ export interface Inscription {
    * Jamais montré au participant.
    */
   notes?: string | null;
+  /**
+   * Posé par les boutons du dossier. Sert à ne pas rappeler quelqu'un qu'un collègue vient d'avoir.
+   */
+  echanges?:
+    | {
+        quoi: 'appel' | 'signature';
+        le: string;
+        par?: (number | null) | Utilisateur;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -828,26 +839,6 @@ export interface Apprenant {
   collection: 'apprenants';
 }
 /**
- * Déposés par les participants depuis leur dossier. Le fichier ne s'ouvre que d'ici.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recus".
- */
-export interface Recus {
-  id: number;
-  dossier: number | Inscription;
-  /**
-   * 1 pour la première.
-   */
-  echeance?: number | null;
-  nomOriginal: string;
-  chemin: string;
-  typeFichier?: string | null;
-  taille?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "utilisateurs".
  */
@@ -876,6 +867,26 @@ export interface Utilisateur {
     | null;
   password?: string | null;
   collection: 'utilisateurs';
+}
+/**
+ * Déposés par les participants depuis leur dossier. Le fichier ne s'ouvre que d'ici.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recus".
+ */
+export interface Recus {
+  id: number;
+  dossier: number | Inscription;
+  /**
+   * 1 pour la première.
+   */
+  echeance?: number | null;
+  nomOriginal: string;
+  chemin: string;
+  typeFichier?: string | null;
+  taille?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1410,6 +1421,14 @@ export interface InscriptionsSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
+  echanges?:
+    | T
+    | {
+        quoi?: T;
+        le?: T;
+        par?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

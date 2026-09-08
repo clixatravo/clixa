@@ -1469,6 +1469,59 @@ h3,
   font-family: var(--font-mono);
 }
 
+/* ── Le suivi : qui a déjà appelé ───────────────────────────────────────── */
+/*
+  ⚠️ **Le vert, jamais l'or.** L'or est la file de travail du jour ; un dossier
+  qu'on vient d'appeler est exactement l'inverse — celui qu'il faut laisser
+  tranquille. L'or ici enverrait rappeler précisément ceux qu'on vient d'avoir.
+
+  Le vert ne porte pas de fond : contrairement à « Complet », ce n'est pas une
+  décision à prendre, c'est un renseignement. Un aplat de plus par ligne
+  rendrait la liste illisible sur les vingt dossiers du matin.
+*/
+.clixa-suivi {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.clixa-suivi--recent .clixa-suivi__quand {
+  color: var(--clixa-emeraude-clair);
+  font-weight: 600;
+}
+
+.clixa-suivi--ancien .clixa-suivi__quand {
+  color: inherit;
+}
+
+.clixa-suivi__compte {
+  font-size: 0.66rem;
+  opacity: 0.6;
+}
+
+/*
+  Jamais appelé : ce n'est pas une alerte, c'est le cas ordinaire d'un dossier
+  neuf — d'où le ton effacé.
+
+  ⚠️ **Effacé, pas illisible.** Le premier jet était à 0,3 d'opacité, soit
+  2,24:1 une fois composé sur l'encre — sous le seuil, et sur le texte le plus
+  fréquent de la colonne, puisque la plupart des dossiers n'ont jamais été
+  appelés. Deux états s'y confondaient : « personne ne l'a appelé » et le
+  tiret que la cellule affiche quand le journal n'a pas été chargé, qui veut
+  dire « je ne sais pas ». Une colonne qui existe pour éviter un second appel
+  ne peut pas rendre ces deux-là de la même façon.
+  Mesuré à l’écran, pas déduit : 2,24:1 à 0,3 ; 4,33 à 0,55 ; 4,87 à 0,6.
+*/
+.clixa-suivi__vide {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: inherit;
+  opacity: 0.6;
+}
+
 /* ── Le remplissage d'une session ───────────────────────────────────────── */
 /*
   ⚠️ **Deux nombres qui ne se lisent qu'ensemble.** La liste montrait « 30 » —

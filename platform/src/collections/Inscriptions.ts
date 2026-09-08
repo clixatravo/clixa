@@ -147,6 +147,14 @@ export const Inscriptions: CollectionConfig = {
         qu'ils étaient dans cinq états différents. Voir `lib/avancement.ts`.
       */
       "ouEnEst",
+      /*
+        ⚠️ **« Suivi » répond à une autre question, et c'est pourquoi c'est une
+        seconde colonne.** « Où en est » dit où en est le dossier ; « Suivi » dit
+        si quelqu'un a déjà décroché son téléphone. Les fondre ferait perdre
+        l'une des deux — et c'est la seconde qui manquait : un collègue ouvrait
+        la même liste le lendemain et rappelait la même personne.
+      */
+      "suivi",
       "apprenantEmail",
       "apprenantWhatsapp",
       "session",
@@ -432,6 +440,21 @@ export const Inscriptions: CollectionConfig = {
           label: "Où en est",
           admin: {
             components: { Cell: "@/components/admin/OuEnEst#OuEnEst" },
+          },
+        },
+        {
+          /*
+            ── Ce que la liste dit du dernier appel ──────────────────────────
+            Même nature que « Où en est » : un champ `ui`, sans colonne en base.
+            Il lit le journal des échanges de la ligne et rend une phrase courte
+            — « Appelé hier », « Relancé pour signer il y a 5 j ». Le calcul vit
+            dans `lib/suivi.ts`, où il s'éprouve sans navigateur.
+          */
+          name: "suivi",
+          type: "ui",
+          label: "Suivi",
+          admin: {
+            components: { Cell: "@/components/admin/Suivi#Suivi" },
           },
         },
         {
@@ -1005,6 +1028,83 @@ export const Inscriptions: CollectionConfig = {
       type: "textarea",
       label: "Notes internes",
       admin: { description: "Jamais montré au participant." },
+    },
+    {
+      /*
+        ── ⚠️ Qui a déjà parlé à ce participant ────────────────────────────────
+        Après une pré-inscription, quelqu'un de l'équipe appelle. Rien ne le
+        notait : le lendemain, un collègue ouvrait la même liste, voyait le même
+        dossier au même état, et rappelait la même personne. Demandé par la
+        direction le 8 septembre 2026.
+
+        ⚠️ **Un journal, pas une date.** Une case « dernier appel » se serait
+        écrasée à chaque fois : on aurait su qu'on avait appelé, jamais combien
+        de fois ni qui. Or c'est exactement la question qu'on se pose avant de
+        composer un numéro — et « relancé trois fois sans réponse » ne se dit
+        pas avec une seule date.
+
+        ⚠️ **Rien ne part au participant.** Ces lignes disent ce qui s'est passé
+        au téléphone ; lui écrire « nous vous avons appelé » ajouterait du bruit
+        à un tunnel qui lui écrit déjà à chaque étape qui le concerne. C'est la
+        différence avec `contratVerifieLe`, dont le crochet prévient.
+
+        ⚠️ **En lecture seule dans le formulaire.** Les deux boutons du bloc
+        « Où en est ce dossier » y ajoutent une ligne, horodatée et signée. Une
+        case libre laisserait poser une date d'hier sur un appel d'aujourd'hui,
+        et c'est la fraîcheur qui fait toute la valeur de cette colonne.
+      */
+      name: "echanges",
+      type: "array",
+      label: "Échanges avec le participant",
+      labels: { singular: "Échange", plural: "Échanges" },
+      admin: {
+        readOnly: true,
+        initCollapsed: true,
+        description:
+          "Posé par les boutons du dossier. Sert à ne pas rappeler quelqu'un qu'un collègue vient d'avoir.",
+      },
+      fields: [
+        {
+          type: "row",
+          fields: [
+            {
+              name: "quoi",
+              type: "select",
+              label: "Geste",
+              required: true,
+              options: [
+                { label: "Appelé — on lui a parlé", value: "appel" },
+                { label: "Relancé pour signer son contrat", value: "signature" },
+              ],
+              admin: { width: "40%" },
+            },
+            {
+              name: "le",
+              type: "date",
+              label: "Le",
+              required: true,
+              admin: {
+                width: "30%",
+                date: { pickerAppearance: "dayAndTime", displayFormat: "d MMM yyyy · HH:mm" },
+              },
+            },
+            {
+              /*
+                ⚠️ Une relation, pas un nom recopié. Deux écritures du même fait
+                divergent — et le jour où quelqu'un change de nom, un instantané
+                de texte désignerait une personne qui n'existe plus sous ce
+                nom-là. Un compte supprimé laisse la ligne : la date et le geste
+                restent vrais même si l'on ne sait plus qui.
+              */
+              name: "par",
+              type: "relationship",
+              relationTo: "utilisateurs",
+              label: "Par",
+              admin: { width: "30%" },
+            },
+          ],
+        },
+      ],
     },
   ],
 };

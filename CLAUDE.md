@@ -46,6 +46,7 @@ npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
+npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et depuis la liste
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
 npx payload run scripts/verifier-occupation.ts    # la liste des sessions montre ce qui bouge
@@ -170,8 +171,11 @@ une page au nom de Payload. Trois choses seulement sont retouchées :
 - **Le thème de Payload n'est pas refait.** Son échelle d'« élévation » porte le
   contraste de dizaines de composants qu'on ne peut pas tous éprouver ; la
   renverser pour obtenir un back-office sombre se paierait en textes illisibles
-  trouvés un par un. Les deux thèmes de Payload restent offerts, et l'équipe
-  choisit.
+  trouvés un par un.
+  ⚠️ **Un seul thème est servi**, et cette ligne a dit le contraire jusqu'au
+  8 septembre 2026 : `admin.theme: "dark"` est posé dans `payload.config.ts`,
+  Payload ne rend donc aucun sélecteur, et le thème clair — forcé à la main —
+  rend la liste des clients en ivoire sur blanc. Voir plus bas.
 - **Les boutons passent par les variables de Payload.** Chaque style expose
   `--color`, `--bg-color`, `--btn-border` et leurs variantes de survol : les
   poser laisse la mise en page, l'état désactivé et la mise au point à l'outil.
@@ -1119,6 +1123,83 @@ précédents.
 - **Une seule échéance à la fois.** Tout solder d'un clic ferait passer pour
   encaissé de l'argent qu'on n'a pas vu, et c'est le statut du dossier qui
   commande la place et les relances.
+
+⚠️ **On sait maintenant qui a déjà appelé, et depuis la liste** (`lib/suivi.ts`,
+`components/admin/Suivi.tsx`, demandé par la direction le 8 septembre 2026).
+Après une pré-inscription, quelqu'un de l'équipe appelle. Rien ne le notait : le
+lendemain, un collègue rouvrait la même liste, voyait le même dossier au même
+état, et rappelait la même personne — « ila dkhalt l administration dwa m3a l
+clien, khass n3arfo ».
+
+Deux boutons sur la fiche, et une colonne dans la liste :
+
+- **« Je viens de l'appeler »** — on lui a parlé, peu importe de quoi.
+- **« Je lui ai demandé de signer son contrat »** — la relance qui a un objet,
+  et celle qu'on veut pouvoir compter. Elle disparaît une fois le contrat signé :
+  relancer pour un geste déjà fait fausserait le compte.
+
+- ⚠️ **C'est un journal qui s'ajoute, pas une case « dernier appel ».** Une case
+  se serait écrasée à chaque fois : on aurait su qu'on avait appelé, jamais
+  combien de fois ni qui. Le champ `echanges` porte le geste, l'instant et
+  l'auteur.
+- **La colonne est le vrai besoin**, pas les boutons. Sans elle, la deuxième
+  personne doit ouvrir chaque dossier pour savoir si quelqu'un a déjà appelé —
+  c'est-à-dire qu'elle ne le fait pas.
+- ⚠️ **Émeraude pour un dossier qu'on vient d'appeler, jamais l'or.** L'or est la
+  file de travail du jour ; un dossier qu'on vient d'avoir est exactement
+  l'inverse — c'est celui qu'il faut laisser tranquille.
+- **Ce n'est pas une cinquième étape.** Les quatre étapes sont une séquence où
+  l'ordre porte du sens ; un appel se répète. Le bloc vit sous elles, à part.
+- ⚠️ **Rien n'est envoyé au participant.** Ces traces disent ce qui s'est passé
+  au téléphone ; un courriel « nous vous avons appelé » ajouterait du bruit à un
+  tunnel qui lui écrit déjà à chaque étape qui le concerne.
+- **Trois jours, et non sept, pour le seuil de couleur** : le but n'est pas
+  d'interdire un second appel, c'est d'empêcher celui du lendemain.
+- **Le plus récent gagne, pas le dernier de la liste** — une correction depuis
+  /admin peut réordonner les lignes.
+
+⚠️ **Un champ `array` vide ne rend pas `[]` dans l'état du formulaire, mais
+`0`** — et cela a fait tomber la fiche entière. `reduceFieldsToValues` rend le
+*nombre* de lignes quand il n'y en a aucune ; `?? []` ne rattrape que
+`null`/`undefined`, pas un zéro. Le `.filter` du journal levait donc, et la page
+du dossier affichait **« This page couldn't load »** — sur tout dossier que
+personne n'avait jamais appelé, c'est-à-dire sur tous les dossiers réels.
+
+- ⚠️ **Ni le type ni l'écran ne l'ont vu.** L'annotation promettait
+  `Echange[]` — elle mentait, et TypeScript la croyait. Et les trois dossiers
+  fabriqués pour regarder /admin portaient tous des échanges : la colonne, les
+  boutons et l'ajout ont été vérifiés à l'œil, en base, et tout marchait.
+- ⚠️ **C'est Playwright qui l'a levé**, parce que `admin.spec` fabrique son
+  dossier **par le tunnel public** — donc sans journal. Le symptôme était un
+  `waitFor` qui expire sur le bouton « Contrat vérifié », c'est-à-dire
+  exactement la signature de l'intermittence Neon décrite plus haut. Lire
+  `test-results/` avant de relancer est ce qui a fait la différence : le rapport
+  portait une boîte « Runtime TypeError » et la ligne fautive.
+- **`echeances` portait le même piège depuis toujours**, sans jamais se
+  déclencher : un dossier a toujours au moins une échéance. Les deux passent
+  désormais par la même porte.
+- **Le calcul ne lève plus, quoi qu'on lui donne.** Il est lu par une cellule de
+  liste et par un formulaire : une exception y emporte la page entière.
+  `verifier-suivi.ts` lui passe `0`, une chaîne et un objet ; prouvé en
+  remettant le `?? []`, les trois contrôles passent au rouge.
+
+⚠️ **« Jamais appelé » était sous le seuil de contraste** — 2,24:1, mesuré à
+l'écran. C'est le texte le plus fréquent de la colonne, puisque la plupart des
+dossiers n'ont jamais été appelés, et deux états s'y confondaient : « personne ne
+l'a appelé » et le tiret qui veut dire « le journal n'a pas été chargé, je ne
+sais pas ». Une colonne qui existe pour éviter un second appel ne peut pas rendre
+ces deux-là de la même façon. Porté à 4,87:1, effacé sans être illisible.
+
+⚠️ **Le back-office ne connaît plus qu'un thème, et cette page disait le
+contraire.** Elle affirmait que « les deux thèmes de Payload restent offerts, et
+l'équipe choisit » : `admin.theme: "dark"` est posé dans `payload.config.ts`,
+Payload ne rend donc aucun sélecteur, et `clixa.css` force l'encre en
+`!important` jusque sur `html[data-theme="light"]`. Forcé à la main, le thème
+clair rend la liste des clients en ivoire sur blanc — noms, adresses et statuts
+invisibles, à 1,01:1. Il est inatteignable, donc ce n'est pas un défaut vivant ;
+mais mesurer un contraste « sur les deux thèmes » est un travail qui n'existe
+plus, et une remise en service du thème clair serait à refaire en entier.
+
 
 **Le bouton « J'ai envoyé les instructions de paiement »**
 (`components/admin/PasserAuPaiement.tsx`) pose la date du jour et enregistre.

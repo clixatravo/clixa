@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { useAllFormFields, useDocumentInfo, useField, useForm } from "@payloadcms/ui";
+import { useAllFormFields, useAuth, useDocumentInfo, useField, useForm } from "@payloadcms/ui";
 import { reduceFieldsToValues } from "payload/shared";
+import { dernierSuivi, type Echange, type NatureEchange } from "@/lib/suivi";
 
 /**
  * Les trois temps du dossier, dans l'ordre, sur une seule ligne.
@@ -162,6 +163,14 @@ export function EtapesContrat() {
   const reference = useField<string>({ path: "reference" });
 
   /*
+    ⚠️ Qui appelle est la moitié de la réponse. « Ce dossier a été appelé hier »
+    ne suffit pas à un collègue : il a besoin de savoir si c'était lui. La
+    relation est posée depuis la session, jamais choisie dans une liste — un
+    champ qu'on remplit à la main finit rempli de travers.
+  */
+  const { user } = useAuth();
+
+  /*
     ⚠️ **L'échéancier se lit en entier, pas ligne par ligne.** Un tableau ne
     s'atteint pas par `useField` : ses lignes vivent en champs séparés
     (`echeances.0.statut`…), et leur nombre change. `reduceFieldsToValues` rend
@@ -170,9 +179,27 @@ export function EtapesContrat() {
   */
   const [champs] = useAllFormFields();
   const donnees = reduceFieldsToValues(champs, true) as {
-    echeances?: { montant?: number; statut?: string; regleLe?: string | null }[];
+    echeances?: unknown;
+    echanges?: unknown;
   };
-  const echeances = donnees.echeances ?? [];
+
+  /*
+    ⚠️ **Un champ `array` vide ne rend pas `[]` ici, mais `0`.**
+    `reduceFieldsToValues` rend le *nombre* de lignes quand il n'y en a aucune,
+    et `?? []` ne rattrape que `null`/`undefined` — pas un zéro. Le `.filter`
+    du journal a fait tomber la fiche entière, sur tout dossier qu'on n'avait
+    jamais appelé, c'est-à-dire tous.
+
+    `echeances` portait le même piège depuis toujours : il ne s'est jamais
+    déclenché parce qu'un dossier a toujours au moins une échéance. Les deux
+    passent désormais par la même porte, plutôt que d'attendre le jour où un
+    échéancier sera vide.
+  */
+  const lignesDe = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+  const echeances = lignesDe<{ montant?: number; statut?: string; regleLe?: string | null }>(
+    donnees.echeances,
+  );
+  const echanges = lignesDe<Echange>(donnees.echanges);
   const rangDue = echeances.findIndex((e) => e?.statut !== "regle");
   const due = rangDue >= 0 ? echeances[rangDue] : undefined;
   const annonce = due?.statut === "annonce";
@@ -225,6 +252,33 @@ export function EtapesContrat() {
     );
     void submit({ overrides: { echeances: suivantes } });
   };
+
+  /*
+    ── ⚠️ Noter l'appel, sans rien envoyer à personne ────────────────────────
+    Le journal s'écrit **en entier**, comme l'échéancier : les surcharges de
+    `submit` sont fusionnées à plat, et `echanges.3.quoi` y resterait une clef
+    littérale que rien ne lirait — l'enregistrement réussirait et il ne se
+    serait rien passé, le défaut du bouton « Contrat vérifié » du 30 août.
+
+    ⚠️ **On ajoute, on ne remplace pas.** Une case « dernier appel » aurait
+    perdu combien de fois on a relancé, et c'est précisément ce qu'on veut
+    savoir avant de composer un numéro pour la quatrième fois.
+
+    ⚠️ **Aucun courriel ne part.** C'est la différence avec les quatre étapes
+    au-dessus : celles-là annoncent au participant quelque chose qui le
+    concerne, celle-ci note ce qui s'est dit au téléphone. Lui écrire « nous
+    vous avons appelé » n'apprendrait rien à quelqu'un qui vient de raccrocher.
+  */
+  const noter = (quoi: NatureEchange) => () => {
+    const ligne: Echange & { par?: number | string } = {
+      quoi,
+      le: new Date().toISOString(),
+      ...(user?.id ? { par: user.id } : {}),
+    };
+    void submit({ overrides: { echanges: [...echanges, ligne] } });
+  };
+
+  const suivi = dernierSuivi(echanges, new Date());
 
   /*
     Un cadre plutôt qu'une liste nue. Ce bloc n'est pas un champ parmi vingt :
@@ -416,6 +470,157 @@ export function EtapesContrat() {
               Tout est réglé — il ne reste que la date de démarrage.
             </p>
           )}
+        </div>
+
+        {/*
+          ── ⚠️ Les échanges ne sont pas une cinquième étape ──────────────────
+          Le fil au-dessus est une **suite** : on relit le contrat avant
+          d'appeler quelqu'un à payer, et l'ordre porte du sens. Un appel, lui,
+          se refait — la semaine suivante, et celle d'après. Le glisser dans la
+          suite lui aurait donné un rang qu'il n'a pas, et rendu ses boutons
+          indisponibles hors de « leur » moment.
+
+          Il vit donc dans son propre bloc, toujours ouvert.
+        */}
+        <div
+          style={{
+            marginTop: 18,
+            paddingTop: 16,
+            borderTop: "1px solid var(--theme-elevation-100)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "0.67rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--theme-elevation-600)",
+              }}
+            >
+              Échanges avec le participant
+            </span>
+            <span
+              style={{
+                fontSize: "0.82rem",
+                color: suivi.ton === "recent" ? FAIT : "var(--theme-elevation-500)",
+                fontWeight: suivi.ton === "recent" ? 600 : 400,
+              }}
+            >
+              {suivi.nombre === 0 ? "Personne ne lui a encore parlé" : suivi.libelle}
+            </span>
+          </div>
+
+          {/*
+            ⚠️ Le journal se lit du plus récent au plus ancien : la question
+            qu'on se pose en ouvrant le dossier est « quand lui a-t-on parlé la
+            dernière fois », jamais « par quoi a-t-on commencé ».
+          */}
+          {echanges.length > 0 && (
+            <ol
+              style={{
+                listStyle: "none",
+                margin: "0 0 14px",
+                padding: 0,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                maxHeight: 168,
+                overflowY: "auto",
+              }}
+            >
+              {[...echanges]
+                .map((e, i) => ({ e, i }))
+                .sort((a, b) => new Date(b.e.le ?? 0).getTime() - new Date(a.e.le ?? 0).getTime())
+                .map(({ e, i }) => (
+                  <li
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "baseline",
+                      fontSize: "0.85rem",
+                      color: "var(--theme-elevation-700)",
+                    }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        background: e.quoi === "signature" ? OR : "var(--theme-elevation-300)",
+                        flex: "none",
+                        transform: "translateY(-2px)",
+                      }}
+                    />
+                    <span style={{ fontWeight: 500 }}>
+                      {e.quoi === "signature" ? "Relancé pour signer" : "Appelé"}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono, monospace)",
+                        fontSize: "0.76rem",
+                        color: "var(--theme-elevation-500)",
+                      }}
+                    >
+                      {e.le ? JOUR(String(e.le)) : "—"}
+                    </span>
+                  </li>
+                ))}
+            </ol>
+          )}
+
+          <div
+            style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}
+          >
+            <button
+              type="button"
+              className="btn btn--style-secondary btn--size-small"
+              style={{ margin: 0 }}
+              onClick={noter("appel")}
+            >
+              Je viens de l&apos;appeler
+            </button>
+
+            {/*
+              ⚠️ Ce bouton ne paraît que tant que le contrat n'est pas signé :
+              relancer pour un geste déjà fait ferait noter une conversation qui
+              n'a pas pu avoir lieu, et fausserait le compte des relances.
+            */}
+            {!aSigne && (
+              <button
+                type="button"
+                className="btn btn--style-secondary btn--size-small"
+                style={{ margin: 0 }}
+                onClick={noter("signature")}
+              >
+                Je lui ai demandé de signer son contrat
+              </button>
+            )}
+          </div>
+
+          <p
+            style={{
+              color: "var(--theme-elevation-500)",
+              fontSize: "0.8rem",
+              margin: "10px 0 0",
+              maxWidth: 460,
+            }}
+          >
+            Noté à votre nom, avec l&apos;heure. Rien n&apos;est envoyé au participant — c&apos;est
+            une trace pour l&apos;équipe, lisible depuis la liste.
+          </p>
         </div>
       </div>
     </div>
