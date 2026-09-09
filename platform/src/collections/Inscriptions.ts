@@ -197,6 +197,12 @@ export const Inscriptions: CollectionConfig = {
       */
       "ouEnEst",
       /*
+        ⚠️ **« Délai » vient tout de suite après.** C'est la seule colonne qui
+        dise ce qui va se produire tout seul : la tâche de 8 h prévient le
+        participant, puis rend sa place. On lit l'état, puis le temps qui reste.
+      */
+      "delai",
+      /*
         ⚠️ **« Suivi » répond à une autre question, et c'est pourquoi c'est une
         seconde colonne.** « Où en est » dit où en est le dossier ; « Suivi » dit
         si quelqu'un a déjà décroché son téléphone. Les fondre ferait perdre
@@ -499,6 +505,22 @@ export const Inscriptions: CollectionConfig = {
             — « Appelé hier », « Relancé pour signer il y a 5 j ». Le calcul vit
             dans `lib/suivi.ts`, où il s'éprouve sans navigateur.
           */
+          /*
+            ⚠️ **« Délai » montre l'échéance venir ; « Où en est » ne la nomme
+            qu'une fois passée.** Un dossier au premier jour et un au sixième
+            portaient la même phrase — l'équipe découvrait le terme franchi, le
+            lendemain du courriel qui prévient le participant. Demandé par la
+            direction le 9 septembre 2026. Le calcul vit dans `lib/delai.ts` et
+            ne réécrit aucune règle : il lit `lib/places.ts`.
+          */
+          name: "delai",
+          type: "ui",
+          label: "Délai",
+          admin: {
+            components: { Cell: "@/components/admin/Delai#Delai" },
+          },
+        },
+        {
           name: "suivi",
           type: "ui",
           label: "Relances",

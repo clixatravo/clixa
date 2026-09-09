@@ -5,6 +5,8 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
 import { occupationDeLaSession } from "@/lib/occupation";
+import { JOURS_DE_GRACE } from "@/lib/places";
+import { JOURS_DE_PRESSE, conditionsDesPlacesAuTerme, filtreDesPlacesAuTerme } from "@/lib/delai";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -31,12 +33,21 @@ function obtenirFiltresDates() {
   const d = new Date();
   const aujourdhui = d.toISOString().slice(0, 10);
   const ilYASeptJours = new Date(d.getTime() - 7 * 86400000).toISOString();
-  return { aujourdhui, ilYASeptJours };
+  /*
+    Deux jours avant le terme : c'est ce qu'il reste pour appeler avant que la
+    tâche de 8 h ne prévienne le participant. L'horloge se lit ici, avec les
+    autres — la lire dans le corps du composant est une fonction impure au
+    rendu, ce que la règle ESLint refuse.
+  */
+  const seuilPresse = new Date(
+    d.getTime() - (JOURS_DE_GRACE - JOURS_DE_PRESSE) * 86400000,
+  ).toISOString();
+  return { aujourdhui, ilYASeptJours, seuilPresse };
 }
 
 export async function Veille() {
   const payload = await getPayload({ config });
-  const { aujourdhui, ilYASeptJours } = obtenirFiltresDates();
+  const { aujourdhui, ilYASeptJours, seuilPresse } = obtenirFiltresDates();
 
   // 1. Inscriptions vivantes
   /*
@@ -120,6 +131,31 @@ export async function Veille() {
       enRetard += 1;
     }
   }
+
+  /*
+    ── ⚠️ Ceux à qui le courriel « votre place va repartir » va partir ────────
+    La tâche de 8 h est le seul endroit du système où quelque chose change sans
+    que personne ait agi : elle prévient le participant, puis rend sa place. On
+    ne peut pas l'éprouver après coup — le tort est fait, et il est fait à des
+    gens venus d'une annonce. La direction voulait donc les voir **avant**.
+
+    ⚠️ **Les conditions sont celles de la tâche, à la lettre** (`api/relances`) :
+    statut « demandée », contrat non signé, annonce pas encore partie. Une
+    seconde lecture des mêmes champs finirait par nommer quelqu'un d'autre que
+    celui qui reçoit le message — et c'est pire que de ne rien annoncer.
+
+    Seul le seuil change : la tâche prend le terme (sept jours), la vignette
+    prend deux jours plus tôt, pour laisser le temps d'un appel. Le filtre du
+    lien porte donc exactement le même `where` — pas d'écart entre le nombre et
+    la liste qu'il ouvre.
+  */
+  const { totalDocs: placesAuTerme } = await payload.find({
+    collection: "inscriptions",
+    where: conditionsDesPlacesAuTerme(seuilPresse) as never,
+    limit: 0,
+    depth: 0,
+    overrideAccess: true,
+  });
 
   // 2. Nouvelles demandes de rappel
   const { totalDocs: nouvellesDemandes } = await payload.find({
@@ -209,6 +245,12 @@ export async function Veille() {
       l'historique entier, où les appels déjà passés noient ceux qui restent
       à passer.
     */
+    /*
+      ⚠️ Le même `where` que le comptage, recopié en URL — c'est la seule façon
+      qu'a une liste de Payload de dire « et », et le nombre annonce un tri que
+      le lien doit faire.
+    */
+    placesAuTerme: filtreDesPlacesAuTerme(seuilPresse),
     rappels: "/admin/collections/demandes-rappel?where[statut][equals]=nouvelle",
     /*
       Même principe que les autres : le nombre annonce un tri, et le lien doit
@@ -229,6 +271,12 @@ export async function Veille() {
     contratsATraiter === 0 &&
     nouvellesDemandes === 0 &&
     enRetard === 0 &&
+    /*
+      ⚠️ Celui-ci compte double : les autres disent ce qu'on a laissé traîner,
+      celui-là ce qui va se produire tout seul demain à 8 h. Un « tout est à
+      jour » au-dessus d'une place qui part demain serait le pire des deux.
+    */
+    placesAuTerme === 0 &&
     conversationsAReprendre === 0;
 
   return (
@@ -313,6 +361,31 @@ export async function Veille() {
           </div>
           <div className="clixa-kpi__action">
             <span>{aVerifier > 0 ? "Traiter les reçus →" : "Voir les dossiers →"}</span>
+          </div>
+        </Link>
+
+        {/* KPI 1 bis : les places qui arrivent à leur terme */}
+        {/*
+          ⚠️ Elle dit ce qui va se produire **tout seul**, pas ce qu'on a laissé
+          traîner. C'est la seule vignette de ce genre, et c'est ce qui la rend
+          utile : passé 8 h, il est trop tard pour appeler avant le courriel.
+        */}
+        <Link
+          href={
+            (placesAuTerme > 0 ? filtres.placesAuTerme : "/admin/collections/inscriptions") as Route
+          }
+          className={`clixa-kpi ${placesAuTerme > 0 ? "clixa-kpi--alerte-or" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">⌛</span>
+            <span className="clixa-kpi__tag">Places</span>
+          </div>
+          <div className="clixa-kpi__valeur">{placesAuTerme}</div>
+          <div className="clixa-kpi__libelle">
+            {placesAuTerme > 1 ? "Places à leur terme" : "Place à son terme"}
+          </div>
+          <div className="clixa-kpi__action">
+            <span>{placesAuTerme > 0 ? "Appeler avant le courriel →" : "Voir les dossiers →"}</span>
           </div>
         </Link>
 

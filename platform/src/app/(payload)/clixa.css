@@ -1595,6 +1595,68 @@ h3,
   color: var(--theme-elevation-600);
 }
 
+/* ── Le délai, dans la liste des dossiers ────────────────────────────────── */
+/*
+  Deux lignes : ce qu'il reste, puis depuis quand. L'ordre compte — on décide
+  sur le reste, on comprend sur la date.
+
+  ⚠️ **L'or ne sert qu'aux deux derniers jours.** C'est la file de travail du
+  jour ; le mettre sur toute pré-inscription y verserait les neuf dossiers
+  dormants du 6 septembre et la viderait de son sens. C'est la raison pour
+  laquelle `avancement.ts` leur garde le ton « attente » dans la colonne d'à
+  côté, et elle vaut ici aussi.
+
+  ⚠️ **Ni rouge ni émeraude.** Le rouge dit « quelque chose est cassé » — une
+  place qui repart suit la règle, elle ne casse rien ; l'émeraude dit « c'est
+  fait » dans les colonnes voisines.
+*/
+.clixa-delai {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.clixa-delai__reste {
+  font-weight: 500;
+}
+
+/* Deux jours ou moins : la place se joue aujourd'hui. */
+.clixa-delai--presse .clixa-delai__reste,
+.clixa-delai--terme .clixa-delai__reste {
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+/*
+  Le terme est atteint mais la place n'est pas encore partie : c'est le seul
+  moment où un appel peut encore la sauver, et il dure deux jours.
+*/
+.clixa-delai--terme .clixa-delai__reste::after {
+  content: " ⌛";
+}
+
+/* Repartie : c'est fini, il n'y a plus de geste à poser dans l'urgence. */
+.clixa-delai--passe .clixa-delai__reste,
+.clixa-delai--sansTerme .clixa-delai__reste {
+  color: inherit;
+  opacity: 0.6;
+}
+
+.clixa-delai__terme,
+.clixa-delai__depuis {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.clixa-delai__vide {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
 /* ── Les relances, sur la fiche d'un dossier ─────────────────────────────── */
 /*
   Deux relances nommées par la direction le 9 septembre 2026 — signature et

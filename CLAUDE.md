@@ -48,6 +48,7 @@ npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et 
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et depuis la liste
 npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vraiment
+npx payload run scripts/verifier-delai.ts         # on voit l'échéance venir
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
 npx payload run scripts/verifier-occupation.ts    # la liste des sessions montre ce qui bouge
@@ -757,6 +758,58 @@ reste du tunnel, celui-là n'existait pas. Trois règles, prises ensemble :
      soit `jours - 7`.
    - **Prouvé en remettant le défaut** : le contrôle passe au rouge sur
      « 2 → 1 place(s) réservée(s) ».
+
+⚠️ **Le délai se voyait passé, jamais venir** (`lib/delai.ts`,
+`components/admin/Delai.tsx`, demandé par la direction le 9 septembre 2026).
+« Où en est » ne parle de la tenue qu'une fois le terme **franchi** : un dossier
+au premier jour et un au sixième portaient la même phrase — « Pré-inscription —
+rien ne l'engage encore ». L'équipe découvrait donc l'échéance après coup, le
+lendemain du courriel qui annonce au participant que sa place va repartir.
+
+Deux choses ont été ajoutées, et la seconde est celle qui compte :
+
+- **Une colonne « Délai »**, juste après « Où en est » : « Reste 2 jours ·
+  jusqu'au 11 sept. », et dessous « Inscrit le 04 sept. » — la date de dépôt,
+  que l'équipe n'avait nulle part.
+- **Une vignette « Places à leur terme »** au tableau de bord, qui mène aux
+  dossiers qu'elle compte et dit « Appeler avant le courriel ».
+
+- ⚠️ **Aucune règle n'est réécrite.** `lib/delai.ts` lit `departDeLaTenue`,
+  `finDeLaTenue` et `finDeLaPlace` de `lib/places.ts` — la même source que la
+  tâche de 8 h, la page du participant et la colonne « Où en est ». Une seconde
+  lecture des mêmes champs finirait par annoncer un autre jour que celui où le
+  courriel part, ce qui est pire que de ne rien annoncer.
+- ⚠️ **La vignette compte les conditions de la tâche, à la lettre** — statut
+  « demandée », contrat non signé, annonce pas encore partie. Seul le seuil
+  change : deux jours plus tôt, pour laisser le temps d'un appel. Le contrôle
+  vérifie qu'elle englobe toujours ceux que la tâche enverra, jamais moins.
+- ⚠️ **L'or ne sert qu'aux deux derniers jours.** C'est la file de travail du
+  jour ; le mettre sur toute pré-inscription y verserait les neuf dossiers
+  dormants du 6 septembre et la viderait de son sens — la raison même pour
+  laquelle `avancement.ts` leur garde le ton « attente » dans la colonne d'à
+  côté.
+- ⚠️ **Le terme n'est pas le départ de la place**, et la colonne ne les confond
+  pas : « Terme atteint » tant que rien n'est parti, « Place repartie » une fois
+  le battement écoulé après l'annonce. Dire « repartie » un jour trop tôt ferait
+  renoncer à rappeler quelqu'un qui a encore sa place.
+- ⚠️ **« Tout est à jour » couvre le nouveau compteur.** L'oublier aurait
+  affiché le message de sérénité au-dessus d'une place qui part demain — et
+  c'est le message, pas la vignette, qu'on croit.
+- ⚠️ **La garde fabrique cinq dossiers**, dont trois qu'aucun des deux comptages
+  ne doit ramasser. Sans eux, sur `dev` que le ménage des épreuves vide, les
+  deux contrôles rendaient « 0 ≥ 0 » — trivialement vrai. Le premier jet s'en
+  est félicité ; c'est la leçon de `verifier-veille.ts`, et son revers.
+- ⚠️ **Le lien de la vignette est tiré pour de vrai**, par la route, avec un
+  cookie d'équipe. Un filtre d'URL faux ne casse rien — Payload rend la liste
+  sans le tri. Prouvé en changeant **une lettre** du nom d'un champ : « 0 par le
+  lien, 2 au comptage ». Le tri et le comptage viennent d'ailleurs de la même
+  source (`conditionsDesPlacesAuTerme`, `filtreDesPlacesAuTerme`).
+- ⚠️ **Deux horloges, et c'est délibéré.** Le calcul pur se déroule sur une
+  horloge figée — c'est ce qui rend le contrôle identique demain matin. Mais la
+  base vieillit ses lignes avec `now()` : comparer des `created_at` réels à un
+  seuil figé faisait tomber le dossier posé pile sur la limite du mauvais côté,
+  au gré des secondes. Les fixtures portent depuis une demi-journée de marge.
+
 
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
 depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
