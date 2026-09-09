@@ -1522,6 +1522,41 @@ même session — le crochet `recompter` la met à jour à chaque écriture — 
 Postgres finit par signaler un interblocage. Ce n'est pas un défaut du code,
 c'est deux processus qui se disputent la même ligne.
 
+⚠️ **Le justificatif se regarde depuis le dossier** (`components/admin/Justificatifs.tsx`,
+depuis le 9 septembre 2026). Le participant joint la photo de son reçu en
+annonçant son transfert, et le fichier arrivait bien — magasin privé, fiche
+créée, dossier rattaché. Mais **rien, sur le dossier, n'y menait** : il fallait
+quitter la fiche, ouvrir « Reçus de versement » dans le menu, retrouver la bonne
+ligne parmi toutes, l'ouvrir, puis cliquer.
+
+La direction a essayé le parcours de bout en bout — compte créé, versement
+d'exemple, photo déposée en guise de reçu — et a conclu qu'il n'y avait « pas
+d'endroit pour vérifier le reçu ». C'était exact.
+
+- **C'est le défaut des cinq gestes**, celui que les quatre boutons du fil des
+  étapes corrigent ailleurs : ce qui demande cinq gestes finit par ne plus être
+  fait. Et il tombait au pire endroit, puisque c'est de cette pièce que dépend
+  le seul geste qui compte — marquer l'échéance réglée.
+- **Le lien va droit à `api/recu/[id]`**, qui vérifie la session d'équipe et
+  relaie le fichier depuis le magasin privé. Un champ `join` aurait affiché la
+  liste, mais mené à la fiche du reçu : un clic de plus avant de voir l'image.
+- ⚠️ **« Aucun justificatif » et « je n'ai pas pu regarder » ne se disent pas
+  pareil.** Une requête en échec qui rendrait « aucune pièce » ferait marquer
+  une échéance réglée sans pièce, ou refuser de la marquer alors que la pièce
+  existe. Les deux se paient sur de l'argent reçu : la panne s'affiche en rouge
+  et demande de recharger.
+- **L'absence de pièce n'est pas une alerte** : le dépôt est facultatif, exprès
+  — beaucoup annoncent depuis un téléphone, le reçu encore dans la poche, et
+  exiger la pièce ferait perdre le numéro de transfert, qui est ce qui permet de
+  retrouver l'argent.
+- **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne.
+- ⚠️ **`verifier-recus.ts` éprouve désormais ce chemin-là aussi**, par la route
+  HTTP avec un vrai cookie d'équipe — c'est là que vit la garde d'accès, et
+  l'API locale la contournerait avec `overrideAccess`. Avec son témoin : un
+  anonyme n'obtient rien de la même requête. `recus` porte des montants et
+  parfois des numéros de compte.
+
+
 ⚠️ **On n'annonce pas un transfert qu'on n'a pas pu faire** (depuis le
 5 septembre 2026). Le formulaire d'annonce ne demandait que « une échéance
 attend » : il paraissait donc dès la pré-inscription, avant le contrat, avant

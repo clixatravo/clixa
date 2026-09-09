@@ -11,6 +11,8 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { deposerRecu, lireRecu, retirerRecu, stockageConfigure } from "@/lib/recus";
+import { ouvrirSession } from "@/lib/session";
+import { GET as REST } from "../src/app/(payload)/api/[...slug]/route.js";
 import { readFile } from "node:fs/promises";
 
 let manques = 0;
@@ -48,6 +50,7 @@ const dossier = await payload.create({
 
 let chemin: string | undefined;
 let dossierSupprime = false;
+const comptesAsupprimer: (string | number)[] = [];
 
 try {
   const octets = await readFile("public/images/marketing/catalogue-executive-clixa.jpg");
@@ -88,6 +91,68 @@ try {
   dire("la fiche est créée et rattachée au dossier", Boolean(fiche.id));
 
   /*
+    ── ⚠️ Et le dossier retrouve sa pièce ────────────────────────────────────
+    C'est le chemin que le bloc « Justificatifs de versement » emprunte depuis
+    la fiche d'un dossier. Il manquait entièrement jusqu'au 9 septembre 2026 :
+    le fichier arrivait en base, et rien sur le dossier n'y menait — la
+    direction, essayant le parcours de bout en bout, a conclu qu'il n'y avait
+    « pas d'endroit pour vérifier le reçu ».
+
+    ⚠️ Le contrôle passe par la route HTTP avec un vrai cookie, comme
+    `verifier-portes.ts` : c'est là que vit la garde d'accès, et l'API locale
+    la contournerait avec `overrideAccess`.
+  */
+  const membre = await payload.create({
+    collection: "utilisateurs",
+    overrideAccess: true,
+    data: {
+      email: `recus.${Date.now()}@epreuve.invalid`,
+      password: `R${Math.random().toString(36).slice(2)}!7`,
+      nom: "Épreuve Reçus",
+      role: "direction",
+    } as never,
+  });
+  comptesAsupprimer.push(membre.id);
+  const cookie = await ouvrirSession(payload, "utilisateurs", membre.id);
+
+  const interroger = async (entetes: Record<string, string>) => {
+    const reponse = await REST(
+      new Request(
+        `http://localhost/api/recus?limit=20&depth=0&where[dossier][equals]=${dossier.id}`,
+        { headers: entetes },
+      ),
+      { params: Promise.resolve({ slug: ["recus"] }) } as never,
+    );
+    const corps = (await reponse.json()) as { docs?: { id: unknown }[] };
+    return { code: reponse.status, docs: corps.docs ?? [] };
+  };
+
+  const COMME_UN_NAVIGATEUR = {
+    origin: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    "sec-fetch-site": "same-origin",
+  };
+
+  const vueEquipe = await interroger({
+    ...COMME_UN_NAVIGATEUR,
+    cookie: cookie.split(";")[0] ?? "",
+  });
+  dire(
+    "⚠️ le dossier retrouve son justificatif, depuis sa fiche",
+    vueEquipe.code === 200 && vueEquipe.docs.some((d) => String(d.id) === String(fiche.id)),
+  );
+
+  /*
+    ⚠️ Le témoin : sans session d'équipe, la même requête ne rend rien. Sans
+    lui, un contrôle vert ne dirait pas si c'est la garde ou la requête qui
+    fonctionne — et `recus` porte des montants et des numéros de compte.
+  */
+  const vueAnonyme = await interroger(COMME_UN_NAVIGATEUR);
+  dire(
+    "et un anonyme n'obtient rien de cette requête",
+    vueAnonyme.code !== 200 || vueAnonyme.docs.length === 0,
+  );
+
+  /*
     ── Supprimer le dossier, et non la fiche ────────────────────────────────
     La clef étrangère de `recus.dossier_id` est en « SET NULL » et la colonne
     est obligatoire : sans le crochet `beforeDelete` d'`Inscriptions`, Postgres
@@ -111,6 +176,11 @@ try {
   if (!dossierSupprime) {
     await payload
       .delete({ collection: "inscriptions", id: dossier.id, overrideAccess: true })
+      .catch(() => undefined);
+  }
+  for (const c of comptesAsupprimer) {
+    await payload
+      .delete({ collection: "utilisateurs", id: c, overrideAccess: true })
       .catch(() => undefined);
   }
   console.log("  · dossier d'épreuve supprimé");

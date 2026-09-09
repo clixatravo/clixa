@@ -1080,6 +1080,29 @@ export const Inscriptions: CollectionConfig = {
     },
     {
       /*
+        ── ⚠️ Le justificatif se regarde depuis le dossier ────────────────────
+        Le participant joint la photo de son reçu en annonçant son transfert, et
+        le fichier arrivait bien en base. Mais rien ici n'y menait : il fallait
+        quitter la fiche, ouvrir « Reçus de versement », retrouver la bonne
+        ligne, l'ouvrir, puis cliquer. En essayant le parcours de bout en bout
+        le 9 septembre 2026, la direction a conclu qu'il n'y avait « pas
+        d'endroit pour vérifier le reçu ».
+
+        C'est le même défaut que les quatre boutons du fil des étapes corrigent
+        ailleurs — et il tombe au pire endroit, puisque c'est de cette pièce que
+        dépend le seul geste qui compte : marquer l'échéance réglée.
+
+        ⚠️ Un champ `ui` ne porte aucune colonne : rien à pousser en base.
+      */
+      name: "justificatifs",
+      type: "ui",
+      label: "Justificatifs de versement",
+      admin: {
+        components: { Field: "@/components/admin/Justificatifs#Justificatifs" },
+      },
+    },
+    {
+      /*
         ── ⚠️ Qui a déjà parlé à ce participant ────────────────────────────────
         Après une pré-inscription, quelqu'un de l'équipe appelle. Rien ne le
         notait : le lendemain, un collègue ouvrait la même liste, voyait le même

@@ -1522,6 +1522,79 @@ h3,
   opacity: 0.6;
 }
 
+/* ── Les justificatifs de versement, sur la fiche d'un dossier ───────────── */
+/*
+  Le lien mène droit au fichier, sans passer par la fiche du reçu : c'est une
+  pièce qu'on regarde avant de marquer une échéance réglée, pas un document
+  qu'on vient administrer.
+
+  ⚠️ Secondaire, pas doré. L'or de ce bloc appartient au bouton qui encaisse ;
+  ouvrir une pièce pour la lire n'est pas l'action qui engage la maison.
+*/
+.clixa-justificatifs {
+  margin-top: 4px;
+}
+
+.clixa-justificatifs__titre {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-600);
+  margin-bottom: 10px;
+}
+
+.clixa-justificatifs__vide,
+.clixa-justificatifs__panne {
+  font-size: 0.82rem;
+  margin: 0;
+  max-width: 520px;
+}
+
+.clixa-justificatifs__vide {
+  color: var(--theme-elevation-500);
+}
+
+/*
+  ⚠️ Une panne de lecture se dit fort. « Aucun justificatif » et « je n'ai pas
+  pu regarder » mènent à deux gestes opposés sur de l'argent reçu.
+*/
+.clixa-justificatifs__panne {
+  color: var(--clixa-rouge);
+}
+
+.clixa-justificatifs__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clixa-justificatifs__ligne {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clixa-justificatifs__lien {
+  margin: 0;
+}
+
+.clixa-justificatifs__quoi {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.clixa-justificatifs__detail {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--theme-elevation-600);
+}
+
 /* ── Les relances, sur la fiche d'un dossier ─────────────────────────────── */
 /*
   Deux relances nommées par la direction le 9 septembre 2026 — signature et

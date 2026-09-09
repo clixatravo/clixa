@@ -6,6 +6,7 @@ import { Suivi as Suivi_fcc81ccdd1e1890f3a9ce4dbb117afff } from '@/components/ad
 import { SignatureVue as SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31 } from '@/components/admin/SignatureVue'
 import { EtapesContrat as EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383 } from '@/components/admin/EtapesContrat'
 import { EtiquetteEcheance as EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e } from '@/components/admin/EtiquetteEcheance'
+import { Justificatifs as Justificatifs_d82e12999aac9e78ccc2d2470c2f4d75 } from '@/components/admin/Justificatifs'
 import { LienRecu as LienRecu_42bc064a96f6788a14f3d48f157c8958 } from '@/components/admin/LienRecu'
 import { Icone as Icone_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
 import { Logo as Logo_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
@@ -23,6 +24,7 @@ export const importMap = {
   "@/components/admin/SignatureVue#SignatureVue": SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31,
   "@/components/admin/EtapesContrat#EtapesContrat": EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383,
   "@/components/admin/EtiquetteEcheance#EtiquetteEcheance": EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e,
+  "@/components/admin/Justificatifs#Justificatifs": Justificatifs_d82e12999aac9e78ccc2d2470c2f4d75,
   "@/components/admin/LienRecu#LienRecu": LienRecu_42bc064a96f6788a14f3d48f157c8958,
   "@/components/admin/Marque#Icone": Icone_0fbc6ed2e61e66062cb101ebfccddc7b,
   "@/components/admin/Marque#Logo": Logo_0fbc6ed2e61e66062cb101ebfccddc7b,
