@@ -501,7 +501,7 @@ export const Inscriptions: CollectionConfig = {
           */
           name: "suivi",
           type: "ui",
-          label: "Suivi",
+          label: "Relances",
           admin: {
             components: { Cell: "@/components/admin/Suivi#Suivi" },
           },
@@ -1104,13 +1104,13 @@ export const Inscriptions: CollectionConfig = {
       */
       name: "echanges",
       type: "array",
-      label: "Échanges avec le participant",
-      labels: { singular: "Échange", plural: "Échanges" },
+      label: "Relances",
+      labels: { singular: "Relance", plural: "Relances" },
       admin: {
         readOnly: true,
         initCollapsed: true,
         description:
-          "Posé par les boutons du dossier. Sert à ne pas rappeler quelqu'un qu'un collègue vient d'avoir.",
+          "Posé par les boutons du dossier. Sert à ne pas relancer quelqu'un qu'un collègue vient d'avoir.",
       },
       fields: [
         {
@@ -1119,11 +1119,20 @@ export const Inscriptions: CollectionConfig = {
             {
               name: "quoi",
               type: "select",
-              label: "Geste",
+              label: "Objet",
               required: true,
+              /*
+                ⚠️ `appel` n'a plus de bouton, et reste pourtant offert. Quatre
+                lignes de production le portent — les essais de l'équipe du
+                8 septembre 2026 au soir — et retirer d'un type énuméré une
+                valeur que des lignes utilisent les rendrait invalides à la
+                première écriture du dossier : plus moyen d'enregistrer quoi que
+                ce soit, y compris depuis les boutons.
+              */
               options: [
-                { label: "Appelé — on lui a parlé", value: "appel" },
-                { label: "Relancé pour signer son contrat", value: "signature" },
+                { label: "Relance pour signature de contrat", value: "signature" },
+                { label: "Relance pour paiement", value: "paiement" },
+                { label: "Appelé (avant le 9 septembre 2026)", value: "appel" },
               ],
               admin: { width: "40%" },
             },

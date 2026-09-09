@@ -1,5 +1,5 @@
 /**
- * Qui a déjà appelé — ce que la colonne « Suivi » dit, et ce qu'elle refuse.
+ * Qui a déjà été relancé, et de quoi — ce que la colonne dit, et ce qu'elle refuse.
  *
  * ── ⚠️ Le défaut que cette garde protège ────────────────────────────────────
  * Après une pré-inscription, quelqu'un de l'équipe appelle. Rien ne le notait :
@@ -25,7 +25,7 @@ const dire = (q: string, v: boolean, detail = "") => {
   if (!v) manques += 1;
 };
 
-console.log("\n  Le suivi des appels\n");
+console.log("\n  Les relances\n");
 
 /*
   ⚠️ L'horloge est passée, jamais lue par le calcul — c'est ce qui permet
@@ -39,7 +39,7 @@ const ilYA = (jours: number) => new Date(MAINTENANT.getTime() - jours * 86_400_0
 
 const jamais = dernierSuivi([], MAINTENANT);
 dire(
-  "un dossier que personne n'a appelé le dit",
+  "un dossier que personne n'a relancé le dit",
   jamais.ton === "jamais" && jamais.nombre === 0,
   jamais.libelle,
 );
@@ -71,20 +71,41 @@ for (const [nom, valeur] of [
   dire(`⚠️ ne lève pas sur ce qui n'est pas un tableau — ${nom}`, tenu);
 }
 
-const aujourdhui = dernierSuivi([{ quoi: "appel", le: ilYA(0) }], MAINTENANT);
+const aujourdhui = dernierSuivi([{ quoi: "signature", le: ilYA(0) }], MAINTENANT);
 dire(
-  "⚠️ appelé aujourd'hui se lit sans calcul de tête",
-  aujourdhui.libelle === "Appelé aujourd'hui" && aujourdhui.ton === "recent",
+  "⚠️ relancé aujourd'hui se lit sans calcul de tête",
+  aujourdhui.libelle === "Relance signature · aujourd'hui" && aujourdhui.ton === "recent",
   aujourdhui.libelle,
 );
 dire(
   "hier se dit « hier », pas « il y a 1 j »",
-  dernierSuivi([{ quoi: "appel", le: ilYA(1) }], MAINTENANT).libelle === "Appelé hier",
+  dernierSuivi([{ quoi: "paiement", le: ilYA(1) }], MAINTENANT).libelle ===
+    "Relance paiement · hier",
+);
+/*
+  ⚠️ **Chaque relance dit son objet.** Les deux ne se relancent pas au même
+  rythme, et réclamer une signature à quelqu'un qui vient de payer est
+  exactement ce que ce journal existe pour éviter. Nommées par la direction le
+  9 septembre 2026.
+*/
+dire(
+  "la relance pour signature dit son objet",
+  dernierSuivi([{ quoi: "signature", le: ilYA(2) }], MAINTENANT).libelle ===
+    "Relance signature · il y a 2 j",
 );
 dire(
-  "la relance pour signature se nomme autrement",
-  dernierSuivi([{ quoi: "signature", le: ilYA(2) }], MAINTENANT).libelle ===
-    "Relancé pour signer il y a 2 j",
+  "et celle pour paiement se distingue d'elle",
+  dernierSuivi([{ quoi: "paiement", le: ilYA(2) }], MAINTENANT).libelle ===
+    "Relance paiement · il y a 2 j",
+);
+/*
+  ⚠️ `appel` n'a plus de bouton, mais quatre lignes de production le portent —
+  les essais de l'équipe du 8 septembre 2026 au soir. Une valeur qu'on cesse de
+  lire rendrait ces lignes muettes dans la colonne, sur des dossiers réels.
+*/
+dire(
+  "⚠️ l'ancien geste se lit toujours",
+  dernierSuivi([{ quoi: "appel", le: ilYA(2) }], MAINTENANT).libelle === "Appelé · il y a 2 j",
 );
 
 /*
@@ -108,15 +129,15 @@ dire(
 */
 const desordre = dernierSuivi(
   [
-    { quoi: "appel", le: ilYA(9) },
+    { quoi: "paiement", le: ilYA(9) },
     { quoi: "signature", le: ilYA(1) },
-    { quoi: "appel", le: ilYA(5) },
+    { quoi: "paiement", le: ilYA(5) },
   ],
   MAINTENANT,
 );
 dire(
   "⚠️ le plus récent gagne, quel que soit l'ordre des lignes",
-  desordre.libelle === "Relancé pour signer hier",
+  desordre.libelle === "Relance signature · hier",
   desordre.libelle,
 );
 dire("et les échanges se comptent tous", desordre.nombre === 3);
@@ -129,15 +150,16 @@ dire(
   "une ligne sans date est écartée du compte",
   dernierSuivi(
     [
-      { quoi: "appel", le: null },
-      { quoi: "appel", le: ilYA(2) },
+      { quoi: "signature", le: null },
+      { quoi: "paiement", le: ilYA(2) },
     ],
     MAINTENANT,
   ).nombre === 1,
 );
 dire(
   "⚠️ une date illisible se dit, elle ne rend pas « il y a NaN j »",
-  dernierSuivi([{ quoi: "appel", le: "pas-une-date" }], MAINTENANT).libelle === "Date illisible",
+  dernierSuivi([{ quoi: "signature", le: "pas-une-date" }], MAINTENANT).libelle ===
+    "Date illisible",
 );
 
 /* ── ⚠️ Et le bouton ajoute, il ne remplace pas ───────────────────────────── */
@@ -178,7 +200,7 @@ if (!sessions[0]) {
     });
     id = d.id;
 
-    dire("un dossier neuf n'a aucun échange", ((d.echanges ?? []) as unknown[]).length === 0);
+    dire("un dossier neuf n'a aucune relance", ((d.echanges ?? []) as unknown[]).length === 0);
 
     /* Ce que fait le bouton : relire le journal, y ajouter, tout renvoyer. */
     const noter = async (quoi: string) => {
@@ -197,9 +219,9 @@ if (!sessions[0]) {
       });
     };
 
-    await noter("appel");
     await noter("signature");
-    await noter("appel");
+    await noter("paiement");
+    await noter("signature");
 
     const relu = await payload.findByID({
       collection: "inscriptions",
@@ -218,7 +240,7 @@ if (!sessions[0]) {
     );
     dire(
       "et chacune garde son geste",
-      journal.map((e) => e.quoi).join(",") === "appel,signature,appel",
+      journal.map((e) => e.quoi).join(",") === "signature,paiement,signature",
       journal.map((e) => e.quoi).join(","),
     );
 
@@ -238,7 +260,7 @@ if (!sessions[0]) {
 
 console.log(
   manques === 0
-    ? "\n  On sait qui a déjà appelé, et depuis la liste.\n"
+    ? "\n  On sait qui a déjà été relancé, de quoi, et depuis la liste.\n"
     : `\n  ${manques} manque(s).\n`,
 );
 process.exit(manques === 0 ? 0 : 1);

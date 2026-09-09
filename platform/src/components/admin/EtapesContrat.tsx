@@ -151,6 +151,32 @@ function Etape({
   );
 }
 
+/*
+  Les mêmes mots que la colonne de la liste et que le menu du champ. Trois
+  écritures d'un même libellé finissent par se contredire — c'est ce qui est
+  arrivé au numéro d'admissions et aux moyens de paiement.
+*/
+const OBJETS: Record<string, string> = {
+  signature: "Relance signature",
+  paiement: "Relance paiement",
+  appel: "Appelé",
+};
+
+/**
+ * « vous » ou « un collègue » — jamais un nom, qu'on n'a pas ici.
+ *
+ * ⚠️ La relation arrive sous deux formes selon la porte : l'identifiant seul
+ * depuis l'état du formulaire, l'objet entier depuis l'API avec `depth`.
+ * Comparer sans les réduire rendrait « [object Object] » à côté de son propre
+ * nom, c'est-à-dire « un collègue » pour soi-même — l'inverse de ce qu'on
+ * cherche à savoir.
+ */
+function auteur(par: Echange["par"], moi: number | string | undefined): string {
+  const id = par && typeof par === "object" ? par.id : par;
+  if (id === undefined || id === null || moi === undefined) return "";
+  return String(id) === String(moi) ? "vous" : "un collègue";
+}
+
 const JOUR = (v: string) =>
   new Date(v).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -473,155 +499,99 @@ export function EtapesContrat() {
         </div>
 
         {/*
-          ── ⚠️ Les échanges ne sont pas une cinquième étape ──────────────────
+          ── ⚠️ Les relances ne sont pas une cinquième étape ──────────────────
           Le fil au-dessus est une **suite** : on relit le contrat avant
-          d'appeler quelqu'un à payer, et l'ordre porte du sens. Un appel, lui,
-          se refait — la semaine suivante, et celle d'après. Le glisser dans la
-          suite lui aurait donné un rang qu'il n'a pas, et rendu ses boutons
-          indisponibles hors de « leur » moment.
+          d'appeler quelqu'un à payer, et l'ordre porte du sens. Une relance,
+          elle, se refait — la semaine suivante, et celle d'après. La glisser
+          dans la suite lui aurait donné un rang qu'elle n'a pas, et rendu ses
+          boutons indisponibles hors de « leur » moment.
 
-          Il vit donc dans son propre bloc, toujours ouvert.
+          Elle vit donc dans son propre bloc, toujours ouvert.
         */}
-        <div
-          style={{
-            marginTop: 18,
-            paddingTop: 16,
-            borderTop: "1px solid var(--theme-elevation-100)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: 12,
-              flexWrap: "wrap",
-              marginBottom: 12,
-            }}
-          >
+        <section className="clixa-relances" aria-label="Relances">
+          <header className="clixa-relances__entete">
+            <span className="clixa-relances__titre">Relances</span>
             <span
-              style={{
-                fontFamily: "var(--font-mono, monospace)",
-                fontSize: "0.67rem",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "var(--theme-elevation-600)",
-              }}
+              className={`clixa-relances__resume clixa-relances__resume--${
+                suivi.nombre === 0 ? "vide" : suivi.ton
+              }`}
             >
-              Échanges avec le participant
+              {suivi.nombre === 0 ? "Aucune relance notée" : suivi.libelle}
             </span>
-            <span
-              style={{
-                fontSize: "0.82rem",
-                color: suivi.ton === "recent" ? FAIT : "var(--theme-elevation-500)",
-                fontWeight: suivi.ton === "recent" ? 600 : 400,
-              }}
-            >
-              {suivi.nombre === 0 ? "Personne ne lui a encore parlé" : suivi.libelle}
-            </span>
-          </div>
+          </header>
 
           {/*
             ⚠️ Le journal se lit du plus récent au plus ancien : la question
-            qu'on se pose en ouvrant le dossier est « quand lui a-t-on parlé la
+            qu'on se pose en ouvrant le dossier est « quand l'a-t-on relancé la
             dernière fois », jamais « par quoi a-t-on commencé ».
           */}
           {echanges.length > 0 && (
-            <ol
-              style={{
-                listStyle: "none",
-                margin: "0 0 14px",
-                padding: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                maxHeight: 168,
-                overflowY: "auto",
-              }}
-            >
+            <ol className="clixa-relances__journal">
               {[...echanges]
                 .map((e, i) => ({ e, i }))
                 .sort((a, b) => new Date(b.e.le ?? 0).getTime() - new Date(a.e.le ?? 0).getTime())
                 .map(({ e, i }) => (
-                  <li
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "baseline",
-                      fontSize: "0.85rem",
-                      color: "var(--theme-elevation-700)",
-                    }}
-                  >
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: "50%",
-                        background: e.quoi === "signature" ? OR : "var(--theme-elevation-300)",
-                        flex: "none",
-                        transform: "translateY(-2px)",
-                      }}
-                    />
-                    <span style={{ fontWeight: 500 }}>
-                      {e.quoi === "signature" ? "Relancé pour signer" : "Appelé"}
+                  <li key={i} className={`clixa-relances__ligne clixa-relances__ligne--${e.quoi}`}>
+                    <span aria-hidden="true" className="clixa-relances__puce" />
+                    <span className="clixa-relances__objet">
+                      {OBJETS[String(e.quoi)] ?? "Relance"}
                     </span>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono, monospace)",
-                        fontSize: "0.76rem",
-                        color: "var(--theme-elevation-500)",
-                      }}
-                    >
-                      {e.le ? JOUR(String(e.le)) : "—"}
-                    </span>
+                    <span className="clixa-relances__quand">{e.le ? JOUR(String(e.le)) : "—"}</span>
+                    {/*
+                      ⚠️ On ne peut pas nommer l'auteur : l'état du formulaire ne
+                      porte que son identifiant, pas son nom. Mais la question à
+                      laquelle ce bloc répond n'est pas « qui », c'est « est-ce
+                      moi ou quelqu'un d'autre » — et cela, l'identifiant le dit.
+                    */}
+                    <span className="clixa-relances__par">{auteur(e.par, user?.id)}</span>
                   </li>
                 ))}
             </ol>
           )}
 
-          <div
-            style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}
-          >
-            <button
-              type="button"
-              className="btn btn--style-secondary btn--size-small"
-              style={{ margin: 0 }}
-              onClick={noter("appel")}
-            >
-              Je viens de l&apos;appeler
-            </button>
-
+          <div className="clixa-relances__actions">
             {/*
-              ⚠️ Ce bouton ne paraît que tant que le contrat n'est pas signé :
-              relancer pour un geste déjà fait ferait noter une conversation qui
-              n'a pas pu avoir lieu, et fausserait le compte des relances.
+              ⚠️ Chaque bouton disparaît quand son objet est acquis. Relancer
+              pour une signature déjà donnée, ou pour un règlement déjà soldé,
+              ferait noter une conversation qui n'a pas pu avoir lieu — et
+              gonflerait un compteur qui sert à décider s'il faut rappeler.
             */}
             {!aSigne && (
               <button
                 type="button"
-                className="btn btn--style-secondary btn--size-small"
-                style={{ margin: 0 }}
+                className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
                 onClick={noter("signature")}
               >
-                Je lui ai demandé de signer son contrat
+                Relance pour signature de contrat
+              </button>
+            )}
+
+            {/*
+              ⚠️ Celui-ci ne s'efface **pas** avant l'envoi des coordonnées,
+              bien que le participant ne puisse rien régler tant qu'il ne les a
+              pas. La règle « on ne réclame rien qu'on n'ait rendu possible »
+              vise ce qu'on demande au participant ; ici on note ce que
+              l'équipe a dit au téléphone. Le champ étant en lecture seule, un
+              bouton absent voudrait dire qu'un appel réel ne peut pas être
+              inscrit — et le collègue suivant rappellerait, ce que ce bloc
+              existe précisément pour éviter.
+            */}
+            {!toutRegle && (
+              <button
+                type="button"
+                className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
+                onClick={noter("paiement")}
+              >
+                Relance pour paiement
               </button>
             )}
           </div>
 
-          <p
-            style={{
-              color: "var(--theme-elevation-500)",
-              fontSize: "0.8rem",
-              margin: "10px 0 0",
-              maxWidth: 460,
-            }}
-          >
+          <p className="clixa-relances__note">
             Noté à votre nom, avec l&apos;heure. Rien n&apos;est envoyé au participant — c&apos;est
             une trace pour l&apos;équipe, lisible depuis la liste.
           </p>
-        </div>
+        </section>
       </div>
     </div>
   );

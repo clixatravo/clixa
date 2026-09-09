@@ -785,11 +785,11 @@ export interface Inscription {
    */
   notes?: string | null;
   /**
-   * Posé par les boutons du dossier. Sert à ne pas rappeler quelqu'un qu'un collègue vient d'avoir.
+   * Posé par les boutons du dossier. Sert à ne pas relancer quelqu'un qu'un collègue vient d'avoir.
    */
   echanges?:
     | {
-        quoi: 'appel' | 'signature';
+        quoi: 'signature' | 'paiement' | 'appel';
         le: string;
         par?: (number | null) | Utilisateur;
         id?: string | null;

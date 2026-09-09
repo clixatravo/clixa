@@ -1202,6 +1202,58 @@ Deux boutons sur la fiche, et une colonne dans la liste :
 - **Le plus récent gagne, pas le dernier de la liste** — une correction depuis
   /admin peut réordonner les lignes.
 
+⚠️ **Les deux relances portent leur objet** (décision de la direction, le
+9 septembre 2026). Le premier jet notait « Appelé », sans plus : on savait qu'on
+avait parlé, jamais de quoi. Les boutons sont désormais **« Relance pour
+signature de contrat »** et **« Relance pour paiement »**.
+
+- **Les deux n'attendent pas la même chose.** Réclamer une signature à quelqu'un
+  qui vient de régler — ou l'inverse — est exactement ce que cette colonne
+  existe pour éviter ; un compteur qui mêle les deux ne permet pas de le voir.
+- **Chaque bouton disparaît quand son objet est acquis** : la signature une fois
+  le contrat signé, le paiement une fois tout réglé. Relancer pour un geste déjà
+  fait ferait noter une conversation qui n'a pas pu avoir lieu.
+- ⚠️ **La relance pour paiement, elle, ne s'efface pas avant l'envoi des
+  coordonnées**, bien que le participant ne puisse rien régler tant qu'il ne les
+  a pas. La règle « on ne réclame rien qu'on n'ait rendu possible » vise ce qu'on
+  demande au *participant* ; ici on note ce que l'équipe a dit au téléphone. Le
+  champ étant en lecture seule, un bouton absent voudrait dire qu'un appel réel
+  ne peut pas être inscrit — et le collègue suivant rappellerait, ce que ce bloc
+  existe précisément pour empêcher.
+- ⚠️ **`appel` reste une valeur valide, sans bouton.** Quatre lignes de
+  production la portent — les essais de l'équipe du 8 septembre au soir — et
+  l'on ne retire pas d'un type énuméré une valeur que des lignes utilisent :
+  elles deviendraient invalides à la première écriture du dossier, et plus rien
+  ne s'enregistrerait, boutons compris. Vérifié en base **avant** de toucher aux
+  options.
+- **Le journal distingue « vous » d'« un collègue »**, jamais un nom : l'état du
+  formulaire ne porte que l'identifiant de l'auteur. C'est pourtant la seule
+  question que ce bloc a à trancher.
+- **Le dessin vit dans `clixa.css`** (`.clixa-relances`), pas en attributs de
+  style. ⚠️ Aucun bouton n'y est doré : l'or dit « l'action principale », et le
+  fil des quatre étapes juste au-dessus la porte déjà. Ni émeraude — dans la
+  colonne de la liste, le vert veut dire « on vient de le faire ».
+
+⚠️ **Un panneau de navigateur masqué ne peint pas la page, et cela ressemble à
+un défaut.** En vérifiant ce bloc, les trois blocs repliables de la fiche d'un
+dossier rendaient `render-fields` **vide** — tous les champs manquants, y
+compris ceux qu'on n'avait pas touchés. Reproduit à `HEAD`, avec un `.next`
+effacé et un serveur neuf : de quoi conclure à une régression déployée en
+production.
+
+Il n'y en avait aucune. Le contenu d'un bloc replié ne se monte qu'à
+l'affichage, et le panneau était caché : la page n'était jamais peinte. Une
+épreuve Playwright, qui peint réellement, a rendu le bloc entier du premier
+coup. **Devant un rendu vide, vérifier d'abord que le panneau est affiché**
+(`tabs_context` le dit) — et confirmer par Playwright avant d'accuser le code.
+
+⚠️ **Et le ménage de fin de série supprime les dossiers d'épreuve.** Un dossier
+fabriqué pour regarder l'écran disparaît à la fin de la série Playwright
+suivante : la fois d'après, la page affiche « Le document avec l'ID … n'a pas pu
+être trouvé », ce qui se lit comme une page cassée. Fabriquer le dossier et
+lancer la série dans la **même** commande.
+
+
 ⚠️ **Un champ `array` vide ne rend pas `[]` dans l'état du formulaire, mais
 `0`** — et cela a fait tomber la fiche entière. `reduceFieldsToValues` rend le
 *nombre* de lignes quand il n'y en a aucune ; `?? []` ne rattrape que

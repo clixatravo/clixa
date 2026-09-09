@@ -1522,6 +1522,149 @@ h3,
   opacity: 0.6;
 }
 
+/* ── Les relances, sur la fiche d'un dossier ─────────────────────────────── */
+/*
+  Deux relances nommées par la direction le 9 septembre 2026 — signature et
+  paiement — et le journal de ce qui a déjà été fait.
+
+  ⚠️ **Aucun bouton n'est doré ici.** L'or dit « l'action principale » ; deux
+  boutons dorés côte à côte ne diraient plus lequel l'est, et le fil des quatre
+  étapes juste au-dessus porte déjà, lui, le geste principal du moment. Les
+  relances sont un carnet, pas une étape à franchir.
+
+  ⚠️ **Ni émeraude.** Dans la colonne « Relances » de la liste, le vert veut
+  dire « on vient de le faire » ; le reprendre ici pour autre chose ferait dire
+  deux choses à une même couleur, sur deux écrans que l'on lit l'un après
+  l'autre.
+*/
+.clixa-relances {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.clixa-relances__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.clixa-relances__titre {
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-600);
+}
+
+.clixa-relances__resume {
+  font-size: 0.82rem;
+}
+
+.clixa-relances__resume--recent {
+  color: var(--clixa-emeraude-clair);
+  font-weight: 600;
+}
+
+.clixa-relances__resume--ancien {
+  color: var(--theme-elevation-600);
+}
+
+/* Rien de noté n'est pas une alerte : c'est l'état d'un dossier qui vient d'arriver. */
+.clixa-relances__resume--vide,
+.clixa-relances__resume--jamais {
+  color: var(--theme-elevation-500);
+}
+
+/*
+  Le journal défile au-delà de six lignes plutôt que de repousser les boutons
+  hors de l'écran : au dixième rappel, ce sont eux qu'on vient chercher.
+*/
+.clixa-relances__journal {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 186px;
+  overflow-y: auto;
+}
+
+.clixa-relances__ligne {
+  display: grid;
+  grid-template-columns: 10px minmax(9rem, auto) 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 8px 5px 2px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-800);
+}
+
+.clixa-relances__ligne:nth-child(odd) {
+  background: var(--theme-elevation-50);
+}
+
+.clixa-relances__puce {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--theme-elevation-300);
+  transform: translateY(-2px);
+  justify-self: center;
+}
+
+/* La signature et le paiement se distinguent d'un coup d'œil, sans se lire. */
+.clixa-relances__ligne--signature .clixa-relances__puce {
+  background: var(--clixa-or);
+}
+
+.clixa-relances__ligne--paiement .clixa-relances__puce {
+  background: var(--clixa-emeraude-clair);
+}
+
+.clixa-relances__objet {
+  font-weight: 500;
+}
+
+.clixa-relances__quand,
+.clixa-relances__par {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--theme-elevation-600);
+}
+
+.clixa-relances__par {
+  text-align: right;
+  font-style: italic;
+}
+
+.clixa-relances__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/*
+  ⚠️ La marge passe par la classe, pas par un attribut de style : le bouton de
+  Payload porte la sienne, et la forcer en ligne échapperait au survol et à
+  l'état désactivé, que l'outil gère.
+*/
+.clixa-relances__bouton {
+  margin: 0;
+}
+
+.clixa-relances__note {
+  color: var(--theme-elevation-500);
+  font-size: 0.8rem;
+  margin: 12px 0 0;
+  max-width: 460px;
+}
+
 /* ── Le remplissage d'une session ───────────────────────────────────────── */
 /*
   ⚠️ **Deux nombres qui ne se lisent qu'ensemble.** La liste montrait « 30 » —

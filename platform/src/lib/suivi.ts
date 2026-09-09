@@ -8,12 +8,21 @@
  * 8 septembre 2026 — « si l'administration a parlé au client, il faut le savoir,
  * au cas où quelqu'un d'autre entre pour lui parler ».
  *
- * Deux gestes se notent, et ce sont deux choses différentes :
+ * Deux relances se notent, nommées par la direction le 9 septembre 2026 :
  *
- * - **Appelé** — on lui a parlé. Peu importe ce qui s'est dit ; ce qui compte
- *   est qu'un second appel dans la foulée ferait désordre.
- * - **Relancé pour signer** — on lui a demandé d'aller signer son contrat.
- *   C'est la relance qui a un objet, et celle qu'on veut pouvoir compter.
+ * - **Relance signature** — on lui a demandé d'aller signer son contrat.
+ * - **Relance paiement** — on lui a demandé de régler.
+ *
+ * ⚠️ **Chaque relance dit son objet.** Le premier jet notait « Appelé », sans
+ * plus : on savait qu'on avait parlé, jamais de quoi. Or les deux relances
+ * n'attendent pas la même chose et ne se relancent pas au même rythme —
+ * réclamer une signature à quelqu'un qui vient de payer, ou l'inverse, est
+ * exactement ce que cette colonne existe pour éviter.
+ *
+ * ⚠️ **`appel` reste une valeur valide, sans bouton.** Quatre lignes de
+ * production la portent — les essais de l'équipe du 8 septembre au soir — et
+ * on ne retire pas d'un type énuméré une valeur que des lignes utilisent :
+ * elles deviendraient invalides à la première écriture du dossier.
  *
  * ⚠️ **Rien ne part au participant.** Ces deux traces disent ce qui s'est passé
  * au téléphone ; lui envoyer un courriel « nous vous avons appelé » ajouterait
@@ -26,13 +35,20 @@
  * ni écran — comme `avancementDuDossier` et `occupationDeLaSession`.
  */
 
-/** Ce qu'on note : un appel, ou une relance qui vise la signature. */
-export type NatureEchange = "appel" | "signature";
+/** Ce qu'on note. `appel` est l'ancien geste, gardé pour les lignes déjà écrites. */
+export type NatureEchange = "signature" | "paiement";
 
 /** Une ligne du journal des échanges, telle qu'elle vit en base. */
 export interface Echange {
   quoi?: string | null;
   le?: string | Date | null;
+  /*
+    Qui l'a notée. C'est une relation vers `utilisateurs` : selon la porte, on
+    reçoit l'identifiant seul (l'état du formulaire) ou l'objet entier (l'API
+    avec `depth`). Le calcul n'en fait rien — il ne sert qu'à distinguer « vous »
+    d'« un collègue », qui est la question que ce journal existe pour trancher.
+  */
+  par?: number | string | { id?: number | string } | null;
 }
 
 export type TonSuivi = "recent" | "ancien" | "jamais";
@@ -57,8 +73,10 @@ export interface Suivi {
 export const JOURS_RECENT = 3;
 
 const NOMS: Record<string, string> = {
+  signature: "Relance signature",
+  paiement: "Relance paiement",
+  /* Ancien geste, sans bouton : les lignes d'avant le 9 septembre 2026. */
   appel: "Appelé",
-  signature: "Relancé pour signer",
 };
 
 /** Le jour civil, pour ne pas rendre « il y a 0 j » à minuit passé de peu. */
@@ -92,7 +110,7 @@ export function dernierSuivi(echanges: unknown, maintenant: Date): Suivi {
   const lignes = (Array.isArray(echanges) ? (echanges as Echange[]) : []).filter((e) => e && e.le);
 
   if (lignes.length === 0) {
-    return { libelle: "Jamais appelé", nombre: 0, jours: undefined, ton: "jamais" };
+    return { libelle: "Jamais relancé", nombre: 0, jours: undefined, ton: "jamais" };
   }
 
   /*
@@ -114,8 +132,13 @@ export function dernierSuivi(echanges: unknown, maintenant: Date): Suivi {
 
   const depuis = jours === 0 ? "aujourd'hui" : jours === 1 ? "hier" : `il y a ${jours} j`;
 
+  /*
+    Le point médian sépare l'objet de la date. Sans lui, « Relance signature
+    hier » se lit comme une phrase mal finie ; les deux moitiés répondent à
+    deux questions — de quoi, et quand.
+  */
   return {
-    libelle: `${quoi} ${depuis}`,
+    libelle: `${quoi} · ${depuis}`,
     nombre: lignes.length,
     jours,
     ton: jours <= JOURS_RECENT ? "recent" : "ancien",

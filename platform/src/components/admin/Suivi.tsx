@@ -40,7 +40,7 @@ export function Suivi(props: DefaultCellComponentProps) {
   const { libelle, nombre, ton } = dernierSuivi(ligne.echanges, new Date());
 
   if (ton === "jamais" && nombre === 0) {
-    return <span className="clixa-suivi__vide">Jamais appelé</span>;
+    return <span className="clixa-suivi__vide">Jamais relancé</span>;
   }
 
   return (
