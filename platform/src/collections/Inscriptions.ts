@@ -183,6 +183,20 @@ function tirage(): string {
 export const Inscriptions: CollectionConfig = {
   slug: "inscriptions",
   labels: { singular: "Inscription", plural: "Inscriptions" },
+  /*
+    ⚠️ **Sans ordre déclaré, un tri sur une date identique mélange la liste.**
+    Les trente dossiers portent la même « prochaine échéance » — la date de
+    démarrage de la cohorte — et Postgres les rend alors dans l'ordre qui
+    l'arrange : la liste change de disposition à chaque visite, sans que rien
+    ne le dise. C'est le défaut des « trois cohortes au hasard » du tableau de
+    bord, une porte plus loin, et pour la même raison : un tri sur une égalité
+    n'est pas un tri.
+
+    Le plus récent d'abord, donc — ce que la liste sert à voir : qui vient
+    d'arriver. ⚠️ Un tri **enregistré** par un membre de l'équipe l'emporte
+    sur celui-ci ; il se défait en recliquant sur un en-tête de colonne.
+  */
+  defaultSort: "-createdAt",
   admin: {
     useAsTitle: "reference",
     defaultColumns: [
@@ -215,7 +229,26 @@ export const Inscriptions: CollectionConfig = {
       "session",
       "statut",
       "moyenSouhaite",
-      "prochaineEcheance",
+      /*
+        ⚠️ **« Prochaine échéance » a quitté cette liste** (9 septembre 2026).
+        Elle affichait **03/10/2026 sur les trente dossiers** — la date de
+        démarrage de la cohorte, que la colonne « Session » écrit déjà sur
+        chaque ligne. Une date identique partout ne trie rien et ne désigne
+        personne : la direction, en parcourant la liste, n'y a vu que « les
+        dates de démarrage de formation ».
+
+        C'est le défaut de « Places au total : 30 » une porte plus loin — un
+        chiffre juste au mauvais endroit se lit comme un chiffre faux. Pire
+        ici : sur l'écran où l'on cherche qui va perdre sa place, la seule date
+        visible en annonçait une à trois semaines, ce qui se lit « rien ne
+        presse ». C'est **« Délai »** qui porte l'échéance qui décide.
+
+        ⚠️ **Le champ reste**, et n'est pas touché : la vignette « échéances
+        dépassées » du tableau de bord filtre dessus, et le tri par relances
+        s'en sert. Il redeviendra distinctif le jour où des versements
+        arriveront — les deuxièmes échéances tombent au 31/10 et au 14/11. On
+        le remet alors depuis « Colonnes », sans rien changer au code.
+      */
     ],
     group: "Admissions",
     description:

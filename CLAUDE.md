@@ -894,6 +894,33 @@ terme qui existait déjà.
   déjà reçu deux — le défaut que ce script s'est déjà fait une fois.
 
 
+⚠️ **La seule date visible était celle du démarrage, sur les trente lignes**
+(corrigé le 9 septembre 2026). La direction a parcouru la liste des dossiers et
+n'y a vu que « les dates de démarrage de formation ». C'était exact : la colonne
+« Prochaine échéance » affichait **03/10/2026 sur les trente dossiers** — la
+première échéance tombe le jour du démarrage — et la colonne « Session » écrit
+déjà cette même date sur chaque ligne.
+
+- **C'est le défaut de « Places au total : 30 »**, une porte plus loin : un
+  chiffre juste au mauvais endroit se lit comme un chiffre faux. Pire ici — sur
+  l'écran où l'on cherche qui va perdre sa place, la seule date visible en
+  annonçait une à trois semaines, ce qui se lit « rien ne presse ».
+- **Elle a quitté `defaultColumns`, le champ reste.** La vignette « échéances
+  dépassées » filtre dessus et le crochet le recalcule ; il redeviendra
+  distinctif quand des versements arriveront — les deuxièmes échéances tombent
+  au 31/10 et au 14/11. On le remet alors depuis « Colonnes ».
+- ⚠️ **Et trier dessus mélangeait la liste.** Trente lignes portant la même
+  valeur, c'est une égalité : Postgres les rend dans l'ordre qui l'arrange, et
+  la disposition change à chaque visite sans que rien ne le dise. Une
+  préférence enregistrée portait justement `sort: -prochaineEcheance`. La
+  collection déclare désormais `defaultSort: "-createdAt"` — le plus récent
+  d'abord, ce que la liste sert à voir.
+- ⚠️ **Un tri enregistré par un membre de l'équipe l'emporte sur le défaut**, et
+  ne se voit nulle part : `payload_preferences` le garde par compte. Il se
+  défait en recliquant sur un en-tête. Vérifié le même jour : **aucune
+  préférence de *colonnes*** n'était enregistrée — c'est ce qui a permis à
+  « Délai » de paraître sans que personne ait rien à faire.
+
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
 depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
 `lib/places.ts` sur les dossiers réels et imprime, jour par jour, les courriels
