@@ -1793,6 +1793,47 @@ h3,
   margin: 0;
 }
 
+/*
+  ⚠️ L'envoi de courriel se sépare des deux boutons du dessus par un trait.
+  Ceux-là remplissent un carnet ; celui-ci part chez le participant, et rien ne
+  le rattrape. La ligne dit qu'on change de nature d'action.
+*/
+.clixa-relances__envoi {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--theme-elevation-150);
+}
+
+.clixa-relances__avis,
+.clixa-relances__refus,
+.clixa-relances__parti {
+  font-size: 0.8rem;
+  margin: 0;
+  max-width: 420px;
+}
+
+.clixa-relances__avis {
+  color: var(--clixa-or-clair);
+}
+
+/* Un refus se lit : il dit pourquoi, et recliquer ne servirait à rien. */
+.clixa-relances__refus {
+  color: var(--clixa-rouge);
+}
+
+/* Parti pour de vrai — la seule fois où l'émeraude a ici le sens qu'elle a partout. */
+.clixa-relances__parti {
+  color: var(--clixa-emeraude-clair);
+  font-weight: 500;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--theme-elevation-150);
+}
+
 .clixa-relances__note {
   color: var(--theme-elevation-500);
   font-size: 0.8rem;

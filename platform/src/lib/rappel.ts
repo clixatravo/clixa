@@ -1,0 +1,109 @@
+/**
+ * Envoyer le rappel « il vous reste N jours », et en garder la trace.
+ *
+ * ── ⚠️ Pourquoi un seul chemin pour deux portes ─────────────────────────────
+ * La tâche de 8 h l'envoie toute seule ; le bouton du dossier l'envoie quand
+ * l'équipe le décide. Deux chemins pour un même fait finissent toujours par
+ * diverger — c'est ce qui est arrivé au numéro d'admissions, aux moyens de
+ * paiement affichés sur la fiche, et à la date du contrat vérifié. Ici l'écart
+ * se paierait sur un courriel qui part deux fois, ou sur une trace absente qui
+ * fait renvoyer le même message le lendemain matin.
+ *
+ * ⚠️ **Rien n'est écrit avant que l'envoi ait réussi.** Un quota épuisé ne doit
+ * pas faire croire que la personne a été prévenue : sans trace, le passage
+ * suivant la reprend. Même règle que `placeRappeleeLe`.
+ */
+import type { Payload } from "payload";
+import { courrielRappelAvantTerme } from "./courriel";
+import { sansLeParcours } from "./inscriptions";
+import { finDeLaTenue } from "./places";
+
+const JOUR_MS = 86_400_000;
+
+export interface DossierARappeler {
+  id: number | string;
+  reference?: unknown;
+  apprenantNom?: unknown;
+  apprenantEmail?: unknown;
+  createdAt?: unknown;
+  session?: unknown;
+  echanges?: unknown;
+  dernierRappelAvantTerme?: number | null;
+}
+
+/** Les jours civils restants avant le terme de la tenue. */
+export function joursAvantLeTerme(createdAt: unknown, maintenant: number): number {
+  return Math.ceil((finDeLaTenue(String(createdAt)).getTime() - maintenant) / JOUR_MS);
+}
+
+/**
+ * Envoie le rappel et, seulement si le courriel est parti, note ce qu'il faut.
+ *
+ * @param seuil Le palier à retenir. La tâche passe le sien ; le bouton passe
+ *   les jours restants — dans les deux cas c'est un plafond : on ne garde que
+ *   le plus petit déjà servi, sans quoi un envoi manuel rouvrirait un palier
+ *   que la tâche avait déjà consommé.
+ */
+export async function envoyerLeRappel(
+  payload: Payload,
+  dossier: DossierARappeler,
+  options: { seuil: number; jours: number; site: string; par?: number | string },
+): Promise<boolean> {
+  const session = typeof dossier.session === "object" ? (dossier.session as never) : undefined;
+  const s = session as { reference?: string; programme?: { titre?: string } } | undefined;
+  const programme = s && typeof s.programme === "object" ? s.programme : undefined;
+
+  const parti = await courrielRappelAvantTerme(payload, {
+    reference: String(dossier.reference),
+    apprenantNom: String(dossier.apprenantNom),
+    apprenantEmail: String(dossier.apprenantEmail),
+    programmeTitre: programme?.titre ?? "votre parcours",
+    sessionDetail: sansLeParcours(s?.reference, programme?.titre),
+    tenueJusquau: finDeLaTenue(String(dossier.createdAt)).toISOString(),
+    urlDossier: `${site(options.site)}/inscription/${dossier.reference}`,
+    /*
+      ⚠️ Les jours réellement restants, jamais le palier. Un passage manqué peut
+      trouver le dossier à J-2 avec le palier 3 encore ouvert : annoncer « il
+      vous reste 3 jours » quand il en reste 2 ferait manquer sa place à
+      quelqu'un qui fait exactement ce qu'on lui a dit.
+    */
+    jours: options.jours,
+  });
+
+  if (!parti) return false;
+
+  const dejaFait = dossier.dernierRappelAvantTerme;
+  const retenu = typeof dejaFait === "number" ? Math.min(dejaFait, options.seuil) : options.seuil;
+
+  /*
+    ⚠️ Le journal reçoit la ligne dans la même écriture. Il répond à « quelqu'un
+    l'a-t-il déjà contacté ? », et un courriel parti est un contact : sans cette
+    ligne, un collègue appellerait en disant « vous n'avez rien reçu de nous » à
+    quelqu'un relancé le matin même. Le tableau part **en entier** — Payload
+    remplace la liste, il ne la complète pas.
+  */
+  const journal = Array.isArray(dossier.echanges) ? dossier.echanges : [];
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: {
+      dernierRappelAvantTerme: retenu,
+      echanges: [
+        ...journal,
+        {
+          quoi: "rappel",
+          le: new Date().toISOString(),
+          ...(options.par ? { par: options.par } : {}),
+        },
+      ],
+    } as never,
+  });
+
+  return true;
+}
+
+/** Sans barre finale : `${site}/inscription/…` la remettrait en double. */
+function site(brut: string): string {
+  return brut.replace(/\/+$/, "");
+}

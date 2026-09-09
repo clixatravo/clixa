@@ -75,6 +75,8 @@ export const JOURS_RECENT = 3;
 const NOMS: Record<string, string> = {
   signature: "Relance signature",
   paiement: "Relance paiement",
+  /* Un courriel parti pour de vrai, pas une conversation. */
+  rappel: "Rappel par courriel",
   /* Ancien geste, sans bouton : les lignes d'avant le 9 septembre 2026. */
   appel: "Appelé",
 };

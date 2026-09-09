@@ -5,15 +5,11 @@ import {
   SEUILS_DE_RAPPEL,
 } from "@/lib/places";
 import { sansLeParcours } from "@/lib/inscriptions";
+import { envoyerLeRappel, joursAvantLeTerme } from "@/lib/rappel";
 import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import {
-  courrielBilanRelances,
-  courrielPlaceBientotRendue,
-  courrielRappelAvantTerme,
-  courrielRelance,
-} from "@/lib/courriel";
+import { courrielBilanRelances, courrielPlaceBientotRendue, courrielRelance } from "@/lib/courriel";
 
 /**
  * BE-17 — Relance des échéances.
@@ -296,13 +292,12 @@ export async function GET(request: Request) {
   });
 
   for (const dossier of aRappeler) {
-    const terme = finDeLaTenue(String(dossier.createdAt));
-    const jours = Math.ceil((terme.getTime() - maintenant) / JOUR_MS);
+    const jours = joursAvantLeTerme(dossier.createdAt, maintenant);
 
     /*
-      Le plus grand seuil encore atteint, et qu'on n'a pas déjà servi. `null`
-      veut dire « aucun rappel parti » : tous les seuils sont ouverts.
-      Le champ arrive de Postgres en `null`, jamais en `undefined`.
+      Le plus grand palier encore atteint qu'on n'a pas déjà servi. `null` veut
+      dire « aucun rappel parti » : tous les paliers sont ouverts. Le champ
+      arrive de Postgres en `null`, jamais en `undefined`.
     */
     const dejaEnvoye = dossier.dernierRappelAvantTerme;
     const seuil = SEUILS_DE_RAPPEL.find(
@@ -310,40 +305,19 @@ export async function GET(request: Request) {
     );
     if (seuil === undefined) continue;
 
-    const session = typeof dossier.session === "object" ? dossier.session : undefined;
-    const programme =
-      session && typeof session.programme === "object" ? session.programme : undefined;
     const ligne = `${dossier.reference} · ${dossier.apprenantNom} — J-${seuil}`;
 
-    const parti = await courrielRappelAvantTerme(payload, {
-      reference: String(dossier.reference),
-      apprenantNom: String(dossier.apprenantNom),
-      apprenantEmail: String(dossier.apprenantEmail),
-      programmeTitre: programme?.titre ?? "votre parcours",
-      sessionDetail: sansLeParcours(session?.reference, programme?.titre),
-      tenueJusquau: terme.toISOString(),
-      urlDossier: `${site}/inscription/${dossier.reference}`,
-      /*
-        ⚠️ Les jours réellement restants, pas le seuil. Un passage manqué peut
-        trouver le dossier à J-2 avec le seuil 3 encore ouvert : annoncer
-        « il vous reste 3 jours » quand il en reste 2 lui ferait manquer sa
-        place en faisant exactement ce qu'on lui a dit.
-      */
-      jours,
-    });
+    /*
+      ⚠️ Le même chemin que le bouton du dossier (`lib/rappel.ts`) : l'envoi, la
+      trace du palier et la ligne du journal partent ensemble, ou pas du tout.
+    */
+    const parti = await envoyerLeRappel(payload, dossier as never, { seuil, jours, site });
 
     if (!parti) {
       // Rien n'est noté : le passage de demain reprendra ce dossier.
       rappelsManques.push(ligne);
       continue;
     }
-
-    await payload.update({
-      collection: "inscriptions",
-      id: dossier.id,
-      overrideAccess: true,
-      data: { dernierRappelAvantTerme: seuil },
-    });
     rappeles.push(ligne);
   }
 

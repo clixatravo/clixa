@@ -853,6 +853,42 @@ terme qui existait déjà.
   **Prouvé en posant la trace malgré l'échec** : deux contrôles au rouge.
 - **Mêmes destinataires que l'annonce du terme** : pré-inscriptions seules. Un
   contrat signé n'attend pas le même geste et n'a pas le même délai.
+- ⚠️ **L'équipe voit passer le courriel, depuis la liste.** Le journal des
+  relances reçoit une ligne « Rappel par courriel » — même colonne, même
+  question : « quelqu'un l'a-t-il déjà contacté ? ». Sans elle, un collègue
+  appellerait en disant « vous n'avez rien reçu de nous » à quelqu'un relancé le
+  matin même. Prouvé en retirant la ligne : la colonne repasse à « Jamais
+  relancé ».
+- **Et l'équipe peut l'envoyer elle-même** (`api/admin/rappel`, bouton
+  « Envoyer le rappel par courriel »). Deux temps avant l'envoi : les autres
+  boutons du bloc notent ce qui s'est dit au téléphone, celui-ci fait partir un
+  message qu'on ne rattrape pas.
+- ⚠️ **Un seul chemin pour les deux portes** (`lib/rappel.ts`) : la tâche et le
+  bouton envoient, notent le palier et écrivent au journal par la même fonction.
+  Deux chemins pour un même fait finissent toujours par diverger — ici l'écart
+  se paierait sur un courriel parti deux fois. Le palier retenu est le plus
+  petit des deux, si bien qu'un envoi manuel ne rouvre pas un palier consommé et
+  n'en ferme pas les suivants ; un contrôle le vérifie.
+- ⚠️ **La route refuse ce que le message rendrait faux** : contrat signé, terme
+  déjà annoncé, délai atteint. Et elle le **dit** — l'écran reprend sa phrase,
+  parce que « une erreur est survenue » ferait recliquer sans rien apprendre.
+- ⚠️ **Une session d'équipe, pas seulement une session.** `apprenants` est
+  authentifiée elle aussi : sans le second contrôle, un participant connecté
+  ferait partir des courriels au nom de la maison. C'est le trou
+  d'`export-admissions`, refermé de la même façon.
+
+  ⚠️ **Et la première garde ne prouvait rien.** Retirer le contrôle
+  `collection === "utilisateurs"` ne faisait **rien** passer au rouge : le
+  cookie du participant n'authentifiait pas dans l'épreuve — il manquait
+  `origin` et `sec-fetch-site`, et le 401 tombait pour la mauvaise raison. La
+  garde prouve donc maintenant sa propre prémisse avant de conclure.
+
+  ⚠️ **Puis le défaut remis a fait *lever*, pas passer.** La clef étrangère de
+  `par_id` refusait l'identifiant d'un apprenant : le script mourait sans
+  afficher de rouge. Une exception est désormais rendue comme un statut 500, que
+  le contrôle distingue d'un refus. **La clef étrangère n'est pas une garde** —
+  le jour où l'identifiant d'un participant coïnciderait avec celui d'un membre
+  de l'équipe, le courriel partirait.
 - **`journal-des-relances.ts` les projette aussi.** Une projection qui ne
   rejouerait pas ces écritures annoncerait trois rappels à quelqu'un qui en a
   déjà reçu deux — le défaut que ce script s'est déjà fait une fois.

@@ -19,6 +19,8 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { JOURS_DE_GRACE, SEUILS_DE_RAPPEL } from "@/lib/places";
+import { dernierSuivi } from "@/lib/suivi";
+import { ouvrirSession } from "@/lib/session";
 
 const payload = await getPayload({ config });
 const expediteur = payload.sendEmail.bind(payload);
@@ -146,6 +148,20 @@ try {
     Number((await relire(a.id)).dernierRappelAvantTerme) === premier,
   );
 
+  /*
+    ⚠️ **L'équipe doit voir que le courriel est parti.** Sans cette ligne au
+    journal, un collègue appellerait en disant « vous n'avez rien reçu de nous »
+    à quelqu'un relancé le matin même — exactement ce que ce journal existe pour
+    empêcher.
+  */
+  const journalA = ((await relire(a.id)).echanges ?? []) as { quoi?: string }[];
+  dire(
+    "⚠️ le journal du dossier le montre, et la colonne le lit",
+    journalA.some((e) => e.quoi === "rappel") &&
+      dernierSuivi(journalA as never, new Date()).libelle.startsWith("Rappel par courriel"),
+    dernierSuivi(journalA as never, new Date()).libelle,
+  );
+
   /* ── ⚠️ Et le lendemain, rien ne repart ─────────────────────────────────── */
   capturer();
   await passer();
@@ -216,6 +232,161 @@ try {
     pourLui(String(signe.apprenantEmail)).length === 0,
     `${pourLui(String(signe.apprenantEmail)).length} message(s)`,
   );
+  /* ── ⚠️ Le bouton d'envoi, et la porte qui le garde ─────────────────────── */
+  /*
+    `apprenants` est une collection authentifiée elle aussi : sans le second
+    contrôle, n'importe quel participant connecté ferait partir des courriels au
+    nom de la maison. C'est le trou trouvé sur `api/admin/export-admissions`.
+  */
+  const { POST } = await import("../src/app/(payload)/api/admin/rappel/route.js");
+  const COMME_UN_NAVIGATEUR = {
+    "content-type": "application/json",
+    origin: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    "sec-fetch-site": "same-origin",
+  };
+  /*
+    ⚠️ **Un plantage n'est pas un refus, et il ne doit pas passer pour tel.**
+    La porte affaiblie ne renvoyait pas 200 : elle levait, sur la clef étrangère
+    de `par_id`. Le `await` rejetait, le script mourait sans rien afficher — donc
+    sans rouge. On attrape donc l'exception et on la rend comme un statut
+    impossible : le contrôle voit alors la différence entre « refusé » et
+    « cassé », qui ne protègent pas la même chose. La clef étrangère n'est pas
+    une garde : le jour où l'identifiant d'un participant coïnciderait avec
+    celui d'un membre de l'équipe, le courriel partirait.
+  */
+  const demander = async (id: unknown, cookie?: string) => {
+    try {
+      return await POST(
+        new Request("http://localhost/api/admin/rappel", {
+          method: "POST",
+          headers: {
+            ...COMME_UN_NAVIGATEUR,
+            ...(cookie ? { cookie: cookie.split(";")[0]! } : {}),
+          },
+          body: JSON.stringify({ id }),
+        }),
+      );
+    } catch (e) {
+      return {
+        status: 500,
+        json: async () => ({ erreur: `a levé : ${(e as Error).message.slice(0, 80)}` }),
+      } as Response;
+    }
+  };
+
+  const c = await poser("C", JOURS_DE_GRACE - premier);
+
+  capturer();
+  const anonyme = await demander(c.id);
+  dire("⚠️ sans session, la route refuse", anonyme.status === 401, `reçu ${anonyme.status}`);
+  dire("et rien n'est parti", recus.length === 0);
+
+  const participant = await payload.create({
+    collection: "apprenants",
+    overrideAccess: true,
+    /*
+      ⚠️ Sans ce drapeau, Payload envoie son courriel de confirmation dès que
+      `auth.verify` est configuré — et la création échoue si l'envoi échoue.
+      Ici l'expéditeur est justement remplacé.
+    */
+    disableVerificationEmail: true,
+    data: {
+      email: `part.${Date.now()}@epreuve.invalid`,
+      password: `mp-${Math.random().toString(36).slice(2)}`,
+      nom: "Épreuve Participant",
+      _verified: true,
+    } as never,
+  });
+  const cookieParticipant = await ouvrirSession(payload, "apprenants", participant.id);
+
+  /*
+    ⚠️ **On prouve d'abord que ce cookie authentifie.** Sans cela, le contrôle
+    d'à côté ne mesure rien : un cookie muet reçoit 401 pour la mauvaise raison,
+    et la garde resterait verte même si la route ne regardait plus que
+    « connecté ». C'est ce qui est arrivé au premier jet — retirer le contrôle
+    `collection === "utilisateurs"` ne faisait rien passer au rouge.
+  */
+  const quiEstCe = await payload.auth({
+    /*
+      ⚠️ `origin` et `sec-fetch-site` ne sont pas décoratifs : depuis que `csrf`
+      est réglé, l'extraction de jeton refuse une requête qui n'a ni l'un ni
+      l'autre — ce qu'aucun navigateur ne produit, mais que tout script fait.
+      Sans eux, on conclut qu'une session valide n'authentifie pas.
+    */
+    headers: new Headers({
+      ...COMME_UN_NAVIGATEUR,
+      cookie: cookieParticipant.split(";")[0]!,
+    }),
+  });
+  dire(
+    "⚠️ le cookie du participant authentifie bien — sinon le contrôle suivant est vide",
+    quiEstCe.user?.collection === "apprenants",
+    quiEstCe.user ? String(quiEstCe.user.collection) : "personne",
+  );
+
+  capturer();
+  const cotePart = await demander(c.id, cookieParticipant);
+  dire(
+    "⚠️ un compte participant connecté est refusé aussi",
+    cotePart.status === 401,
+    `reçu ${cotePart.status}`,
+  );
+  dire("et rien n'est parti non plus", recus.length === 0);
+
+  const membre = await payload.create({
+    collection: "utilisateurs",
+    overrideAccess: true,
+    data: {
+      email: `rappel.${Date.now()}@epreuve.invalid`,
+      password: `R${Math.random().toString(36).slice(2)}!8`,
+      nom: "Épreuve Rappel",
+      role: "direction",
+    } as never,
+  });
+  const cookieEquipe = await ouvrirSession(payload, "utilisateurs", membre.id);
+
+  capturer();
+  const equipe = await demander(c.id, cookieEquipe);
+  dire("l'équipe, elle, envoie", equipe.status === 200, `reçu ${equipe.status}`);
+  dire(
+    "un courriel part vraiment",
+    pourLui(String(c.apprenantEmail)).length === 1,
+    pourLui(String(c.apprenantEmail))[0]?.subject ?? "",
+  );
+  const journalC = ((await relire(c.id)).echanges ?? []) as { quoi?: string; par?: unknown }[];
+  dire(
+    "⚠️ et la ligne du journal porte le nom de qui l'a envoyé",
+    journalC.some((e) => e.quoi === "rappel" && String(e.par) === String(membre.id)),
+  );
+
+  /*
+    ⚠️ Un envoi manuel ne rouvre pas un palier que la tâche a consommé, et n'en
+    ferme pas les suivants : `envoyerLeRappel` ne garde que le plus petit.
+  */
+  capturer();
+  await passer();
+  dire(
+    "⚠️ la tâche ne double pas un envoi manuel du même jour",
+    pourLui(String(c.apprenantEmail)).length === 0,
+    `${pourLui(String(c.apprenantEmail)).length} message(s)`,
+  );
+
+  /* Le délai atteint : ce n'est plus ce message-là qui doit partir. */
+  const d = await poser("D", JOURS_DE_GRACE + 1);
+  capturer();
+  const tropTard = await demander(d.id, cookieEquipe);
+  dire(
+    "⚠️ passé le terme, la route refuse et le dit",
+    tropTard.status === 409,
+    ((await tropTard.json()) as { erreur?: string }).erreur ?? `reçu ${tropTard.status}`,
+  );
+
+  await payload
+    .delete({ collection: "utilisateurs", id: membre.id, overrideAccess: true })
+    .catch(() => {});
+  await payload
+    .delete({ collection: "apprenants", id: participant.id, overrideAccess: true })
+    .catch(() => {});
 } finally {
   payload.sendEmail = expediteur;
   for (const id of aSupprimer) {

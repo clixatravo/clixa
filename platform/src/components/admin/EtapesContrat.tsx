@@ -3,6 +3,7 @@
 import React from "react";
 import { useAllFormFields, useAuth, useDocumentInfo, useField, useForm } from "@payloadcms/ui";
 import { reduceFieldsToValues } from "payload/shared";
+import { useRouter } from "next/navigation";
 import { dernierSuivi, type Echange, type NatureEchange } from "@/lib/suivi";
 
 /**
@@ -159,6 +160,7 @@ function Etape({
 const OBJETS: Record<string, string> = {
   signature: "Relance signature",
   paiement: "Relance paiement",
+  rappel: "Rappel par courriel",
   appel: "Appelé",
 };
 
@@ -195,6 +197,7 @@ export function EtapesContrat() {
     champ qu'on remplit à la main finit rempli de travers.
   */
   const { user } = useAuth();
+  const router = useRouter();
 
   /*
     ⚠️ **L'échéancier se lit en entier, pas ligne par ligne.** Un tableau ne
@@ -203,6 +206,18 @@ export function EtapesContrat() {
     l'objet tel que le formulaire l'enverrait — édits non enregistrés compris,
     ce qui évite d'écraser ce que quelqu'un vient de saisir juste au-dessus.
   */
+  /*
+    ⚠️ Deux temps avant d'envoyer. Les autres boutons de ce bloc notent ce qui
+    s'est dit au téléphone ; celui-ci fait **partir un courriel** chez le
+    participant. Un clic de trop y est donc d'une autre nature — d'où l'armement,
+    qui coûte un geste et évite un message qu'on ne rattrape pas.
+  */
+  const [rappel, setRappel] = React.useState<
+    | { etat: "pret" | "arme" | "envoi" }
+    | { etat: "fait"; jours: number }
+    | { etat: "erreur"; dit: string }
+  >({ etat: "pret" });
+
   const [champs] = useAllFormFields();
   const donnees = reduceFieldsToValues(champs, true) as {
     echeances?: unknown;
@@ -295,6 +310,34 @@ export function EtapesContrat() {
     concerne, celle-ci note ce qui s'est dit au téléphone. Lui écrire « nous
     vous avons appelé » n'apprendrait rien à quelqu'un qui vient de raccrocher.
   */
+  const envoyerLeRappel = async () => {
+    setRappel({ etat: "envoi" });
+    try {
+      const r = await fetch("/api/admin/rappel", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" },
+        body: JSON.stringify({ id }),
+      });
+      const corps = (await r.json()) as { jours?: number; erreur?: string };
+      if (!r.ok) {
+        /*
+          ⚠️ On montre ce que dit la route, mot pour mot. Elle refuse pour des
+          raisons qui se comprennent — délai atteint, contrat déjà signé, envoi
+          manqué — et les remplacer par « une erreur est survenue » ferait
+          recliquer sans rien apprendre.
+        */
+        setRappel({ etat: "erreur", dit: corps.erreur ?? `Refus (${r.status}).` });
+        return;
+      }
+      setRappel({ etat: "fait", jours: corps.jours ?? 0 });
+      // Le journal vient de gagner une ligne : la fiche doit la montrer.
+      router.refresh();
+    } catch {
+      setRappel({ etat: "erreur", dit: "Le serveur n'a pas répondu. Rien n'a été envoyé." });
+    }
+  };
+
   const noter = (quoi: NatureEchange) => () => {
     const ligne: Echange & { par?: number | string } = {
       quoi,
@@ -586,6 +629,47 @@ export function EtapesContrat() {
               </button>
             )}
           </div>
+
+          {/*
+            ⚠️ Ce bouton-ci part **chez le participant**. Il est donc à part des
+            deux autres, qui ne font que noter un appel : le confondre avec eux
+            ferait envoyer un courriel en croyant remplir un carnet.
+          */}
+          {!aSigne && (
+            <div className="clixa-relances__envoi">
+              {rappel.etat === "fait" ? (
+                <p className="clixa-relances__parti">
+                  Rappel envoyé — il lui restait{" "}
+                  {rappel.jours === 1 ? "un jour" : `${rappel.jours} jours`}.
+                </p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
+                    disabled={rappel.etat === "envoi"}
+                    onClick={() =>
+                      rappel.etat === "arme" ? void envoyerLeRappel() : setRappel({ etat: "arme" })
+                    }
+                  >
+                    {rappel.etat === "envoi"
+                      ? "Envoi…"
+                      : rappel.etat === "arme"
+                        ? "Confirmer l'envoi du courriel"
+                        : "Envoyer le rappel par courriel"}
+                  </button>
+                  {rappel.etat === "arme" && (
+                    <span className="clixa-relances__avis">
+                      Un courriel partira chez le participant, avec le lien de son dossier.
+                    </span>
+                  )}
+                  {rappel.etat === "erreur" && (
+                    <span className="clixa-relances__refus">{rappel.dit}</span>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           <p className="clixa-relances__note">
             Noté à votre nom, avec l&apos;heure. Rien n&apos;est envoyé au participant — c&apos;est

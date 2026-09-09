@@ -1206,6 +1206,16 @@ export const Inscriptions: CollectionConfig = {
               options: [
                 { label: "Relance pour signature de contrat", value: "signature" },
                 { label: "Relance pour paiement", value: "paiement" },
+                /*
+                  ⚠️ Celui-ci n'est pas un appel : c'est un **courriel
+                  réellement parti** au participant, posé par la tâche de 8 h ou
+                  par le bouton d'envoi. Il vit dans le même journal parce qu'il
+                  répond à la même question — « quelqu'un l'a-t-il déjà
+                  contacté ? » — et qu'un collègue qui appelle sans le savoir
+                  dirait « vous n'avez rien reçu de nous » à quelqu'un qui vient
+                  d'être relancé.
+                */
+                { label: "Rappel avant terme (courriel)", value: "rappel" },
                 { label: "Appelé (avant le 9 septembre 2026)", value: "appel" },
               ],
               admin: { width: "40%" },

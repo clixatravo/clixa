@@ -793,7 +793,7 @@ export interface Inscription {
    */
   echanges?:
     | {
-        quoi: 'signature' | 'paiement' | 'appel';
+        quoi: 'signature' | 'paiement' | 'rappel' | 'appel';
         le: string;
         par?: (number | null) | Utilisateur;
         id?: string | null;
