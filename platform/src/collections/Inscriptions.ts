@@ -897,6 +897,35 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                ── ⚠️ Le plus petit rappel déjà envoyé avant le terme ──────────
+                La tâche de 8 h prévient à quatre, trois puis deux jours de la
+                fin (`SEUILS_DE_RAPPEL`). Sans cette trace, elle renverrait le
+                même message **chaque matin** : trois rappels deviendraient sept,
+                et une boîte qui reçoit sept relances en cinq jours signale
+                l'expéditeur — ce qui se paie sur la réputation de
+                `envoi.clixa.africa`, donc sur tout le tunnel.
+
+                ⚠️ Elle n'est écrite qu'**après** un envoi réussi, comme
+                `placeRappeleeLe` : un quota épuisé ne doit pas faire croire que
+                la personne a été prévenue.
+
+                ⚠️ Readonly, et ce n'est pas un réglage : la vider fait repartir
+                les rappels depuis le premier seuil encore valable.
+              */
+              name: "dernierRappelAvantTerme",
+              type: "number",
+              label: "Rappel avant terme — dernier seuil envoyé",
+              min: 0,
+              index: true,
+              admin: {
+                width: "30%",
+                readOnly: true,
+                description:
+                  "En jours restants. Posé par la tâche quotidienne après l'envoi ; vide tant qu'aucun rappel n'est parti.",
+              },
+            },
+            {
+              /*
                 ── ⚠️ Sa place ne part pas sans qu'il l'ait su ───────────────
                 Posée par la tâche quotidienne, **une fois le courriel parti** —
                 jamais avant. Tant qu'elle est vide, la place d'une

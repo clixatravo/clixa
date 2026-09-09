@@ -20,7 +20,13 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { departDeLaTenue, finDeLaPlace, finDeLaTenue, JOURS_DE_GRACE } from "@/lib/places";
+import {
+  JOURS_DE_GRACE,
+  SEUILS_DE_RAPPEL,
+  departDeLaTenue,
+  finDeLaPlace,
+  finDeLaTenue,
+} from "@/lib/places";
 
 const payload = await getPayload({ config });
 
@@ -62,6 +68,17 @@ const faits: { jour: number; fait: Fait }[] = [];
   de la tâche ne projette rien.
 */
 const annoncee = new Map<string, Date>();
+/*
+  ⚠️ Et le dernier seuil de rappel déjà servi, repris de la base puis rejoué —
+  même raison : sans cela la projection annoncerait trois rappels à quelqu'un
+  qui en a déjà reçu deux.
+*/
+const rappele = new Map<string, number>();
+for (const d of vivants) {
+  if (typeof d.dernierRappelAvantTerme === "number") {
+    rappele.set(String(d.reference), d.dernierRappelAvantTerme);
+  }
+}
 for (const d of vivants) {
   if (d.placeRappeleeLe) annoncee.set(String(d.reference), new Date(d.placeRappeleeLe));
 }
@@ -77,6 +94,29 @@ for (let j = 0; j <= JOURS; j += 1) {
     const reference = String(d.reference);
     const qui = `${reference} · ${String(d.apprenantNom).slice(0, 22)}`;
     const terme = finDeLaTenue(depart.toISOString());
+
+    /*
+      ⚠️ Les rappels d'avant le terme, aux mêmes conditions que la tâche : le
+      plus grand seuil encore atteint qu'on n'a pas déjà servi, un seul par
+      passage. Une pré-inscription seule, jamais un contrat signé.
+    */
+    if (!d.contratSigneLe && !annoncee.has(reference) && terme > maintenant) {
+      const restants = Math.ceil((terme.getTime() - maintenant.getTime()) / MS);
+      const dejaFait = rappele.get(reference);
+      const seuil = SEUILS_DE_RAPPEL.find(
+        (x) => restants <= x && (dejaFait === undefined || x < dejaFait),
+      );
+      if (seuil !== undefined) {
+        rappele.set(reference, seuil);
+        faits.push({
+          jour: j,
+          fait: {
+            quoi: "courriel",
+            ligne: `${qui} — « il vous reste ${restants} jour(s) pour confirmer » (terme : ${JOUR.format(terme)})`,
+          },
+        });
+      }
+    }
 
     /* L'annonce part au premier passage qui suit le terme, et une seule fois. */
     if (!annoncee.has(reference) && terme <= maintenant) {

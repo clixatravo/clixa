@@ -747,6 +747,10 @@ export interface Inscription {
    */
   coordonneesEnvoyeesLe?: string | null;
   /**
+   * En jours restants. Posé par la tâche quotidienne après l'envoi ; vide tant qu'aucun rappel n'est parti.
+   */
+  dernierRappelAvantTerme?: number | null;
+  /**
    * Posée par la tâche quotidienne après l'envoi. Tant qu'elle est vide, la place est tenue.
    */
   placeRappeleeLe?: string | null;
@@ -1404,6 +1408,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   contratPreuve?: T;
   contratVerifieLe?: T;
   coordonneesEnvoyeesLe?: T;
+  dernierRappelAvantTerme?: T;
   placeRappeleeLe?: T;
   certificatEmisLe?: T;
   montantTotal?: T;

@@ -191,6 +191,22 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
       }),
   },
   {
+    /*
+      ⚠️ Le rappel qui part **avant** le terme, à trois jours de la fin. Il ne
+      réclame aucun règlement : une pré-inscription n'a jamais reçu de
+      coordonnées, et le seul geste possible est de demander son contrat.
+      C'est ce que cet aperçu existe pour vérifier — la phrase, pas le code.
+    */
+    nom: "12b-participant-rappel-avant-terme",
+    produire: () =>
+      c.courrielRappelAvantTerme(faux, {
+        ...inscription,
+        sessionDetail: "Classe virtuelle — 3 octobre 2026",
+        tenueJusquau: dans(3),
+        jours: 3,
+      }),
+  },
+  {
     nom: "13-participant-certificat-disponible",
     produire: () => c.courrielCertificatDisponible(faux, inscription),
   },

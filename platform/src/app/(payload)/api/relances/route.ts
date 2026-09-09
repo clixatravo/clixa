@@ -1,9 +1,19 @@
-import { finDeLaTenue, JOURS_DE_GRACE, rendreLesPlacesExpirees } from "@/lib/places";
+import {
+  finDeLaTenue,
+  JOURS_DE_GRACE,
+  rendreLesPlacesExpirees,
+  SEUILS_DE_RAPPEL,
+} from "@/lib/places";
 import { sansLeParcours } from "@/lib/inscriptions";
 import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { courrielBilanRelances, courrielPlaceBientotRendue, courrielRelance } from "@/lib/courriel";
+import {
+  courrielBilanRelances,
+  courrielPlaceBientotRendue,
+  courrielRappelAvantTerme,
+  courrielRelance,
+} from "@/lib/courriel";
 
 /**
  * BE-17 — Relance des échéances.
@@ -236,6 +246,108 @@ export async function GET(request: Request) {
   }
 
   /*
+    ── ⚠️ Prévenir pendant qu'il reste du temps ──────────────────────────────
+    Le seul message partait **au terme** : le participant apprenait que son
+    délai était écoulé, jamais qu'il courait. La direction l'a demandé le
+    9 septembre 2026 — prévenir à quatre, trois puis deux jours de la fin —
+    le jour où la cohorte portée par l'annonce était complète à 30/30 : une
+    place perdue ne se retrouvait pas.
+
+    ⚠️ **Le plus grand seuil encore valable, et un seul par passage.** À J-3,
+    les seuils 4 et 3 conviennent tous deux ; prendre le plus petit brûlerait le
+    dernier rappel trop tôt. Et `dernierRappelAvantTerme` empêche de renvoyer :
+    sans lui, la tâche répéterait le même message chaque matin, et sept
+    relances en cinq jours font signaler l'expéditeur.
+
+    ⚠️ **Même population que l'annonce du terme** : pré-inscriptions seules.
+    Un contrat signé n'attend pas le même geste, et n'a pas le même délai.
+  */
+  const rappeles: string[] = [];
+  const rappelsManques: string[] = [];
+
+  const { docs: aRappeler } = await payload.find({
+    collection: "inscriptions",
+    where: {
+      and: [
+        { statut: { equals: "demandee" } },
+        { contratSigneLe: { exists: false } },
+        { placeRappeleeLe: { exists: false } },
+        /*
+          Entrés dans la fenêtre — le premier seuil — et pas encore au terme :
+          celui-là a son propre message, juste en dessous.
+        */
+        {
+          createdAt: {
+            less_than: new Date(
+              maintenant - (JOURS_DE_GRACE - SEUILS_DE_RAPPEL[0]) * JOUR_MS,
+            ).toISOString(),
+          },
+        },
+        {
+          createdAt: {
+            greater_than: new Date(maintenant - JOURS_DE_GRACE * JOUR_MS).toISOString(),
+          },
+        },
+      ],
+    },
+    limit: 200,
+    depth: 2,
+    overrideAccess: true,
+  });
+
+  for (const dossier of aRappeler) {
+    const terme = finDeLaTenue(String(dossier.createdAt));
+    const jours = Math.ceil((terme.getTime() - maintenant) / JOUR_MS);
+
+    /*
+      Le plus grand seuil encore atteint, et qu'on n'a pas déjà servi. `null`
+      veut dire « aucun rappel parti » : tous les seuils sont ouverts.
+      Le champ arrive de Postgres en `null`, jamais en `undefined`.
+    */
+    const dejaEnvoye = dossier.dernierRappelAvantTerme;
+    const seuil = SEUILS_DE_RAPPEL.find(
+      (s) => jours <= s && (dejaEnvoye === null || dejaEnvoye === undefined || s < dejaEnvoye),
+    );
+    if (seuil === undefined) continue;
+
+    const session = typeof dossier.session === "object" ? dossier.session : undefined;
+    const programme =
+      session && typeof session.programme === "object" ? session.programme : undefined;
+    const ligne = `${dossier.reference} · ${dossier.apprenantNom} — J-${seuil}`;
+
+    const parti = await courrielRappelAvantTerme(payload, {
+      reference: String(dossier.reference),
+      apprenantNom: String(dossier.apprenantNom),
+      apprenantEmail: String(dossier.apprenantEmail),
+      programmeTitre: programme?.titre ?? "votre parcours",
+      sessionDetail: sansLeParcours(session?.reference, programme?.titre),
+      tenueJusquau: terme.toISOString(),
+      urlDossier: `${site}/inscription/${dossier.reference}`,
+      /*
+        ⚠️ Les jours réellement restants, pas le seuil. Un passage manqué peut
+        trouver le dossier à J-2 avec le seuil 3 encore ouvert : annoncer
+        « il vous reste 3 jours » quand il en reste 2 lui ferait manquer sa
+        place en faisant exactement ce qu'on lui a dit.
+      */
+      jours,
+    });
+
+    if (!parti) {
+      // Rien n'est noté : le passage de demain reprendra ce dossier.
+      rappelsManques.push(ligne);
+      continue;
+    }
+
+    await payload.update({
+      collection: "inscriptions",
+      id: dossier.id,
+      overrideAccess: true,
+      data: { dernierRappelAvantTerme: seuil },
+    });
+    rappeles.push(ligne);
+  }
+
+  /*
     ── ⚠️ Prévenir avant de reprendre une place ──────────────────────────────
     Une pré-inscription retient une place sept jours, puis la tâche la rend au
     catalogue. Elle le faisait **en silence** : le participant ne l'apprenait
@@ -351,6 +463,25 @@ export async function GET(request: Request) {
           `${enAttenteDeNous.length} dossier(s) non relancé(s) : ils attendent de nous de quoi payer.`,
           ...enAttenteDeNous,
         ]),
+    /*
+      ⚠️ Les rappels avant terme viennent avant l'annonce du terme, comme dans
+      le temps : le bilan se lit dans l'ordre où les choses arrivent au
+      participant.
+    */
+    ...(rappeles.length === 0
+      ? []
+      : [
+          "",
+          `${rappeles.length} rappel(s) avant terme : il leur reste quelques jours pour demander leur contrat.`,
+          ...rappeles,
+        ]),
+    ...(rappelsManques.length === 0
+      ? []
+      : [
+          "",
+          `⚠️ ${rappelsManques.length} rappel(s) avant terme non parti(s), repris demain :`,
+          ...rappelsManques,
+        ]),
     ...(prevenus.length === 0
       ? []
       : [
@@ -375,7 +506,8 @@ export async function GET(request: Request) {
   const alerte = manques.length > 0 ? `, ${manques.length} envoi(s) IMPOSSIBLE(S)` : "";
   payload.logger.info(
     `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ` +
-      `${bilan.length} relance(s), ${enAttenteDeNous.length} en attente de nous, ` +
+      `${bilan.length} relance(s), ${rappeles.length} rappel(s) avant terme, ` +
+      `${enAttenteDeNous.length} en attente de nous, ` +
       `${prevenus.length} place(s) annoncée(s)${alerte}`,
   );
 

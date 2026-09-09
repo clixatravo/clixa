@@ -64,6 +64,27 @@ export const JOURS_DE_GRACE = 7;
  */
 export const JOURS_DE_BATTEMENT = 2;
 
+/**
+ * Les jours restants où l'on rappelle au participant que son délai court.
+ *
+ * ── ⚠️ Pourquoi trois rappels, et pas un seul ───────────────────────────────
+ * Il n'y avait qu'un message, au **terme** — c'est-à-dire quand il est déjà
+ * trop tard pour s'organiser. La direction l'a demandé le 9 septembre 2026 :
+ * « nass li mazal lihom 4j, 3j o 2j », prévenir pendant qu'il reste du temps.
+ * La cohorte portée par l'annonce était ce jour-là **complète à 30/30** : une
+ * place perdue ne se retrouve pas.
+ *
+ * ⚠️ **Un seul message par seuil, jamais un par jour.** Le dossier retient le
+ * plus petit seuil déjà envoyé ; on n'envoie que si le seuil visé est plus
+ * petit. Un passage manqué — serveur arrêté, quota épuisé — ne produit donc pas
+ * un rattrapage de trois messages le lendemain : on part du seuil courant.
+ *
+ * ⚠️ **Décroissants, et lus dans cet ordre.** À J-3, les seuils 4 et 3
+ * conviennent tous deux ; c'est le plus grand encore valable qu'on prend, sans
+ * quoi on brûlerait le dernier rappel trop tôt.
+ */
+export const SEUILS_DE_RAPPEL = [4, 3, 2] as const;
+
 /** La limite en deçà de laquelle un dossier « demandée » tient encore sa place. */
 export function limiteDeGrace(): string {
   const jours = JOURS_DE_GRACE + JOURS_DE_BATTEMENT;

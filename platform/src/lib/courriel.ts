@@ -1086,6 +1086,100 @@ export async function courrielPlaceBientotRendue(
 }
 
 /**
+ * Au participant : son délai court encore, mais plus pour longtemps.
+ *
+ * ── ⚠️ Le seul message partait quand il était déjà trop tard ────────────────
+ * `courrielPlaceBientotRendue` ne part qu'**au terme** : le participant
+ * apprenait que son délai était écoulé, pas qu'il courait. Celui-ci arrive à
+ * quatre, trois puis deux jours de la fin — demandé par la direction le
+ * 9 septembre 2026, alors que la cohorte portée par l'annonce était complète à
+ * 30/30 et qu'une place perdue ne se retrouvait pas.
+ *
+ * ⚠️ **Il ne réclame pas d'argent, et c'est la règle de la maison.** Une
+ * pré-inscription n'a **jamais reçu de coordonnées de règlement** — elles
+ * partent après la signature du contrat. Lui écrire « venez terminer votre
+ * paiement » lui demanderait un geste qu'il n'a aucun moyen de faire : c'est
+ * exactement le défaut que `prochaineEtape` corrige sur la page du dossier, et
+ * celui que le formulaire d'annonce de transfert a coûté à un vrai prospect.
+ * Le seul geste possible à ce stade est de **demander son contrat**.
+ *
+ * ⚠️ **Et il dit ce qui arrive vraiment.** Le dossier n'est pas supprimé : sa
+ * *place* retourne au catalogue, et la personne peut toujours écrire. Annoncer
+ * une suppression serait plus impressionnant et faux — or c'est la seule chose
+ * qu'un message de relance ne peut pas se permettre.
+ */
+export async function courrielRappelAvantTerme(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    sessionDetail: string;
+    tenueJusquau: string;
+    urlDossier: string;
+    jours: number;
+  },
+): Promise<boolean> {
+  const quand = JOUR.format(new Date(d.tenueJusquau));
+  const reste = d.jours === 1 ? "il vous reste un jour" : `il vous reste ${d.jours} jours`;
+  const Reste = d.jours === 1 ? "Il vous reste un jour" : `Il vous reste ${d.jours} jours`;
+
+  const corpsHtml = `
+    <p>Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
+    <p>
+      Vous avez retenu une place pour <em>« ${echapper(d.programmeTitre)} »</em>
+      — ${echapper(d.sessionDetail)}. Nous vous la tenons jusqu'au
+      <strong>${quand}</strong> : ${reste}.
+    </p>
+
+    <div style="background-color: #111a33; border-radius: 6px; padding: 16px 20px; margin: 20px 0; border: 1px solid rgba(201, 162, 76, 0.3);">
+      <div style="font-size: 14px; color: #ffffff;"><strong>Pour la garder, demandez votre contrat de formation</strong> depuis votre dossier.</div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 6px;">
+        Rien n'est encaissé à ce moment-là. Les modalités de règlement vous
+        parviennent après, une fois le contrat signé et relu par nos soins.
+      </div>
+    </div>
+
+    <p style="font-size: 13px; color: #94a3b8;">
+      Passé ce délai, votre place retourne au catalogue et peut être prise par
+      quelqu'un d'autre. Une question d'abord ? Répondez à ce message — un
+      conseiller vous répond.
+    </p>
+  `;
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    subject: `${Reste} pour confirmer votre place — ${d.programmeTitre}`,
+    text: [
+      `Bonjour ${d.apprenantNom},`,
+      "",
+      `Vous avez retenu une place pour « ${d.programmeTitre} » — ${d.sessionDetail}.`,
+      `Nous vous la tenons jusqu'au ${quand} : ${reste}.`,
+      "",
+      "Pour la garder, demandez votre contrat de formation depuis votre dossier :",
+      d.urlDossier,
+      "",
+      "Rien n'est encaissé à ce moment-là. Les modalités de règlement vous",
+      "parviennent après, une fois le contrat signé et relu par nos soins.",
+      "",
+      "Passé ce délai, votre place retourne au catalogue.",
+      "",
+      "Une question d'abord ? Répondez à ce message.",
+      "",
+      "CLIXA Institute — Admissions",
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: `${Reste} pour confirmer votre place`,
+      badgeRef: d.reference,
+      corpsHtml,
+      boutonTexte: "Demander mon contrat",
+      boutonLien: d.urlDossier,
+    }),
+  });
+}
+
+/**
  * Au participant : son versement est enregistré, sa place est acquise.
  *
  * ── ⚠️ Le geste d'équipe dont personne ne l'informait ───────────────────────

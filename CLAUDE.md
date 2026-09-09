@@ -43,6 +43,7 @@ npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-certificat.ts    # le certificat ne se réclame pas avant d'être mérité
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
+npx payload run scripts/verifier-rappels.ts       # prévenir avant le terme, une fois par seuil
 npx payload run scripts/verifier-courriel.ts      # la réponse qui ne rebondit pas
 npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et quand
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
@@ -809,6 +810,52 @@ Deux choses ont été ajoutées, et la seconde est celle qui compte :
   base vieillit ses lignes avec `now()` : comparer des `created_at` réels à un
   seuil figé faisait tomber le dossier posé pile sur la limite du mauvais côté,
   au gré des secondes. Les fixtures portent depuis une demi-journée de marge.
+
+
+⚠️ **On prévient maintenant *avant* le terme, pas seulement au terme**
+(`SEUILS_DE_RAPPEL`, `courrielRappelAvantTerme`, demandé par la direction le
+9 septembre 2026). Le seul message partait une fois le délai **écoulé** : le
+participant apprenait qu'il était trop tard, jamais que le temps courait. La
+demande est tombée le jour où la cohorte portée par l'annonce était **complète à
+30/30** — une place perdue ne se retrouvait pas.
+
+Trois rappels, à **quatre, trois puis deux jours** de la fin, puis l'annonce du
+terme qui existait déjà.
+
+- ⚠️ **Un message par seuil, jamais un par jour.** Le dossier retient le plus
+  petit seuil déjà servi (`dernierRappelAvantTerme`) ; sans cette trace, la
+  tâche renverrait le même message **chaque matin** — trois rappels
+  deviendraient sept en cinq jours, la personne signalerait l'expéditeur, et
+  c'est la réputation de `envoi.clixa.africa` qui tombe : tout le tunnel, pas
+  seulement ce message. **Prouvé en retirant la lecture de la trace** — le
+  contrôle « un second passage le même jour n'en renvoie pas un second » passe
+  au rouge.
+- ⚠️ **Un seuil sauté ne se rattrape pas.** Un passage manqué peut trouver le
+  dossier à J-2 avec le seuil 3 encore ouvert : on envoie **un** message, au
+  seuil courant. Trois d'un coup seraient exactement ce que la trace empêche.
+- ⚠️ **Le message annonce les jours réellement restants, pas le seuil.** Dire
+  « il vous reste 3 jours » quand il en reste 2 ferait manquer sa place à
+  quelqu'un qui fait exactement ce qu'on lui a dit.
+- ⚠️ **Il ne réclame aucun règlement, et c'est la règle de la maison.** Une
+  pré-inscription n'a **jamais reçu de coordonnées de paiement** — elles partent
+  après la signature. Lui écrire « venez terminer votre paiement » lui
+  demanderait un geste qu'elle n'a aucun moyen de faire : le défaut que
+  `prochaineEtape` corrige sur la page du dossier, et que le formulaire
+  d'annonce de transfert a coûté à un vrai prospect. Le seul geste possible est
+  **demander son contrat**, et c'est ce que dit le bouton.
+- ⚠️ **Il ne dit pas que le dossier sera « supprimé ».** C'est la *place* qui
+  retourne au catalogue ; le dossier reste, et la personne peut toujours écrire.
+  Le mot était plus impressionnant et faux — ce qu'un message de relance ne peut
+  pas se permettre. Un contrôle garde la phrase.
+- ⚠️ **Rien n'est noté quand l'envoi échoue**, comme pour `placeRappeleeLe` : un
+  quota épuisé ne doit pas faire croire que la personne a été prévenue. Le
+  passage du lendemain la reprend, et le bilan de l'équipe nomme les manqués.
+  **Prouvé en posant la trace malgré l'échec** : deux contrôles au rouge.
+- **Mêmes destinataires que l'annonce du terme** : pré-inscriptions seules. Un
+  contrat signé n'attend pas le même geste et n'a pas le même délai.
+- **`journal-des-relances.ts` les projette aussi.** Une projection qui ne
+  rejouerait pas ces écritures annoncerait trois rappels à quelqu'un qui en a
+  déjà reçu deux — le défaut que ce script s'est déjà fait une fois.
 
 
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
