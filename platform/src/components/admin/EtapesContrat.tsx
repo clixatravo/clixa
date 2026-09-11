@@ -232,24 +232,47 @@ function BoutonAgir({
   onArmer: () => void;
   onAgir: () => void;
 }) {
+  /*
+    ── ⚠️ Une rangée par action, et non des boutons côte à côte ──────────────
+    Le premier jet les alignait tous dans une même bande, chacun laissant
+    tomber son message à côté de lui. Deux actions armées donnaient
+    « Confirmer l'envoi · Un courriel partira… · Rendre la place au
+    catalogue » sur une seule ligne : on ne savait plus quel avertissement
+    portait sur quel bouton — devant un geste qu'on ne rattrape pas.
+
+    Chaque action tient donc sa rangée, avec ce qui la concerne dessous.
+  */
   if (etat.etat === "fait") {
-    return <p className="clixa-relances__parti">{etat.dit}</p>;
+    return (
+      <div className="clixa-agir clixa-agir--fait">
+        <span aria-hidden="true" className="clixa-agir__coche">
+          ✓
+        </span>
+        <p className="clixa-relances__parti">{etat.dit}</p>
+      </div>
+    );
   }
 
+  const arme = etat.etat === "arme";
+
   return (
-    <>
-      <button
-        type="button"
-        className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
-        disabled={etat.etat === "envoi"}
-        onClick={() => (etat.etat === "arme" ? onAgir() : onArmer())}
-      >
-        {etat.etat === "envoi" ? "En cours…" : etat.etat === "arme" ? confirmation : libelle}
-      </button>
-      {note && <span className="clixa-relances__avis">{note}</span>}
-      {etat.etat === "arme" && <span className="clixa-relances__avis">{avis}</span>}
-      {etat.etat === "erreur" && <span className="clixa-relances__refus">{etat.dit}</span>}
-    </>
+    <div className={`clixa-agir${arme ? "clixa-agir--arme" : ""}`}>
+      <div className="clixa-agir__ligne">
+        <button
+          type="button"
+          className={`btn btn--size-small clixa-relances__bouton ${
+            arme ? "btn--style-primary" : "btn--style-secondary"
+          }`}
+          disabled={etat.etat === "envoi"}
+          onClick={() => (arme ? onAgir() : onArmer())}
+        >
+          {etat.etat === "envoi" ? "En cours…" : arme ? confirmation : libelle}
+        </button>
+        {arme && <span className="clixa-relances__avis">{avis}</span>}
+      </div>
+      {note && <p className="clixa-agir__note">{note}</p>}
+      {etat.etat === "erreur" && <p className="clixa-relances__refus">{etat.dit}</p>}
+    </div>
   );
 }
 
@@ -680,6 +703,13 @@ export function EtapesContrat() {
 
           <div className="clixa-relances__actions">
             {/*
+              ⚠️ Les deux groupes portent leur intitulé plutôt qu'un simple
+              trait. Un filet dit « ce n'est pas la même chose » ; il ne dit pas
+              *quoi*. Sous des boutons dont l'un remplit un carnet et l'autre
+              écrit à un client, la différence mérite d'être nommée.
+            */}
+            <span className="clixa-relances__groupe">Noter un appel</span>
+            {/*
               ⚠️ Chaque bouton disparaît quand son objet est acquis. Relancer
               pour une signature déjà donnée, ou pour un règlement déjà soldé,
               ferait noter une conversation qui n'a pas pu avoir lieu — et
@@ -724,6 +754,9 @@ export function EtapesContrat() {
             croyant remplir un carnet. D'où le cadre séparé, et l'armement.
           */}
           <div className="clixa-relances__envoi">
+            <span className="clixa-relances__groupe clixa-relances__groupe--agir">
+              Agir — ce qui sort d&apos;ici
+            </span>
             {/*
               ⚠️ **Un seul bouton pour deux messages.** Avant le terme part
               « il vous reste N jours pour demander votre contrat » ; une fois
@@ -814,17 +847,16 @@ export function EtapesContrat() {
           </div>
 
           {/*
-            ⚠️ Cette note disait « rien n'est envoyé au participant ». C'était
-            vrai quand le bloc ne portait que les deux boutons du carnet ; ce
-            n'est plus vrai depuis qu'il en porte trois qui agissent. Une phrase
-            rassurante et fausse, juste sous des boutons qui envoient, est pire
-            qu'aucune phrase.
+            ⚠️ Cette note disait « rien n'est envoyé au participant » — vrai
+            quand le bloc ne portait que le carnet d'appels, faux depuis qu'il
+            porte des boutons qui envoient. Une phrase rassurante et fausse,
+            juste sous eux, est pire qu'aucune phrase.
+
+            Elle est courte maintenant : les deux intitulés disent l'essentiel,
+            et un paragraphe sous des boutons ne se lit pas deux fois.
           */}
           <p className="clixa-relances__note">
-            Les deux premiers boutons <strong>notent un appel</strong> à votre nom, avec
-            l&apos;heure, et n&apos;envoient rien. Ceux du cadre du dessous{" "}
-            <strong>agissent</strong> : un courriel part chez le participant, ou sa place retourne
-            au catalogue.
+            Tout est noté à votre nom, avec l&apos;heure, et se lit depuis la liste.
           </p>
         </section>
       </div>

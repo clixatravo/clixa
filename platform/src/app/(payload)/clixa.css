@@ -1176,6 +1176,765 @@ h3,
   background: linear-gradient(90deg, #e05252 0%, #ff7878 100%);
 }
 
+/* ── Supervision des 12 Formations & Pré-inscriptions (Cockpit) ───────────── */
+
+.clixa-supervision {
+  margin-top: 2.25rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(243, 239, 228, 0.12);
+}
+
+.clixa-supervision__en-tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.clixa-supervision__titres {
+  flex: 1;
+  min-width: 280px;
+}
+
+.clixa-supervision__badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  margin-bottom: 0.35rem;
+}
+
+.clixa-supervision__dot-pulse {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clixa-or);
+  box-shadow: 0 0 8px var(--clixa-or);
+  animation: clixa-pulse 2s infinite ease-in-out;
+}
+
+.clixa-supervision__titre-principal {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--clixa-ivoire);
+  margin: 0 0 0.35rem 0;
+}
+
+.clixa-supervision__description {
+  font-size: 0.8rem;
+  color: rgba(243, 239, 228, 0.65);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.clixa-supervision__metriques-globales {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.clixa-supervision__metrique-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(17, 26, 51, 0.7);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 4px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  color: rgba(243, 239, 228, 0.85);
+}
+
+.clixa-supervision__metrique-pill--alerte {
+  background: rgba(201, 162, 76, 0.15);
+  border-color: rgba(201, 162, 76, 0.4);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-supervision__metrique-label {
+  font-family: var(--font-sans);
+  color: rgba(243, 239, 228, 0.6);
+  font-size: 0.72rem;
+}
+
+.clixa-supervision__metrique-valeur {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--clixa-ivoire);
+}
+
+.clixa-supervision__metrique-pill--alerte .clixa-supervision__metrique-valeur {
+  color: var(--clixa-or-clair);
+}
+
+.clixa-supervision__actions-directes {
+  margin-left: 0.25rem;
+}
+
+.clixa-supervision__lien-catalogue {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--clixa-or);
+  text-decoration: none;
+  border: 1px solid rgba(201, 162, 76, 0.3);
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clixa-supervision__lien-catalogue:hover {
+  background: rgba(201, 162, 76, 0.15);
+  color: var(--clixa-or-clair);
+  border-color: var(--clixa-or);
+}
+
+/* ── Barre d'outils (Filtres + Recherche) ── */
+
+.clixa-supervision__barre-outils {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 16, 32, 0.5);
+  border: 1px solid rgba(243, 239, 228, 0.08);
+  border-radius: 6px;
+}
+
+.clixa-supervision__pills {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.clixa-supervision__pill {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 3px;
+  background: rgba(17, 26, 51, 0.6);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  color: rgba(243, 239, 228, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__pill:hover {
+  border-color: rgba(201, 162, 76, 0.4);
+  color: var(--clixa-ivoire);
+}
+
+.clixa-supervision__pill--actif {
+  background: rgba(201, 162, 76, 0.2);
+  border-color: var(--clixa-or);
+  color: var(--clixa-ivoire);
+  font-weight: 600;
+}
+
+.clixa-supervision__pill--alerte {
+  border-color: rgba(201, 162, 76, 0.35);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-supervision__controles-droite {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clixa-supervision__recherche-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.clixa-supervision__recherche-icon {
+  position: absolute;
+  left: 0.65rem;
+  font-size: 0.75rem;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.clixa-supervision__input-recherche {
+  background: rgba(10, 16, 32, 0.85);
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  border-radius: 4px;
+  padding: 0.32rem 1.8rem 0.32rem 2rem;
+  font-size: 0.75rem;
+  color: var(--clixa-ivoire);
+  width: 220px;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__input-recherche:focus {
+  outline: none;
+  border-color: var(--clixa-or);
+  box-shadow: 0 0 0 2px rgba(201, 162, 76, 0.2);
+}
+
+.clixa-supervision__reset-recherche {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: rgba(243, 239, 228, 0.5);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.2rem;
+}
+
+.clixa-supervision__reset-recherche:hover {
+  color: var(--clixa-ivoire);
+}
+
+.clixa-supervision__vues-toggle {
+  display: flex;
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.clixa-supervision__vue-btn {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 0.3rem 0.55rem;
+  background: rgba(17, 26, 51, 0.6);
+  border: none;
+  color: rgba(243, 239, 228, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__vue-btn:hover {
+  color: var(--clixa-ivoire);
+}
+
+.clixa-supervision__vue-btn--actif {
+  background: rgba(201, 162, 76, 0.25);
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+.clixa-supervision__vide {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: rgba(17, 26, 51, 0.4);
+  border: 1px dashed rgba(243, 239, 228, 0.15);
+  border-radius: 6px;
+  color: rgba(243, 239, 228, 0.6);
+  font-size: 0.85rem;
+}
+
+.clixa-supervision__btn-reset {
+  margin-top: 0.75rem;
+  background: rgba(201, 162, 76, 0.2);
+  border: 1px solid var(--clixa-or);
+  color: var(--clixa-ivoire);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ── Grille des 12 Cartes Formations ── */
+
+.clixa-supervision__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.clixa-formation-card {
+  background: rgba(17, 26, 51, 0.75);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 6px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.clixa-formation-card:hover {
+  background: rgba(22, 33, 66, 0.9);
+  border-color: rgba(201, 162, 76, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.45);
+}
+
+.clixa-formation-card--has-pre {
+  border-color: rgba(201, 162, 76, 0.5);
+  background: rgba(20, 30, 60, 0.85);
+  box-shadow: 0 0 18px -4px rgba(201, 162, 76, 0.15);
+}
+
+.clixa-formation-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.clixa-formation-card__spec {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(243, 239, 228, 0.06);
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  color: rgba(243, 239, 228, 0.8);
+  white-space: nowrap;
+}
+
+.clixa-formation-card__spec--finance-controle {
+  border-color: rgba(201, 162, 76, 0.4);
+  color: var(--clixa-or-clair);
+  background: rgba(201, 162, 76, 0.12);
+}
+
+.clixa-formation-card__spec--industrie-operations {
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.12);
+}
+
+.clixa-formation-card__spec--commercial-marketing {
+  border-color: rgba(47, 163, 125, 0.4);
+  color: var(--clixa-emeraude-clair);
+  background: rgba(47, 163, 125, 0.12);
+}
+
+.clixa-formation-card__spec--management-projet {
+  border-color: rgba(167, 139, 250, 0.4);
+  color: #c4b5fd;
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.clixa-formation-card__spec--capital-humain {
+  border-color: rgba(244, 114, 182, 0.4);
+  color: #f9a8d4;
+  background: rgba(244, 114, 182, 0.12);
+}
+
+.clixa-formation-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.clixa-formation-card__badge-pre {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(201, 162, 76, 0.22);
+  color: var(--clixa-or-clair);
+  border: 1px solid rgba(201, 162, 76, 0.6);
+  white-space: nowrap;
+  animation: clixa-pulse 2.5s infinite;
+}
+
+.clixa-formation-card__badge-occupation {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  padding: 0.18rem 0.45rem;
+  border-radius: 3px;
+  background: rgba(47, 163, 125, 0.15);
+  color: var(--clixa-emeraude-clair);
+  border: 1px solid rgba(47, 163, 125, 0.35);
+  white-space: nowrap;
+}
+
+.clixa-formation-card__badge-occupation--tension {
+  background: rgba(201, 162, 76, 0.15);
+  color: var(--clixa-or-clair);
+  border-color: rgba(201, 162, 76, 0.4);
+}
+
+.clixa-formation-card__badge-occupation--complet {
+  background: rgba(224, 82, 82, 0.15);
+  color: var(--clixa-rouge);
+  border-color: rgba(224, 82, 82, 0.4);
+}
+
+.clixa-formation-card__corps {
+  margin-bottom: 0.85rem;
+}
+
+.clixa-formation-card__titre {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--clixa-ivoire);
+  margin: 0 0 0.4rem 0;
+  line-height: 1.35;
+}
+
+.clixa-formation-card__session-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgba(243, 239, 228, 0.65);
+}
+
+.clixa-formation-card__session-icon {
+  font-size: 0.72rem;
+}
+
+.clixa-formation-card__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  background: rgba(10, 16, 32, 0.55);
+  border: 1px solid rgba(243, 239, 228, 0.08);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.clixa-formation-card__stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.clixa-formation-card__stat-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(243, 239, 228, 0.55);
+  margin-bottom: 0.2rem;
+}
+
+.clixa-formation-card__stat-valeur {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--clixa-ivoire);
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.clixa-formation-card__stat-valeur--or {
+  color: var(--clixa-or-clair);
+  font-weight: 700;
+}
+
+.clixa-formation-card__stat-max {
+  font-size: 0.72rem;
+  color: rgba(243, 239, 228, 0.5);
+  font-weight: 400;
+}
+
+.clixa-formation-card__stat-sub {
+  font-size: 0.65rem;
+  color: rgba(243, 239, 228, 0.5);
+  white-space: nowrap;
+}
+
+.clixa-formation-card__jauge-fond {
+  width: 100%;
+  height: 6px;
+  background: rgba(243, 239, 228, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.clixa-formation-card__jauge-remplie {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #1f7a5c 0%, #2fa37d 100%);
+  transition: width 0.4s ease;
+}
+
+.clixa-formation-card__jauge-remplie--or {
+  background: linear-gradient(90deg, #c9a24c 0%, #e9cd84 100%);
+}
+
+.clixa-formation-card__jauge-remplie--rouge {
+  background: linear-gradient(90deg, #e05252 0%, #ff7878 100%);
+}
+
+.clixa-formation-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(243, 239, 228, 0.08);
+}
+
+.clixa-formation-card__btn-principal {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 4px;
+  background: rgba(243, 239, 228, 0.06);
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  color: var(--clixa-ivoire);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clixa-formation-card__btn-principal:hover {
+  background: rgba(201, 162, 76, 0.15);
+  border-color: var(--clixa-or);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-formation-card__btn-principal--or {
+  background: linear-gradient(135deg, rgba(201, 162, 76, 0.25) 0%, rgba(201, 162, 76, 0.12) 100%);
+  border-color: rgba(201, 162, 76, 0.6);
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+.clixa-formation-card__btn-principal--or:hover {
+  background: linear-gradient(135deg, rgba(201, 162, 76, 0.4) 0%, rgba(201, 162, 76, 0.25) 100%);
+  border-color: var(--clixa-or);
+  color: var(--clixa-ivoire);
+}
+
+.clixa-formation-card__liens-secondaires {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.clixa-formation-card__lien-sec {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(17, 26, 51, 0.6);
+  border: 1px solid rgba(243, 239, 228, 0.1);
+  color: rgba(243, 239, 228, 0.65);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clixa-formation-card__lien-sec:hover {
+  border-color: rgba(201, 162, 76, 0.35);
+  color: var(--clixa-ivoire);
+}
+
+/* ── Tableau Synthétique ── */
+
+.clixa-supervision__table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 6px;
+  background: rgba(17, 26, 51, 0.75);
+}
+
+.clixa-supervision__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  color: var(--clixa-ivoire);
+}
+
+.clixa-supervision__table th {
+  background: rgba(10, 16, 32, 0.85);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.12);
+  text-align: left;
+}
+
+.clixa-supervision__table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.06);
+  vertical-align: middle;
+}
+
+.clixa-supervision__tr--has-pre {
+  background: rgba(201, 162, 76, 0.05);
+}
+
+.clixa-supervision__tr--has-pre:hover {
+  background: rgba(201, 162, 76, 0.1) !important;
+}
+
+.clixa-supervision__table tbody tr:hover {
+  background: rgba(22, 33, 66, 0.6);
+}
+
+.clixa-supervision__th-centre,
+.clixa-supervision__td-centre {
+  text-align: center !important;
+}
+
+.clixa-supervision__th-droite,
+.clixa-supervision__td-droite {
+  text-align: right !important;
+}
+
+.clixa-supervision__td-formation {
+  font-weight: 600;
+}
+
+.clixa-supervision__table-nom {
+  color: var(--clixa-ivoire);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.clixa-supervision__table-nom:hover {
+  color: var(--clixa-or-clair);
+  text-decoration: underline;
+}
+
+.clixa-supervision__td-session {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.clixa-supervision__td-mode {
+  display: block;
+  font-size: 0.65rem;
+  color: rgba(243, 239, 228, 0.5);
+}
+
+.clixa-supervision__badge-pre-table {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--clixa-or-clair);
+  background: rgba(201, 162, 76, 0.2);
+  border: 1px solid rgba(201, 162, 76, 0.5);
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__badge-pre-table:hover {
+  background: rgba(201, 162, 76, 0.35);
+  border-color: var(--clixa-or);
+}
+
+.clixa-supervision__texte-mute {
+  color: rgba(243, 239, 228, 0.35);
+  font-family: var(--font-mono);
+}
+
+.clixa-supervision__table-pct-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.clixa-supervision__table-pct {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--clixa-or-clair);
+  min-width: 32px;
+}
+
+.clixa-supervision__table-mini-barre {
+  width: 60px;
+  height: 4px;
+  background: rgba(243, 239, 228, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.clixa-supervision__table-mini-remplie {
+  height: 100%;
+  background: var(--clixa-emeraude-clair);
+  border-radius: 2px;
+}
+
+.clixa-supervision__table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.clixa-supervision__btn-table {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 3px;
+  background: rgba(243, 239, 228, 0.08);
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  color: var(--clixa-ivoire);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__btn-table:hover {
+  background: rgba(201, 162, 76, 0.15);
+  border-color: var(--clixa-or);
+  color: var(--clixa-or-clair);
+}
+
+.clixa-supervision__btn-table--or {
+  background: rgba(201, 162, 76, 0.25);
+  border-color: rgba(201, 162, 76, 0.6);
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+.clixa-supervision__btn-table-sec {
+  font-size: 0.68rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 3px;
+  background: rgba(17, 26, 51, 0.6);
+  border: 1px solid rgba(243, 239, 228, 0.1);
+  color: rgba(243, 239, 228, 0.7);
+  text-decoration: none;
+}
+
+.clixa-supervision__btn-table-sec:hover {
+  border-color: rgba(201, 162, 76, 0.4);
+}
+
 /* ── Tableaux de Collections Payload (Styles Exécutifs) ──────────────────── */
 
 .table {
@@ -1778,10 +2537,33 @@ h3,
   font-style: italic;
 }
 
+/*
+  ── Deux groupes nommés, plutôt qu'un trait ────────────────────────────────
+  ⚠️ Le bloc alignait cinq boutons dans une bande, séparés par un filet en
+  pointillés. Le filet disait « ce n'est pas la même chose » ; il ne disait pas
+  *quoi*. Or l'un remplit un carnet d'appels et l'autre écrit à un client ou
+  rend sa place — la différence mérite un mot, pas une ligne.
+*/
+.clixa-relances__groupe {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-500);
+  margin-bottom: 8px;
+}
+
 .clixa-relances__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* L'intitulé prend la ligne entière ; les boutons suivent en dessous. */
+.clixa-relances__actions .clixa-relances__groupe {
+  flex-basis: 100%;
+  margin-bottom: 0;
 }
 
 /*
@@ -1794,18 +2576,75 @@ h3,
 }
 
 /*
-  ⚠️ L'envoi de courriel se sépare des deux boutons du dessus par un trait.
-  Ceux-là remplissent un carnet ; celui-ci part chez le participant, et rien ne
-  le rattrape. La ligne dit qu'on change de nature d'action.
+  ── Le cadre de ce qui sort d'ici ──────────────────────────────────────────
+  ⚠️ Un vrai encadré, pas un trait. Ces boutons envoient un courriel ou rendent
+  une place : ils ne se rattrapent pas, et ils doivent se distinguer au premier
+  coup d'œil de ceux qui notent un appel. Le fond est un cran plus haut que le
+  bloc, la bordure discrète — l'or est réservé au bouton armé, qui est la vraie
+  alerte.
 */
 .clixa-relances__envoi {
+  margin-top: 16px;
+  padding: 12px 14px 4px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 6px;
+  background: var(--theme-elevation-50);
+}
+
+.clixa-relances__groupe--agir {
+  color: var(--clixa-or-clair);
+}
+
+/*
+  ── Une rangée par action ──────────────────────────────────────────────────
+  ⚠️ Alignées, deux actions armées donnaient « Confirmer l'envoi · Un courriel
+  partira… · Rendre la place au catalogue » sur une seule ligne : plus moyen de
+  savoir quel avertissement portait sur quel bouton, devant un geste qu'on ne
+  rattrape pas. Chaque action tient donc sa rangée, séparée par un filet.
+*/
+.clixa-agir {
+  padding: 10px 0;
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
+.clixa-agir:first-of-type {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.clixa-agir__ligne {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--theme-elevation-150);
+}
+
+/* Armé, la rangée se signale — l'œil doit voir *laquelle* attend confirmation. */
+.clixa-agir--arme {
+  box-shadow: inset 2px 0 0 var(--clixa-or);
+  padding-left: 10px;
+}
+
+/*
+  Un fait, pas un compte à rebours : la date d'ouverture s'affiche telle quelle.
+  Seule la route connaît l'heure du serveur, et c'est elle qui refuse.
+*/
+.clixa-agir__note {
+  font-size: 0.78rem;
+  color: var(--theme-elevation-600);
+  margin: 6px 0 0;
+  max-width: 460px;
+}
+
+.clixa-agir--fait {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.clixa-agir__coche {
+  color: var(--clixa-emeraude-clair);
+  font-size: 0.9rem;
 }
 
 .clixa-relances__avis,
@@ -1823,15 +2662,13 @@ h3,
 /* Un refus se lit : il dit pourquoi, et recliquer ne servirait à rien. */
 .clixa-relances__refus {
   color: var(--clixa-rouge);
+  margin-top: 6px;
 }
 
 /* Parti pour de vrai — la seule fois où l'émeraude a ici le sens qu'elle a partout. */
 .clixa-relances__parti {
   color: var(--clixa-emeraude-clair);
   font-weight: 500;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--theme-elevation-150);
 }
 
 .clixa-relances__note {
