@@ -466,6 +466,42 @@ La capacité vaut 30 depuis le 26 août 2026, fixée par la direction
 (`scripts/definir-capacite.ts`, rejouable). C'est elle qui produit le décompte
 de places montré au visiteur.
 
+⚠️ **Sauf sur la cohorte DAF, rouverte à 46 le 11 septembre 2026** (décision de
+la direction : l'annonce Facebook tourne toujours, et le parcours s'était rempli).
+`scripts/ouvrir-des-places.ts` vise **ce que le visiteur lira**, pas le plafond :
+
+```bash
+cd platform && set -a && . ./.env.prod && set +a && ECRIRE=1 npx payload run \
+  scripts/ouvrir-des-places.ts "Directeur Administratif" 20
+```
+
+- **On donne les places libres voulues, la capacité s'en déduit.** La fiche
+  affiche `capacite - placesReservees` ; poser « 46 » de tête suppose de savoir
+  combien de dossiers occupent la session **à cet instant** — un nombre que la
+  tâche de 8 h fait bouger toute seule. Le script recompte, écrit, relit, et
+  imprime la phrase exacte du badge.
+- **Il ne touche qu'une session**, quand `definir-capacite.ts` les vise toutes.
+  Deux références qui correspondent au fragment donné le font renoncer : on
+  n'ouvre pas des places sur une session qu'on n'a pas nommée.
+- ⚠️ **Le décompte reste vivant, et la direction demandait qu'il se fige** à
+  « 20 places » le temps de remplir. Un nombre arrêté pendant que les
+  inscriptions rentrent dit au visiteur, sur la page qui décide de son achat,
+  quelque chose qui n'est pas vrai — et c'est la rareté affichée qui le fait
+  agir. Deux façons honnêtes de « stopper le compteur » : relancer le script
+  quand on veut revenir à 20, ou basculer `AFFICHER_DECOMPTE_TOUJOURS`
+  (`ui/Badge.tsx`) pour n'afficher que « Places disponibles », sans chiffre.
+- ⚠️ **La cohorte n'était déjà plus complète** le jour de la demande : elle était
+  à **26/30**. La tâche quotidienne avait rendu quatre places de
+  pré-inscriptions non suivies. On croyait les inscriptions fermées ; elles ne
+  l'étaient plus, et le nombre lu la veille ne valait plus.
+- ⚠️ **`payload run` réécrit `process.argv`** : il retire « run » et le chemin du
+  script, et **convertit les nombres** — `argv` porte un `20` entier. Un
+  `.endsWith()` posé dessus lève « a.endsWith is not a function », erreur qu'on
+  cherche d'abord dans son propre script.
+- ⚠️ **Un script ne rafraîchit pas la fiche.** Vérifié : elle annonçait encore
+  « 4 places » après l'écriture. Redéployer, puis relire la page publique — pas
+  la base.
+
 ⚠️ **La liste des sessions ne montrait que la capacité** (corrigé le 7 septembre
 2026 au soir). Sa seule colonne de places s'appelait « Places au total » : elle
 vaut 30 sur les douze sessions, et vaudra 30 quoi qu'il arrive. La direction l'a
