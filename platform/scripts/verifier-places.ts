@@ -12,7 +12,7 @@ import {
   JOURS_DE_GRACE,
   OCCUPE_UNE_PLACE_SQL,
   occupeUnePlace,
-  rendreLesPlacesExpirees,
+  recompterLesPlaces,
 } from "../src/lib/places.js";
 
 const payload = await getPayload({ config });
@@ -146,14 +146,27 @@ try {
     (await compter()) === apresFraiche + 1,
   );
 
-  const rendues = await rendreLesPlacesExpirees(payload);
-  dire("la tâche quotidienne rend la place périmée", rendues >= 1);
-  dire("le décompte revient à la vérité", (await compter()) === apresFraiche);
+  /*
+    ── ⚠️ La prémisse a changé le 11 septembre 2026 ──────────────────────────
+    Ce contrôle disait « la tâche quotidienne rend la place périmée », et
+    c'était le cœur du script. La direction a retiré ce geste au calcul :
+    « khali suppression automatique, hayedha — ana nb9a nthakem imta ». Le
+    passage de 8 h ne fait plus que recompter.
+
+    Le contrôle est donc **retourné**, pas supprimé : c'est le seul qui
+    passerait au rouge si quelqu'un remettait l'expiration par le temps, et
+    c'est exactement ce qu'on veut garder — une place reprise par une horloge
+    est, sur une campagne qui achète chaque prospect, une vente perdue que
+    personne n'a décidée.
+  */
+  const rendues = await recompterLesPlaces(payload);
+  dire("la tâche quotidienne ne rend plus rien toute seule", rendues === 0);
+  dire("le dossier vieilli garde sa place", (await compter()) === apresFraiche + 1);
 
   /*
     ── ⚠️ Les deux règles du 7 septembre 2026, en un seul passage ────────────
     Le battement de deux jours, et « une place ne part pas sans qu'on l'ait
-    annoncé ». Les deux dossiers sont montés ensemble et `rendreLesPlacesExpirees`
+    annoncé ». Les deux dossiers sont montés ensemble et `recompterLesPlaces`
     ne passe qu'une fois : chaque passage parcourt les sessions à venir et
     recompte, ce qui coûte plusieurs allers-retours contre Neon — le premier
     jet en faisait trois de plus et le script est mort en route, sans une
@@ -173,7 +186,7 @@ try {
   const avantLesDeux = await compter();
   await creer(8, "Épreuve Dans Le Battement");
   await creer(15, "Épreuve Jamais Prévenue", false, { jamaisPrevenu: true });
-  await rendreLesPlacesExpirees(payload);
+  await recompterLesPlaces(payload);
   dire(
     "⚠️ le terme passé et un dossier jamais prévenu tiennent tous deux leur place",
     (await compter()) === avantLesDeux + 2,
@@ -197,7 +210,7 @@ try {
   );
   dire(
     "et la tâche quotidienne ne la lui reprend pas",
-    (await rendreLesPlacesExpirees(payload), (await compter()) === avantAcompte + 1),
+    (await recompterLesPlaces(payload), (await compter()) === avantAcompte + 1),
   );
 
   /*
@@ -213,25 +226,48 @@ try {
   const avantContrat = await compter();
 
   await creer(10, "Épreuve Signée Sans Coordonnées", false, { signe: true });
-  await rendreLesPlacesExpirees(payload);
+  await recompterLesPlaces(payload);
   dire(
     "un contrat signé dont les coordonnées ne sont pas parties tient sa place",
     (await compter()) === avantContrat + 1,
   );
 
   await creer(10, "Épreuve Coordonnées Fraîches", false, { signe: true, coordonneesIlYa: 0 });
-  await rendreLesPlacesExpirees(payload);
+  await recompterLesPlaces(payload);
   dire(
     "des coordonnées envoyées ce jour relancent le délai",
     (await compter()) === avantContrat + 2,
   );
 
-  await creer(10, "Épreuve Coordonnées Vieilles", false, { signe: true, coordonneesIlYa: 10 });
-  await rendreLesPlacesExpirees(payload);
-  dire(
-    "passé sept jours après l'envoi, la place repart au catalogue",
-    (await compter()) === avantContrat + 2,
-  );
+  /*
+    ⚠️ **Il tient sa place lui aussi, désormais.** Ce contrôle attendait
+    l'inverse — « passé sept jours après l'envoi, la place repart au catalogue »
+    — et c'était juste tant que le temps rendait les places. Le délai reste
+    annoncé au participant, et le bilan du matin nomme le dossier ; ce qui a
+    disparu, c'est la main invisible qui reprenait la place.
+  */
+  const vieux = await creer(10, "Épreuve Coordonnées Vieilles", false, {
+    signe: true,
+    coordonneesIlYa: 10,
+  });
+  await recompterLesPlaces(payload);
+  dire("un délai dépassé ne suffit plus à rendre la place", (await compter()) === avantContrat + 3);
+
+  /*
+    ── ⚠️ Le seul geste qui rend une place ───────────────────────────────────
+    Sans ce contrôle, le script prouverait qu'aucune place ne part jamais — ce
+    qui serait tout aussi faux, et laisserait passer une session qui ne se vide
+    plus du tout. C'est le pendant du contrôle retourné plus haut : l'un
+    interdit à l'horloge de reprendre une place, l'autre exige que l'équipe le
+    puisse.
+  */
+  await payload.update({
+    collection: "inscriptions",
+    id: vieux,
+    overrideAccess: true,
+    data: { statut: "annulee" },
+  });
+  dire("annuler un dossier rend sa place au catalogue", (await compter()) === avantContrat + 2);
 
   /*
     ── Les deux façons de poser la même question ─────────────────────────────

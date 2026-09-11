@@ -219,10 +219,34 @@ try {
     depth: 0,
     overrideAccess: true,
   });
+  /*
+    ── ⚠️ L'horloge réelle, pas la figée ─────────────────────────────────────
+    Ce contrôle lisait `MAINTENANT`, l'horloge figée des contrôles purs, sur des
+    dossiers que la base vieillit avec `now()`. Les deux ne se sont séparées
+    qu'avec le temps : trois jours après l'écriture du script, « à deux jours du
+    terme » se lisait « reste 4 jours » et le contrôle passait au rouge sur un
+    code parfaitement juste.
+
+    C'est le piège que ce fichier documente déjà quinze lignes plus haut, et il
+    y était tombé sur cette seule ligne. La règle tient en un mot : **une ligne
+    venue de la base se lit à l'heure de la base.**
+  */
   const discordants = nommes.filter((d) => {
-    const { ton } = delaiDuDossier(d as never, MAINTENANT);
+    const { ton } = delaiDuDossier(d as never, new Date(MAINTENANT_REEL));
     return ton !== "presse" && ton !== "terme";
   });
+  /*
+    Nommer ce qu'on accuse : sans cela, le rouge donne une référence et il faut
+    rouvrir la base pour savoir de quel cas il s'agit — or les fixtures sont
+    supprimées à la fin du script.
+  */
+  for (const d of discordants) {
+    const x = d as unknown as Record<string, unknown>;
+    console.log(
+      `    · ${String(x.reference)} inscrit le ${String(x.createdAt).slice(0, 10)} → ` +
+        `« ${delaiDuDossier(d as never, new Date(MAINTENANT_REEL)).libelle} »`,
+    );
+  }
   dire(
     "⚠️ et la colonne les marque tous, sans exception",
     discordants.length === 0,

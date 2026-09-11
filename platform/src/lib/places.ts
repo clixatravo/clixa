@@ -140,41 +140,34 @@ export function finDeLaTenue(depuis: Date | string): Date {
 }
 
 /**
- * Le moment où la place part **réellement** — ou `undefined` si rien ne la fera
- * partir aujourd'hui.
+ * À partir de quand l'équipe **peut** rendre la place — ou `undefined` tant
+ * qu'elle ne le peut pas.
  *
- * ── ⚠️ Pourquoi `finDuBattement` ne suffisait pas ───────────────────────────
- * Le battement courait depuis le terme annoncé, sur l'hypothèse que l'annonce
- * part **le jour du terme**. Elle ne part pas toujours : c'est tout l'objet de
- * `placeRappeleeLe`, qui n'est écrite qu'après un envoi réussi — quota épuisé,
- * service en panne, tâche interrompue. Une annonce en retard de deux jours
- * trouvait alors le battement déjà consommé, et **le même passage de 8 h
- * envoyait le courriel puis rendait la place**.
+ * ── ⚠️ Elle ne part plus toute seule, et le nom le dit ──────────────────────
+ * La fonction s'appelait `finDeLaPlace` et rendait « le moment où la place part
+ * réellement ». Depuis le 11 septembre 2026 plus rien ne la fait partir : c'est
+ * un geste de l'équipe. Garder l'ancien nom aurait laissé trois écrans annoncer
+ * « place repartie » sur une place encore tenue — le mensonge exact que la
+ * troisième fenêtre de la page du participant existe pour éviter. Le
+ * changement de nom a désigné lui-même les quatre lecteurs à corriger.
  *
- * Reproduit sur un dossier de douze jours : le participant lit « votre place
- * n'est pas encore repartie » à 8 h 00, elle est repartie à 8 h 00, et le bilan
- * annonce à l'équipe « leur place part dans deux jours ». La garde tenait sa
- * promesse à la lettre — un courriel est bien parti d'abord — et la trahissait
- * entièrement : ce que la direction a demandé, c'est qu'il ait le temps d'agir.
+ * Ce qu'elle rend est donc une **autorisation**, pas un fait : la date à partir
+ * de laquelle le bouton « Rendre la place » s'ouvre, c'est-à-dire le terme
+ * annoncé plus le battement de deux jours. Avant elle, rendre la place
+ * reprendrait à quelqu'un un délai qu'on lui a promis par écrit.
  *
- * ── La règle, et pourquoi elle est plus simple ──────────────────────────────
- * Le battement court depuis **l'annonce**, pas depuis le terme. Comme l'annonce
- * ne part jamais avant le terme, cette date est toujours postérieure à
- * l'ancienne : personne n'y perd un jour, et celui qu'on a prévenu en retard
- * garde ses deux jours pleins. Deux branches deviennent une.
- *
- * `undefined` ne veut pas dire « on ne sait pas », mais « rien n'expire » :
- * le contrat signé qui attend nos coordonnées, et la pré-inscription qu'on n'a
- * pas encore su prévenir. L'appelant doit alors se taire.
+ * `undefined` veut dire « pas encore, et on ne sait pas quand » : le contrat
+ * signé qui attend nos coordonnées, et la pré-inscription qu'on n'a pas encore
+ * prévenue. Les deux tiennent leur place sans terme.
  */
-export function finDeLaPlace(dossier: DossierTenu): Date | undefined {
+export function placeRendableDepuis(dossier: DossierTenu): Date | undefined {
   const depart = departDeLaTenue(dossier);
   if (!depart) return undefined;
 
   // Coordonnées parties : le participant peut payer, et les relances le disent.
   if (dossier.coordonneesEnvoyeesLe) return finDuBattement(depart);
 
-  // Pré-inscription : rien ne part tant qu'on ne l'a pas prévenue.
+  // Pré-inscription : on ne reprend rien à qui n'a pas été prévenu.
   if (!dossier.placeRappeleeLe) return undefined;
   return new Date(new Date(dossier.placeRappeleeLe).getTime() + JOURS_DE_BATTEMENT * 86_400_000);
 }
@@ -190,97 +183,56 @@ export function finDeLaPlace(dossier: DossierTenu): Date | undefined {
  *
  * `i` est l'alias attendu pour la table `inscriptions`.
  */
-export const OCCUPE_UNE_PLACE_SQL = `(
-  i.statut IN ('confirmee', 'payee', 'terminee')
-  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NOT NULL
-        AND i.coordonnees_envoyees_le IS NULL)
-  OR (i.statut = 'demandee'
-        AND i.coordonnees_envoyees_le > now() - interval '${JOURS_DE_GRACE + JOURS_DE_BATTEMENT} days')
-  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
-        AND i.place_rappelee_le IS NULL)
-  OR (i.statut = 'demandee' AND i.contrat_signe_le IS NULL
-        AND i.place_rappelee_le > now() - interval '${JOURS_DE_BATTEMENT} days')
-)`;
+export const OCCUPE_UNE_PLACE_SQL = `(i.statut <> 'annulee')`;
 
 /**
- * La condition, telle que Payload l'attend.
+ * La condition, telle que Payload l'attend — et `OCCUPE_UNE_PLACE_SQL`
+ * juste au-dessus, qui doit dire la même chose : `verifier-places.ts` compte
+ * les deux façons et les compare.
  *
- * Les quatre branches partitionnent les dossiers : elles ne se recouvrent pas,
- * et aucun dossier « demandée » n'en manque. Voir le tableau en tête de
- * fichier — et `OCCUPE_UNE_PLACE_SQL` juste au-dessus, qui doit dire la même
- * chose : `verifier-places.ts` compte les deux façons et les compare.
+ * ── ⚠️ Une place ne part plus toute seule ───────────────────────────────────
+ * Décision de la direction, le 11 septembre 2026 : « khali suppression
+ * automatique, hayedha — ana nb9a nthakem imta ». Le temps ne rend plus rien
+ * au catalogue. Un dossier tient sa place tant que quelqu'un de l'équipe ne l'a
+ * pas annulé, si vieux soit-il.
+ *
+ * Ce qui l'a emporté : le délai était devenu la première cause de perte, sur
+ * une campagne qui achète chaque prospect. Une pré-inscription qui dort n'est
+ * pas une place perdue tant que la cohorte n'est pas pleine — et depuis
+ * `placesLibresTenues`, la cohorte portée par l'annonce ne se ferme plus.
+ *
+ * ⚠️ **Ce que cela coûte, écrit ici pour qu'on le sache** : le décompte du site
+ * ne se vide plus de lui-même. Si l'équipe n'annule rien, une session finit par
+ * compter des gens qui ne viendront jamais. C'est exactement le défaut que les
+ * sept jours avaient corrigé le 28 août 2026 — il est réintroduit sciemment, et
+ * la contrepartie est la vignette « Places à rendre » du tableau de bord, qui
+ * nomme chaque matin ceux dont le délai annoncé est passé.
+ *
+ * ⚠️ **Les délais, eux, continuent d'être annoncés.** Le participant lit
+ * toujours « votre place est tenue jusqu'au X », et les rappels partent
+ * toujours : ce qui a changé, c'est qu'aucune place ne se rend sans un geste.
+ * Annoncer un terme et le tenir plus longtemps ne trompe personne ; l'inverse,
+ * si. Aucun message n'a donc été réécrit.
  */
 export function occupeUnePlace(): Where {
-  const limite = limiteDeGrace();
-  const demandee = { statut: { equals: "demandee" } } as const;
-
-  return {
-    or: [
-      { statut: { in: ["confirmee", "payee", "terminee"] } },
-      // Signé, coordonnées pas encore parties : la place ne se rend pas.
-      {
-        and: [
-          demandee,
-          { contratSigneLe: { exists: true } },
-          { coordonneesEnvoyeesLe: { exists: false } },
-        ],
-      },
-      // Coordonnées parties : sept jours pour que le transfert arrive, plus le battement.
-      { and: [demandee, { coordonneesEnvoyeesLe: { greater_than: limite } }] },
-
-      /*
-        ── ⚠️ Jamais rendue sans avoir été annoncée ──────────────────────────
-        Une pré-inscription qu'on n'a pas su prévenir garde sa place, si vieille
-        soit-elle. La tâche quotidienne réessaie l'envoi chaque matin et ne pose
-        la date qu'une fois le courriel parti ; tant qu'il ne part pas — quota
-        épuisé, service en panne — c'est **notre** défaillance, et elle ne se
-        paie pas sur la place de quelqu'un qui n'a rien vu venir.
-
-        Décision de la direction, le 7 septembre 2026 : « sa place ne part pas
-        tant qu'un courriel ne lui est pas parvenu ». C'est le même principe que
-        le contrat signé qui attend nos coordonnées — la balle est chez nous.
-
-        ⚠️ Le revers est réel : si l'expédition reste en panne, des places
-        dorment. Le bilan quotidien les nomme, comme il nomme déjà les envois
-        manqués.
-      */
-      {
-        and: [
-          demandee,
-          { contratSigneLe: { exists: false } },
-          { placeRappeleeLe: { exists: false } },
-        ],
-      },
-      /*
-        ── ⚠️ Et deux jours **après l'annonce**, pas après le terme ──────────
-        Le battement courait depuis la date annoncée, sur l'hypothèse que
-        l'annonce part le jour du terme. Une annonce retardée par une panne
-        d'expédition trouvait le battement déjà écoulé : le même passage de
-        8 h envoyait le courriel *et* rendait la place. Voir `finDeLaPlace`.
-      */
-      {
-        and: [
-          demandee,
-          { contratSigneLe: { exists: false } },
-          {
-            placeRappeleeLe: {
-              greater_than: new Date(Date.now() - JOURS_DE_BATTEMENT * 86_400_000).toISOString(),
-            },
-          },
-        ],
-      },
-    ],
-  };
+  return { statut: { not_equals: "annulee" } };
 }
 
 /**
- * Recompte les sessions à venir et renvoie le nombre de places rendues.
+ * Recompte les sessions à venir et renvoie le nombre de places retrouvées.
  *
- * Appelée une fois par jour. Le décompte peut donc être en retard d'au plus
- * une journée, ce qui est sans conséquence pour des places qu'on réserve à des
- * semaines de distance.
+ * ── ⚠️ Elle ne rend plus rien, elle recompte ────────────────────────────────
+ * Elle s'appelait `rendreLesPlacesExpirees`, et c'était juste : le temps rendait
+ * les places, et ce passage quotidien était le seul endroit du système où
+ * quelque chose changeait sans que personne ait agi. Depuis que la place ne part
+ * plus toute seule, elle ne peut plus rien libérer par elle-même — elle
+ * rattrape les écarts, par exemple une annulation faite en base sans passer par
+ * un crochet.
+ *
+ * Le nom a changé avec le rôle : garder l'ancien aurait fait chercher, dans le
+ * bilan du matin, une libération qui ne peut plus se produire.
  */
-export async function rendreLesPlacesExpirees(payload: Payload): Promise<number> {
+export async function recompterLesPlaces(payload: Payload): Promise<number> {
   const { docs: sessions } = await payload.find({
     collection: "sessions",
     where: { fin: { greater_than: new Date().toISOString() } },

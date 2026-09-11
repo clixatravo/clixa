@@ -191,6 +191,21 @@ dire(
   `reçu ${exportCsv.code}`,
 );
 
+/*
+  ⚠️ Les trois portes manuelles de la relance, depuis le 11 septembre 2026 :
+  elles envoient un courriel au nom de la maison, ou rendent la place de
+  quelqu'un. Une session d'équipe ne se monte pas depuis ici — on vérifie au
+  moins qu'un anonyme n'obtient rien, comme pour le fichier des admissions.
+*/
+for (const porte of [
+  "/api/admin/rappel",
+  "/api/admin/relance-paiement",
+  "/api/admin/rendre-la-place",
+]) {
+  const r = await repond(porte, { method: "POST" });
+  dire(r.code === 401, `${porte} refuse sans session d'équipe`, `reçu ${r.code}`);
+}
+
 const listeRecus = await repond("/api/recus");
 dire(listeRecus.code === 403, "les justificatifs ne se listent pas", `reçu ${listeRecus.code}`);
 

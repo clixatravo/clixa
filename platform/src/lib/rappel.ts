@@ -14,7 +14,7 @@
  * suivant la reprend. Même règle que `placeRappeleeLe`.
  */
 import type { Payload } from "payload";
-import { courrielRappelAvantTerme } from "./courriel";
+import { courrielPlaceBientotRendue, courrielRappelAvantTerme } from "./courriel";
 import { sansLeParcours } from "./inscriptions";
 import { finDeLaTenue } from "./places";
 
@@ -106,4 +106,73 @@ export async function envoyerLeRappel(
 /** Sans barre finale : `${site}/inscription/…` la remettrait en double. */
 function site(brut: string): string {
   return brut.replace(/\/+$/, "");
+}
+
+/**
+ * Annoncer que le terme est atteint — et, seulement si le courriel est parti,
+ * poser la date qui ouvre le battement.
+ *
+ * ── ⚠️ Un seul chemin, pour la même raison que le rappel ────────────────────
+ * La tâche de 8 h l'envoyait en ligne dans sa boucle ; le bouton « Relancer
+ * pour la signature » l'envoie quand l'équipe le décide, une fois le terme
+ * passé. Deux écritures d'un même fait finissent toujours par diverger — et ici
+ * l'écart se paierait sur `placeRappeleeLe`, qui commande *à la fois* le
+ * battement de deux jours et le fait que la place puisse être rendue.
+ *
+ * ⚠️ **Rien n'est écrit avant que l'envoi ait réussi.** Tant que la date est
+ * vide, la place reste tenue sans terme : un quota épuisé est notre
+ * défaillance, elle ne se paie pas sur la place de quelqu'un qui n'a rien vu
+ * venir. Le bilan du matin nomme les envois manqués.
+ */
+export async function annoncerLeTerme(
+  payload: Payload,
+  dossier: DossierARappeler,
+  options: { site: string; par?: number | string },
+): Promise<boolean> {
+  const session = typeof dossier.session === "object" ? (dossier.session as never) : undefined;
+  const s = session as { reference?: string; programme?: { titre?: string } } | undefined;
+  const programme = s && typeof s.programme === "object" ? s.programme : undefined;
+
+  const parti = await courrielPlaceBientotRendue(payload, {
+    reference: String(dossier.reference),
+    apprenantNom: String(dossier.apprenantNom),
+    apprenantEmail: String(dossier.apprenantEmail),
+    programmeTitre: programme?.titre ?? "votre parcours",
+    /*
+      ⚠️ La même composition que la page du dossier, importée plutôt que
+      recopiée : la référence d'une session s'écrit « Parcours — Mode — Date »,
+      et la répéter sous un titre qui nomme déjà le parcours donne
+      « Directeur X — Directeur X — Classe virtuelle ».
+    */
+    sessionDetail: sansLeParcours(s?.reference, programme?.titre),
+    tenueJusquau: finDeLaTenue(String(dossier.createdAt)).toISOString(),
+    urlDossier: `${site(options.site)}/inscription/${dossier.reference}`,
+  });
+
+  if (!parti) return false;
+
+  /*
+    ⚠️ Le journal reçoit la ligne dans la même écriture, comme pour le rappel :
+    un courriel parti est un contact, et sans cette ligne un collègue
+    téléphonerait le lendemain en disant « vous n'avez rien reçu de nous ».
+  */
+  const journal = Array.isArray(dossier.echanges) ? dossier.echanges : [];
+  await payload.update({
+    collection: "inscriptions",
+    id: dossier.id,
+    overrideAccess: true,
+    data: {
+      placeRappeleeLe: new Date().toISOString(),
+      echanges: [
+        ...journal,
+        {
+          quoi: "rappel",
+          le: new Date().toISOString(),
+          ...(options.par ? { par: options.par } : {}),
+        },
+      ],
+    } as never,
+  });
+
+  return true;
 }

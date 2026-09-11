@@ -1,15 +1,14 @@
 import {
-  finDeLaTenue,
   JOURS_DE_GRACE,
-  rendreLesPlacesExpirees,
+  recompterLesPlaces,
+  placeRendableDepuis,
   SEUILS_DE_RAPPEL,
 } from "@/lib/places";
-import { sansLeParcours } from "@/lib/inscriptions";
-import { envoyerLeRappel, joursAvantLeTerme } from "@/lib/rappel";
+import { annoncerLeTerme, envoyerLeRappel, joursAvantLeTerme } from "@/lib/rappel";
 import { timingSafeEqual } from "node:crypto";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { courrielBilanRelances, courrielPlaceBientotRendue, courrielRelance } from "@/lib/courriel";
+import { courrielBilanRelances, courrielRelance } from "@/lib/courriel";
 
 /**
  * BE-17 — Relance des échéances.
@@ -362,56 +361,55 @@ export async function GET(request: Request) {
   const prevenusManques: string[] = [];
 
   for (const dossier of aPrevenir) {
-    const session = typeof dossier.session === "object" ? dossier.session : undefined;
-    const programme =
-      session && typeof session.programme === "object" ? session.programme : undefined;
     const ligne = `${dossier.reference} · ${dossier.apprenantNom}`;
 
-    const parti = await courrielPlaceBientotRendue(payload, {
-      reference: String(dossier.reference),
-      apprenantNom: String(dossier.apprenantNom),
-      apprenantEmail: String(dossier.apprenantEmail),
-      programmeTitre: programme?.titre ?? "votre parcours",
-      /*
-        ⚠️ La même composition que la page du dossier, importée plutôt que
-        recopiée : la référence d'une session s'écrit « Parcours — Mode —
-        Date », et la répéter sous un titre qui nomme déjà le parcours donne
-        « Directeur X — Directeur X — Classe virtuelle ».
-      */
-      sessionDetail: sansLeParcours(session?.reference, programme?.titre),
-      tenueJusquau: finDeLaTenue(String(dossier.createdAt)).toISOString(),
-      urlDossier: `${site}/inscription/${dossier.reference}`,
-    });
+    /*
+      ⚠️ **Le même chemin que le bouton** (`lib/rappel.ts`). L'envoi et la date
+      étaient écrits ici, en ligne ; depuis que l'équipe peut annoncer le terme
+      elle-même, deux écritures d'un même fait auraient fini par diverger sur
+      `placeRappeleeLe` — la date qui commande le battement *et* la possibilité
+      de rendre la place.
+    */
+    const parti = await annoncerLeTerme(payload, dossier as never, { site });
 
-    if (!parti) {
-      /*
-        ⚠️ Sans date posée, la place reste tenue : c'est la garde. On réessaiera
-        demain, et le bilan dit à l'équipe qui n'a rien reçu.
-      */
-      prevenusManques.push(ligne);
-      continue;
-    }
-
-    await payload.update({
-      collection: "inscriptions",
-      id: dossier.id,
-      overrideAccess: true,
-      data: { placeRappeleeLe: new Date(maintenant).toISOString() },
-    });
-    prevenus.push(ligne);
+    /*
+      ⚠️ Sans date posée, la place reste tenue : c'est la garde. On réessaiera
+      demain, et le bilan dit à l'équipe qui n'a rien reçu.
+    */
+    if (parti) prevenus.push(ligne);
+    else prevenusManques.push(ligne);
   }
 
   /*
-    ── Rendre les places que le temps a libérées ─────────────────────────────
-    Une inscription tient sa place sept jours sans versement. Passé ce délai
-    elle la rend — mais le temps n'écrit rien : sans repasser, une place
-    expirée resterait retenue jusqu'à ce qu'un hasard touche à sa session.
+    ── Recompter, sans rien rendre ───────────────────────────────────────────
+    ⚠️ Ce passage rendait les places dont le délai était écoulé — le seul
+    endroit du système où quelque chose changeait sans que personne ait agi.
+    Depuis le 11 septembre 2026, une place ne part plus qu'à la main : il ne
+    reste ici qu'un recompte, qui rattrape une annulation faite hors crochet.
 
-    On recompte donc chaque session en cours, une fois par jour. C'est le seul
-    endroit du système où quelque chose change parce qu'un délai s'est écoulé
-    et non parce que quelqu'un a agi.
+    Il est gardé parce qu'un décompte faux est invisible : il ne casse rien, il
+    fait seulement afficher au site un nombre de places qui n'est pas le bon.
   */
-  const rendues = await rendreLesPlacesExpirees(payload);
+  const rendues = await recompterLesPlaces(payload);
+
+  /*
+    ── Ce que l'équipe doit trancher aujourd'hui ─────────────────────────────
+    ⚠️ **La contrepartie de la suppression automatique retirée.** Plus rien ne
+    libère une place ; si personne ne regarde, une session finit par compter des
+    gens qui ne viendront jamais — exactement le défaut que les sept jours
+    avaient corrigé le 28 août 2026. Il est réintroduit sciemment, et c'est
+    cette liste, chaque matin, qui empêche qu'il passe inaperçu.
+
+    Le bouton « Rendre la place » de la fiche ne s'ouvre pas avant cette même
+    date : le bilan ne nomme donc que des dossiers sur lesquels le geste est
+    réellement possible.
+  */
+  const aRendre = docs
+    .filter((d) => {
+      const quand = placeRendableDepuis(d as never);
+      return Boolean(quand && quand.getTime() <= maintenant);
+    })
+    .map((d) => `  ${d.reference} · ${d.apprenantNom} · ${d.apprenantEmail}`);
 
   /*
     Le bilan porte aussi ce qui n'est pas parti. Une tâche qui échoue à moitié
@@ -475,6 +473,14 @@ export async function GET(request: Request) {
           `⚠️ ${prevenusManques.length} pré-inscription(s) non prévenue(s) : leur place reste tenue, repris demain.`,
           ...prevenusManques,
         ]),
+    ...(aRendre.length === 0
+      ? []
+      : [
+          "",
+          `${aRendre.length} place(s) à rendre : le délai annoncé est passé, ` +
+            `et rien ne part sans vous (bouton « Rendre la place » sur la fiche).`,
+          ...aRendre,
+        ]),
   ]);
 
   const alerte = manques.length > 0 ? `, ${manques.length} envoi(s) IMPOSSIBLE(S)` : "";
@@ -482,7 +488,7 @@ export async function GET(request: Request) {
     `[relances] ${docs.length} dossier(s), ${examinees} échéance(s) examinée(s), ` +
       `${bilan.length} relance(s), ${rappeles.length} rappel(s) avant terme, ` +
       `${enAttenteDeNous.length} en attente de nous, ` +
-      `${prevenus.length} place(s) annoncée(s)${alerte}`,
+      `${prevenus.length} place(s) annoncée(s), ${aRendre.length} à rendre${alerte}`,
   );
 
   return Response.json({
@@ -496,6 +502,8 @@ export async function GET(request: Request) {
     placesNonAnnoncees: prevenusManques.length,
     // Ce que le planificateur verra dans son journal si le courriel flanche.
     envoisImpossibles: manques.length,
-    placesRendues: rendues,
+    // Un recompte, plus une libération : rien ne part sans un geste de l'équipe.
+    placesRecomptees: rendues,
+    placesARendre: aRendre.length,
   });
 }

@@ -5,6 +5,7 @@ import { useAllFormFields, useAuth, useDocumentInfo, useField, useForm } from "@
 import { reduceFieldsToValues } from "payload/shared";
 import { useRouter } from "next/navigation";
 import { dernierSuivi, type Echange, type NatureEchange } from "@/lib/suivi";
+import { JOURS_DE_BATTEMENT } from "@/lib/places";
 
 /**
  * Les trois temps du dossier, dans l'ordre, sur une seule ligne.
@@ -182,6 +183,76 @@ function auteur(par: Echange["par"], moi: number | string | undefined): string {
 const JOUR = (v: string) =>
   new Date(v).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 
+/**
+ * Les trois portes qui agissent hors du formulaire.
+ *
+ * ⚠️ Elles ne se confondent pas avec les deux boutons qui notent un appel : ces
+ * derniers écrivent une ligne dans le journal et rien de plus. Celles-ci font
+ * partir un courriel chez le participant, ou rendent sa place — des gestes
+ * qu'on ne rattrape pas, d'où l'armement en deux temps.
+ */
+type Porte = "signature" | "paiement" | "place";
+
+type EtatPorte =
+  | { etat: "pret" | "arme" | "envoi" }
+  | { etat: "fait"; dit: string }
+  | { etat: "erreur"; dit: string };
+
+interface Reponse {
+  erreur?: string;
+  jours?: number;
+  quoi?: string;
+  montant?: number;
+  enRetard?: boolean;
+  reference?: string;
+}
+
+/**
+ * Le bouton en deux temps : armer, puis confirmer.
+ *
+ * ⚠️ Un clic de trop ici n'est pas une case cochée de travers — c'est un
+ * message chez le participant, ou une place rendue. L'armement coûte un geste
+ * et évite ce qu'on ne peut pas défaire.
+ */
+function BoutonAgir({
+  etat,
+  libelle,
+  confirmation,
+  avis,
+  note,
+  onArmer,
+  onAgir,
+}: {
+  etat: EtatPorte;
+  libelle: string;
+  confirmation: string;
+  avis: string;
+  /** Un fait, jamais un calcul sur l'heure courante — voir plus bas. */
+  note?: string;
+  onArmer: () => void;
+  onAgir: () => void;
+}) {
+  if (etat.etat === "fait") {
+    return <p className="clixa-relances__parti">{etat.dit}</p>;
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
+        disabled={etat.etat === "envoi"}
+        onClick={() => (etat.etat === "arme" ? onAgir() : onArmer())}
+      >
+        {etat.etat === "envoi" ? "En cours…" : etat.etat === "arme" ? confirmation : libelle}
+      </button>
+      {note && <span className="clixa-relances__avis">{note}</span>}
+      {etat.etat === "arme" && <span className="clixa-relances__avis">{avis}</span>}
+      {etat.etat === "erreur" && <span className="clixa-relances__refus">{etat.dit}</span>}
+    </>
+  );
+}
+
 export function EtapesContrat() {
   const { id } = useDocumentInfo();
   const { submit } = useForm();
@@ -189,6 +260,13 @@ export function EtapesContrat() {
   const verifie = useField<string>({ path: "contratVerifieLe" });
   const envoye = useField<string>({ path: "coordonneesEnvoyeesLe" });
   const reference = useField<string>({ path: "reference" });
+  /*
+    ⚠️ Lu depuis le formulaire, pas recalculé : c'est cette date que la route
+    lit pour décider si la place peut être rendue. Deux lectures d'un même fait
+    finiraient par ne plus dire le même jour, et celle de l'écran serait la
+    fausse.
+  */
+  const rappeleeLe = useField<string>({ path: "placeRappeleeLe" });
 
   /*
     ⚠️ Qui appelle est la moitié de la réponse. « Ce dossier a été appelé hier »
@@ -212,11 +290,11 @@ export function EtapesContrat() {
     participant. Un clic de trop y est donc d'une autre nature — d'où l'armement,
     qui coûte un geste et évite un message qu'on ne rattrape pas.
   */
-  const [rappel, setRappel] = React.useState<
-    | { etat: "pret" | "arme" | "envoi" }
-    | { etat: "fait"; jours: number }
-    | { etat: "erreur"; dit: string }
-  >({ etat: "pret" });
+  const [portes, setPortes] = React.useState<Record<Porte, EtatPorte>>({
+    signature: { etat: "pret" },
+    paiement: { etat: "pret" },
+    place: { etat: "pret" },
+  });
 
   const [champs] = useAllFormFields();
   const donnees = reduceFieldsToValues(champs, true) as {
@@ -310,31 +388,39 @@ export function EtapesContrat() {
     concerne, celle-ci note ce qui s'est dit au téléphone. Lui écrire « nous
     vous avons appelé » n'apprendrait rien à quelqu'un qui vient de raccrocher.
   */
-  const envoyerLeRappel = async () => {
-    setRappel({ etat: "envoi" });
+  /*
+    ── ⚠️ Une seule fonction pour les trois portes ────────────────────────────
+    Chacune appelle une route qui envoie ou qui écrit ; ce qui les distingue
+    tient à l'adresse et à la phrase de succès. Trois copies de ce bloc auraient
+    fini par diverger sur ce qui compte : montrer **ce que dit la route**, mot
+    pour mot, plutôt qu'« une erreur est survenue » — qui fait recliquer sans
+    rien apprendre.
+  */
+  const declencher = async (porte: Porte, adresse: string, dire: (c: Reponse) => string) => {
+    setPortes((p) => ({ ...p, [porte]: { etat: "envoi" } }));
     try {
-      const r = await fetch("/api/admin/rappel", {
+      const r = await fetch(adresse, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" },
         body: JSON.stringify({ id }),
       });
-      const corps = (await r.json()) as { jours?: number; erreur?: string };
+      const corps = (await r.json()) as Reponse;
       if (!r.ok) {
-        /*
-          ⚠️ On montre ce que dit la route, mot pour mot. Elle refuse pour des
-          raisons qui se comprennent — délai atteint, contrat déjà signé, envoi
-          manqué — et les remplacer par « une erreur est survenue » ferait
-          recliquer sans rien apprendre.
-        */
-        setRappel({ etat: "erreur", dit: corps.erreur ?? `Refus (${r.status}).` });
+        setPortes((p) => ({
+          ...p,
+          [porte]: { etat: "erreur", dit: corps.erreur ?? `Refus (${r.status}).` },
+        }));
         return;
       }
-      setRappel({ etat: "fait", jours: corps.jours ?? 0 });
-      // Le journal vient de gagner une ligne : la fiche doit la montrer.
+      setPortes((p) => ({ ...p, [porte]: { etat: "fait", dit: dire(corps) } }));
+      // Le journal, l'échéancier ou le statut viennent de changer : la fiche doit le montrer.
       router.refresh();
     } catch {
-      setRappel({ etat: "erreur", dit: "Le serveur n'a pas répondu. Rien n'a été envoyé." });
+      setPortes((p) => ({
+        ...p,
+        [porte]: { etat: "erreur", dit: "Le serveur n'a pas répondu. Rien n'a été fait." },
+      }));
     }
   };
 
@@ -631,49 +717,114 @@ export function EtapesContrat() {
           </div>
 
           {/*
-            ⚠️ Ce bouton-ci part **chez le participant**. Il est donc à part des
-            deux autres, qui ne font que noter un appel : le confondre avec eux
-            ferait envoyer un courriel en croyant remplir un carnet.
+            ── ⚠️ Ce qui part vraiment, à part de ce qui note ─────────────────
+            Les deux boutons ci-dessus écrivent une ligne dans le journal. Ceux
+            d'ici font partir un courriel chez le participant, ou rendent sa
+            place au catalogue : les confondre ferait envoyer un message en
+            croyant remplir un carnet. D'où le cadre séparé, et l'armement.
           */}
-          {!aSigne && (
-            <div className="clixa-relances__envoi">
-              {rappel.etat === "fait" ? (
-                <p className="clixa-relances__parti">
-                  Rappel envoyé — il lui restait{" "}
-                  {rappel.jours === 1 ? "un jour" : `${rappel.jours} jours`}.
-                </p>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="btn btn--style-secondary btn--size-small clixa-relances__bouton"
-                    disabled={rappel.etat === "envoi"}
-                    onClick={() =>
-                      rappel.etat === "arme" ? void envoyerLeRappel() : setRappel({ etat: "arme" })
-                    }
-                  >
-                    {rappel.etat === "envoi"
-                      ? "Envoi…"
-                      : rappel.etat === "arme"
-                        ? "Confirmer l'envoi du courriel"
-                        : "Envoyer le rappel par courriel"}
-                  </button>
-                  {rappel.etat === "arme" && (
-                    <span className="clixa-relances__avis">
-                      Un courriel partira chez le participant, avec le lien de son dossier.
-                    </span>
-                  )}
-                  {rappel.etat === "erreur" && (
-                    <span className="clixa-relances__refus">{rappel.dit}</span>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+          <div className="clixa-relances__envoi">
+            {/*
+              ⚠️ **Un seul bouton pour deux messages.** Avant le terme part
+              « il vous reste N jours pour demander votre contrat » ; une fois
+              le terme atteint, « le délai est passé, votre place n'est pas
+              encore repartie — sous deux jours nous la remettrons au
+              catalogue ». C'est la route qui choisit, parce que le dossier sait
+              et que l'écran non : annoncer trois jours à qui n'en a plus ferait
+              manquer sa place à quelqu'un qui fait ce qu'on lui a dit.
+            */}
+            {!aSigne && (
+              <BoutonAgir
+                etat={portes.signature}
+                libelle="Relancer pour la signature — envoyer le courriel"
+                confirmation="Confirmer l'envoi du courriel"
+                avis="Un courriel partira chez le participant, avec le lien de son dossier."
+                onArmer={() => setPortes((p) => ({ ...p, signature: { etat: "arme" } }))}
+                onAgir={() =>
+                  void declencher("signature", "/api/admin/rappel", (c) =>
+                    c.quoi === "terme"
+                      ? "Terme annoncé — sa place peut être rendue dans deux jours."
+                      : `Rappel envoyé — il lui restait ${c.jours === 1 ? "un jour" : `${c.jours} jours`}.`,
+                  )
+                }
+              />
+            )}
 
+            {/*
+              ⚠️ Il ne paraît qu'une fois le contrat signé, et disparaît quand
+              tout est réglé. La route refuse en plus tant que les coordonnées
+              ne sont pas parties : réclamer de l'argent à qui n'a nulle part où
+              l'envoyer est le défaut qui a coûté un vrai prospect le
+              5 septembre 2026, et il se referme des deux côtés.
+            */}
+            {aSigne && !toutRegle && (
+              <BoutonAgir
+                etat={portes.paiement}
+                libelle="Relancer pour le paiement — envoyer le courriel"
+                confirmation="Confirmer l'envoi du courriel"
+                avis="Un courriel réclamant le versement partira chez le participant."
+                onArmer={() => setPortes((p) => ({ ...p, paiement: { etat: "arme" } }))}
+                onAgir={() =>
+                  void declencher(
+                    "paiement",
+                    "/api/admin/relance-paiement",
+                    (c) => `Relance envoyée — ${c.montant} €${c.enRetard ? ", en retard" : ""}.`,
+                  )
+                }
+              />
+            )}
+
+            {/*
+              ── ⚠️ Le geste que le temps ne fait plus ───────────────────────
+              La tâche de 8 h rendait la place d'un dossier périmé ; depuis le
+              11 septembre 2026 elle ne rend plus rien. Le bouton ne paraît
+              qu'une fois le terme annoncé — sans annonce il n'y a rien à
+              rendre — et reste fermé jusqu'au bout du battement de deux jours :
+              reprendre la place avant retirerait un délai promis par écrit.
+            */}
+            {!aSigne && rappeleeLe.value && (
+              <BoutonAgir
+                etat={portes.place}
+                libelle="Rendre la place au catalogue"
+                confirmation="Confirmer — la place repart"
+                avis="Le dossier passe en « Annulée » et sa place revient au catalogue."
+                /*
+                  ⚠️ **Une date, pas un verrou calculé à l'instant du rendu.**
+                  Comparer à `Date.now()` dans le corps d'un composant est un
+                  appel impur que la règle de lint refuse — et la leçon est
+                  ailleurs : c'est la route qui décide, elle seule connaît
+                  l'heure du serveur. L'écran annonce le jour d'ouverture ; si
+                  l'on clique avant, la route refuse et redit la même date.
+                */
+                note={`Annoncé le ${JOUR(String(rappeleeLe.value))} — la place peut être rendue à partir du ${JOUR(
+                  new Date(
+                    new Date(String(rappeleeLe.value)).getTime() + JOURS_DE_BATTEMENT * 86_400_000,
+                  ).toISOString(),
+                )}.`}
+                onArmer={() => setPortes((p) => ({ ...p, place: { etat: "arme" } }))}
+                onAgir={() =>
+                  void declencher(
+                    "place",
+                    "/api/admin/rendre-la-place",
+                    () => "Place rendue au catalogue — le dossier est annulé.",
+                  )
+                }
+              />
+            )}
+          </div>
+
+          {/*
+            ⚠️ Cette note disait « rien n'est envoyé au participant ». C'était
+            vrai quand le bloc ne portait que les deux boutons du carnet ; ce
+            n'est plus vrai depuis qu'il en porte trois qui agissent. Une phrase
+            rassurante et fausse, juste sous des boutons qui envoient, est pire
+            qu'aucune phrase.
+          */}
           <p className="clixa-relances__note">
-            Noté à votre nom, avec l&apos;heure. Rien n&apos;est envoyé au participant — c&apos;est
-            une trace pour l&apos;équipe, lisible depuis la liste.
+            Les deux premiers boutons <strong>notent un appel</strong> à votre nom, avec
+            l&apos;heure, et n&apos;envoient rien. Ceux du cadre du dessous{" "}
+            <strong>agissent</strong> : un courriel part chez le participant, ou sa place retourne
+            au catalogue.
           </p>
         </section>
       </div>

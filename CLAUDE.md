@@ -50,6 +50,7 @@ npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de
 npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et depuis la liste
 npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vraiment
 npx payload run scripts/verifier-cohorte-ouverte.ts # le plafond suit, la cohorte ne ferme pas
+npx payload run scripts/verifier-portes-manuelles.ts # relancer et rendre une place, à la main
 npx payload run scripts/verifier-delai.ts         # on voit l'échéance venir
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
@@ -893,6 +894,106 @@ Deux choses ont été ajoutées, et la seconde est celle qui compte :
   seuil figé faisait tomber le dossier posé pile sur la limite du mauvais côté,
   au gré des secondes. Les fixtures portent depuis une demi-journée de marge.
 
+
+⚠️ **Une place ne part plus toute seule** (décision de la direction, le
+11 septembre 2026 : « khali suppression automatique, hayedha db — ana nb9a
+nthakem imta mabrite »). Le temps ne rend plus rien au catalogue. Un dossier
+tient sa place tant que personne de l'équipe ne l'a annulé, si vieux soit-il.
+
+Ce qui l'a emporté : sur une campagne qui achète chaque prospect, une place
+reprise par une horloge est une vente perdue que personne n'a décidée. Et depuis
+`placesLibresTenues`, la cohorte portée par l'annonce ne se ferme plus de toute
+façon — le délai ne protégeait plus rien qu'il fallait protéger.
+
+- **La règle tient en une ligne** : `occupeUnePlace()` rend
+  `{ statut: { not_equals: "annulee" } }`, et `OCCUPE_UNE_PLACE_SQL` dit la même
+  chose. Les cinq branches datées ont disparu des deux.
+- ⚠️ **Ce que cela coûte, écrit pour qu'on le sache** : le décompte ne se vide
+  plus de lui-même. Si personne ne regarde, une session compte des gens qui ne
+  viendront jamais — exactement le défaut que les sept jours avaient corrigé le
+  28 août 2026, réintroduit sciemment. La contrepartie tient en deux endroits :
+  la vignette **« Places à rendre »** du tableau de bord, et une ligne du bilan
+  de 8 h qui nomme chaque dossier concerné.
+- ⚠️ **Les délais continuent d'être annoncés, et aucun message n'a été
+  réécrit.** Le participant lit toujours « votre place est tenue jusqu'au X », et
+  les rappels partent toujours. Annoncer un terme et le tenir plus longtemps ne
+  trompe personne ; l'inverse, si.
+- ⚠️ **`finDeLaPlace` est devenue `placeRendableDepuis`, et le nom fait le
+  travail.** Elle rendait « le moment où la place part réellement » ; elle rend
+  maintenant « à partir de quand l'équipe **peut** la rendre ». Garder l'ancien
+  nom aurait laissé trois écrans annoncer « place repartie » sur une place
+  encore tenue — le mensonge que la troisième fenêtre de la page du participant
+  existe pour éviter. Le renommage a désigné lui-même les quatre lecteurs :
+  - la page du participant ne **calcule** plus cette fenêtre, elle **lit**
+    `statut === "annulee"` ;
+  - la colonne « Où en est » dit « Délai dépassé — sa place attend d'être
+    rendue » (ton `attente`, pas l'or : la file du jour est la vignette) ;
+  - la colonne « Délai » dit « Place à rendre » ;
+  - `journal-des-relances.ts` projette « sa place peut être rendue », plus
+    « retourne au catalogue » — il annonçait un fait qui ne se produira pas.
+- **`rendreLesPlacesExpirees` est devenue `recompterLesPlaces`.** Elle ne libère
+  plus rien ; elle rattrape une annulation faite hors crochet. Garder l'ancien
+  nom aurait fait chercher, dans le bilan du matin, une libération impossible.
+
+⚠️ **Trois boutons, et deux nouvelles portes** (le même jour). La direction les a
+demandés dans la même phrase : « diir liya un botton katsseft biha les email l
+bnadem katgolih i signe l contrat, o nass li mazal makhalssox o msignine nsseft
+lihom email dyal lkhlass ».
+
+| Bouton | Route | Ce qui part |
+|---|---|---|
+| Relancer pour la signature | `api/admin/rappel` | avant le terme « il vous reste N jours » ; après, « le délai est passé, votre place n'est pas encore repartie » |
+| Relancer pour le paiement | `api/admin/relance-paiement` | le rappel d'échéance, montant et date compris |
+| Rendre la place au catalogue | `api/admin/rendre-la-place` | rien — le dossier passe en « Annulée » |
+
+- ⚠️ **Un bouton, deux messages, et ce n'est pas l'écran qui choisit.** Annoncer
+  « il vous reste 3 jours » à quelqu'un dont le délai est passé lui ferait
+  manquer sa place en faisant exactement ce qu'on lui a dit ; l'inverse
+  annoncerait un terme atteint à qui a encore du temps. Le dossier sait, l'écran
+  non — la route tranche.
+- ⚠️ **`annoncerLeTerme` vit dans `lib/rappel.ts`, avec `envoyerLeRappel`.**
+  L'envoi et la pose de `placeRappeleeLe` étaient écrits en ligne dans la tâche
+  de 8 h ; depuis que l'équipe peut annoncer elle-même, deux écritures d'un même
+  fait auraient divergé sur la date qui commande *à la fois* le battement et la
+  possibilité de rendre la place.
+- ⚠️ **La relance de paiement refuse tant que les coordonnées ne sont pas
+  parties.** Réclamer de l'argent à qui n'a nulle part où l'envoyer est le
+  défaut qui a coûté un vrai prospect le 5 septembre 2026 ; il se referme des
+  deux côtés, comme la tâche le fait déjà.
+- ⚠️ **Rendre la place refuse avant la date annoncée.** Le participant a lu
+  « tenue jusqu'au X », puis « le délai est passé, elle n'est pas encore
+  repartie ». La reprendre avant le battement lui retirerait un délai promis par
+  écrit. La route le dit avec la date, et l'écran l'écrit sous le bouton.
+- ⚠️ **L'écran n'a pas de verrou, seulement une date.** Comparer à `Date.now()`
+  dans le corps d'un composant est un appel impur que la règle de lint refuse —
+  et la leçon est ailleurs : seule la route connaît l'heure du serveur. Le
+  bouton reste cliquable, la route refuse et redit la même date.
+- **Les trois passent par le même `declencher`**, qui montre **ce que dit la
+  route**, mot pour mot : « une erreur est survenue » ferait recliquer sans rien
+  apprendre.
+- ⚠️ **La note du bloc disait « rien n'est envoyé au participant ».** C'était
+  vrai quand il ne portait que les deux boutons du carnet d'appels. Une phrase
+  rassurante et fausse, juste sous des boutons qui envoient, est pire qu'aucune
+  phrase.
+- ⚠️ **La garde prouve sa prémisse avant de conclure**, comme celle des rappels :
+  elle vérifie que le cookie participant authentifie, sinon le 401 tomberait pour
+  la mauvaise raison. Prouvée en retirant `collection === "utilisateurs"` des
+  deux routes — deux contrôles au rouge.
+- ⚠️ **Et elle porte le cas qui doit *passer*.** Une porte qui refuserait tout
+  passerait au vert sur les trois refus — et plus aucune place ne reviendrait
+  jamais au catalogue, ce qui est l'autre moitié du danger. Le contrôle regarde
+  le décompte de la session, pas seulement le statut : c'est le décompte que le
+  site public affiche.
+- ⚠️ **La prémisse de `verifier-places.ts` a changé, et le contrôle central est
+  retourné** : « la tâche quotidienne **ne rend plus rien** toute seule ». C'est
+  lui qui passerait au rouge si quelqu'un remettait l'expiration par le temps.
+  Un second contrôle exige l'inverse — annuler un dossier rend bien sa place.
+- ⚠️ **Un contrôle de `verifier-delai.ts` lisait l'horloge figée sur des lignes
+  vieillies par `now()`.** Les deux ne se sont séparées qu'avec le temps : trois
+  jours après l'écriture du script, « à deux jours du terme » se lisait « reste
+  4 jours » et le rouge tombait sur un code juste. Le fichier documentait déjà ce
+  piège quinze lignes plus haut. **Une ligne venue de la base se lit à l'heure de
+  la base.**
 
 ⚠️ **On prévient maintenant *avant* le terme, pas seulement au terme**
 (`SEUILS_DE_RAPPEL`, `courrielRappelAvantTerme`, demandé par la direction le

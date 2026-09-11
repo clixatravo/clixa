@@ -218,15 +218,21 @@ attendu(
   "Dernier délai — sa place part sous deux jours",
   "attente",
 );
+/*
+  ⚠️ **« Repartie » est devenu faux le 11 septembre 2026.** Plus rien ne rend une
+  place : c'est un geste de l'équipe, et la colonne annonçait donc un fait qui
+  ne s'était pas produit. Elle dit maintenant que le délai est passé et que la
+  place attend qu'on tranche — ce qui est vrai, et ce qui appelle le clic.
+*/
 attendu(
-  "⚠️ passé le battement, la place est repartie",
+  "⚠️ passé le battement, la place attend le geste de l'équipe",
   {
     statut: "demandee",
     createdAt: ilYA(10),
     placeRappeleeLe: ilYA(3),
     echeances: [{ statut: "attendu" }],
   },
-  "Pré-inscription expirée — sa place est repartie",
+  "Délai dépassé — sa place attend d'être rendue",
   "attente",
 );
 /*

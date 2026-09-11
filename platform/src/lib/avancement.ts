@@ -42,7 +42,7 @@
  * qu'il lit.
  */
 
-import { departDeLaTenue, finDeLaTenue, finDeLaPlace } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue, placeRendableDepuis } from "@/lib/places";
 
 /**
  * Ce que le calcul a besoin de savoir. Rien de plus, rien de Payload.
@@ -100,7 +100,7 @@ export type Clef =
   | "contrat-a-signer"
   | "preinscription"
   | "dernier-delai"
-  | "place-expiree"
+  | "place-a-rendre"
   | "termine"
   | "annule";
 
@@ -154,12 +154,25 @@ export function avancementDuDossier(d: FaitsDuDossier, maintenant: Date): Avance
       du jour ; y verser neuf dossiers dormants la viderait de son sens. La
       personne peut toujours revenir — c'est elle qu'on attend, comme avant.
     */
+    /*
+      ⚠️ **« Repartie » est devenu faux le 11 septembre 2026.** Plus rien ne rend
+      une place : c'est un geste de l'équipe. La colonne disait « sa place est
+      repartie » sur une place que le décompte tenait toujours — le mensonge
+      exact que la troisième fenêtre de la page du participant existe pour
+      éviter, retourné. Elle dit maintenant ce qui est vrai : le délai annoncé
+      est passé, la place est encore là, et c'est nous qui devons trancher.
+
+      ⚠️ **Le ton reste `attente`, pas `nous`.** L'or est la file du jour ; le
+      6 septembre neuf dossiers dormants s'y seraient déversés. C'est la
+      vignette « Places à rendre » du tableau de bord qui porte ce travail, pas
+      trente lignes teintées.
+    */
     const depart = departDeLaTenue(d);
-    const partie = finDeLaPlace(d);
-    if (partie && partie.getTime() <= maintenant.getTime()) {
+    const rendable = placeRendableDepuis(d);
+    if (rendable && rendable.getTime() <= maintenant.getTime()) {
       return {
-        clef: "place-expiree",
-        libelle: "Pré-inscription expirée — sa place est repartie",
+        clef: "place-a-rendre",
+        libelle: "Délai dépassé — sa place attend d'être rendue",
         ton: "attente",
       };
     }

@@ -16,7 +16,8 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { envoyerLeRappel, joursAvantLeTerme } from "@/lib/rappel";
+import { annoncerLeTerme, envoyerLeRappel, joursAvantLeTerme } from "@/lib/rappel";
+import { JOURS_DE_BATTEMENT } from "@/lib/places";
 import { NextResponse } from "next/server";
 
 export async function POST(requete: Request): Promise<Response> {
@@ -56,6 +57,56 @@ export async function POST(requete: Request): Promise<Response> {
       { status: 409 },
     );
   }
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa";
+  const jours = joursAvantLeTerme(dossier.createdAt, Date.now());
+
+  /*
+    ── ⚠️ Un bouton, deux messages — celui qui est vrai aujourd'hui ──────────
+    La route refusait passé le terme : « c'est l'annonce du terme qui part, au
+    prochain passage ». Elle disait vrai tant que la tâche de 8 h rendait les
+    places toute seule. Depuis le 11 septembre 2026 c'est l'équipe qui décide, et
+    lui répondre « attendez demain matin » sur le dossier qu'elle a justement
+    ouvert pour agir n'a plus de sens.
+
+    Le bouton dit donc « relancer pour la signature », et le système choisit le
+    message que la réalité permet :
+
+    | où en est le dossier | ce qui part |
+    |---|---|
+    | avant le terme | « il vous reste N jours pour demander votre contrat » |
+    | terme atteint | « le délai est passé, votre place n'est pas encore repartie » |
+
+    ⚠️ **On ne laisse pas l'équipe choisir lequel.** Annoncer « il vous reste
+    3 jours » à quelqu'un dont le délai est passé ferait manquer sa place à
+    quelqu'un qui fait exactement ce qu'on lui a dit ; l'inverse annoncerait un
+    terme atteint à qui a encore du temps. Le dossier sait, l'écran non.
+  */
+  if (jours < 1) {
+    if (dossier.placeRappeleeLe) {
+      const rendable = new Date(
+        new Date(String(dossier.placeRappeleeLe)).getTime() + JOURS_DE_BATTEMENT * 86_400_000,
+      );
+      const quand = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(rendable);
+      return NextResponse.json(
+        {
+          erreur:
+            `Le terme lui a déjà été annoncé. Sa place peut être rendue à partir du ${quand} — ` +
+            "le renvoyer ne rouvrirait aucun délai.",
+        },
+        { status: 409 },
+      );
+    }
+
+    const annonce = await annoncerLeTerme(payload, dossier as never, { site, par: user.id });
+    if (!annonce) {
+      return NextResponse.json(
+        { erreur: "Le courriel n'est pas parti. Rien n'a été noté ; réessayez." },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({ jours: 0, quoi: "terme" });
+  }
+
   if (dossier.placeRappeleeLe) {
     return NextResponse.json(
       { erreur: "Le terme est déjà annoncé : ce rappel n'a plus lieu d'être." },
@@ -63,15 +114,6 @@ export async function POST(requete: Request): Promise<Response> {
     );
   }
 
-  const jours = joursAvantLeTerme(dossier.createdAt, Date.now());
-  if (jours < 1) {
-    return NextResponse.json(
-      { erreur: "Le délai est atteint : c'est l'annonce du terme qui part, au prochain passage." },
-      { status: 409 },
-    );
-  }
-
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa";
   const parti = await envoyerLeRappel(payload, dossier as never, {
     /*
       Le palier retenu est le nombre de jours restants : `envoyerLeRappel` ne
@@ -96,5 +138,5 @@ export async function POST(requete: Request): Promise<Response> {
     );
   }
 
-  return NextResponse.json({ jours });
+  return NextResponse.json({ jours, quoi: "avant-terme" });
 }

@@ -1048,9 +1048,9 @@ export async function courrielPlaceBientotRendue(
     </div>
 
     <p style="font-size: 13px; color: #94a3b8;">
-      Sans nouvelle de votre part, elle repartira au catalogue et pourra être
-      prise par quelqu'un d'autre. Vous pourrez toujours revenir : ce message ne
-      ferme rien.
+      Sans nouvelle de votre part <strong>sous deux jours</strong>, nous la
+      remettrons au catalogue et elle pourra être prise par quelqu'un d'autre.
+      Vous pourrez toujours revenir : ce message ne ferme rien.
     </p>
   `;
 
@@ -1071,7 +1071,8 @@ export async function courrielPlaceBientotRendue(
       "",
       "Une question d'abord ? Répondez à ce message.",
       "",
-      "Sans nouvelle, elle repartira au catalogue — vous pourrez toujours revenir.",
+      "Sans nouvelle sous deux jours, nous la remettrons au catalogue —",
+      "vous pourrez toujours revenir.",
       "",
       "CLIXA Institute — Admissions",
     ].join("\n"),

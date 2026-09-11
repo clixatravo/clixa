@@ -371,14 +371,49 @@ try {
     `${pourLui(String(c.apprenantEmail)).length} message(s)`,
   );
 
-  /* Le délai atteint : ce n'est plus ce message-là qui doit partir. */
+  /*
+    ── ⚠️ Passé le terme, ce n'est plus le même message ──────────────────────
+    La route refusait ici — « c'est l'annonce du terme qui part, au prochain
+    passage » — et elle avait raison tant que la tâche de 8 h rendait les places
+    toute seule. Depuis le 11 septembre 2026 c'est l'équipe qui décide : lui
+    répondre « attendez demain matin » sur le dossier qu'elle vient d'ouvrir
+    pour agir n'a plus de sens.
+
+    Le bouton est donc le même, et c'est le **dossier** qui choisit la phrase :
+    avant le terme « il vous reste N jours », après « le délai est passé, votre
+    place n'est pas encore repartie ». Ce que ce contrôle garde, c'est
+    précisément qu'on n'envoie pas le premier quand c'est le second qui est
+    vrai — annoncer trois jours à qui n'en a plus lui ferait manquer sa place en
+    faisant exactement ce qu'on lui a dit.
+  */
   const d = await poser("D", JOURS_DE_GRACE + 1);
   capturer();
   const tropTard = await demander(d.id, cookieEquipe);
+  const dit = (await tropTard.json()) as { quoi?: string };
   dire(
-    "⚠️ passé le terme, la route refuse et le dit",
-    tropTard.status === 409,
-    ((await tropTard.json()) as { erreur?: string }).erreur ?? `reçu ${tropTard.status}`,
+    "⚠️ passé le terme, c'est l'annonce du terme qui part",
+    tropTard.status === 200 && dit.quoi === "terme",
+    `reçu ${tropTard.status} · ${dit.quoi ?? "—"}`,
+  );
+  const messageD = pourLui(String(d.apprenantEmail))[0]?.subject ?? "";
+  dire(
+    "⚠️ et c'est bien l'autre message — jamais « il vous reste N jours »",
+    /pas encore repartie/i.test(messageD),
+    messageD || "aucun message",
+  );
+  /*
+    ⚠️ La date qui ouvre le battement n'est posée qu'après un envoi réussi :
+    c'est elle qui décide *ensuite* si la place peut être rendue. Sans ce
+    contrôle, la porte manuelle pourrait envoyer sans rien noter, et le bouton
+    « Rendre la place » ne s'ouvrirait jamais.
+  */
+  dire("⚠️ et l'annonce est notée sur le dossier", Boolean((await relire(d.id)).placeRappeleeLe));
+  /* Une seconde demande ne rouvre aucun délai : la route refuse, et le dit. */
+  const reDemande = await demander(d.id, cookieEquipe);
+  dire(
+    "⚠️ un second envoi après l'annonce est refusé",
+    reDemande.status === 409,
+    ((await reDemande.json()) as { erreur?: string }).erreur ?? `reçu ${reDemande.status}`,
   );
 
   await payload

@@ -5,7 +5,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
-import { departDeLaTenue, finDeLaTenue, finDeLaPlace } from "@/lib/places";
+import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import { SignalerLead } from "@/components/SignalerLead";
 import Link from "next/link";
@@ -180,16 +180,21 @@ export default async function Dossier({ params, searchParams }: Props) {
     celui-là fait renoncer quelqu'un qui pouvait encore agir.
   */
   /*
-    ⚠️ **Et la troisième fenêtre attendait le battement, pas l'annonce.** Une
-    annonce que l'expéditeur n'a pas su faire partir laissait la page dire
-    « votre place est repartie » sur une place que le décompte tenait toujours —
-    le mensonge inverse de celui qu'on venait de corriger, et celui-là fait
-    renoncer quelqu'un qui pouvait encore agir. `finDeLaPlace` rend `undefined`
-    tant que rien ne lui est parvenu : la page reste alors sur « le délai est
-    passé, elle n'est pas encore repartie », ce qui est exactement vrai.
+    ⚠️ **La troisième fenêtre ne se déduit plus d'une date, elle se lit.**
+    Elle était calculée — terme annoncé plus battement — parce que la tâche de
+    8 h rendait la place à ce moment-là. Depuis le 11 septembre 2026, plus rien
+    ne la rend : c'est un geste de l'équipe, qui peut venir le jour même ou
+    trois semaines plus tard. Une page qui continuerait de calculer annoncerait
+    « votre place est repartie » à quelqu'un qui l'a encore — et celui-là
+    renonce, alors qu'il pouvait encore agir. C'est le défaut que ces trois
+    fenêtres existent pour éviter, et il serait revenu par la porte du calcul.
+
+    La page dit donc ce qu'elle **sait** : le dossier est annulé, ou il ne l'est
+    pas. Entre le terme et ce geste, elle reste sur « le délai est passé, votre
+    place n'est pas encore repartie — écrivez-nous aujourd'hui », ce qui est
+    exactement vrai, et qui est aussi ce que lit l'équipe dans sa colonne.
   */
-  const partie = finDeLaPlace(dossier);
-  const placeRendue = partie ? verifierTenueExpiree(partie) : false;
+  const placeRendue = dossier.statut === "annulee";
 
   /*
     ⚠️ Sans terme ne veut pas dire sans nouvelle. Un contrat signé dont les

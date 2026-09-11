@@ -25,7 +25,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { capaciteTenue, rendreLesPlacesExpirees } from "../src/lib/places.js";
+import { capaciteTenue, recompterLesPlaces } from "../src/lib/places.js";
 import { occupationDeLaSession } from "../src/lib/occupation.js";
 
 const payload = await getPayload({ config });
@@ -182,7 +182,7 @@ try {
     Elle passe par le même crochet : si elle l'ignorait, le plafond cesserait de
     suivre au premier passage nocturne, c'est-à-dire hors de tout regard.
   */
-  await rendreLesPlacesExpirees(payload);
+  await recompterLesPlaces(payload);
   dire("la tâche quotidienne n'y touche pas", (await libres(tenue.id)) === 5);
 
   console.log("\n  Le témoin — sans le réglage, rien ne change\n");

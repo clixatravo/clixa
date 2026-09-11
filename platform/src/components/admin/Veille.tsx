@@ -5,8 +5,14 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
 import { occupationDeLaSession } from "@/lib/occupation";
-import { JOURS_DE_GRACE } from "@/lib/places";
-import { JOURS_DE_PRESSE, conditionsDesPlacesAuTerme, filtreDesPlacesAuTerme } from "@/lib/delai";
+import { JOURS_DE_BATTEMENT, JOURS_DE_GRACE } from "@/lib/places";
+import {
+  JOURS_DE_PRESSE,
+  conditionsDesPlacesARendre,
+  conditionsDesPlacesAuTerme,
+  filtreDesPlacesARendre,
+  filtreDesPlacesAuTerme,
+} from "@/lib/delai";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -42,12 +48,17 @@ function obtenirFiltresDates() {
   const seuilPresse = new Date(
     d.getTime() - (JOURS_DE_GRACE - JOURS_DE_PRESSE) * 86400000,
   ).toISOString();
-  return { aujourdhui, ilYASeptJours, seuilPresse };
+  /*
+    Le battement écoulé depuis l'annonce : au-delà, le bouton « Rendre la
+    place » s'ouvre. Même raison de lire l'horloge ici et pas au rendu.
+  */
+  const seuilRetour = new Date(d.getTime() - JOURS_DE_BATTEMENT * 86400000).toISOString();
+  return { aujourdhui, ilYASeptJours, seuilPresse, seuilRetour };
 }
 
 export async function Veille() {
   const payload = await getPayload({ config });
-  const { aujourdhui, ilYASeptJours, seuilPresse } = obtenirFiltresDates();
+  const { aujourdhui, ilYASeptJours, seuilPresse, seuilRetour } = obtenirFiltresDates();
 
   // 1. Inscriptions vivantes
   /*
@@ -157,6 +168,27 @@ export async function Veille() {
     overrideAccess: true,
   });
 
+  /*
+    ── ⚠️ Ce que plus personne ne fait à notre place ─────────────────────────
+    La tâche de 8 h rendait ces places ; depuis le 11 septembre 2026 elle ne
+    rend plus rien, et c'est un geste de l'équipe. Sans cette vignette, une
+    session compterait indéfiniment des gens qui ne viendront jamais — le défaut
+    exact que les sept jours avaient corrigé le 28 août 2026, réintroduit
+    sciemment le jour où la direction a repris la main.
+
+    ⚠️ Elle ne compte que ce sur quoi le geste est **possible** : l'annonce est
+    partie, et le battement de deux jours est écoulé. Le bouton refuse avant —
+    reprendre une place avant la date promise par écrit serait retirer un délai
+    qu'on a donné.
+  */
+  const { totalDocs: placesARendre } = await payload.find({
+    collection: "inscriptions",
+    where: conditionsDesPlacesARendre(seuilRetour) as never,
+    limit: 0,
+    depth: 0,
+    overrideAccess: true,
+  });
+
   // 2. Nouvelles demandes de rappel
   const { totalDocs: nouvellesDemandes } = await payload.find({
     collection: "demandes-rappel",
@@ -251,6 +283,7 @@ export async function Veille() {
       le lien doit faire.
     */
     placesAuTerme: filtreDesPlacesAuTerme(seuilPresse),
+    placesARendre: filtreDesPlacesARendre(seuilRetour),
     rappels: "/admin/collections/demandes-rappel?where[statut][equals]=nouvelle",
     /*
       Même principe que les autres : le nombre annonce un tri, et le lien doit
@@ -277,6 +310,12 @@ export async function Veille() {
       jour » au-dessus d'une place qui part demain serait le pire des deux.
     */
     placesAuTerme === 0 &&
+    /*
+      ⚠️ Et celui-ci compte double dans l'autre sens : plus rien ne le videra
+      tout seul. « Tout est à jour » au-dessus de places que personne ne rendra
+      jamais serait le message le plus trompeur du tableau de bord.
+    */
+    placesARendre === 0 &&
     conversationsAReprendre === 0;
 
   return (
@@ -386,6 +425,26 @@ export async function Veille() {
           </div>
           <div className="clixa-kpi__action">
             <span>{placesAuTerme > 0 ? "Appeler avant le courriel →" : "Voir les dossiers →"}</span>
+          </div>
+        </Link>
+
+        {/* KPI 1 quater : les places que plus personne ne rend à notre place */}
+        <Link
+          href={
+            (placesARendre > 0 ? filtres.placesARendre : "/admin/collections/inscriptions") as Route
+          }
+          className={`clixa-kpi ${placesARendre > 0 ? "clixa-kpi--alerte-or" : ""}`}
+        >
+          <div className="clixa-kpi__haut">
+            <span className="clixa-kpi__indicateur">↩️</span>
+            <span className="clixa-kpi__tag">Places</span>
+          </div>
+          <div className="clixa-kpi__valeur">{placesARendre}</div>
+          <div className="clixa-kpi__libelle">
+            {placesARendre > 1 ? "Places à rendre" : "Place à rendre"}
+          </div>
+          <div className="clixa-kpi__action">
+            <span>{placesARendre > 0 ? "Délai passé — à trancher →" : "Voir les dossiers →"}</span>
           </div>
         </Link>
 

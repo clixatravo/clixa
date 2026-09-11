@@ -20,7 +20,7 @@
  * deux jours » sans attendre cinq jours, et rendre le contrôle identique
  * demain matin.
  */
-import { departDeLaTenue, finDeLaPlace, finDeLaTenue, type DossierTenu } from "./places";
+import { departDeLaTenue, placeRendableDepuis, finDeLaTenue, type DossierTenu } from "./places";
 
 /**
  * En deçà de ce reste, la place se joue aujourd'hui.
@@ -80,14 +80,15 @@ export function delaiDuDossier(d: DossierDate, maintenant: Date): Delai {
   const jours = jourCivil(terme) - jourCivil(maintenant);
 
   /*
-    ⚠️ La place n'est pas repartie au terme : elle part au bout du battement, et
-    seulement une fois l'annonce envoyée. C'est `finDeLaPlace` qui le sait, et
-    c'est elle qui décide de ce mot-là — dire « repartie » un jour trop tôt
-    ferait renoncer à rappeler quelqu'un qui a encore sa place.
+    ⚠️ **« Repartie » ne se dit plus, parce que ce n'est plus vrai.** Depuis le
+    11 septembre 2026 aucune place ne se rend toute seule : le battement de deux
+    jours n'ouvre que la porte, et c'est l'équipe qui la franchit. Écrire
+    « repartie » ferait renoncer à rappeler quelqu'un qui a encore sa place —
+    et cette colonne existe pour l'inverse.
   */
-  const partie = finDeLaPlace(d);
-  if (partie && partie.getTime() <= maintenant.getTime()) {
-    return { inscritLe, terme, jours, libelle: "Place repartie", ton: "passe" };
+  const rendable = placeRendableDepuis(d);
+  if (rendable && rendable.getTime() <= maintenant.getTime()) {
+    return { inscritLe, terme, jours, libelle: "Place à rendre", ton: "passe" };
   }
 
   if (jours <= 0) {
@@ -154,5 +155,53 @@ export function filtreDesPlacesAuTerme(avant: string): string {
     "&where[and][1][contratSigneLe][exists]=false" +
     "&where[and][2][placeRappeleeLe][exists]=false" +
     `&where[and][3][createdAt][less_than]=${encodeURIComponent(avant)}`
+  );
+}
+
+/* ── Les places qui attendent le geste de l'équipe ────────────────────────── */
+
+/**
+ * Ceux dont le délai annoncé est passé et dont la place attend d'être rendue.
+ *
+ * ── ⚠️ La contrepartie de la suppression automatique retirée ────────────────
+ * Jusqu'au 11 septembre 2026, la tâche de 8 h rendait ces places toute seule.
+ * La direction a retiré ce geste au calcul pour le garder à la main — sur une
+ * campagne qui achète chaque prospect, une place reprise par une horloge est
+ * une vente perdue que personne n'a décidée.
+ *
+ * Le revers est réel, et il est écrit ici : **si personne ne regarde, plus
+ * aucune place ne revient au catalogue**, et une session finit par compter des
+ * gens qui ne viendront jamais. C'est exactement le défaut que les sept jours
+ * avaient corrigé le 28 août 2026. Cette vignette est ce qui empêche qu'il
+ * passe inaperçu — elle, et la ligne que le bilan du matin porte désormais.
+ *
+ * ⚠️ **Elle ne compte que ce sur quoi le geste est possible** : le participant
+ * a reçu l'annonce, et le battement de deux jours est écoulé. Avant cela, le
+ * bouton refuse — reprendre une place avant la date promise par écrit serait
+ * lui retirer un délai qu'on lui a donné.
+ */
+export function conditionsDesPlacesARendre(avant: string) {
+  return {
+    and: [
+      { statut: { equals: "demandee" } },
+      { contratSigneLe: { exists: false } },
+      { placeRappeleeLe: { less_than: avant } },
+    ],
+  };
+}
+
+/**
+ * Le même tri, écrit pour l'URL d'une liste de /admin.
+ *
+ * ⚠️ Deux formes du même tri : un filtre d'URL faux ne casse rien — Payload rend
+ * la liste sans le tri, et le nombre annoncerait alors un tri que le lien ne
+ * fait pas. `verifier-delai.ts` les confronte en tirant vraiment la route.
+ */
+export function filtreDesPlacesARendre(avant: string): string {
+  return (
+    "/admin/collections/inscriptions" +
+    "?where[and][0][statut][equals]=demandee" +
+    "&where[and][1][contratSigneLe][exists]=false" +
+    `&where[and][2][placeRappeleeLe][less_than]=${encodeURIComponent(avant)}`
   );
 }

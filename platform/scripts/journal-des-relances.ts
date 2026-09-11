@@ -24,7 +24,7 @@ import {
   JOURS_DE_GRACE,
   SEUILS_DE_RAPPEL,
   departDeLaTenue,
-  finDeLaPlace,
+  placeRendableDepuis,
   finDeLaTenue,
 } from "@/lib/places";
 
@@ -131,14 +131,22 @@ for (let j = 0; j <= JOURS; j += 1) {
     }
 
     /*
-      La place ne repart que deux jours après l'annonce — jamais dans le même
-      passage, si tardive que soit l'annonce.
+      ⚠️ **Ce n'est plus la tâche qui rend la place** (11 septembre 2026), et la
+      projection ne peut donc plus l'annoncer. Elle dirait « sa place retourne
+      au catalogue » un jour où rien ne se produira, et ce script existe
+      justement pour qu'on puisse croire ce qu'il imprime.
+
+      Ce qui reste vrai, et qui compte pour l'équipe : à partir de ce jour-là le
+      bouton « Rendre la place » s'ouvre, et le bilan du matin nomme le dossier.
     */
-    const rendue = finDeLaPlace({ ...d, placeRappeleeLe: annoncee.get(reference) } as never);
-    if (rendue && rendue <= maintenant && rendue > new Date(maintenant.getTime() - MS)) {
+    const rendable = placeRendableDepuis({
+      ...d,
+      placeRappeleeLe: annoncee.get(reference),
+    } as never);
+    if (rendable && rendable <= maintenant && rendable > new Date(maintenant.getTime() - MS)) {
       faits.push({
         jour: j,
-        fait: { quoi: "place", ligne: `${qui} — sa place retourne au catalogue` },
+        fait: { quoi: "place", ligne: `${qui} — sa place peut être rendue (geste de l'équipe)` },
       });
     }
   }
