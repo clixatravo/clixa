@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lectureLibre, reserveA } from "@/access/roles";
 import { revaliderSession, revaliderSessionSupprimee } from "@/collections/revalider";
+import { capaciteTenue } from "@/lib/places";
 
 /**
  * BE-03 — Sessions.
@@ -161,6 +162,44 @@ export const Sessions: CollectionConfig = {
           ...(debut ? { debut } : {}),
           ...(fin ? { fin } : {}),
         };
+      },
+
+      /**
+       * Tenir un nombre de places libres — la cohorte qui ne se ferme pas.
+       *
+       * ── Pourquoi ici, et nulle part ailleurs ──────────────────────────
+       * Trois écritures touchent `placesReservees` : le crochet `recompter`
+       * d'une inscription, la tâche de 8 h qui rend une place expirée, et la
+       * main de l'équipe. Poser la règle chez chacune en aurait fait trois
+       * copies d'une même décision — le journal en compte assez qui ont fini
+       * par diverger. Posée ici, elle vaut pour toute écriture de la ligne,
+       * y compris celles qu'on n'a pas encore écrites.
+       *
+       * ⚠️ **Le plafond suit, il ne ment pas.** Le raisonnement complet est
+       * dans `capaciteTenue` (`lib/places.ts`) : les places annoncées sont
+       * réellement ouvertes, ce qui distingue ce réglage d'un compteur figé.
+       *
+       * ⚠️ **`data` peut ne porter qu'une partie des champs.** Un `update`
+       * partiel — celui de `recompter` n'écrit que `placesReservees` — laisse
+       * les autres à `originalDoc`. Et l'on distingue « absent » de « vidé » :
+       * `?? originalDoc` ferait ressusciter un réglage que l'équipe vient
+       * d'effacer, et la cohorte resterait ouverte sans que rien ne le dise.
+       */
+      ({ data, originalDoc }) => {
+        const lire = (champ: "capacite" | "placesReservees" | "placesLibresTenues") =>
+          champ in data
+            ? (data as Record<string, unknown>)[champ]
+            : (originalDoc as Record<string, unknown> | undefined)?.[champ];
+
+        const capacite = capaciteTenue(
+          {
+            capacite: lire("capacite") as number | null | undefined,
+            placesLibresTenues: lire("placesLibresTenues") as number | null | undefined,
+          },
+          Number(lire("placesReservees") ?? 0),
+        );
+
+        return capacite === undefined ? data : { ...data, capacite };
       },
     ],
   },
@@ -342,6 +381,32 @@ export const Sessions: CollectionConfig = {
           },
         },
       ],
+    },
+
+    /**
+     * ⚠️ **Le réglage qui garde une cohorte ouverte** (demandé par la direction
+     * le 11 septembre 2026, l'annonce Facebook tournant toujours sur un
+     * parcours qui venait de se remplir).
+     *
+     * Rempli, le plafond ci-dessus **suit les inscriptions** : la fiche annonce
+     * toujours ce nombre de places, et la cohorte ne se ferme plus. Les places
+     * annoncées sont donc réellement ouvertes — c'est ce qui sépare ce réglage
+     * d'un compteur arrêté, qui dirait au visiteur, sur la page où il décide
+     * d'acheter, une rareté qui n'existe pas.
+     *
+     * ⚠️ Vide — le cas des onze autres cohortes — rien ne change : la session
+     * se remplit et se ferme à « Places au total ».
+     */
+    {
+      name: "placesLibresTenues",
+      type: "number",
+      label: "Places libres à maintenir",
+      min: 1,
+      max: 500,
+      admin: {
+        description:
+          "Laisser vide dans le cas normal. Rempli, « Places au total » suit les inscriptions pour laisser toujours ce nombre de places libres : la cohorte ne se ferme plus et la fiche annonce ce nombre. Les places annoncées existent réellement — le compteur reste stable parce qu'on ouvre, pas parce qu'on l'arrête. Saisir « Places au total » à la main pendant que cette case est remplie ne tient pas : la prochaine inscription le recalcule.",
+      },
     },
 
     /*

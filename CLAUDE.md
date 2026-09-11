@@ -49,6 +49,7 @@ npx payload run scripts/verifier-etapes.ts        # ce que la page réclame, et 
 npx payload run scripts/verifier-avancement.ts    # où en est un dossier, vu de l'équipe
 npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et depuis la liste
 npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vraiment
+npx payload run scripts/verifier-cohorte-ouverte.ts # le plafond suit, la cohorte ne ferme pas
 npx payload run scripts/verifier-delai.ts         # on voit l'échéance venir
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
@@ -483,13 +484,8 @@ cd platform && set -a && . ./.env.prod && set +a && ECRIRE=1 npx payload run \
 - **Il ne touche qu'une session**, quand `definir-capacite.ts` les vise toutes.
   Deux références qui correspondent au fragment donné le font renoncer : on
   n'ouvre pas des places sur une session qu'on n'a pas nommée.
-- ⚠️ **Le décompte reste vivant, et la direction demandait qu'il se fige** à
-  « 20 places » le temps de remplir. Un nombre arrêté pendant que les
-  inscriptions rentrent dit au visiteur, sur la page qui décide de son achat,
-  quelque chose qui n'est pas vrai — et c'est la rareté affichée qui le fait
-  agir. Deux façons honnêtes de « stopper le compteur » : relancer le script
-  quand on veut revenir à 20, ou basculer `AFFICHER_DECOMPTE_TOUJOURS`
-  (`ui/Badge.tsx`) pour n'afficher que « Places disponibles », sans chiffre.
+- **Le script règle une fois ; le champ le tient tout seul.** Voir « la cohorte
+  qu'on tient ouverte » juste en dessous — c'est ce qui a suivi le même jour.
 - ⚠️ **La cohorte n'était déjà plus complète** le jour de la demande : elle était
   à **26/30**. La tâche quotidienne avait rendu quatre places de
   pré-inscriptions non suivies. On croyait les inscriptions fermées ; elles ne
@@ -501,6 +497,56 @@ cd platform && set -a && . ./.env.prod && set +a && ECRIRE=1 npx payload run \
 - ⚠️ **Un script ne rafraîchit pas la fiche.** Vérifié : elle annonçait encore
   « 4 places » après l'écriture. Redéployer, puis relire la page publique — pas
   la base.
+
+⚠️ **La cohorte qu'on tient ouverte** (`placesLibresTenues`, décision de la
+direction le 11 septembre 2026 : « tal3 l nass beli mazal 20 place walakin hna
+l dakhel tkon 3adna pré-inscription mamhdodach »). Le compteur doit rester à
+« 20 places » pendant que les inscriptions rentrent, et la cohorte ne doit
+jamais se fermer.
+
+⚠️ **Le chemin court aurait été de figer l'affichage** : la fiche dit vingt, la
+base dit autre chose. C'est une rareté inventée, sur la page même où le visiteur
+décide d'acheter — et c'est elle qui le fait se dépêcher. C'est la règle qui a
+fait réécrire l'attestation « officielle », l'annonce d'une place perdue et le
+courriel qui promettait un délai déjà passé ; elle ne change pas parce que le
+message est commercial. **On ouvre donc réellement les places qu'on annonce** :
+le plafond suit les inscriptions, le nombre tient parce que la réalité le suit.
+Quelqu'un qui lit « 20 places » et s'inscrit en trouve une.
+
+- **Un champ sur la session**, « Places libres à maintenir ». Vide — les onze
+  autres cohortes — rien ne change. Rempli, `capacite` devient
+  `placesReservees + N` à chaque écriture de la ligne.
+- ⚠️ **Un seul crochet, dans `Sessions.ts`.** Trois écritures touchent
+  `placesReservees` : le recompte d'une inscription, la tâche de 8 h qui rend
+  une place, la main de l'équipe. Poser la règle chez chacune en aurait fait
+  trois copies — le journal en compte assez qui ont divergé. Posée au
+  `beforeChange` de la session, elle vaut aussi pour les écritures qu'on n'a pas
+  encore écrites.
+- ⚠️ **« Absent » n'est pas « vidé ».** `data` ne porte que les champs écrits :
+  `recompter` n'envoie que `placesReservees`. Un `?? originalDoc` ferait
+  ressusciter un réglage que l'équipe vient d'effacer, et la cohorte resterait
+  ouverte sans que rien ne le dise. Le crochet teste `champ in data`.
+- ⚠️ **La liste de /admin le dit** : « 26 / 46 · 20 libres · cohorte ouverte ».
+  Sans cela l'équipe lirait 46 comme une capacité décidée, sur l'écran même où
+  l'on décide d'ouvrir une seconde cohorte. Et le ton reste calme : l'or veut
+  dire « il n'en reste presque plus », ce qui n'a pas de sens sur une cohorte
+  qui ne peut pas se fermer — trois places tenues n'alertent donc pas.
+- ⚠️ **La tâche de 8 h ne sait rien de ce réglage, et c'est voulu.** Elle écrit
+  `placesReservees` et passe par le même crochet. Si elle l'ignorait, le plafond
+  cesserait de suivre au premier passage nocturne — hors de tout regard. Un
+  contrôle le vérifie en l'appelant pour de vrai.
+- ⚠️ **Le témoin fait la garde.** Une seconde session, sans le réglage, doit
+  voir ses places libres descendre : sans lui, une règle qui s'appliquerait à
+  toutes les sessions — ou à aucune — passerait au vert. `verifier-cohorte-ouverte.ts`
+  compte vingt contrôles, **prouvés en neutralisant `capaciteTenue` : huit
+  passent au rouge**.
+- ⚠️ **Le premier jet de la garde accusait un code juste.** Il comparait le
+  plafond d'après au plafond **d'avant le réglage** : sur une session vide,
+  poser « 5 places tenues » le fait *descendre* de 30 à 5. Il compare désormais
+  au plafond du moment où le réglage a été posé.
+- **Le champ est une colonne** (`sessions.places_libres_tenues`) : la base passe
+  avant le code. Poussée sur `dev` puis sur la production le 11 septembre 2026,
+  après comparaison des deux schémas — un seul écart, celui-là.
 
 ⚠️ **La liste des sessions ne montrait que la capacité** (corrigé le 7 septembre
 2026 au soir). Sa seule colonne de places s'appelait « Places au total » : elle

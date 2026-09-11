@@ -43,6 +43,11 @@ export interface Occupation {
 export interface SessionComptee {
   capacite?: number | null;
   placesReservees?: number | null;
+  /**
+   * Réglé, le plafond suit les inscriptions : la cohorte ne se ferme pas.
+   * Voir `capaciteTenue` dans `lib/places.ts`.
+   */
+  placesLibresTenues?: number | null;
 }
 
 /**
@@ -70,6 +75,28 @@ export function occupationDeLaSession(s: SessionComptee): Occupation {
   const reservees = Number.isFinite(prises) ? Math.max(0, prises) : 0;
   const restantes = Math.max(0, capacite - reservees);
   const compte = `${reservees} / ${capacite}`;
+
+  /*
+    ── ⚠️ Une cohorte tenue ouverte ne se lit pas comme les autres ───────────
+    Son plafond suit les inscriptions : « 26 / 46 » n'annonce pas une cohorte
+    plus grande, il annonce qu'on en ouvre à mesure. Sans le dire, l'équipe
+    lirait 46 comme une capacité décidée — et c'est cet écran qui sert à
+    décider d'ouvrir une seconde cohorte.
+
+    ⚠️ **Et l'or ne convient pas ici.** Le ton « tension » veut dire « il n'en
+    reste presque plus » ; sur une cohorte qui ne peut pas se fermer, il
+    enverrait l'équipe se presser pour rien. Un réglage à trois places libres
+    resterait donc calme, à raison.
+  */
+  const tenues = Number(s.placesLibresTenues ?? Number.NaN);
+  if (Number.isFinite(tenues) && tenues >= 1) {
+    return {
+      compte,
+      libelle: `${restantes} libre${restantes > 1 ? "s" : ""} · cohorte ouverte`,
+      restantes,
+      ton: "ouvert",
+    };
+  }
 
   if (restantes === 0) return { compte, libelle: "Complet", restantes, ton: "complet" };
   if (reservees === 0) return { compte, libelle: "Aucune inscription", restantes, ton: "vide" };

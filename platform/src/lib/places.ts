@@ -313,3 +313,58 @@ export async function rendreLesPlacesExpirees(payload: Payload): Promise<number>
   if (rendues > 0) payload.logger.info(`[places] ${rendues} place(s) rendue(s) au catalogue`);
   return rendues;
 }
+
+/* ── La cohorte qu'on garde ouverte ───────────────────────────────────────── */
+
+/** Ce qu'il faut d'une session pour savoir si son plafond suit les inscriptions. */
+export interface SessionTenue {
+  capacite?: number | null;
+  placesLibresTenues?: number | null;
+}
+
+/**
+ * Le plafond à écrire pour laisser toujours le même nombre de places libres —
+ * ou `undefined` quand il n'y a rien à changer.
+ *
+ * ── ⚠️ Ce que ce réglage règle, et ce qu'il ne fait pas ─────────────────────
+ * La direction a demandé, le 11 septembre 2026, que la fiche du parcours porté
+ * par l'annonce Facebook annonce « 20 places » sans jamais se fermer, le temps
+ * de remplir la cohorte : « tal3 l nass beli mazal 20 place walakin hna l
+ * dakhel tkon 3adna pré-inscription mamhdodach ».
+ *
+ * Un nombre **figé** à l'affichage aurait été le chemin court : la fiche dit
+ * 20, la base dit autre chose. C'est une rareté inventée, sur la page même où
+ * le visiteur décide d'acheter — et c'est ce qui le fait se dépêcher. Le site
+ * ne dit pas au participant ce qui l'arrange : c'est la règle qui a fait
+ * réécrire l'annonce d'une place perdue, l'attestation « officielle » et le
+ * courriel qui promettait un délai déjà passé.
+ *
+ * Ici, il n'y a rien à inventer : **on ouvre réellement les places qu'on
+ * annonce**. Le plafond suit les inscriptions, la cohorte ne se ferme pas, et
+ * les vingt places affichées existent vraiment — quelqu'un qui lit « 20 places »
+ * et s'inscrit en trouve une. Le nombre reste stable parce que la réalité le
+ * suit, pas parce qu'on l'a arrêté.
+ *
+ * ⚠️ **Un seul crochet applique cette règle** (`Sessions.ts`, `beforeChange`),
+ * et il la tient pour *toute* écriture de la ligne : le recompte d'une
+ * inscription, la tâche de 8 h qui rend une place, une correction à la main.
+ * L'appliquer chez chacun d'eux aurait fait trois copies d'une même décision —
+ * et le journal en compte déjà assez qui ont divergé.
+ *
+ * ⚠️ **Vide, ce réglage n'existe pas.** Une session sans lui se remplit et se
+ * ferme comme avant ; c'est le cas des onze autres cohortes, et le seul que les
+ * épreuves du tunnel connaissent.
+ */
+export function capaciteTenue(session: SessionTenue, occupants: number): number | undefined {
+  const tenues = Number(session.placesLibresTenues ?? Number.NaN);
+  if (!Number.isFinite(tenues) || tenues < 1) return undefined;
+
+  const prises = Number.isFinite(Number(occupants))
+    ? Math.max(0, Math.trunc(Number(occupants)))
+    : 0;
+  const voulue = prises + Math.trunc(tenues);
+
+  // Rien à écrire quand le plafond y est déjà : on n'élargit pas une écriture
+  // sur la ligne `sessions` sans raison — c'est celle de l'interblocage.
+  return voulue === Number(session.capacite ?? Number.NaN) ? undefined : voulue;
+}

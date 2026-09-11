@@ -351,6 +351,10 @@ export interface Session {
    */
   placesReservees: number;
   /**
+   * Laisser vide dans le cas normal. Rempli, « Places au total » suit les inscriptions pour laisser toujours ce nombre de places libres : la cohorte ne se ferme plus et la fiche annonce ce nombre. Les places annoncées existent réellement — le compteur reste stable parce qu'on ouvre, pas parce qu'on l'arrête. Saisir « Places au total » à la main pendant que cette case est remplie ne tient pas : la prochaine inscription le recalcule.
+   */
+  placesLibresTenues?: number | null;
+  /**
    * En unité entière — saisir 1250 pour 1 250 €. La conversion en centimes se fait côté application.
    */
   prix: number;
@@ -1141,6 +1145,7 @@ export interface SessionsSelect<T extends boolean = true> {
   cadence?: T;
   capacite?: T;
   placesReservees?: T;
+  placesLibresTenues?: T;
   prix?: T;
   devise?: T;
   updatedAt?: T;
