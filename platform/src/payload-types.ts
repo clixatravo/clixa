@@ -797,7 +797,7 @@ export interface Inscription {
    */
   echanges?:
     | {
-        quoi: 'signature' | 'paiement' | 'rappel' | 'appel';
+        quoi: 'signature' | 'paiement' | 'rappel' | 'whatsapp' | 'appel';
         le: string;
         par?: (number | null) | Utilisateur;
         /**

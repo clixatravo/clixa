@@ -1249,6 +1249,19 @@ export const Inscriptions: CollectionConfig = {
                   d'être relancé.
                 */
                 { label: "Rappel avant terme (courriel)", value: "rappel" },
+                /*
+                  ⚠️ **Ouvert, pas envoyé — et le mot compte.** Le bouton de la
+                  liste ouvre WhatsApp avec un brouillon ; c'est la personne qui
+                  décide d'appuyer sur Envoyer. Écrire « a parlé » sur un clic
+                  qui n'a peut-être rien envoyé ferait au journal le défaut même
+                  qu'il existe pour corriger : dire quelque chose de faux à un
+                  collègue qui s'y fie.
+
+                  Ce qui est vrai, et qui suffit : quelqu'un a ouvert la
+                  conversation. Un collègue qui lit « WhatsApp ouvert par Mounir,
+                  il y a cinq minutes » n'écrit pas par-dessus.
+                */
+                { label: "WhatsApp ouvert", value: "whatsapp" },
                 { label: "Appelé (avant le 9 septembre 2026)", value: "appel" },
               ],
               admin: { width: "40%" },

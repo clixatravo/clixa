@@ -126,6 +126,161 @@ if (comptes.length === 0) {
   );
 }
 
+/* ── La porte du bouton WhatsApp ─────────────────────────────────────────── */
+/*
+  ── ⚠️ Le trou que cette porte ferme ────────────────────────────────────────
+  Les quatre boutons de la fiche notaient qui a relancé ; le bouton WhatsApp de
+  la **liste** était un simple lien. Or c'est le chemin qu'on prend réellement
+  pour joindre quelqu'un : le directeur écrivait au client, l'administration
+  lisait « jamais relancé », et écrivait par-dessus. La plainte du 12 septembre
+  2026, par la porte qu'on avait oubliée.
+*/
+console.log("\n  Le clic sur WhatsApp\n");
+
+const { docs: sessions } = await payload.find({
+  collection: "sessions",
+  limit: 1,
+  depth: 0,
+  overrideAccess: true,
+  where: { fin: { greater_than: new Date().toISOString() } },
+});
+
+if (!sessions[0] || comptes.length === 0) {
+  console.log("  · Pas de session ou pas de compte : la porte n'est pas éprouvée.");
+} else {
+  const { ouvrirSession } = await import("@/lib/session");
+  const { POST } = await import("../src/app/(payload)/api/admin/journal/route.js");
+
+  const COMME_UN_NAVIGATEUR = {
+    "content-type": "application/json",
+    origin: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    "sec-fetch-site": "same-origin",
+  };
+
+  const membre = await payload.create({
+    collection: "utilisateurs",
+    overrideAccess: true,
+    data: {
+      email: `journal.${Date.now()}@epreuve.invalid`,
+      password: `mp-${Math.random().toString(36).slice(2)}`,
+      nom: "Hajar El Khadiri",
+      role: "direction",
+    } as never,
+  });
+  const cookieEquipe = await ouvrirSession(payload, "utilisateurs", membre.id);
+
+  const dossier = await payload.create({
+    collection: "inscriptions",
+    overrideAccess: true,
+    data: {
+      session: sessions[0].id,
+      statut: "demandee",
+      apprenantNom: "Épreuve Journal",
+      apprenantEmail: `journal.${Math.random().toString(36).slice(2)}@epreuve.invalid`,
+      apprenantWhatsapp: "+212600000000",
+      apprenantPays: "Maroc",
+      planPaiement: "P1",
+      echeances: [{ montant: 423, statut: "attendu" }],
+    } as never,
+  });
+
+  /*
+    ⚠️ Un plantage n'est pas un refus. On rend l'exception comme un 500, que les
+    contrôles distinguent — la clef étrangère n'est pas une garde.
+  */
+  const poster = async (corps: unknown, cookie?: string) => {
+    try {
+      return await POST(
+        new Request("http://localhost/api/admin/journal", {
+          method: "POST",
+          headers: { ...COMME_UN_NAVIGATEUR, ...(cookie ? { cookie: cookie.split(";")[0]! } : {}) },
+          body: JSON.stringify(corps),
+        }),
+      );
+    } catch (e) {
+      return { status: 500, json: async () => ({ erreur: String(e).slice(0, 80) }) } as Response;
+    }
+  };
+
+  const relire = async () =>
+    ((
+      await payload.findByID({
+        collection: "inscriptions",
+        id: dossier.id,
+        depth: 0,
+        overrideAccess: true,
+      })
+    ).echanges ?? []) as { quoi?: string | null; parNom?: string | null }[];
+
+  try {
+    const anonyme = await poster({ id: dossier.id, quoi: "whatsapp" });
+    dire("⚠️ sans session, la porte refuse", anonyme.status === 401, `reçu ${anonyme.status}`);
+    dire("et rien n'est écrit", (await relire()).length === 0);
+
+    /*
+      ⚠️ Seul `whatsapp` passe : les gestes de la fiche ont leurs propres portes,
+      qui envoient des courriels. Une liste ouverte laisserait écrire « rappel »
+      sans qu'aucun message ne parte — une trace qui ment.
+    */
+    const invente = await poster({ id: dossier.id, quoi: "rappel" }, cookieEquipe);
+    dire("⚠️ un geste que la liste ne fait pas est refusé", invente.status === 400);
+
+    const premier = await poster({ id: dossier.id, quoi: "whatsapp" }, cookieEquipe);
+    dire("l'équipe note son clic", premier.status === 200, `reçu ${premier.status}`);
+
+    const apres = await relire();
+    dire(
+      "⚠️ et la ligne porte son nom",
+      apres[0]?.parNom === "Hajar El Khadiri",
+      apres[0]?.parNom ?? "—",
+    );
+    dire("le geste est « whatsapp »", apres[0]?.quoi === "whatsapp");
+
+    /*
+      ⚠️ On rouvre WhatsApp pour relire, pour corriger, parce que l'onglet s'est
+      fermé. Trois lignes à la minute rendraient la colonne illisible et
+      fausseraient le compte d'échanges, que l'équipe lit pour décider s'il faut
+      insister.
+    */
+    const second = await poster({ id: dossier.id, quoi: "whatsapp" }, cookieEquipe);
+    dire("⚠️ un second clic dans la fenêtre n'ajoute rien", second.status === 200);
+    dire("le journal n'a toujours qu'une ligne", (await relire()).length === 1);
+
+    /*
+      ⚠️ **Le témoin.** La fenêtre vaut *par personne* : si le directeur ouvre
+      WhatsApp et que l'administration l'ouvre trois minutes plus tard, ce sont
+      deux gestes réels — et c'est ce que la colonne existe pour montrer. Sans ce
+      contrôle, une garde trop large passerait au vert en avalant le second.
+    */
+    const autre = await payload.create({
+      collection: "utilisateurs",
+      overrideAccess: true,
+      data: {
+        email: `journal2.${Date.now()}@epreuve.invalid`,
+        password: `mp-${Math.random().toString(36).slice(2)}`,
+        nom: "Mounir MOUKHTARI",
+        role: "direction",
+      } as never,
+    });
+    const cookieAutre = await ouvrirSession(payload, "utilisateurs", autre.id);
+    await poster({ id: dossier.id, quoi: "whatsapp" }, cookieAutre);
+    const deux = await relire();
+    dire(
+      "⚠️ (témoin) un collègue qui ouvre à son tour est noté aussi",
+      deux.length === 2 && deux[1]?.parNom === "Mounir MOUKHTARI",
+      deux.map((l) => l.parNom).join(" puis "),
+    );
+    await payload.delete({ collection: "utilisateurs", id: autre.id, overrideAccess: true });
+  } finally {
+    await payload
+      .delete({ collection: "inscriptions", id: dossier.id, overrideAccess: true })
+      .catch(() => {});
+    await payload
+      .delete({ collection: "utilisateurs", id: membre.id, overrideAccess: true })
+      .catch(() => {});
+  }
+}
+
 console.log(
   manques === 0 ? "\n  On sait qui a parlé au client.\n" : `\n  ${manques} contrôle(s) au rouge.\n`,
 );

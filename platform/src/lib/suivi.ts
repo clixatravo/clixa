@@ -91,6 +91,12 @@ const NOMS: Record<string, string> = {
   paiement: "Relance paiement",
   /* Un courriel parti pour de vrai, pas une conversation. */
   rappel: "Rappel par courriel",
+  /*
+    ⚠️ « Ouvert », jamais « parlé ». Le bouton de la liste ouvre un brouillon ;
+    l'envoi appartient à la personne. Ce qui est vrai — quelqu'un est allé lui
+    écrire — suffit à empêcher le second message d'un collègue.
+  */
+  whatsapp: "WhatsApp ouvert",
   /* Ancien geste, sans bouton : les lignes d'avant le 9 septembre 2026. */
   appel: "Appelé",
 };

@@ -1785,6 +1785,43 @@ c'est-à-dire précisément à qui la question se pose.
   compte au moment du geste, et le réécrire ferait dire à une trace d'hier ce
   qu'on sait aujourd'hui. `nommer-les-relances.ts` traite le cas différent d'une
   ligne qui n'a *aucun* nom.
+⚠️ **Et le bouton WhatsApp de la liste laisse enfin une trace** (`api/admin/journal`,
+le même jour). Les quatre boutons de la fiche notaient qui a relancé ; celui-là
+était un **simple lien** — il ouvrait la conversation et n'écrivait rien. Or
+c'est le chemin qu'on prend réellement pour joindre quelqu'un : le directeur
+écrivait au client, l'administration lisait « Jamais relancé » dans la colonne,
+et écrivait par-dessus. C'était la plainte du jour, par la porte qu'on avait
+oubliée.
+
+- ⚠️ **« WhatsApp ouvert », jamais « a parlé ».** Le bouton ouvre un
+  **brouillon** ; l'envoi appartient à la personne. Écrire « a parlé » sur un
+  clic qui n'a peut-être rien envoyé ferait au journal le défaut qu'il existe
+  pour corriger. Ce qui est vrai suffit : un collègue qui lit « WhatsApp ouvert
+  par Mounir, il y a cinq minutes » n'écrit pas par-dessus.
+- ⚠️ **La liste ne peut pas noter comme la fiche.** Une cellule n'a pas de
+  formulaire à soumettre, et faire attendre une écriture avant d'ouvrir WhatsApp
+  rendrait lourd le bouton qui existe pour éviter cinq gestes. La requête part
+  sans être attendue (`keepalive`, qui la laisse vivre après le changement de
+  contexte) et **son échec est silencieux** : mieux vaut un journal incomplet
+  qu'un bouton qui refuse d'écrire à un client.
+- ⚠️ **Dix minutes par personne.** On rouvre WhatsApp pour relire, pour corriger
+  un numéro, parce que l'onglet s'est fermé : trois lignes à la minute rendraient
+  la colonne illisible et fausseraient le compte d'échanges, que l'équipe lit
+  pour décider s'il faut insister. Mais la fenêtre vaut **par personne** — si le
+  directeur ouvre puis l'administration trois minutes plus tard, ce sont deux
+  gestes réels, et c'est justement ce que la colonne existe pour montrer. Un
+  témoin garde ce cas.
+- ⚠️ **Seul `whatsapp` passe par cette porte.** Les gestes de la fiche envoient
+  des courriels et ont leurs propres routes ; une liste ouverte laisserait
+  écrire « rappel » sans qu'aucun message ne parte — une trace qui ment.
+- ⚠️ **La même cellule sert à quatre collections** (inscriptions, demandes de
+  rappel, conversations, rendez-vous), et une seule a un journal. C'est
+  `collectionSlug` qui tranche, pas la présence d'un champ — les collections se
+  ressemblent assez pour s'y tromper.
+- **Prouvé en affaiblissant la porte** : trois contrôles au rouge.
+- ⚠️ **Une valeur ajoutée à un type énuméré, donc la base passe avant le code.**
+  `whatsapp` a été poussé sur `dev` puis sur la production avant le déploiement.
+
 - ⚠️ **« automatique » reste gris.** L'or nomme quelqu'un, il ne constate pas :
   teindre la tâche de 8 h comme un nom ferait chercher un collègue là où il n'y
   en a pas, et diluerait le seul repère de la colonne.

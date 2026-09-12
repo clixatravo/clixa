@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { DefaultCellComponentProps } from "payload";
+import { useRouter } from "next/navigation";
 
 /**
  * Ouvrir WhatsApp depuis la liste des inscriptions — et des demandes de rappel.
@@ -43,7 +44,8 @@ function international(brut: unknown): string | undefined {
 }
 
 export function BoutonWhatsapp(props: DefaultCellComponentProps) {
-  const { cellData, rowData } = props;
+  const { cellData, rowData, collectionSlug } = props;
+  const router = useRouter();
   const numero = international(cellData);
   const affiche = String(cellData ?? "").trim();
 
@@ -94,6 +96,45 @@ export function BoutonWhatsapp(props: DefaultCellComponentProps) {
         ]
   ).join("\n");
 
+  /*
+    ── ⚠️ Le clic laisse une trace, et n'attend pas ──────────────────────────
+    Ce bouton était un simple lien : il ouvrait la conversation et n'écrivait
+    rien. Or c'est le chemin qu'on prend réellement pour joindre quelqu'un — le
+    directeur écrivait au client, l'administration lisait « jamais relancé » dans
+    la colonne, et écrivait par-dessus. C'est la plainte du 12 septembre 2026,
+    par la porte qu'on avait oubliée.
+
+    ⚠️ **On n'attend pas la réponse.** WhatsApp doit s'ouvrir tout de suite ;
+    faire patienter le temps d'une écriture en base rendrait le bouton lourd,
+    et c'est précisément ce que ce bouton existe pour éviter. `keepalive` laisse
+    la requête vivre après que l'onglet a changé de contexte.
+
+    ⚠️ **Et l'échec est silencieux, exprès.** Si la note ne part pas, la
+    conversation s'ouvre quand même : mieux vaut un journal incomplet qu'un
+    bouton qui refuse d'écrire à un client parce qu'une écriture a échoué.
+
+    ⚠️ **Seules les inscriptions ont un journal.** La même cellule sert aux
+    demandes de rappel, aux conversations et aux rendez-vous : y poster
+    écrirait dans le dossier d'un autre, ou ne ferait rien. Le `collectionSlug`
+    tranche — pas la présence d'un champ, qui se ressemble d'une collection à
+    l'autre.
+  */
+  const noter = () => {
+    if (collectionSlug !== "inscriptions") return;
+    const id = (rowData as { id?: unknown } | undefined)?.id;
+    if (id === undefined || id === null) return;
+
+    void fetch("/api/admin/journal", {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+      headers: { "Content-Type": "application/json", "Sec-Fetch-Site": "same-origin" },
+      body: JSON.stringify({ id, quoi: "whatsapp" }),
+    })
+      .then(() => router.refresh())
+      .catch(() => undefined);
+  };
+
   return (
     <span className="clixa-wa">
       <a
@@ -101,8 +142,11 @@ export function BoutonWhatsapp(props: DefaultCellComponentProps) {
         target="_blank"
         rel="noopener noreferrer"
         className="clixa-wa__bouton"
-        // Sans cela, un clic sur la cellule ouvrirait aussi la fiche derrière.
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          // Sans cela, un clic sur la cellule ouvrirait aussi la fiche derrière.
+          e.stopPropagation();
+          noter();
+        }}
         title={`Écrire à ${nom} sur WhatsApp`}
       >
         <svg
