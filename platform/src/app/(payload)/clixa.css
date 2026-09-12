@@ -1261,6 +1261,16 @@ h3,
   color: var(--clixa-or-clair);
 }
 
+.clixa-supervision__metrique-pill--clients {
+  background: rgba(47, 163, 125, 0.15);
+  border-color: rgba(47, 163, 125, 0.4);
+  color: var(--clixa-emeraude-clair);
+}
+
+.clixa-supervision__metrique-pill--clients .clixa-supervision__metrique-valeur {
+  color: var(--clixa-emeraude-clair);
+}
+
 .clixa-supervision__metrique-label {
   font-family: var(--font-sans);
   color: rgba(243, 239, 228, 0.6);
@@ -1354,6 +1364,44 @@ h3,
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.clixa-supervision__tri-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.clixa-supervision__tri-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(243, 239, 228, 0.55);
+  white-space: nowrap;
+}
+
+.clixa-supervision__select-tri {
+  background: rgba(10, 16, 32, 0.85);
+  border: 1px solid rgba(243, 239, 228, 0.15);
+  border-radius: 4px;
+  padding: 0.32rem 0.6rem;
+  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  color: var(--clixa-ivoire);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clixa-supervision__select-tri:focus {
+  outline: none;
+  border-color: var(--clixa-or);
+  box-shadow: 0 0 0 2px rgba(201, 162, 76, 0.2);
+}
+
+.clixa-supervision__select-tri option {
+  background: #0d1527;
+  color: var(--clixa-ivoire);
 }
 
 .clixa-supervision__recherche-wrap {
@@ -1485,12 +1533,33 @@ h3,
   box-shadow: 0 0 18px -4px rgba(201, 162, 76, 0.15);
 }
 
+.clixa-formation-card--has-clients {
+  border-color: rgba(47, 163, 125, 0.35);
+}
+
 .clixa-formation-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+}
+
+.clixa-formation-card__spec-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.clixa-formation-card__rang {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.12rem 0.38rem;
+  border-radius: 3px;
+  background: rgba(201, 162, 76, 0.22);
+  color: var(--clixa-or-clair);
+  border: 1px solid rgba(201, 162, 76, 0.45);
 }
 
 .clixa-formation-card__spec {
@@ -1542,6 +1611,20 @@ h3,
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.clixa-formation-card__badge-total {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.18rem 0.45rem;
+  border-radius: 3px;
+  background: rgba(47, 163, 125, 0.2);
+  color: var(--clixa-emeraude-clair);
+  border: 1px solid rgba(47, 163, 125, 0.45);
+  white-space: nowrap;
 }
 
 .clixa-formation-card__badge-pre {
@@ -1795,6 +1878,14 @@ h3,
   background: rgba(201, 162, 76, 0.1) !important;
 }
 
+.clixa-supervision__tr--has-clients {
+  background: rgba(47, 163, 125, 0.04);
+}
+
+.clixa-supervision__tr--has-clients:hover {
+  background: rgba(47, 163, 125, 0.09) !important;
+}
+
 .clixa-supervision__table tbody tr:hover {
   background: rgba(22, 33, 66, 0.6);
 }
@@ -1811,6 +1902,39 @@ h3,
 
 .clixa-supervision__td-formation {
   font-weight: 600;
+}
+
+.clixa-supervision__td-formation-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.clixa-supervision__td-rang {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(201, 162, 76, 0.22);
+  color: var(--clixa-or-clair);
+  border: 1px solid rgba(201, 162, 76, 0.45);
+  flex-shrink: 0;
+}
+
+.clixa-supervision__badge-total-table {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--clixa-emeraude-clair);
+  background: rgba(47, 163, 125, 0.14);
+  border: 1px solid rgba(47, 163, 125, 0.35);
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
 }
 
 .clixa-supervision__table-nom {
