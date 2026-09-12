@@ -2387,15 +2387,31 @@ h3,
 }
 
 /*
-  ⚠️ **Qui, sous quand.** La colonne disait « Relance signature · hier » sans
-  jamais nommer l'auteur : le directeur avait eu la personne au téléphone,
-  l'administration ne le savait pas et reprenait la conversation ailleurs. Le
-  nom se lit d'un coup d'œil, en retrait — c'est une précision, pas la réponse
-  principale, qui reste « quand ».
+  ⚠️ **Qui, sous quand — et en or.** La colonne disait « Relance signature ·
+  hier » sans jamais nommer l'auteur : le directeur avait eu la personne au
+  téléphone, l'administration ne le savait pas et reprenait la conversation
+  ailleurs. Le nom a d'abord été posé en retrait — petit, italique, à 75 %
+  d'opacité — et la direction l'a trouvé illisible : c'est **la** chose qu'on
+  vient chercher dans cette colonne.
+
+  ⚠️ **L'or dit ailleurs « à faire aujourd'hui »**, et le poser ici en dilue un
+  peu le sens. Deux choses l'en distinguent : il n'est jamais seul — il suit
+  toujours « par » — et il ne teinte que du texte, jamais un fond ni une
+  pastille, qui sont les formes que prend l'alerte partout ailleurs. Décision de
+  la direction, le 12 septembre 2026.
 */
 .clixa-suivi__par {
-  font-size: 0.68rem;
-  opacity: 0.75;
+  font-size: 0.72rem;
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Ni un nom, ni une personne : la tâche de 8 h se constate, elle ne s'appelle pas. */
+.clixa-suivi__par--auto,
+.clixa-relances__par--auto {
+  color: var(--theme-elevation-600) !important;
+  font-weight: 400 !important;
   font-style: italic;
 }
 
@@ -2675,9 +2691,15 @@ h3,
   color: var(--theme-elevation-600);
 }
 
+/*
+  Le même or que la colonne de la liste, et pour la même raison : les deux
+  écrans répondent à « qui lui a parlé », et se lisent à deux clics l'un de
+  l'autre. Les rendre différemment ferait chercher deux fois.
+*/
 .clixa-relances__par {
   text-align: right;
-  font-style: italic;
+  color: var(--clixa-or-clair);
+  font-weight: 600;
 }
 
 /*

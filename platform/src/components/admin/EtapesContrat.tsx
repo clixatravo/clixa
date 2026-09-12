@@ -179,21 +179,32 @@ const OBJETS: Record<string, string> = {
  * On garde « vous » en plus du nom : savoir que c'était soi évite de relire sa
  * propre trace comme une information nouvelle.
  */
-function auteur(ligne: Echange, moi: number | string | undefined): string {
+function auteur(
+  ligne: Echange,
+  moi: number | string | undefined,
+): { texte: string; estUnNom: boolean } {
   const nom = nomDeLAuteur(ligne);
   const id = ligne.par && typeof ligne.par === "object" ? ligne.par.id : ligne.par;
   const cestMoi =
     id !== undefined && id !== null && moi !== undefined && String(id) === String(moi);
 
-  if (nom) return cestMoi ? `${nom} (vous)` : nom;
-  if (cestMoi) return "vous";
+  /*
+    ⚠️ **L'or nomme quelqu'un, il ne constate pas.** « automatique » n'est pas
+    une personne à qui parler ; le teindre comme un nom ferait chercher un
+    collègue là où il n'y en a pas.
+  */
+  if (nom) return { texte: cestMoi ? `${nom} (vous)` : nom, estUnNom: true };
+  if (cestMoi) return { texte: "vous", estUnNom: true };
   /*
     Ni nom recopié ni relation résolue : ou bien la ligne est antérieure au
     12 septembre 2026, ou bien c'est la tâche de 8 h qui l'a écrite. Le second
     cas est le plus fréquent, et le dire évite de chercher un collègue qui n'a
     jamais décroché.
   */
-  return id === undefined || id === null ? "automatique" : "un collègue";
+  return {
+    texte: id === undefined || id === null ? "automatique" : "un collègue",
+    estUnNom: false,
+  };
 }
 
 const JOUR = (v: string) =>
@@ -717,7 +728,13 @@ export function EtapesContrat() {
                       laquelle ce bloc répond n'est pas « qui », c'est « est-ce
                       moi ou quelqu'un d'autre » — et cela, l'identifiant le dit.
                     */}
-                    <span className="clixa-relances__par">{auteur(e, user?.id)}</span>
+                    <span
+                      className={`clixa-relances__par${
+                        auteur(e, user?.id).estUnNom ? "" : "clixa-relances__par--auto"
+                      }`}
+                    >
+                      {auteur(e, user?.id).texte}
+                    </span>
                   </li>
                 ))}
             </ol>

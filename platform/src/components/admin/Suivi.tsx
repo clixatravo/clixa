@@ -56,6 +56,12 @@ export function Suivi(props: DefaultCellComponentProps) {
     décroché.
   */
   const signature = auteur || (ton === "jamais" ? "" : "automatique");
+  /*
+    ⚠️ **L'or nomme quelqu'un, il ne constate pas.** « automatique » n'est pas
+    une personne à qui parler : le teindre comme un nom ferait chercher un
+    collègue là où il n'y en a pas, et diluerait le seul repère de la colonne.
+  */
+  const estUnNom = Boolean(auteur);
 
   return (
     <span
@@ -63,7 +69,11 @@ export function Suivi(props: DefaultCellComponentProps) {
       title={signature ? `${libelle} · par ${signature}` : libelle}
     >
       <span className="clixa-suivi__quand">{libelle}</span>
-      {signature && <span className="clixa-suivi__par">par {signature}</span>}
+      {signature && (
+        <span className={`clixa-suivi__par${estUnNom ? "" : "clixa-suivi__par--auto"}`}>
+          par {signature}
+        </span>
+      )}
       {nombre > 1 && <span className="clixa-suivi__compte">{nombre} échanges</span>}
     </span>
   );

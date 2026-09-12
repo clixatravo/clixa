@@ -1769,6 +1769,16 @@ c'est-à-dire précisément à qui la question se pose.
 - ⚠️ **La colonne est le vrai besoin, pas la fiche.** Sans le nom dans la liste,
   il faut ouvrir chaque dossier pour savoir à qui en parler — c'est-à-dire qu'on
   ne le fait pas. Même raison que la colonne « Relances » elle-même.
+- ⚠️ **Le nom est en or, et c'est une entorse assumée.** Il a d'abord été posé
+  en retrait — petit, italique, 75 % d'opacité — et la direction l'a trouvé
+  illisible : c'est **la** chose qu'on vient chercher dans cette colonne.
+  Ailleurs, l'or veut dire « à faire aujourd'hui » ; deux choses l'en
+  distinguent ici — il n'est jamais seul (il suit toujours « par ») et il ne
+  teinte que du texte, jamais un fond ni une pastille, qui sont les formes que
+  prend l'alerte partout ailleurs.
+- ⚠️ **« automatique » reste gris.** L'or nomme quelqu'un, il ne constate pas :
+  teindre la tâche de 8 h comme un nom ferait chercher un collègue là où il n'y
+  en a pas, et diluerait le seul repère de la colonne.
 
 ⚠️ **Un panneau de navigateur masqué ne peint pas la page, et cela ressemble à
 un défaut.** En vérifiant ce bloc, les trois blocs repliables de la fiche d'un
