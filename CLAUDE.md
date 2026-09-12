@@ -78,18 +78,27 @@ cd platform && npm run recette                    # la production
 cd platform && npm run recette http://localhost:3000
 ```
 
-⚠️ **La première passe après un build neuf tombe, et elle seule** (constaté le
-12 septembre 2026, deux fois sur deux). Aussitôt après un déploiement issu d'un
-push, la recette rend « 1 point à regarder » ; toutes les passes suivantes sont
-vertes — cinq d'affilée. Un `vercel redeploy`, qui rejoue un build déjà
-construit, ne le reproduit pas : c'est donc le **premier appel** à des fonctions
-jamais démarrées qui coûte, pas le déploiement en soi. La recette tire douze
-plaquettes PDF et une trentaine d'adresses ; un démarrage à froid, doublé de
-Neon qui sort de veille, suffit à en faire tomber une.
+⚠️ **Une passe tombe de temps en temps, et on ne sait pas encore laquelle**
+(12 septembre 2026). Deux fois dans la journée, la recette a rendu « 1 point à
+regarder » ; les deux fois, la sortie était lue par un `tail` trop court et le ✗
+a été perdu. Ce qu'on sait, mesuré :
 
-Ce n'est donc pas une panne du site, et il ne faut pas la chercher dans le code
-avant d'avoir lu **quelle** ligne est tombée. C'est précisément ce que le
-récapitulatif ci-dessous sert à ne plus perdre.
+- **Deux échecs sur une dizaine de passes**, tous deux dans les minutes qui
+  suivent un déploiement issu d'un push.
+- **Dix passes vertes** autour, dont cinq d'affilée, une aussitôt après un
+  `vercel redeploy`, et **une aussitôt après un build neuf** — celle-là défait
+  l'explication commode. Le premier jet de cette note affirmait « la première
+  passe après un build neuf tombe, deux fois sur deux » : c'était vrai des deux
+  cas observés et faux dès le troisième. Une règle tirée de deux points n'en est
+  pas une.
+- **Aucune trace exploitable** : les journaux de Vercel ne couvrent que les
+  dernières minutes, et l'incident était vieux d'une demi-heure quand on les a
+  ouverts.
+
+L'hypothèse qui tient encore — un démarrage à froid sur l'une des douze
+plaquettes PDF, doublé de Neon qui sort de veille — n'est pas vérifiée. **Ne pas
+la chercher dans le code avant d'avoir lu quelle ligne est tombée** ; le
+récapitulatif ci-dessous existe pour cela, et la prochaine occurrence tranchera.
 
 ⚠️ **Ce qui échoue se relit à la fin, pas seulement à sa place** (depuis le
 12 septembre 2026). Une passe a rendu « 1 point à regarder » ; la sortie était
