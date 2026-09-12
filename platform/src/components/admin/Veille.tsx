@@ -4,7 +4,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
-import { occupationDeLaSession } from "@/lib/occupation";
+import { resumerLaFormation } from "@/lib/supervision";
 import { JOURS_DE_BATTEMENT, JOURS_DE_GRACE } from "@/lib/places";
 import {
   JOURS_DE_PRESSE,
@@ -286,18 +286,13 @@ export async function Veille() {
     const s = sessionParProgramme.get(p.id);
     const dossiers = s ? (inscriptionsParSession.get(s.id) ?? []) : [];
 
-    const pre = dossiers.filter((d) => d.statut === "demandee");
-    const conf = dossiers.filter((d) => d.statut === "confirmee" || d.statut === "payee");
-
-    const placesReservees = s ? Number(s.placesReservees ?? conf.length) : 0;
-    const capacite = s ? Number(s.capacite ?? 30) : 30;
-    const remplissage = s
-      ? occupationDeLaSession(s)
-      : { ton: "inconnu" as const, libelle: "À planifier" };
-    const pct =
-      Number.isFinite(capacite) && capacite > 0
-        ? Math.min(100, Math.round((placesReservees / capacite) * 100))
-        : 0;
+    /*
+      ⚠️ **Le calcul vit dans `lib/supervision.ts`**, pur, où il s'éprouve sans
+      base ni navigateur. Il tenait ici, au milieu d'un composant serveur : six
+      défauts y ont été trouvés d'un coup en relisant, aucun n'était tombé au
+      rouge. Même raison que `occupationDeLaSession` et `avancementDuDossier`.
+    */
+    const resume = resumerLaFormation(s, dossiers);
 
     const specObj =
       typeof p.specialisation === "object" && p.specialisation !== null
@@ -312,8 +307,6 @@ export async function Veille() {
         }).format(new Date(s.debut))
       : null;
 
-    const totalClientsCount = Math.max(dossiers.length, pre.length + placesReservees);
-
     return {
       id: p.id,
       titre: p.titre || "Formation",
@@ -326,14 +319,7 @@ export async function Veille() {
       sessionReference: s?.reference ?? null,
       sessionDebut: dateDebut,
       sessionMode: s?.mode ?? null,
-      placesReservees,
-      capacite,
-      remplissageTon: remplissage.ton,
-      remplissageLibelle: remplissage.libelle,
-      pct,
-      preInscriptionsCount: pre.length,
-      confirmeesCount: conf.length,
-      totalInscriptionsCount: totalClientsCount,
+      ...resume,
     };
   });
 

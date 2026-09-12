@@ -18,10 +18,17 @@ export interface FormationResume {
   sessionDebut: string | null;
   sessionMode: string | null;
   placesReservees: number;
+  /** `NaN` quand la session n'en déclare aucune : on ne devine pas un plafond. */
   capacite: number;
+  /**
+   * Le plafond suit les inscriptions : la cohorte ne se ferme pas.
+   * Un pourcentage n'a alors aucun sens — la jauge ne se remplirait jamais.
+   */
+  cohorteOuverte: boolean;
   remplissageTon: TonOccupation;
   remplissageLibelle: string;
-  pct: number;
+  /** `null` quand la question ne se pose pas : cohorte ouverte, ou capacité absente. */
+  pct: number | null;
   preInscriptionsCount: number;
   confirmeesCount: number;
   totalInscriptionsCount: number;
@@ -112,8 +119,15 @@ export function SupervisionFormations({
       }
 
       if (triMode === "remplissage") {
-        if (b.pct !== a.pct) {
-          return b.pct - a.pct;
+        /*
+          ⚠️ `null` n'est pas zéro. Une cohorte ouverte n'a pas de pourcentage —
+          la traiter comme « 0 % » la renverrait en fin de liste alors qu'elle
+          est justement celle qui se remplit. Elle se range sur ses inscrits.
+        */
+        const pctA = a.pct ?? -1;
+        const pctB = b.pct ?? -1;
+        if (pctB !== pctA) {
+          return pctB - pctA;
         }
         return b.placesReservees - a.placesReservees;
       }
@@ -429,35 +443,67 @@ export function SupervisionFormations({
                     <span className="clixa-formation-card__stat-label">Places réservées</span>
                     <span className="clixa-formation-card__stat-valeur">
                       <strong>{f.placesReservees}</strong>
-                      <span className="clixa-formation-card__stat-max"> / {f.capacite}</span>
+                      <span className="clixa-formation-card__stat-max">
+                        {" "}
+                        / {Number.isFinite(f.capacite) ? f.capacite : "—"}
+                      </span>
+                    </span>
+                    {/*
+                      ⚠️ Sans capacité, la soustraction rend `NaN` — et
+                      `NaN > 0` étant faux, la carte annonçait « Cohorte
+                      complète » sur une session dont on ne sait rien. C'est le
+                      pire des deux sens : il envoie ouvrir une cohorte de
+                      remplacement pour une session jamais ouverte.
+                    */}
+                    <span className="clixa-formation-card__stat-sub">
+                      {!Number.isFinite(f.capacite)
+                        ? "capacité non renseignée"
+                        : f.capacite - f.placesReservees > 0
+                          ? `${f.capacite - f.placesReservees} places dispo.`
+                          : "Cohorte complète"}
+                    </span>
+                  </div>
+
+                  {/*
+                    ⚠️ **Pas de pourcentage sur une cohorte tenue ouverte.** Son
+                    plafond suit les inscriptions : à 26 dossiers elle affiche
+                    26/46, à 40 elle affichera 40/60 — la jauge stagne autour de
+                    57 % quoi qu'il arrive. Sur l'écran qui sert à décider s'il
+                    faut ouvrir une seconde cohorte, une barre à moitié pleine
+                    se lit « il reste de la place », indéfiniment.
+                  */}
+                  <div className="clixa-formation-card__stat-item">
+                    <span className="clixa-formation-card__stat-label">
+                      {f.cohorteOuverte ? "Cohorte" : "Remplissage"}
+                    </span>
+                    <span className="clixa-formation-card__stat-valeur">
+                      {f.cohorteOuverte ? "Ouverte" : f.pct === null ? "—" : `${f.pct}%`}
                     </span>
                     <span className="clixa-formation-card__stat-sub">
-                      {f.capacite - f.placesReservees > 0
-                        ? `${f.capacite - f.placesReservees} places dispo.`
-                        : "Cohorte complète"}
+                      {f.cohorteOuverte
+                        ? "le plafond suit les inscriptions"
+                        : f.pct === null
+                          ? "capacité non renseignée"
+                          : "de la capacité"}
                     </span>
                   </div>
+                </div>
 
-                  <div className="clixa-formation-card__stat-item">
-                    <span className="clixa-formation-card__stat-label">Remplissage</span>
-                    <span className="clixa-formation-card__stat-valeur">{f.pct}%</span>
-                    <span className="clixa-formation-card__stat-sub">de la capacité</span>
+                {/* Barre de Jauge Visuelle — seulement quand elle veut dire quelque chose */}
+                {f.pct !== null && (
+                  <div className="clixa-formation-card__jauge-fond">
+                    <div
+                      className={`clixa-formation-card__jauge-remplie ${
+                        estComplet
+                          ? "clixa-formation-card__jauge-remplie--rouge"
+                          : estBientotPlein
+                            ? "clixa-formation-card__jauge-remplie--or"
+                            : ""
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(3, f.pct))}%` }}
+                    />
                   </div>
-                </div>
-
-                {/* Barre de Jauge Visuelle */}
-                <div className="clixa-formation-card__jauge-fond">
-                  <div
-                    className={`clixa-formation-card__jauge-remplie ${
-                      estComplet
-                        ? "clixa-formation-card__jauge-remplie--rouge"
-                        : estBientotPlein
-                          ? "clixa-formation-card__jauge-remplie--or"
-                          : ""
-                    }`}
-                    style={{ width: `${Math.min(100, Math.max(3, f.pct))}%` }}
-                  />
-                </div>
+                )}
 
                 {/* Pied de Carte : Actions Directes */}
                 <div className="clixa-formation-card__actions">
@@ -592,18 +638,32 @@ export function SupervisionFormations({
                       )}
                     </td>
                     <td className="clixa-supervision__td-centre">
-                      <strong>{f.placesReservees}</strong> / {f.capacite}
+                      <strong>{f.placesReservees}</strong> /{" "}
+                      {Number.isFinite(f.capacite) ? f.capacite : "—"}
                     </td>
+                    {/*
+                      ⚠️ La même règle que la carte : une cohorte tenue ouverte
+                      n'a pas de pourcentage, et une session sans capacité non
+                      plus. Une mini-barre qui stagne à 57 % pour toujours se
+                      lit « il reste de la place », sur la colonne qui sert
+                      justement à trancher.
+                    */}
                     <td className="clixa-supervision__td-centre">
-                      <div className="clixa-supervision__table-pct-wrap">
-                        <span className="clixa-supervision__table-pct">{f.pct}%</span>
-                        <div className="clixa-supervision__table-mini-barre">
-                          <div
-                            className="clixa-supervision__table-mini-remplie"
-                            style={{ width: `${f.pct}%` }}
-                          />
+                      {f.pct === null ? (
+                        <span className="clixa-supervision__texte-mute">
+                          {f.cohorteOuverte ? "ouverte" : "—"}
+                        </span>
+                      ) : (
+                        <div className="clixa-supervision__table-pct-wrap">
+                          <span className="clixa-supervision__table-pct">{f.pct}%</span>
+                          <div className="clixa-supervision__table-mini-barre">
+                            <div
+                              className="clixa-supervision__table-mini-remplie"
+                              style={{ width: `${f.pct}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </td>
                     <td className="clixa-supervision__td-droite">
                       <div className="clixa-supervision__table-actions">

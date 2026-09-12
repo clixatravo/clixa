@@ -51,6 +51,7 @@ npx payload run scripts/verifier-suivi.ts         # qui a déjà appelé, et dep
 npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vraiment
 npx payload run scripts/verifier-cohorte-ouverte.ts # le plafond suit, la cohorte ne ferme pas
 npx payload run scripts/verifier-portes-manuelles.ts # relancer et rendre une place, à la main
+npx payload run scripts/verifier-supervision.ts   # ce que le tableau des 12 formations dit
 npx payload run scripts/verifier-delai.ts         # on voit l'échéance venir
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
@@ -623,6 +624,49 @@ une seconde cohorte.
   dont le premier jet se félicitait de trois « 0 dossier » sur une base vide.
 - **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne, et
   `admin.readOnly` ne vaut que pour l'écran — les crochets écrivent toujours.
+
+⚠️ **Le tableau de supervision des douze formations** (`SupervisionFormations.tsx`,
+posé par la direction le 12 septembre 2026). Il remplace les trois jauges : les
+douze parcours, leurs pré-inscriptions, leurs places réservées, en cartes ou en
+tableau, avec filtres par filière et tri.
+
+⚠️ **Six défauts y ont été trouvés le jour même, en relisant — pas un n'était
+tombé au rouge.** Le calcul vivait dans le composant serveur : il ne pouvait
+s'éprouver qu'en ouvrant un navigateur et en se connectant. Il vit désormais
+dans `lib/supervision.ts`, pur, et `verifier-supervision.ts` l'éprouve sur ses
+cas limites — dix-neuf contrôles, **prouvés en remettant les six défauts : huit
+passent au rouge**.
+
+1. ⚠️ **`capacite ?? 30`, un dénominateur inventé.** C'est mot pour mot le
+   défaut corrigé le 7 septembre sur les jauges, où il s'écrivait `?? 20` : une
+   session sans capacité affichait un pourcentage calculé sur des places qui
+   n'existent nulle part. Le repli ne devine plus — la carte dit « capacité non
+   renseignée ».
+2. ⚠️ **Et `NaN > 0` étant faux**, la même carte annonçait « Cohorte complète »
+   sur une session dont on ne sait rien : le pire des deux sens, puisqu'il envoie
+   ouvrir une cohorte de remplacement pour une session jamais ouverte.
+3. **`placesReservees ?? conf.length`** — un second repli inventé, en désaccord
+   avec le premier.
+4. **Le pourcentage recalculé à la main** alors qu'`occupationDeLaSession` est
+   appelée deux lignes plus haut. Deux lectures d'un même état, à deux clics
+   l'une de l'autre.
+5. ⚠️ **Les dossiers annulés comptés parmi les clients.** Or l'annulation est
+   exactement le dossier dont la place vient de repartir — et depuis le
+   11 septembre, c'est le **seul** moyen de la rendre : ils vont s'accumuler. Le
+   nombre de clients aurait grossi à mesure qu'on en perd.
+6. **`Math.max(dossiers.length, pre.length + placesReservees)`** — le plus grand
+   de deux mesures différentes, c'est-à-dire ni l'une ni l'autre.
+
+⚠️ **Et le septième, qui n'était pas une faute de frappe : une cohorte tenue
+ouverte n'a pas de pourcentage.** Son plafond suit les inscriptions — 26/46,
+puis 40/60, puis 100/120. La jauge stagne autour de 57 % quoi qu'il arrive, et
+une barre à moitié pleine se lit « il reste de la place », indéfiniment, sur
+l'écran depuis lequel on décide d'ouvrir une seconde cohorte. C'est le défaut de
+« Places au total : 30 » une porte plus loin. La carte écrit donc
+« Cohorte · Ouverte · le plafond suit les inscriptions », sans jauge ; le tableau
+écrit « ouverte » dans la colonne Remplissage. **Avec son témoin** : la même
+session sans le réglage garde ses 57 %, sans quoi un calcul qui rendrait `null`
+partout passerait au vert.
 
 ⚠️ **Et le tableau de bord montrait trois cohortes au hasard** — l'autre moitié
 de la même plainte, sur l'écran où la direction arrive le matin. Les jauges de
