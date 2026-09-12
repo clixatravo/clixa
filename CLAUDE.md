@@ -78,6 +78,19 @@ cd platform && npm run recette                    # la production
 cd platform && npm run recette http://localhost:3000
 ```
 
+⚠️ **La première passe après un build neuf tombe, et elle seule** (constaté le
+12 septembre 2026, deux fois sur deux). Aussitôt après un déploiement issu d'un
+push, la recette rend « 1 point à regarder » ; toutes les passes suivantes sont
+vertes — cinq d'affilée. Un `vercel redeploy`, qui rejoue un build déjà
+construit, ne le reproduit pas : c'est donc le **premier appel** à des fonctions
+jamais démarrées qui coûte, pas le déploiement en soi. La recette tire douze
+plaquettes PDF et une trentaine d'adresses ; un démarrage à froid, doublé de
+Neon qui sort de veille, suffit à en faire tomber une.
+
+Ce n'est donc pas une panne du site, et il ne faut pas la chercher dans le code
+avant d'avoir lu **quelle** ligne est tombée. C'est précisément ce que le
+récapitulatif ci-dessous sert à ne plus perdre.
+
 ⚠️ **Ce qui échoue se relit à la fin, pas seulement à sa place** (depuis le
 12 septembre 2026). Une passe a rendu « 1 point à regarder » ; la sortie était
 lue par un `tail` de trois lignes, et le ✗ — trente lignes plus haut — a été
