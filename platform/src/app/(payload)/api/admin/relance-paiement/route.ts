@@ -15,6 +15,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielRelance } from "@/lib/courriel";
+import { libelleDuCompte } from "@/lib/equipe";
 import { NextResponse } from "next/server";
 
 const JOUR_MS = 86_400_000;
@@ -138,7 +139,16 @@ export async function POST(requete: Request): Promise<Response> {
     overrideAccess: true,
     data: {
       echeances: echeances.map((e, i) => (i === rang ? { ...e, relanceeLe: maintenant } : e)),
-      echanges: [...journal, { quoi: "paiement", le: maintenant, par: user.id }],
+      echanges: [
+        ...journal,
+        {
+          quoi: "paiement",
+          le: maintenant,
+          par: user.id,
+          // Recopié : la relation n'est lisible que par la direction.
+          parNom: libelleDuCompte(user as never),
+        },
+      ],
     } as never,
   });
 

@@ -17,6 +17,7 @@ import type { Payload } from "payload";
 import { courrielPlaceBientotRendue, courrielRappelAvantTerme } from "./courriel";
 import { sansLeParcours } from "./inscriptions";
 import { finDeLaTenue } from "./places";
+import { libelleDuCompte, type CompteNommable } from "./equipe";
 
 const JOUR_MS = 86_400_000;
 
@@ -47,7 +48,17 @@ export function joursAvantLeTerme(createdAt: unknown, maintenant: number): numbe
 export async function envoyerLeRappel(
   payload: Payload,
   dossier: DossierARappeler,
-  options: { seuil: number; jours: number; site: string; par?: number | string },
+  options: {
+    seuil: number;
+    jours: number;
+    site: string;
+    par?: number | string;
+    /**
+     * Le compte qui déclenche, quand c'est un geste d'équipe. La tâche de 8 h
+     * n'en passe pas : la ligne se lit alors « automatique ».
+     */
+    parCompte?: CompteNommable | null;
+  },
 ): Promise<boolean> {
   const session = typeof dossier.session === "object" ? (dossier.session as never) : undefined;
   const s = session as { reference?: string; programme?: { titre?: string } } | undefined;
@@ -95,6 +106,12 @@ export async function envoyerLeRappel(
           quoi: "rappel",
           le: new Date().toISOString(),
           ...(options.par ? { par: options.par } : {}),
+          /*
+            ⚠️ Le nom est recopié : la relation n'est lisible que par la
+            direction, et c'est l'administration qui a besoin de savoir qui a
+            écrit. Voir `lib/equipe.ts`.
+          */
+          ...(options.parCompte ? { parNom: libelleDuCompte(options.parCompte) } : {}),
         },
       ],
     } as never,
@@ -127,7 +144,7 @@ function site(brut: string): string {
 export async function annoncerLeTerme(
   payload: Payload,
   dossier: DossierARappeler,
-  options: { site: string; par?: number | string },
+  options: { site: string; par?: number | string; parCompte?: CompteNommable | null },
 ): Promise<boolean> {
   const session = typeof dossier.session === "object" ? (dossier.session as never) : undefined;
   const s = session as { reference?: string; programme?: { titre?: string } } | undefined;
@@ -169,6 +186,12 @@ export async function annoncerLeTerme(
           quoi: "rappel",
           le: new Date().toISOString(),
           ...(options.par ? { par: options.par } : {}),
+          /*
+            ⚠️ Le nom est recopié : la relation n'est lisible que par la
+            direction, et c'est l'administration qui a besoin de savoir qui a
+            écrit. Voir `lib/equipe.ts`.
+          */
+          ...(options.parCompte ? { parNom: libelleDuCompte(options.parCompte) } : {}),
         },
       ],
     } as never,

@@ -37,15 +37,33 @@ export function Suivi(props: DefaultCellComponentProps) {
     d'éprouver « il y a cinq jours » sans attendre cinq jours. Même raison que
     `avancementDuDossier`.
   */
-  const { libelle, nombre, ton } = dernierSuivi(ligne.echanges, new Date());
+  const { libelle, auteur, nombre, ton } = dernierSuivi(ligne.echanges, new Date());
 
   if (ton === "jamais" && nombre === 0) {
     return <span className="clixa-suivi__vide">Jamais relancé</span>;
   }
 
+  /*
+    ── ⚠️ Le nom, pas « un collègue » ────────────────────────────────────────
+    La colonne disait quand, jamais qui. Or la question qu'on se pose devant
+    elle est « à qui en parler avant d'appeler » : le directeur avait eu la
+    personne au téléphone, l'administration ne le savait pas et reprenait la
+    conversation sur un autre WhatsApp. Demandé par la direction le
+    12 septembre 2026.
+
+    ⚠️ **Sans auteur ne veut pas dire « personne »** : c'est la tâche de 8 h qui
+    a écrit la ligne. Le dire évite d'aller chercher un collègue qui n'a jamais
+    décroché.
+  */
+  const signature = auteur || (ton === "jamais" ? "" : "automatique");
+
   return (
-    <span className={`clixa-suivi clixa-suivi--${ton}`} title={libelle}>
+    <span
+      className={`clixa-suivi clixa-suivi--${ton}`}
+      title={signature ? `${libelle} · par ${signature}` : libelle}
+    >
       <span className="clixa-suivi__quand">{libelle}</span>
+      {signature && <span className="clixa-suivi__par">par {signature}</span>}
       {nombre > 1 && <span className="clixa-suivi__compte">{nombre} échanges</span>}
     </span>
   );

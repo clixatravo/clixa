@@ -2386,6 +2386,19 @@ h3,
   color: inherit;
 }
 
+/*
+  ⚠️ **Qui, sous quand.** La colonne disait « Relance signature · hier » sans
+  jamais nommer l'auteur : le directeur avait eu la personne au téléphone,
+  l'administration ne le savait pas et reprenait la conversation ailleurs. Le
+  nom se lit d'un coup d'œil, en retrait — c'est une précision, pas la réponse
+  principale, qui reste « quand ».
+*/
+.clixa-suivi__par {
+  font-size: 0.68rem;
+  opacity: 0.75;
+  font-style: italic;
+}
+
 .clixa-suivi__compte {
   font-size: 0.66rem;
   opacity: 0.6;

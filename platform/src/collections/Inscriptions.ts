@@ -1265,11 +1265,9 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
-                ⚠️ Une relation, pas un nom recopié. Deux écritures du même fait
-                divergent — et le jour où quelqu'un change de nom, un instantané
-                de texte désignerait une personne qui n'existe plus sous ce
-                nom-là. Un compte supprimé laisse la ligne : la date et le geste
-                restent vrais même si l'on ne sait plus qui.
+                ⚠️ **La relation reste la référence.** Elle survit à un
+                renommage et permettrait un filtre ; c'est elle qui dit *quel
+                compte* a agi.
               */
               name: "par",
               type: "relationship",
@@ -1278,6 +1276,34 @@ export const Inscriptions: CollectionConfig = {
               admin: { width: "30%" },
             },
           ],
+        },
+        {
+          /*
+            ⚠️ **Le nom est recopié à côté, et ce n'est pas une redondance.**
+            Le champ portait « une relation, pas un nom recopié » — juste, et
+            à un fait près : `comptesLecture` ne laisse lire que son propre
+            compte. Seule la direction résout donc la relation ; pour tout
+            autre membre l'écran affichait « un collègue », c'est-à-dire
+            précisément à qui la question se pose.
+
+            La direction l'a demandé le 12 septembre 2026 : « tla3 relance par
+            Mounir ». Sans cela le directeur parle à quelqu'un, l'administration
+            ne le sait pas, et reprend la conversation sur un autre WhatsApp.
+
+            C'est la forme habituelle d'un journal : il enregistre ce qui s'est
+            passé, y compris qui, tel qu'on le connaissait alors. Les deux ne se
+            contredisent pas — `par` répond à « quel compte », celui-ci à
+            « comment on l'appelait ». Le raisonnement complet est dans
+            `lib/equipe.ts`, avec l'unique fonction qui tranche.
+          */
+          name: "parNom",
+          type: "text",
+          label: "Nom au moment du geste",
+          admin: {
+            readOnly: true,
+            description:
+              "Recopié à l'écriture : la relation ci-dessus n'est lisible que par la direction.",
+          },
         },
       ],
     },

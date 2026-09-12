@@ -97,7 +97,11 @@ export async function POST(requete: Request): Promise<Response> {
       );
     }
 
-    const annonce = await annoncerLeTerme(payload, dossier as never, { site, par: user.id });
+    const annonce = await annoncerLeTerme(payload, dossier as never, {
+      site,
+      par: user.id,
+      parCompte: user as never,
+    });
     if (!annonce) {
       return NextResponse.json(
         { erreur: "Le courriel n'est pas parti. Rien n'a été noté ; réessayez." },
@@ -124,6 +128,8 @@ export async function POST(requete: Request): Promise<Response> {
     jours,
     site,
     par: user.id,
+    // Le nom part avec l'identifiant : la relation n'est lisible que par la direction.
+    parCompte: user as never,
   });
 
   if (!parti) {

@@ -5,6 +5,7 @@ import { useAllFormFields, useAuth, useDocumentInfo, useField, useForm } from "@
 import { reduceFieldsToValues } from "payload/shared";
 import { useRouter } from "next/navigation";
 import { dernierSuivi, type Echange, type NatureEchange } from "@/lib/suivi";
+import { libelleDuCompte, nomDeLAuteur } from "@/lib/equipe";
 import { JOURS_DE_BATTEMENT } from "@/lib/places";
 
 /**
@@ -166,18 +167,33 @@ const OBJETS: Record<string, string> = {
 };
 
 /**
- * « vous » ou « un collègue » — jamais un nom, qu'on n'a pas ici.
+ * Qui a fait le geste, nommé.
  *
- * ⚠️ La relation arrive sous deux formes selon la porte : l'identifiant seul
- * depuis l'état du formulaire, l'objet entier depuis l'API avec `depth`.
- * Comparer sans les réduire rendrait « [object Object] » à côté de son propre
- * nom, c'est-à-dire « un collègue » pour soi-même — l'inverse de ce qu'on
- * cherche à savoir.
+ * ⚠️ **Ce bloc disait « vous » ou « un collègue », jamais un nom** — l'état du
+ * formulaire ne porte que l'identifiant, et la relation n'est lisible que par
+ * la direction (`comptesLecture`). L'administration lisait donc « un collègue »
+ * sur une ligne écrite par le directeur, ce qui ne lui apprenait rien : elle
+ * reprenait la conversation sur un autre WhatsApp. Depuis le 12 septembre 2026,
+ * le nom est recopié à l'écriture — voir `lib/equipe.ts`.
+ *
+ * On garde « vous » en plus du nom : savoir que c'était soi évite de relire sa
+ * propre trace comme une information nouvelle.
  */
-function auteur(par: Echange["par"], moi: number | string | undefined): string {
-  const id = par && typeof par === "object" ? par.id : par;
-  if (id === undefined || id === null || moi === undefined) return "";
-  return String(id) === String(moi) ? "vous" : "un collègue";
+function auteur(ligne: Echange, moi: number | string | undefined): string {
+  const nom = nomDeLAuteur(ligne);
+  const id = ligne.par && typeof ligne.par === "object" ? ligne.par.id : ligne.par;
+  const cestMoi =
+    id !== undefined && id !== null && moi !== undefined && String(id) === String(moi);
+
+  if (nom) return cestMoi ? `${nom} (vous)` : nom;
+  if (cestMoi) return "vous";
+  /*
+    Ni nom recopié ni relation résolue : ou bien la ligne est antérieure au
+    12 septembre 2026, ou bien c'est la tâche de 8 h qui l'a écrite. Le second
+    cas est le plus fréquent, et le dire évite de chercher un collègue qui n'a
+    jamais décroché.
+  */
+  return id === undefined || id === null ? "automatique" : "un collègue";
 }
 
 const JOUR = (v: string) =>
@@ -448,10 +464,16 @@ export function EtapesContrat() {
   };
 
   const noter = (quoi: NatureEchange) => () => {
+    /*
+      ⚠️ Le nom part avec l'identifiant. La relation ne se résout que pour la
+      direction ; sans cet instantané, l'administration relirait « un collègue »
+      sur sa propre ligne. Voir `lib/equipe.ts`.
+    */
     const ligne: Echange & { par?: number | string } = {
       quoi,
       le: new Date().toISOString(),
       ...(user?.id ? { par: user.id } : {}),
+      ...(user ? { parNom: libelleDuCompte(user as never) } : {}),
     };
     void submit({ overrides: { echanges: [...echanges, ligne] } });
   };
@@ -695,7 +717,7 @@ export function EtapesContrat() {
                       laquelle ce bloc répond n'est pas « qui », c'est « est-ce
                       moi ou quelqu'un d'autre » — et cela, l'identifiant le dit.
                     */}
-                    <span className="clixa-relances__par">{auteur(e.par, user?.id)}</span>
+                    <span className="clixa-relances__par">{auteur(e, user?.id)}</span>
                   </li>
                 ))}
             </ol>

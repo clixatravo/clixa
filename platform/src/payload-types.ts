@@ -800,6 +800,10 @@ export interface Inscription {
         quoi: 'signature' | 'paiement' | 'rappel' | 'appel';
         le: string;
         par?: (number | null) | Utilisateur;
+        /**
+         * Recopié à l'écriture : la relation ci-dessus n'est lisible que par la direction.
+         */
+        parNom?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1437,6 +1441,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
         quoi?: T;
         le?: T;
         par?: T;
+        parNom?: T;
         id?: T;
       };
   updatedAt?: T;

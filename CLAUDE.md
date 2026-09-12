@@ -52,6 +52,7 @@ npx payload run scripts/verifier-suppression.ts    # ce qu'on coche s'en va vrai
 npx payload run scripts/verifier-cohorte-ouverte.ts # le plafond suit, la cohorte ne ferme pas
 npx payload run scripts/verifier-portes-manuelles.ts # relancer et rendre une place, à la main
 npx payload run scripts/verifier-supervision.ts   # ce que le tableau des 12 formations dit
+npx payload run scripts/verifier-signature-relance.ts # qui a relancé, nommé
 npx payload run scripts/verifier-delai.ts         # on voit l'échéance venir
 npx payload run scripts/verifier-telephone.ts     # le numéro composé joint quelqu'un
 npx payload run scripts/verifier-tableur.ts       # le classeur des admissions s'ouvre
@@ -1726,6 +1727,48 @@ signature de contrat »** et **« Relance pour paiement »**.
   style. ⚠️ Aucun bouton n'y est doré : l'or dit « l'action principale », et le
   fil des quatre étapes juste au-dessus la porte déjà. Ni émeraude — dans la
   colonne de la liste, le vert veut dire « on vient de le faire ».
+
+⚠️ **On sait maintenant *qui* a parlé au client, et pas seulement quand**
+(`lib/equipe.ts`, `echanges.parNom`, demandé par la direction le 12 septembre
+2026 : « fach wahed mna idwi m3a dak clien, tla3 relance par Mounir »). Le
+directeur appelait quelqu'un, l'administration ne le savait pas, et reprenait la
+conversation sur un autre WhatsApp.
+
+⚠️ **Le journal portait pourtant l'information, et l'écran ne pouvait pas la
+lire.** `echanges.par` est une relation vers `utilisateurs`, et le champ
+justifiait ce choix : « une relation, pas un nom recopié — deux écritures du
+même fait divergent ». Le raisonnement était juste et il lui manquait un fait :
+**`comptesLecture` ne laisse lire que son propre compte.** Seule la direction
+résout la relation ; pour tout autre membre l'écran affichait « un collègue »,
+c'est-à-dire précisément à qui la question se pose.
+
+- **Les deux coexistent, et aucune ne corrige l'autre.** `par` répond à « quel
+  compte » — elle survit à un renommage et permettrait un filtre ; `parNom` à
+  « comment on l'appelait ». C'est la forme habituelle d'un journal : il
+  enregistre ce qui s'est passé, y compris qui, tel qu'on le connaissait alors.
+  Un compte supprimé laisse la ligne entière lisible.
+- ⚠️ **Un seul endroit tranche** (`nomDeLAuteur`). Deux lectures qui répondraient
+  tantôt par la relation tantôt par l'instantané finiraient par nommer deux
+  personnes différentes pour le même geste.
+- **Le repli descend, il n'invente pas** : le nom, sinon le rôle
+  (« Direction »), sinon ce qui précède l'arobase — « mounir », jamais
+  « mounir@clixa.africa », qui ferait déborder la colonne sans rien apprendre.
+- ⚠️ **Sans auteur ne veut pas dire « personne »** : c'est la tâche de 8 h. La
+  liste écrit « automatique », la fiche aussi. Le confondre avec un collègue
+  enverrait en chercher un qui n'a jamais décroché. En production : 26 lignes
+  nommées, 37 automatiques.
+- **La fiche garde « (vous) » à côté du nom.** Savoir que c'était soi évite de
+  relire sa propre trace comme une information nouvelle.
+- **`scripts/nommer-les-relances.ts` a nommé l'existant**, une fois : les lignes
+  d'avant n'ont que l'identifiant, et personne ne les réécrira tout seul. Il lit
+  les comptes par l'API locale — le seul endroit qui puisse résoudre ce que
+  l'écran ne peut pas. Sans `ECRIRE=1` il montre et s'arrête ; **22 dossiers
+  mis à jour, et un relevé avant/après a confirmé que statuts, échéances, places
+  et pays étaient identiques.** ⚠️ Un compte introuvable **n'est pas nommé** : un
+  « Utilisateur 3 » posé là se lirait comme un nom.
+- ⚠️ **La colonne est le vrai besoin, pas la fiche.** Sans le nom dans la liste,
+  il faut ouvrir chaque dossier pour savoir à qui en parler — c'est-à-dire qu'on
+  ne le fait pas. Même raison que la colonne « Relances » elle-même.
 
 ⚠️ **Un panneau de navigateur masqué ne peint pas la page, et cela ressemble à
 un défaut.** En vérifiant ce bloc, les trois blocs repliables de la fiche d'un

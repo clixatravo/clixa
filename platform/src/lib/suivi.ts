@@ -39,6 +39,8 @@
 export type NatureEchange = "signature" | "paiement";
 
 /** Une ligne du journal des échanges, telle qu'elle vit en base. */
+import { nomDeLAuteur } from "./equipe";
+
 export interface Echange {
   quoi?: string | null;
   le?: string | Date | null;
@@ -48,12 +50,24 @@ export interface Echange {
     avec `depth`). Le calcul n'en fait rien — il ne sert qu'à distinguer « vous »
     d'« un collègue », qui est la question que ce journal existe pour trancher.
   */
-  par?: number | string | { id?: number | string } | null;
+  par?:
+    number | string | { id?: number | string; nom?: string | null; email?: string | null } | null;
+  /**
+   * Le nom recopié à l'écriture. C'est lui que l'écran affiche : la relation
+   * ci-dessus n'est lisible que par la direction. Voir `lib/equipe.ts`.
+   */
+  parNom?: string | null;
 }
 
 export type TonSuivi = "recent" | "ancien" | "jamais";
 
 export interface Suivi {
+  /**
+   * Qui a fait le dernier geste — « Mounir », « Direction », ou `""` quand
+   * c'est la tâche de 8 h. Voir `lib/equipe.ts` : l'écran ne résout pas la
+   * relation lui-même, elle n'est lisible que par la direction.
+   */
+  auteur: string;
   /** « Appelé hier », « Relancé pour signer · il y a 5 j ». */
   libelle: string;
   /** Combien de fois on a parlé à cette personne, tous gestes confondus. */
@@ -112,7 +126,7 @@ export function dernierSuivi(echanges: unknown, maintenant: Date): Suivi {
   const lignes = (Array.isArray(echanges) ? (echanges as Echange[]) : []).filter((e) => e && e.le);
 
   if (lignes.length === 0) {
-    return { libelle: "Jamais relancé", nombre: 0, jours: undefined, ton: "jamais" };
+    return { libelle: "Jamais relancé", auteur: "", nombre: 0, jours: undefined, ton: "jamais" };
   }
 
   /*
@@ -126,7 +140,13 @@ export function dernierSuivi(echanges: unknown, maintenant: Date): Suivi {
   const quand = new Date(dernier.le!);
 
   if (Number.isNaN(quand.getTime())) {
-    return { libelle: "Date illisible", nombre: lignes.length, jours: undefined, ton: "jamais" };
+    return {
+      libelle: "Date illisible",
+      auteur: nomDeLAuteur(dernier),
+      nombre: lignes.length,
+      jours: undefined,
+      ton: "jamais",
+    };
   }
 
   const jours = Math.max(0, jourCivil(maintenant) - jourCivil(quand));
@@ -141,6 +161,12 @@ export function dernierSuivi(echanges: unknown, maintenant: Date): Suivi {
   */
   return {
     libelle: `${quoi} · ${depuis}`,
+    /*
+      ⚠️ Celui du **dernier** geste, pas de tous. La colonne répond à « qui l'a
+      eu en dernier » : c'est la personne à qui parler avant de composer le
+      numéro, et la seule que la ligne ait la place de nommer.
+    */
+    auteur: nomDeLAuteur(dernier),
     nombre: lignes.length,
     jours,
     ton: jours <= JOURS_RECENT ? "recent" : "ancien",
