@@ -24,7 +24,12 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import pg from "pg";
 import { readFileSync } from "node:fs";
-import { malgreUnInterblocage } from "../src/lib/interblocage.js";
+import {
+  TEMPS_D_ATTENTE,
+  TENTATIVES,
+  ecrireSurLaSession,
+  malgreUnInterblocage,
+} from "../src/lib/interblocage.js";
 
 let manques = 0;
 const dire = (q: string, v: boolean) => {
@@ -143,6 +148,126 @@ async function estRejoue(erreur: unknown): Promise<boolean> {
     return "abouti";
   }).catch(() => undefined);
   return appels === 2;
+}
+
+// ── 3. ⚠️ Le budget : six inscriptions au même instant ────────────────────
+/*
+  ── Ce que ce contrôle ajoute ───────────────────────────────────────────────
+  Les deux épreuves ci-dessus prouvent que le rattrapage **existe** et qu'il
+  reconnaît le vrai code de Postgres. Aucune ne dit s'il **suffit**. Le journal
+  notait le contraire depuis le 7 septembre 2026 : « six requêtes concurrentes
+  révèlent que le budget peut saturer », c'est-à-dire qu'un visiteur reçoit une
+  vraie erreur technique sur une inscription parfaitement valide. C'était laissé
+  ouvert comme un défaut de capacité distinct.
+
+  ⚠️ **On mesure sur le vrai chemin d'écriture**, pas sur une erreur fabriquée :
+  six `payload.create` lancés ensemble sur la **même** session, donc six
+  transactions qui se disputent la même ligne de `sessions`. C'est exactement ce
+  qui se passe quand une annonce circule.
+*/
+{
+  const { docs: sessions } = await payload.find({
+    collection: "sessions",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    where: { fin: { greater_than: new Date().toISOString() } },
+  });
+
+  if (!sessions[0]) {
+    console.log("\n  · Aucune session à venir : le budget n'est pas éprouvé.");
+  } else {
+    /*
+      Six, parce que c'est le nombre qui a révélé le défaut le 7 septembre 2026.
+      `CONCURRENTS=20` permet de pousser plus loin à la main — éprouvé à douze
+      et à vingt le 12 septembre, sans une seule perte.
+    */
+    const CONCURRENTS = Number(process.env.CONCURRENTS ?? 6);
+    const nes: (string | number)[] = [];
+
+    /*
+      ⚠️ **La porte que prend le tunnel**, pas seulement le rattrapage. Mesuré
+      avec `malgreUnInterblocage` seul : cinq inscriptions perdues sur six, en
+      `40P01`. C'est ce contrôle qui l'a montré, et c'est lui qui garde le
+      correctif.
+    */
+    const inscrire = (n: number) =>
+      ecrireSurLaSession(sessions[0]!.id, () =>
+        payload.create({
+          collection: "inscriptions",
+          overrideAccess: true,
+          data: {
+            session: sessions[0]!.id,
+            statut: "demandee",
+            apprenantNom: `Épreuve Budget ${n}`,
+            apprenantEmail: `budget.${Date.now()}.${n}@epreuve.invalid`,
+            apprenantWhatsapp: "+212600000000",
+            apprenantPays: "Maroc",
+            planPaiement: "P1",
+            echeances: [{ montant: 423, statut: "attendu" }],
+          } as never,
+        }),
+      );
+
+    const issues = await Promise.allSettled(
+      Array.from({ length: CONCURRENTS }, (_, i) => inscrire(i)),
+    );
+    for (const r of issues) if (r.status === "fulfilled") nes.push(r.value.id);
+
+    const perdues = issues.filter((r) => r.status === "rejected");
+    dire(
+      `⚠️ ${CONCURRENTS} inscriptions au même instant aboutissent toutes` +
+        (perdues.length > 0
+          ? ` — ${perdues.length} perdue(s) · ${diagnostic(
+              (perdues[0] as PromiseRejectedResult).reason,
+            )}`
+          : ""),
+      perdues.length === 0,
+    );
+
+    for (const id of nes) {
+      await payload
+        .delete({ collection: "inscriptions", id, overrideAccess: true })
+        .catch(() => {});
+    }
+  }
+}
+
+/**
+ * De quoi meurt une écriture perdue — le code de Postgres, pas la requête.
+ *
+ * ⚠️ Le message de drizzle reprend le SQL entier : sur `sessions`, il fait plus
+ * de mille caractères et **ne dit pas** pourquoi la requête a échoué. Le code
+ * vit dans `cause`, et c'est le seul renseignement qui distingue un
+ * interblocage (`40P01`, qu'on rejoue) d'une contrainte violée (qu'on ne
+ * rejouerait pas). Sans lui, on lit « Failed query: insert into sessions » et
+ * l'on conclut n'importe quoi.
+ */
+function diagnostic(e: unknown): string {
+  const err = e as { code?: unknown; cause?: { code?: unknown; message?: unknown } } | null;
+  const code = err?.code ?? err?.cause?.code ?? "aucun";
+  const message = String(err?.cause?.message ?? "").slice(0, 100);
+  return `code ${String(code)}${message ? ` · ${message}` : ""}`;
+}
+
+// ── 4. L'attente part de zéro, et son plafond double ──────────────────────
+/*
+  ⚠️ **C'est la forme de l'attente qui a changé, plus que leur nombre.**
+  L'ancienne valait `essai * 120 + hasard(120)` : à la deuxième tentative,
+  toutes les transactions repartaient entre 240 et 360 ms — dans la même fenêtre
+  de 120 ms. Elles se retrouvaient donc, et se tuaient de nouveau. Tirer
+  uniformément dans `[0, plafond]` les étale, et la fenêtre s'élargit à chaque
+  essai. Un contrôle sur la borne basse suffit à garder ce choix : le jour où
+  quelqu'un remet un plancher, il passe au rouge.
+*/
+{
+  const tirages = Array.from({ length: 400 }, () => TEMPS_D_ATTENTE(1));
+  dire("⚠️ la première attente peut être nulle — elle ne groupe pas", Math.min(...tirages) < 12);
+  dire("et elle reste sous son plafond", Math.max(...tirages) < 120);
+
+  const large = Array.from({ length: 400 }, () => TEMPS_D_ATTENTE(4));
+  dire("le plafond double à chaque essai", Math.max(...large) > 480);
+  dire("cinq tentatives, pas trois", TENTATIVES === 5);
 }
 
 console.log(

@@ -52,26 +52,60 @@ function estUnInterblocage(e: unknown): boolean {
 
 const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Cinq tentatives — voir `TEMPS_D_ATTENTE` pour ce que cela coûte au pire. */
+export const TENTATIVES = 5;
+
+/**
+ * L'attente avant la tentative `essai + 1`, en millisecondes.
+ *
+ * ── ⚠️ Le budget saturait à six inscriptions simultanées ────────────────────
+ * Trois tentatives, espacées de `essai * 120 + hasard(120)`, tenaient « deux
+ * personnes et une annonce qui circule » — le cas que ce module documente. Au
+ * delà, un visiteur recevait une vraie erreur technique sur une inscription
+ * parfaitement valide. C'était noté comme un défaut de capacité distinct,
+ * laissé ouvert depuis le 7 septembre 2026.
+ *
+ * Deux choses ont changé, et la seconde compte plus que la première :
+ *
+ * 1. **Cinq tentatives au lieu de trois.**
+ * 2. ⚠️ **L'attente part de zéro** (« full jitter »), au lieu d'un plancher qui
+ *    croît. L'ancienne formule gardait les transactions **groupées** : à la
+ *    deuxième tentative, toutes repartaient entre 240 et 360 ms, c'est-à-dire
+ *    dans la même fenêtre de 120 ms — elles se retrouvaient donc, et se
+ *    tuaient de nouveau. Tirer uniformément dans `[0, plafond]` les étale : plus
+ *    il y a de concurrents, plus la fenêtre est large, et c'est exactement ce
+ *    qu'il faut.
+ *
+ * Le plafond double à chaque essai — 120, 240, 480, 960 ms — et l'attente
+ * cumulée au pire vaut donc moins de deux secondes, sur un formulaire qui en
+ * met déjà une à répondre. Une inscription qui aboutit en 1,5 s vaut mieux
+ * qu'une erreur technique en 300 ms.
+ */
+export function TEMPS_D_ATTENTE(essai: number): number {
+  const PLAFOND_INITIAL = 120;
+  const plafond = PLAFOND_INITIAL * 2 ** (essai - 1);
+  return Math.floor(Math.random() * plafond);
+}
+
 /**
  * Exécute `travail`, et le rejoue si Postgres a signalé un interblocage.
  *
- * Trois tentatives, espacées d'une attente croissante et **irrégulière** : deux
- * transactions tuées au même instant qui repartiraient après le même délai se
- * bloqueraient de nouveau, et indéfiniment.
+ * ⚠️ **Rejouer reste sans risque ici** : la transaction perdante est
+ * *entièrement* annulée, rien n'a été écrit, et aucun doublon ne peut naître
+ * d'un second passage. Ce n'est pas un échec au milieu du travail, c'est un
+ * travail qui n'a pas eu lieu.
  */
 export async function malgreUnInterblocage<T>(
   travail: () => Promise<T>,
   journaliser?: (message: string) => void,
 ): Promise<T> {
-  const TENTATIVES = 3;
-
   for (let essai = 1; essai <= TENTATIVES; essai += 1) {
     try {
       return await travail();
     } catch (e) {
       if (!estUnInterblocage(e) || essai === TENTATIVES) throw e;
 
-      const attente = essai * 120 + Math.floor(Math.random() * 120);
+      const attente = TEMPS_D_ATTENTE(essai);
       journaliser?.(
         `[interblocage] tentative ${essai}/${TENTATIVES} refusée par Postgres, ` +
           `nouvel essai dans ${attente} ms`,
@@ -82,4 +116,80 @@ export async function malgreUnInterblocage<T>(
 
   // Inatteignable : la dernière tentative relance ou rend un résultat.
   throw new Error("interblocage : sortie de boucle impossible");
+}
+
+/* ── Une écriture à la fois, par session ─────────────────────────────────── */
+
+/**
+ * ⚠️ **Réessayer ne suffisait pas, et c'est la mesure qui l'a dit.**
+ *
+ * Six `payload.create` lancés ensemble sur la même session : **cinq perdues**,
+ * toutes en `40P01`, malgré cinq tentatives et une attente décorrélée. Le
+ * raisonnement qui promettait mieux était faux, et le journal notait déjà le
+ * défaut comme ouvert depuis le 7 septembre 2026.
+ *
+ * La raison tient à la forme de l'interblocage : chaque transaction prend un
+ * verrou **partagé** sur la ligne de `sessions` en insérant, puis demande
+ * l'**exclusif** pour recompter. À six, la probabilité qu'une seule y parvienne
+ * avant les autres est faible — et la rejouer la remet dans la même situation.
+ * Élargir le budget ne fait que retarder l'échec.
+ *
+ * On empêche donc les écritures **de ce processus** de se croiser : une à la
+ * fois par session, mises en file. Elles ne se disputent plus rien, et le
+ * rattrapage ne sert plus qu'aux instances concurrentes — deux ou trois au
+ * plus, exactement le cas qu'il tient déjà.
+ *
+ * ⚠️ **Ce n'est pas un verrou distribué, et il ne prétend pas l'être.** Vercel
+ * démarre plusieurs instances : deux d'entre elles peuvent encore se croiser, et
+ * c'est `malgreUnInterblocage` qui rattrape. Un vrai verrou demanderait de tenir
+ * la transaction nous-mêmes autour de `payload.create`, par des rouages internes
+ * de l'adaptateur que rien ne garantit d'une version à l'autre — sur le chemin
+ * d'écriture de *chaque* inscription. La réserve posée le 30 août 2026 tient
+ * toujours.
+ *
+ * ⚠️ **La file est nettoyée quand elle se vide**, sinon la carte grandirait
+ * d'une entrée par session pour la vie du processus.
+ */
+const filesParSession = new Map<string, Promise<unknown>>();
+
+export async function enFileParSession<T>(
+  cle: string | number,
+  travail: () => Promise<T>,
+): Promise<T> {
+  const clef = String(cle);
+  /*
+    On s'accroche à la fin de ce qui est déjà en cours. Les deux branches de
+    `then` appellent `travail` : une écriture qui échoue ne doit pas bloquer la
+    suivante, et son erreur remonte quand même par le `await` de celui qui l'a
+    lancée.
+  */
+  const precedent = filesParSession.get(clef) ?? Promise.resolve();
+  const suivant = precedent.then(travail, travail);
+  const trace = suivant.then(
+    () => undefined,
+    () => undefined,
+  );
+  filesParSession.set(clef, trace);
+
+  try {
+    return await suivant;
+  } finally {
+    // Personne derrière nous : la clef s'en va.
+    if (filesParSession.get(clef) === trace) filesParSession.delete(clef);
+  }
+}
+
+/**
+ * Écrire sans se bloquer : une à la fois dans ce processus, rejouée si une
+ * autre instance nous a devancés.
+ *
+ * C'est la porte que le tunnel d'inscription doit prendre — les deux moitiés
+ * séparément ne suffisent pas, et la mesure le montre.
+ */
+export function ecrireSurLaSession<T>(
+  session: string | number,
+  travail: () => Promise<T>,
+  journaliser?: (message: string) => void,
+): Promise<T> {
+  return enFileParSession(session, () => malgreUnInterblocage(travail, journaliser));
 }

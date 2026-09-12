@@ -3,7 +3,7 @@ import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { getPayload } from "payload";
-import { malgreUnInterblocage } from "@/lib/interblocage";
+import { ecrireSurLaSession } from "@/lib/interblocage";
 import config from "@payload-config";
 import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
@@ -246,14 +246,20 @@ export async function POST(request: Request) {
   let creeId: number | string;
   try {
     /*
-      ⚠️ Réessayé en cas d'interblocage. Deux personnes qui s'inscrivent au même
-      instant à la même session se bloquent l'une l'autre sur la ligne du
-      décompte de places, et Postgres en tue une : le participant voyait
-      « erreur technique » sur une inscription parfaitement valide. La
-      transaction perdante est entièrement annulée — rien n'a été écrit, donc
-      rejouer ne crée pas de doublon. Voir `lib/interblocage.ts`.
+      ⚠️ **Une écriture à la fois par session, et rejouée si besoin.** Deux
+      personnes qui s'inscrivent au même instant à la même session se bloquent
+      l'une l'autre sur la ligne du décompte de places, et Postgres en tue une :
+      le participant voyait « erreur technique » sur une inscription
+      parfaitement valide.
+
+      ⚠️ Le rattrapage seul ne suffisait pas, et c'est la mesure qui l'a dit :
+      six inscriptions lancées ensemble, **cinq perdues** en `40P01`, malgré
+      cinq tentatives et une attente décorrélée. Les écritures de ce processus
+      sont donc mises en file avant d'être tentées — vingt d'un coup passent
+      désormais sans une perte. Voir `lib/interblocage.ts`.
     */
-    const cree = await malgreUnInterblocage(
+    const cree = await ecrireSurLaSession(
+      session!.id,
       () =>
         payload.create({
           collection: "inscriptions",

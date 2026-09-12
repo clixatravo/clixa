@@ -803,9 +803,8 @@ deadlock detected · while locking tuple in relation "sessions"
 Le participant voyait alors « erreur technique » sur une inscription
 parfaitement valide. Il suffit de deux personnes et d'une annonce qui circule.
 
-L'écriture est donc rejouée — trois tentatives, attente croissante et
-**irrégulière** : deux transactions tuées au même instant qui repartiraient
-après le même délai se bloqueraient de nouveau.
+**Une écriture à la fois par session, et rejouée si besoin** — dans cet ordre,
+et les deux moitiés comptent.
 
 - **Rejouer est sans risque ici.** La transaction perdante est *entièrement*
   annulée : rien n'a été écrit, donc aucun doublon. Ce n'est pas un échec au
@@ -2106,12 +2105,35 @@ faux.
   lignes en base plutôt qu'en lisant la redirection. Remettre le défaut fait
   passer le contrôle au rouge sur « toutes les réponses pointent vers le même
   dossier ».
-- ⚠️ **Six requêtes concurrentes révèlent autre chose : le budget de réessai de
-  `lib/interblocage.ts` peut saturer.** Trois tentatives suffisent à « deux
-  personnes et une annonce qui circule », le cas qu'il documente lui-même ;
-  au-delà, un visiteur peut recevoir une vraie erreur technique. C'est un
-  défaut de capacité distinct, pas encore corrigé — l'épreuve reste à deux
-  requêtes, le nombre qui a coûté une place en production.
+- ⚠️ **Le budget de réessai saturait à six, et l'élargir n'y faisait rien**
+  (corrigé le 12 septembre 2026). Le défaut était noté ouvert depuis le
+  7 septembre. Premier réflexe : cinq tentatives au lieu de trois, et une attente
+  « full jitter » tirée dans `[0, plafond]` plutôt qu'un plancher croissant —
+  l'ancienne formule gardait les transactions groupées dans la même fenêtre de
+  120 ms, elles se retrouvaient donc et se tuaient de nouveau.
+
+  ⚠️ **Mesuré : cinq inscriptions perdues sur six, toutes en `40P01`.** Le
+  raisonnement promettait mieux ; il était faux. À six transactions qui prennent
+  un verrou partagé puis demandent l'exclusif sur la même ligne, la probabilité
+  qu'une seule y parvienne est faible — et rejouer la remet dans la même
+  situation. Élargir le budget ne fait que retarder l'échec.
+
+  **Les écritures de ce processus sont donc mises en file, une par session**
+  (`ecrireSurLaSession`), *puis* tentées. Elles ne se disputent plus rien, et le
+  rattrapage ne sert plus qu'aux instances concurrentes — deux ou trois au plus,
+  le cas qu'il tenait déjà. Éprouvé à six, douze et **vingt** inscriptions
+  simultanées : aucune perte. Prouvé en retirant la file — cinq perdues sur six.
+
+  ⚠️ **Ce n'est pas un verrou distribué, et il ne prétend pas l'être.** Vercel
+  démarre plusieurs instances ; deux d'entre elles peuvent encore se croiser.
+  Un vrai verrou demanderait de tenir la transaction nous-mêmes autour de
+  `payload.create` — la réserve posée le 30 août tient toujours.
+
+  ⚠️ **Le message de drizzle ne dit pas pourquoi la requête a échoué** : il
+  reprend le SQL entier, plus de mille caractères sur `sessions`, et l'on y lit
+  « Failed query: insert into sessions » sur ce qui est un `update`. Le code vit
+  dans `cause` — c'est le seul renseignement qui distingue un interblocage d'une
+  contrainte violée. Le contrôle l'imprime désormais.
 - ⚠️ **Deux dossiers réels restent dupliqués en production** —
   `CLX-M7TNJVBZ` et `CLX-R93699DD`, même personne, même session DAF, créés le
   7 septembre à 257 ms d'écart. Ce n'est pas au code de trancher lequel garder
