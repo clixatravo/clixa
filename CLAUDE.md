@@ -311,6 +311,7 @@ réinitialisation sur un compte réel.
 ```bash
 npx payload run scripts/reinitialiser-mot-de-passe.ts <email>  # lien de réinit.
 npx payload run scripts/supprimer-compte.ts <email>            # supprime un compte
+npx payload run scripts/renommer-un-compte.ts <email> "<Nom>"  # le nom qui s'affichera
 npx payload run scripts/supprimer-dossier.ts <CLX-…> [CLX-…]   # supprime des dossiers
 npx payload run scripts/pousser-schema.ts                      # aligne le schéma, n'écrit rien
 ```
@@ -1776,6 +1777,14 @@ c'est-à-dire précisément à qui la question se pose.
   distinguent ici — il n'est jamais seul (il suit toujours « par ») et il ne
   teinte que du texte, jamais un fond ni une pastille, qui sont les formes que
   prend l'alerte partout ailleurs.
+- **Un compte sans nom se replie sur son rôle, puis sur son adresse** — « par
+  administration » plutôt que « par Hajar El Khadiri ». C'est lisible, mais ce
+  n'est pas quelqu'un à qui l'on parle. `scripts/renommer-un-compte.ts` sert à
+  cela, et servira à chaque personne qu'on ajoute.
+  ⚠️ Il ne retouche **pas** le journal : les lignes portent le nom qu'avait le
+  compte au moment du geste, et le réécrire ferait dire à une trace d'hier ce
+  qu'on sait aujourd'hui. `nommer-les-relances.ts` traite le cas différent d'une
+  ligne qui n'a *aucun* nom.
 - ⚠️ **« automatique » reste gris.** L'or nomme quelqu'un, il ne constate pas :
   teindre la tâche de 8 h comme un nom ferait chercher un collègue là où il n'y
   en a pas, et diluerait le seul repère de la colonne.
