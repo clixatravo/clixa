@@ -625,6 +625,57 @@ une seconde cohorte.
 - **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne, et
   `admin.readOnly` ne vaut que pour l'écran — les crochets écrivent toujours.
 
+⚠️ **Le back-office était devenu lourd, et se déplaçait latéralement sur un
+téléphone** (signalé par la direction le 12 septembre 2026 : « kay lagi bzff o
+ay botton t9ila », « interface dyal l mobile mam9adax »). Mesuré plutôt que
+supposé, écran par écran, sur un serveur déjà chaud :
+
+| Écran | Avant | Après |
+|---|---|---|
+| Tableau de bord | 3 265 ms | **1 665 ms** |
+| Liste des dossiers | 829 ms | 883 ms |
+| Liste des sessions | 917 ms | 926 ms |
+
+Le tableau de bord était **quatre fois** la liste des dossiers. Deux causes, et
+la seconde ne se devinait pas :
+
+- **Huit requêtes attendues l'une après l'autre.** Aucune ne dépend du résultat
+  d'une autre : elles partent ensemble, et la page ne paie plus que la plus
+  lente. Contre la production : 822 + 80 + 143 + 57 + 60 + 278 + 297 ms, soit
+  **1,7 s** de somme pour **1,0 s** de maximum.
+- ⚠️ **Sans `select`, Payload rend le dossier entier.** Le journal des relances,
+  l'échéancier, la signature, les coordonnées du payeur — chacun dans sa table,
+  donc chacun une requête de plus. Trente-trois dossiers : **823 ms**. Les huit
+  champs que les compteurs lisent réellement : **119 ms**. Sept fois moins, deux
+  fois de suite.
+
+  ⚠️ **Le revers se paie en oubli** : un compteur ajouté sans son champ ne lève
+  pas, il tombe silencieusement à zéro. `verifier-veille.ts` fabrique un dossier
+  par vignette, et c'est lui qui l'attraperait.
+
+⚠️ **Et trois débordements sur un téléphone** — 546 px de contenu pour 375 px
+d'écran sur le tableau de bord, 455 px sur les listes. Un défilement horizontal
+n'est pas un choix : on ne le découvre qu'en poussant la page du doigt.
+
+- `minmax(340px, 1fr)` déborde dès que la colonne fait moins de 340 px.
+  `minmax(min(340px, 100%), 1fr)` dit la même intention sans jamais dépasser.
+- La barre d'outils de la supervision — recherche, tri, bascule de vue — ne
+  revenait jamais à la ligne : 517 px à elle seule. Les filtres par filière
+  défilent désormais du doigt plutôt que de s'empiler sur douze lignes.
+- ⚠️ **L'en-tête de Payload, et c'était en partie nous** : le sélecteur de
+  langue est posé en absolu à la place de l'avatar, ce qui va très bien sur un
+  écran large. À 375 px, fil d'Ariane + sélecteur + avatar ne tiennent plus, et
+  l'avatar sortait à 408 px. Le sélecteur revient dans le flux, la rangée peut
+  se replier.
+- ⚠️ **Un détour instructif : `.table-wrap` existe dans le balisage de Payload
+  mais pas dans sa feuille de style.** J'en ai d'abord conclu à un sélecteur
+  inventé — c'était faux, la règle s'appliquait bien, elle ne servait juste à
+  rien. Ce qui débordait est que Payload élargit `.table` de deux gouttières
+  pour la faire mordre dans les marges ; à 375 px la marge de droite ne l'absorbe
+  plus.
+
+**Résultat : 375 px pour 375 px, sur le tableau de bord comme sur les listes.**
+
 ⚠️ **Le tableau de supervision des douze formations** (`SupervisionFormations.tsx`,
 posé par la direction le 12 septembre 2026). Il remplace les trois jauges : les
 douze parcours, leurs pré-inscriptions, leurs places réservées, en cartes ou en

@@ -70,20 +70,184 @@ export async function Veille() {
     sans le dire. Une cohorte de trente places en est loin ; le jour où elle
     s'en approche, c'est ce calcul-là qu'il faut porter en SQL.
   */
-  const { docs: inscriptions } = await payload.find({
+  /*
+    ── ⚠️ On ne ramène que ce qu'on lit ───────────────────────────────────────
+    Sans `select`, Payload rend le dossier **entier** : le journal des relances,
+    l'échéancier complet, la signature, les coordonnées du payeur — chacun dans
+    sa table, donc chacun une requête de plus qu'il faut ensuite recoudre.
+    Mesuré contre la production, sur trente-trois dossiers : **823 ms**. Avec
+    les huit champs que ces compteurs lisent réellement : **119 ms**. Sept fois
+    moins, deux fois de suite.
+
+    ⚠️ **Le jour où l'on ajoutera un compteur, il faudra ajouter son champ
+    ici.** Un champ absent ne lève pas : il vaut `undefined`, et le compteur
+    tombe silencieusement à zéro. C'est le prix de cette optimisation, et il se
+    paie en oubli — `verifier-veille.ts` fabrique justement des dossiers dans
+    chaque état et vérifie que le bandeau les compte.
+  */
+  const promesseInscriptions = payload.find({
     collection: "inscriptions",
     limit: 500,
     depth: 0,
     overrideAccess: true,
+    select: {
+      statut: true,
+      createdAt: true,
+      session: true,
+      contratDemandeLe: true,
+      contratSigneLe: true,
+      contratVerifieLe: true,
+      coordonneesEnvoyeesLe: true,
+      placeRappeleeLe: true,
+      echeances: true,
+    },
   });
 
-  const { totalDocs: inscriptionsSemaine } = await payload.find({
+  const promesseSemaine = payload.find({
     collection: "inscriptions",
     where: { createdAt: { greater_than_equal: ilYASeptJours } },
     limit: 0,
     depth: 0,
     overrideAccess: true,
   });
+
+  /*
+    ── ⚠️ Ceux à qui le courriel « votre place va repartir » va partir ────────
+    La tâche de 8 h est le seul endroit du système où quelque chose change sans
+    que personne ait agi : elle prévient le participant, puis rend sa place. On
+    ne peut pas l'éprouver après coup — le tort est fait, et il est fait à des
+    gens venus d'une annonce. La direction voulait donc les voir **avant**.
+
+    ⚠️ **Les conditions sont celles de la tâche, à la lettre** (`api/relances`) :
+    statut « demandée », contrat non signé, annonce pas encore partie. Une
+    seconde lecture des mêmes champs finirait par nommer quelqu'un d'autre que
+    celui qui reçoit le message — et c'est pire que de ne rien annoncer.
+
+    Seul le seuil change : la tâche prend le terme (sept jours), la vignette
+    prend deux jours plus tôt, pour laisser le temps d'un appel. Le filtre du
+    lien porte donc exactement le même `where` — pas d'écart entre le nombre et
+    la liste qu'il ouvre.
+  */
+  const promessePlacesAuTerme = payload.find({
+    collection: "inscriptions",
+    where: conditionsDesPlacesAuTerme(seuilPresse) as never,
+    limit: 0,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  /*
+    ── ⚠️ Ce que plus personne ne fait à notre place ─────────────────────────
+    La tâche de 8 h rendait ces places ; depuis le 11 septembre 2026 elle ne
+    rend plus rien, et c'est un geste de l'équipe. Sans cette vignette, une
+    session compterait indéfiniment des gens qui ne viendront jamais — le défaut
+    exact que les sept jours avaient corrigé le 28 août 2026, réintroduit
+    sciemment le jour où la direction a repris la main.
+
+    ⚠️ Elle ne compte que ce sur quoi le geste est **possible** : l'annonce est
+    partie, et le battement de deux jours est écoulé. Le bouton refuse avant —
+    reprendre une place avant la date promise par écrit serait retirer un délai
+    qu'on a donné.
+  */
+  const promessePlacesARendre = payload.find({
+    collection: "inscriptions",
+    where: conditionsDesPlacesARendre(seuilRetour) as never,
+    limit: 0,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  // 2. Nouvelles demandes de rappel
+  const promesseDemandes = payload.find({
+    collection: "demandes-rappel",
+    where: { statut: { equals: "nouvelle" } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  /*
+    2 bis. Les conversations WhatsApp qu'un conseiller doit reprendre.
+
+    ⚠️ **C'est le compteur le plus urgent des quatre.** Les trois autres
+    constatent ce qui s'est produit et tiennent jusqu'à l'heure suivante ;
+    celui-ci dit qu'une personne écrit **maintenant**, et qu'un robot vient de
+    lui promettre qu'on lui répondrait. Une promesse tenue vingt minutes plus
+    tard n'est plus la même promesse.
+  */
+  const promesseConversations = payload.find({
+    collection: "conversations",
+    where: { conduite: { equals: "humain" } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  /*
+    3. Les formations du catalogue et leurs promotions.
+
+    ── ⚠️ Toutes les formations et toutes les cohortes sont désormais suivies ──
+    Auparavant, l'écran limitait la requête à `limit: 3` sur les sessions. Or
+    les douze sessions démarrent le même jour (3 octobre 2026). Neuf cohortes
+    étaient donc invisibles du tableau de bord.
+    Désormais, les douze formations sont chargées avec le décompte exact de
+    leurs pré-inscriptions (dossiers déposés en attente de traitement), de leurs
+    places réservées et de leurs jauges de capacité, avec des filtres directs
+    pour simplifier la gestion quotidienne de l'équipe administrative.
+  */
+  const promesseProgrammes = payload.find({
+    collection: "programmes",
+    limit: 50,
+    locale: "fr",
+    depth: 1,
+    sort: "titre",
+    overrideAccess: true,
+  });
+
+  const promesseSessions = payload.find({
+    collection: "sessions",
+    where: { debut: { greater_than_equal: aujourdhui } },
+    sort: ["-placesReservees", "debut"],
+    limit: 50,
+    depth: 1,
+    overrideAccess: true,
+  });
+  /*
+    ── ⚠️ Les huit requêtes partent ensemble ──────────────────────────────────
+    Elles étaient attendues l'une après l'autre : le tableau de bord payait la
+    **somme** de leurs allers-retours. Mesuré contre la base de production le
+    12 septembre 2026 : 822 + 80 + 143 + 57 + 60 + 278 + 297 ms, soit **1,7 s**
+    avant que la page commence à se rendre — et c'est l'écran sur lequel
+    l'équipe arrive chaque matin, puis revient entre deux dossiers.
+
+    Aucune ne dépend du résultat d'une autre : elles peuvent partir ensemble, et
+    la page ne paie plus que la plus lente.
+
+    ⚠️ **La réserve de connexions de Neon a ses limites**, et huit requêtes
+    simultanées y tiennent largement — c'est le même ordre de grandeur qu'une
+    page de liste de Payload. Le journal note la panne inverse : une socket
+    laissée ouverte que Neon coupe en sous-main, ce que `idleTimeoutMillis`
+    règle déjà.
+  */
+  const [
+    { docs: inscriptions },
+    { totalDocs: inscriptionsSemaine },
+    { totalDocs: placesAuTerme },
+    { totalDocs: placesARendre },
+    { totalDocs: nouvellesDemandes },
+    { totalDocs: conversationsAReprendre },
+    { docs: programmes },
+    { docs: sessions },
+  ] = await Promise.all([
+    promesseInscriptions,
+    promesseSemaine,
+    promessePlacesAuTerme,
+    promessePlacesARendre,
+    promesseDemandes,
+    promesseConversations,
+    promesseProgrammes,
+    promesseSessions,
+  ]);
 
   const vivantes = inscriptions.filter((d) => d.statut !== "annulee" && d.statut !== "terminee");
 
@@ -144,107 +308,6 @@ export async function Veille() {
     }
   }
 
-  /*
-    ── ⚠️ Ceux à qui le courriel « votre place va repartir » va partir ────────
-    La tâche de 8 h est le seul endroit du système où quelque chose change sans
-    que personne ait agi : elle prévient le participant, puis rend sa place. On
-    ne peut pas l'éprouver après coup — le tort est fait, et il est fait à des
-    gens venus d'une annonce. La direction voulait donc les voir **avant**.
-
-    ⚠️ **Les conditions sont celles de la tâche, à la lettre** (`api/relances`) :
-    statut « demandée », contrat non signé, annonce pas encore partie. Une
-    seconde lecture des mêmes champs finirait par nommer quelqu'un d'autre que
-    celui qui reçoit le message — et c'est pire que de ne rien annoncer.
-
-    Seul le seuil change : la tâche prend le terme (sept jours), la vignette
-    prend deux jours plus tôt, pour laisser le temps d'un appel. Le filtre du
-    lien porte donc exactement le même `where` — pas d'écart entre le nombre et
-    la liste qu'il ouvre.
-  */
-  const { totalDocs: placesAuTerme } = await payload.find({
-    collection: "inscriptions",
-    where: conditionsDesPlacesAuTerme(seuilPresse) as never,
-    limit: 0,
-    depth: 0,
-    overrideAccess: true,
-  });
-
-  /*
-    ── ⚠️ Ce que plus personne ne fait à notre place ─────────────────────────
-    La tâche de 8 h rendait ces places ; depuis le 11 septembre 2026 elle ne
-    rend plus rien, et c'est un geste de l'équipe. Sans cette vignette, une
-    session compterait indéfiniment des gens qui ne viendront jamais — le défaut
-    exact que les sept jours avaient corrigé le 28 août 2026, réintroduit
-    sciemment le jour où la direction a repris la main.
-
-    ⚠️ Elle ne compte que ce sur quoi le geste est **possible** : l'annonce est
-    partie, et le battement de deux jours est écoulé. Le bouton refuse avant —
-    reprendre une place avant la date promise par écrit serait retirer un délai
-    qu'on a donné.
-  */
-  const { totalDocs: placesARendre } = await payload.find({
-    collection: "inscriptions",
-    where: conditionsDesPlacesARendre(seuilRetour) as never,
-    limit: 0,
-    depth: 0,
-    overrideAccess: true,
-  });
-
-  // 2. Nouvelles demandes de rappel
-  const { totalDocs: nouvellesDemandes } = await payload.find({
-    collection: "demandes-rappel",
-    where: { statut: { equals: "nouvelle" } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  });
-
-  /*
-    2 bis. Les conversations WhatsApp qu'un conseiller doit reprendre.
-
-    ⚠️ **C'est le compteur le plus urgent des quatre.** Les trois autres
-    constatent ce qui s'est produit et tiennent jusqu'à l'heure suivante ;
-    celui-ci dit qu'une personne écrit **maintenant**, et qu'un robot vient de
-    lui promettre qu'on lui répondrait. Une promesse tenue vingt minutes plus
-    tard n'est plus la même promesse.
-  */
-  const { totalDocs: conversationsAReprendre } = await payload.find({
-    collection: "conversations",
-    where: { conduite: { equals: "humain" } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  });
-
-  /*
-    3. Les formations du catalogue et leurs promotions.
-
-    ── ⚠️ Toutes les formations et toutes les cohortes sont désormais suivies ──
-    Auparavant, l'écran limitait la requête à `limit: 3` sur les sessions. Or
-    les douze sessions démarrent le même jour (3 octobre 2026). Neuf cohortes
-    étaient donc invisibles du tableau de bord.
-    Désormais, les douze formations sont chargées avec le décompte exact de
-    leurs pré-inscriptions (dossiers déposés en attente de traitement), de leurs
-    places réservées et de leurs jauges de capacité, avec des filtres directs
-    pour simplifier la gestion quotidienne de l'équipe administrative.
-  */
-  const { docs: programmes } = await payload.find({
-    collection: "programmes",
-    limit: 50,
-    locale: "fr",
-    depth: 1,
-    sort: "titre",
-    overrideAccess: true,
-  });
-
-  const { docs: sessions } = await payload.find({
-    collection: "sessions",
-    where: { debut: { greater_than_equal: aujourdhui } },
-    sort: ["-placesReservees", "debut"],
-    limit: 50,
-    depth: 1,
-    overrideAccess: true,
-  });
   const prochaine = sessions[0]?.debut;
 
   // Associe chaque programme à sa prochaine session active

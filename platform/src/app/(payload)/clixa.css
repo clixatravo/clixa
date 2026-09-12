@@ -1501,9 +1501,15 @@ h3,
 
 /* ── Grille des 12 Cartes Formations ── */
 
+/*
+  ⚠️ `minmax(340px, 1fr)` déborde dès que la colonne disponible fait moins de
+  340 px — sur un téléphone, la grille poussait la page à 546 px de large pour
+  375 px d'écran. `min(340px, 100%)` dit la même intention et ne déborde jamais :
+  la piste ne peut pas être plus large que son conteneur.
+*/
 .clixa-supervision__grille {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 1.25rem;
 }
 
@@ -2802,6 +2808,134 @@ h3,
   max-width: 460px;
 }
 
+/*
+  ⚠️ **L'en-tête de Payload déborde sur un téléphone, et c'est en partie nous.**
+  Le sélecteur de langue est posé en absolu à `gutter + 52px` du bord droit —
+  la place de l'avatar — ce qui va très bien sur un écran large. À 375 px, le
+  fil d'Ariane, le sélecteur et l'avatar ne tiennent plus sur la même ligne :
+  l'avatar sortait à **408 px**, et c'est lui qui donnait sa largeur à la page.
+
+  Sur téléphone, le sélecteur revient dans le flux et l'en-tête peut se
+  resserrer. Une seule langue est servie aujourd'hui — le masquer serait plus
+  simple, mais il redeviendra utile le jour où le catalogue sera traduit, et une
+  règle qui disparaît est une règle qu'on ne remet pas.
+*/
+@media (max-width: 700px) {
+  .app-header__localizer.localizer {
+    position: static !important;
+    transform: none !important;
+  }
+
+  /*
+    Remis dans le flux, le sélecteur prend de la place : la rangée doit pouvoir
+    revenir à la ligne, sinon elle pousse l'avatar hors de l'écran — ce qui
+    était le défaut d'origine, déplacé d'un cran.
+  */
+  .app-header__controls-wrapper {
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    gap: 0.35rem !important;
+    min-width: 0 !important;
+  }
+
+  .app-header__account {
+    margin-left: 0.5rem !important;
+  }
+
+  /* Le fil d'Ariane cède la place plutôt que de pousser l'avatar dehors. */
+  .step-nav {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .step-nav__last,
+  .dashboard-breadcrumb-select {
+    max-width: 42vw !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+/*
+  ── ⚠️ Le back-office sur un téléphone ─────────────────────────────────────
+  La direction ouvre /admin depuis son téléphone, et la page se déplaçait
+  latéralement : **546 px de contenu pour 375 px d'écran**, mesuré le
+  12 septembre 2026. Le coupable était la barre d'outils — recherche, tri et
+  bascule de vue alignées sans jamais revenir à la ligne — qui faisait à elle
+  seule 517 px.
+
+  ⚠️ **Un défilement horizontal sur un téléphone n'est pas un choix, c'est un
+  défaut** : on ne le découvre qu'en poussant la page du doigt, et la moitié de
+  l'écran paraît vide pendant ce temps. Les tableaux, eux, ont le droit de
+  défiler — mais **dans leur propre cadre** (`__table-wrap`), pas en emportant
+  la page.
+*/
+@media (max-width: 700px) {
+  .clixa-supervision__barre-outils {
+    align-items: stretch;
+    padding: 0.75rem;
+  }
+
+  .clixa-supervision__controles-droite {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  /* La recherche prend la ligne : c'est le contrôle qu'on utilise le plus. */
+  .clixa-supervision__recherche-wrap,
+  .clixa-supervision__input-recherche {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .clixa-supervision__tri-wrap,
+  .clixa-supervision__vues-toggle {
+    flex: 1 1 auto;
+  }
+
+  .clixa-supervision__select-tri {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /*
+    Les filtres par filière restent sur une ligne et défilent du doigt : les
+    empiler ferait douze lignes avant d'atteindre les cartes.
+  */
+  .clixa-supervision__pills {
+    flex-wrap: nowrap;
+    /*
+      ⚠️ Sans `min-width: 0`, un élément flexible refuse de descendre sous la
+      largeur de son contenu : `overflow-x: auto` n'a alors rien à couper, et la
+      rangée pousse la page au lieu de défiler.
+    */
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+  }
+
+  .clixa-supervision__pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .clixa-supervision__pill {
+    flex: 0 0 auto;
+  }
+
+  .clixa-supervision__en-tete,
+  .clixa-supervision__metriques-globales {
+    gap: 0.75rem;
+  }
+
+  /* Trois colonnes de chiffres dans 340 px se lisent encore ; en dessous, non. */
+  .clixa-formation-card {
+    padding: 1rem;
+  }
+}
+
 /* ── Le remplissage d'une session ───────────────────────────────────────── */
 /*
   ⚠️ **Deux nombres qui ne se lisent qu'ensemble.** La liste montrait « 30 » —
@@ -2913,7 +3047,24 @@ h3,
     font-size: 0.74rem;
   }
 
-  .table-wrap {
+  /*
+    ⚠️ **`.table-wrap` existe bien dans le balisage de Payload, mais pas dans
+    sa feuille de style** — d'où la première conclusion, fausse, qu'il s'agissait
+    d'un sélecteur inventé. La règle s'appliquait donc à un vrai élément ; elle
+    ne servait simplement à rien, parce que ce n'est pas lui qui déborde.
+
+    Ce qui débordait : Payload élargit la table de deux gouttières
+    (`width: calc(100% + var(--gutter-h) * 2)`) et la décale d'une vers la
+    gauche, pour qu'elle morde dans les marges de la page. Sur un téléphone, la
+    marge de droite ne suffit plus à l'absorber : **80 px de page en trop**,
+    mesurés le 12 septembre 2026. On annule le débordement, la table défile
+    dans son propre cadre.
+  */
+  .table {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    padding-left: 0 !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
