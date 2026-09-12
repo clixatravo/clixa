@@ -303,6 +303,35 @@ try {
   }
 }
 
+/*
+  ── ⚠️ La porte de /admin elle-même ─────────────────────────────────────────
+  Tous les contrôles ci-dessus visent des routes. Le back-office, lui, est gardé
+  par Payload : `admin.user` désigne la **seule** collection dont un compte peut
+  entrer. `apprenants` étant authentifiée elle aussi, la ramener là — ou l'y
+  ajouter un jour « pour que les participants voient leur espace » — ouvrirait
+  le tableau de bord entier : le fichier des dossiers, les compteurs, les noms.
+
+  Vérifié en conditions réelles le 12 septembre 2026 : un cookie participant
+  valide reçoit **307 → /admin/unauthorized**, et aucune trace du tableau de
+  bord dans le corps. Ce contrôle-ci garde la configuration qui produit ce
+  refus — un serveur n'est pas nécessaire pour la lire, et une régression y
+  passerait par un seul mot changé.
+*/
+/*
+  ⚠️ **L'ordre des arguments, et le vert qui ne mesurait rien.** Le premier jet
+  passait le booléen d'abord : `dire` prend la question puis la réponse, si bien
+  que la chaîne — toujours vraie — tenait lieu de verdict. Le contrôle
+  s'affichait « ✓ true » et serait resté vert avec `admin.user` réglé sur
+  n'importe quoi. C'est la faute que ce fichier existe pour attraper, commise en
+  l'écrivant.
+*/
+const rendu = await config;
+dire(
+  "seuls les comptes d'équipe peuvent entrer dans /admin",
+  rendu.admin?.user === "utilisateurs",
+  `admin.user = ${String(rendu.admin?.user)}`,
+);
+
 console.log(
   manques === 0
     ? "\n✓ Les portes de l'équipe ne s'ouvrent qu'à elle.\n"

@@ -979,6 +979,27 @@ lihom email dyal lkhlass ».
   elle vérifie que le cookie participant authentifie, sinon le 401 tomberait pour
   la mauvaise raison. Prouvée en retirant `collection === "utilisateurs"` des
   deux routes — deux contrôles au rouge.
+- ⚠️ **Et le même cookie, présenté depuis une autre origine, est refusé** —
+  ajouté le 12 septembre 2026. C'est le scénario que `csrf` existe pour arrêter :
+  une page tierce ouverte dans le même navigateur qu'une session d'équipe, qui
+  fait partir un courriel au nom de la maison ou rend une place. Le `SameSite:
+  Lax` du cookie l'empêcherait aussi — mais une protection qui ne tient qu'au
+  défaut d'une autre couche est une chance, pas une garde. **Avec son témoin** :
+  depuis notre origine, le refus n'est plus un 401, sans quoi une route cassée
+  passerait au vert.
+- ⚠️ **La porte de /admin elle-même est gardée par la configuration**
+  (`verifier-portes.ts`). Tous les autres contrôles visent des routes ; le
+  back-office, lui, tient à `admin.user`, qui nomme la **seule** collection dont
+  un compte peut entrer. `apprenants` étant authentifiée aussi, l'y ajouter un
+  jour « pour que les participants voient leur espace » ouvrirait le tableau de
+  bord entier. Vérifié en conditions réelles le 12 septembre 2026 : un cookie
+  participant valide reçoit **307 → /admin/unauthorized**, sans une ligne du
+  tableau de bord dans le corps.
+- ⚠️ **Ce contrôle-là a d'abord été vert en ne mesurant rien.** `dire` prend la
+  question puis la réponse ; le premier jet passait le booléen d'abord, si bien
+  que la chaîne — toujours vraie — tenait lieu de verdict. Il affichait
+  « ✓ true » et serait resté vert avec n'importe quelle valeur. Prouvé depuis en
+  visant `apprenants` : il passe au rouge.
 - ⚠️ **Et elle porte le cas qui doit *passer*.** Une porte qui refuserait tout
   passerait au vert sur les trois refus — et plus aucune place ne reviendrait
   jamais au catalogue, ce qui est l'autre moitié du danger. Le contrôle regarde

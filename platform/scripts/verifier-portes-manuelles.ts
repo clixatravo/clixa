@@ -326,6 +326,62 @@ try {
 
   const deuxFois = await rendre(murr.id, cookieEquipe);
   dire("⚠️ une seconde fois est refusée", deuxFois.status === 409);
+
+  /* ── Le même cookie, depuis ailleurs ────────────────────────────────────── */
+  console.log("\n  Un cookie d'équipe présenté depuis une autre origine\n");
+
+  /*
+    ── ⚠️ Ce que `csrf` existe pour arrêter ──────────────────────────────────
+    Une page tierce, ouverte dans le même navigateur qu'une session d'équipe,
+    qui déclenche à l'insu de son propriétaire un courriel au nom de la maison
+    ou le retour d'une place au catalogue. Le cookie est valide : c'est
+    l'origine qui doit faire refuser.
+
+    ⚠️ **Ce n'est pas le `SameSite: Lax` du cookie qui protège ici**, et le
+    journal le note déjà : une protection qui ne tient qu'au défaut d'une autre
+    couche est une chance, pas une garde. C'est `csrf`, posé sur
+    `NEXT_PUBLIC_SITE_URL`, qui refuse — et il refuse pour les trois portes ou
+    pour aucune.
+  */
+  const dAilleurs = async (
+    route: (r: Request) => Promise<Response>,
+    chemin: string,
+  ): Promise<number> => {
+    const r = await route(
+      new Request(`http://localhost${chemin}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie: cookieEquipe.split(";")[0]!,
+          origin: "https://mechant.example",
+          "sec-fetch-site": "cross-site",
+        },
+        body: JSON.stringify({ id: murr.id }),
+      }),
+    ).catch(() => ({ status: 500 }) as Response);
+    return r.status;
+  };
+
+  dire(
+    "⚠️ la relance paiement refuse un cookie venu d'ailleurs",
+    (await dAilleurs(POST_PAIEMENT, "/api/admin/relance-paiement")) === 401,
+  );
+  dire(
+    "⚠️ rendre la place refuse un cookie venu d'ailleurs",
+    (await dAilleurs(POST_PLACE, "/api/admin/rendre-la-place")) === 401,
+  );
+  /*
+    ⚠️ **Le témoin.** Sans lui, ces deux contrôles resteraient verts si la route
+    refusait *tout* — un dossier introuvable, une porte cassée, une exception
+    avalée. Depuis notre origine, le refus n'est plus un 401 : c'est le 409 du
+    dossier déjà annulé juste au-dessus.
+  */
+  const memeRequeteChezNous = await rendre(murr.id, cookieEquipe);
+  dire(
+    "⚠️ (témoin) depuis notre origine, ce n'est plus un 401",
+    memeRequeteChezNous.status === 409,
+    `reçu ${memeRequeteChezNous.status}`,
+  );
 } finally {
   payload.sendEmail = expediteur;
   for (const id of aSupprimer) {
