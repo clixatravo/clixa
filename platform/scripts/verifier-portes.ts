@@ -1,7 +1,7 @@
 /**
  * Les portes réservées à l'équipe le sont-elles vraiment ?
  *
- * Le bouton « Exporter CSV » du tableau de bord verse dans un tableur le nom,
+ * Le bouton « Exporter le classeur » du tableau de bord verse dans un tableur le nom,
  * l'adresse, le téléphone, la session, le statut et les montants réglés de
  * **tous** les dossiers, plus toutes les demandes de rappel. C'est le fichier
  * clients entier.

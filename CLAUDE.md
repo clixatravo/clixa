@@ -2633,7 +2633,7 @@ crochet, parce que la limite de 4,5 Mo de Vercel n'existe pas en développement
 et n'appartient pas au logiciel.
 
 ⚠️ **Une session ne dit pas laquelle** (`api/admin/export-admissions`, depuis le
-1er septembre 2026). Le bouton « Exporter CSV » du tableau de bord verse dans un
+1er septembre 2026). Le bouton « Exporter le classeur » du tableau de bord verse dans un
 tableur le nom, l'adresse, le téléphone, la session, le statut et les montants
 de **tous** les dossiers, plus toutes les demandes de rappel. La route vérifiait
 qu'un utilisateur était connecté — et s'arrêtait là.
@@ -2772,6 +2772,13 @@ qu'on emporte en réunion, il ne peut pas dire autre chose que l'écran d'à cô
 - **`verifier-portes.ts` lit désormais l'archive** au lieu du texte, par le
   même lecteur. Ses trois contrôles sont passés au rouge le jour du
   changement : ils faisaient leur travail.
+- ⚠️ **Et le bouton a annoncé « CSV » pendant cinq jours de plus** (corrigé le
+  12 septembre 2026). Le fichier était devenu un classeur le 7 ; l'intitulé, lui,
+  était resté. Qui le lit s'attend à un fichier texte qu'il ouvrira dans
+  n'importe quoi, et reçoit un `.xlsx`. C'est le défaut de « Places au total :
+  30 » sous une autre forme — un intitulé ne casse rien en vieillissant, il
+  désigne simplement autre chose que ce qu'il nomme. Il dit « Exporter le
+  classeur ».
 
 **Les routes publiques ont un frein** (`lib/cadence.ts`) : inscription 40 par
 minute et par adresse, compte 30, transfert et attestation 20, rappel 10.

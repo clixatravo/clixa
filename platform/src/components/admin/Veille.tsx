@@ -515,9 +515,18 @@ export async function Veille() {
             href="/api/admin/export-admissions"
             download
             className="clixa-cockpit__btn clixa-cockpit__btn--accent"
-            title="Télécharger le rapport complet des admissions au format CSV/Excel"
+            /*
+              ⚠️ **Le fichier n'est plus un CSV depuis le 7 septembre 2026.** La
+              route rend un vrai classeur `.xlsx` — une feuille par nature de
+              donnée, en-tête figée, montants et dates en nombres. Le bouton
+              annonçait encore « CSV » : qui le lit s'attend à un fichier texte
+              qu'il ouvrira dans n'importe quoi, et reçoit autre chose. Un
+              intitulé qui vieillit sur place est le même défaut que « Places au
+              total : 30 » — il ne casse rien, il désigne mal.
+            */
+            title="Télécharger le classeur des admissions (.xlsx) : une feuille par nature de donnée"
           >
-            <span>📥 Exporter CSV</span>
+            <span>📥 Exporter le classeur</span>
           </a>
           <Link
             href={
