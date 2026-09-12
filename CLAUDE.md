@@ -78,6 +78,16 @@ cd platform && npm run recette                    # la production
 cd platform && npm run recette http://localhost:3000
 ```
 
+⚠️ **Ce qui échoue se relit à la fin, pas seulement à sa place** (depuis le
+12 septembre 2026). Une passe a rendu « 1 point à regarder » ; la sortie était
+lue par un `tail` de trois lignes, et le ✗ — trente lignes plus haut — a été
+perdu. Relancée quatre fois, dont une aussitôt après un redéploiement pour
+retrouver les conditions d'origine, la recette est restée verte : on sait qu'un
+contrôle est tombé, jamais lequel. C'est exactement la faute déjà notée pour les
+rapports Playwright — lire **avant** de relancer. La recette imprime désormais
+un récapitulatif des contrôles tombés juste au-dessus du verdict : quoi qu'on
+coupe, ils sont là. Prouvé en forçant un contrôle au rouge.
+
 Elle suit les 31 adresses du plan du site, les sept redirections, ce qu'un
 moteur lit (indexabilité, canonique, fourchette de prix), les douze plaquettes,
 et onze gardes — jeton des relances, retour Google forgé, destination interne,

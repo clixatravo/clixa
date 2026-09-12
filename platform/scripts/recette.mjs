@@ -19,8 +19,27 @@ const NAVIGATEUR =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
 
 let manques = 0;
+/*
+  ⚠️ **Ce qui a échoué se relit à la fin, pas seulement à sa place.** Le
+  12 septembre 2026, une passe a rendu « 1 point à regarder » ; la sortie était
+  lue par un `tail` de trois lignes, et le ✗ — trente lignes plus haut — a été
+  perdu. Relancée quatre fois, dont une aussitôt après un redéploiement pour
+  retrouver les conditions, la recette est restée verte : on sait qu'un contrôle
+  est tombé, jamais lequel.
+
+  C'est la faute que le journal note déjà pour les rapports Playwright — « lire
+  test-results/ **avant** de relancer quoi que ce soit ». Une sortie qui ne se
+  résume pas à sa dernière ligne finit lue par sa dernière ligne. Le récapitulatif
+  ci-dessous rend la perte impossible : quoi qu'on coupe, ce qui a échoué est
+  juste au-dessus du verdict.
+*/
+const tombes = [];
+
 const dire = (ok, quoi, detail = "") => {
-  if (!ok) manques += 1;
+  if (!ok) {
+    manques += 1;
+    tombes.push(`${quoi}${detail ? ` — ${detail}` : ""}`);
+  }
   console.log(`  ${ok ? "✓" : "✗"} ${quoi}${detail ? ` — ${detail}` : ""}`);
 };
 
@@ -258,6 +277,11 @@ for (let i = 0; i < 26; i += 1) {
   if (r.code === 429) refus += 1;
 }
 dire(refus > 0, "la cadence finit par mordre", `${refus} refus sur 26`);
+
+if (manques > 0) {
+  console.log("\n  Ce qui est tombé :");
+  for (const t of tombes) console.log(`    ✗ ${t}`);
+}
 
 console.log(
   manques === 0
