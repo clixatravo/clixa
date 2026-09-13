@@ -228,6 +228,7 @@ export function versRealisation(d: {
     titre: t(d.titre),
     ...(t(d.description) ? { description: t(d.description) } : {}),
     ...(video ? { embed: video.embed } : {}),
+    ...(video?.portrait ? { portrait: true } : {}),
     ...(fichier ? { fichier } : {}),
     /*
       L'affiche déposée l'emporte sur la vignette du fournisseur : c'est un

@@ -246,6 +246,8 @@ export interface Realisation {
   /** Ce qu'on voit avant de lancer la lecture. */
   affiche?: string;
   afficheAlt?: string;
+  /** Un reel est vertical : la carte lui donne un cadre en portrait. */
+  portrait?: boolean;
 }
 
 /** Une organisation partenaire, certificatrice ou de référence. */

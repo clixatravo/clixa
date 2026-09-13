@@ -3527,6 +3527,44 @@ rien, et la carte se contente de son titre.
   remettant le défaut** — un `includes()` sur l'hôte et l'hôte avec cookies :
   onze passent au rouge, dont l'hôte qui imite YouTube.
 
+⚠️ **Instagram est le troisième fournisseur** (13 septembre 2026). La direction
+a transmis les deux reels de la campagne — un retour de participant enregistré à
+chaud après la première séance, et un extrait de formation. Ils vivent sur
+Instagram, pas sur YouTube ; les intégrer était le seul moyen de les montrer
+sans rien redemander à personne.
+
+- **Vérifié avant d'écrire une ligne** : les deux reels s'affichent et se
+  **lisent** dans un navigateur sans compte Instagram. Une intégration qui
+  demanderait de se connecter n'aurait montré qu'un cadre mort.
+- ⚠️ **Le lien de partage porte un jeton — `?stkn=…` — et il dit qui a
+  partagé.** Il ne survit pas : l'adresse est recomposée depuis l'identifiant,
+  comme pour les deux autres fournisseurs. Un contrôle le garde.
+- ⚠️ **Un reel est vertical, et une carte en 16/9 le couperait.** C'est
+  `lireLaVideo` qui l'annonce (`portrait`), pas la carte : la carte ne sait pas
+  ce qu'elle encadre. Mesuré à l'écran, `aspect-[9/14]` laisse voir la vidéo,
+  l'en-tête et le pied du cadre sans rien couper.
+- ⚠️ **Le cadre d'Instagram porte son interface** — avatar, « View profile »,
+  mentions J'aime, champ de commentaire — et on ne peut pas la retirer. C'est le
+  prix de l'intégration, et la raison pour laquelle une vidéo qui compte gagne à
+  finir sur YouTube, où le cadre est le nôtre.
+- ⚠️ **Aucune vignette devinable**, comme Vimeo : sans image d'attente déposée,
+  la carte montre son aplat. Sur une page qui sert de vitrine, cela se voit —
+  d'où les couvertures récupérées et déposées à la main.
+- ⚠️ **Le piège reste `includes()`** : `instagram.com.attaquant.test` *contient*
+  instagram.com sans en être. Prouvé en remettant le défaut — un contrôle passe
+  au rouge.
+
+⚠️ **Quel texte va avec quel reel ne se devine pas.** Les deux couvertures
+contredisaient l'ordre des légendes : l'une montre un écran de cours, l'autre
+une personne qui parle. La direction a répondu « vérifie et corrige » — c'est
+donc l'image qui a tranché, échantillonnée seconde par seconde : le second reel
+affiche la diapositive « Missions cœur du DAF · pilotage de la performance ·
+gestion financière · structuration des process · relation parties prenantes »,
+mot pour mot la légende de l'extrait de formation. Le premier montre le même
+écran partagé pendant ses 57 secondes, sans personne à l'image : c'est une voix
+par-dessus la séance, ce que le 🎙️ de la légende annonçait. L'ordre donné était
+le bon — mais il a été **vérifié**, pas supposé.
+
 ⚠️ **Rien du fournisseur ne se charge avant un clic** (`GalerieRealisations.tsx`).
 Une `<iframe>` posée au rendu télécharge son lecteur et signale la visite avant
 que le visiteur ait rien demandé — la faute exacte que le pixel Meta a corrigée

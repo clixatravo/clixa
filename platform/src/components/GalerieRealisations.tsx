@@ -64,7 +64,15 @@ function CarteVideo({ realisation: r }: { realisation: Realisation }) {
 
   return (
     <figure className="executive-card rounded-clixa flex h-full flex-col overflow-hidden">
-      <div className="bg-panel-2 relative aspect-video w-full">
+      {/*
+        ⚠️ Un reel est vertical. Lui donner le 16/9 des autres couperait la
+        vidéo par le haut et par le bas — et le cadre d'Instagram porte en plus
+        son propre en-tête et son pied, qui prennent de la hauteur sans jamais
+        montrer d'image.
+      */}
+      <div
+        className={`bg-panel-2 relative w-full ${r.portrait ? "aspect-[9/14]" : "aspect-video"}`}
+      >
         {lance && r.embed && (
           <iframe
             /*

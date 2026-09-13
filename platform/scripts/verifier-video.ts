@@ -96,6 +96,37 @@ dire(
   lireLaVideo("https://vimeo.com/123456789")?.vignette === undefined,
 );
 
+/* ── 3 bis. Instagram ────────────────────────────────────────────────────── */
+/*
+  Les deux reels de la campagne arrivent par un lien de partage, jeton compris.
+  ⚠️ Ce jeton dit *qui* a partagé : il ne doit pas finir dans une page publique.
+  Il part comme le reste de la requête, puisqu'on ne recopie jamais l'adresse.
+*/
+const REEL = "https://www.instagram.com/reel/DdMoJOKsIbe/?stkn=MXBqNTN0bWxwc2F0OQ==";
+const lu = lireLaVideo(REEL);
+dire(
+  "un reel partagé rend son cadre",
+  lu?.embed === "https://www.instagram.com/reel/DdMoJOKsIbe/embed/",
+  lu?.embed ?? "rien",
+);
+dire("le jeton de partage ne survit pas", !(lu?.embed ?? "").includes("stkn"), lu?.embed ?? "");
+dire("un reel est annoncé vertical", lu?.portrait === true);
+dire(
+  "un post ordinaire aussi",
+  lireLaVideo("https://www.instagram.com/p/Cabcdefghij/")?.embed ===
+    "https://www.instagram.com/p/Cabcdefghij/embed/",
+);
+dire(
+  "« reels » au pluriel mène au même cadre",
+  lireLaVideo("https://instagram.com/reels/DdMoJOKsIbe/")?.embed ===
+    "https://www.instagram.com/reel/DdMoJOKsIbe/embed/",
+);
+dire("Instagram n'invente pas de vignette", lireLaVideo(REEL)?.vignette === undefined);
+dire(
+  "une vidéo YouTube, elle, n'est pas verticale",
+  lireLaVideo(`https://youtu.be/${ID}`)?.portrait === undefined,
+);
+
 /* ── 4. ⚠️ Ce qui ne doit rien rendre ────────────────────────────────────── */
 /*
   C'est la moitié qui compte. Chacune de ces adresses est *valide* pour le
@@ -121,6 +152,10 @@ const refus: [string, unknown][] = [
   ["un lien YouTube sans identifiant", "https://www.youtube.com/watch"],
   ["un identifiant Vimeo trop court", "https://vimeo.com/123"],
   ["un identifiant Vimeo qui n'en est pas un", "https://vimeo.com/staffpicks"],
+  ["un profil Instagram, pas une vidéo", "https://www.instagram.com/clixa_institute/"],
+  ["une page Instagram inconnue", "https://www.instagram.com/explore/tags/daf/"],
+  ["un hôte qui imite Instagram", "https://instagram.com.attaquant.test/reel/DdMoJOKsIbe/"],
+  ["un code Instagram qui remonte d'un cran", "https://www.instagram.com/reel/..%2Fadmin/"],
   ["une chaîne vide", ""],
   ["des espaces seuls", "   "],
   ["autre chose qu'une chaîne", 42],

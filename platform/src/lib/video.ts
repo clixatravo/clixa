@@ -18,8 +18,8 @@
  * chose que ce que l'équipe croyait poser.
  */
 
-/** Les deux hôtes qu'on sait encadrer. Rien d'autre n'est admis. */
-export type Fournisseur = "youtube" | "vimeo";
+/** Les trois hôtes qu'on sait encadrer. Rien d'autre n'est admis. */
+export type Fournisseur = "youtube" | "vimeo" | "instagram";
 
 export interface Video {
   fournisseur: Fournisseur;
@@ -29,6 +29,12 @@ export interface Video {
   embed: string;
   /** L'image d'attente, quand le fournisseur en publie une de devinable. */
   vignette?: string;
+  /**
+   * ⚠️ **Un reel est vertical, et une carte en 16/9 le couperait.** C'est le
+   * fournisseur qui le dit, pas la carte : Instagram ne sert que du portrait,
+   * et son cadre porte en plus son propre en-tête et son pied.
+   */
+  portrait?: boolean;
 }
 
 /*
@@ -38,6 +44,15 @@ export interface Video {
 */
 const ID_YOUTUBE = /^[A-Za-z0-9_-]{11}$/;
 const ID_VIMEO = /^\d{6,12}$/;
+/*
+  ⚠️ Instagram ne publie pas la longueur de ses codes, et elle a changé avec le
+  temps (onze caractères, puis davantage). L'alphabet, lui, est fermé — et c'est
+  lui qui compte : sans cette borne, « ../ » ou un point d'interrogation
+  entrerait dans l'adresse recomposée.
+*/
+const ID_INSTAGRAM = /^[A-Za-z0-9_-]{5,30}$/;
+/** Les seules natures de publication qu'Instagram sait encadrer. */
+const NATURES_INSTAGRAM: Record<string, string> = { reel: "reel", reels: "reel", p: "p", tv: "tv" };
 
 /**
  * Lit une adresse de vidéo et rend de quoi l'afficher.
@@ -94,6 +109,16 @@ export function lireLaVideo(adresse: unknown): Video | undefined {
     return vimeo(morceaux[0] === "video" ? morceaux[1] : morceaux[0]);
   }
 
+  if (hote === "instagram.com" || hote === "m.instagram.com") {
+    /*
+      ⚠️ Le lien de partage porte un jeton — « ?stkn=… » — et il ne doit pas
+      survivre : c'est un paramètre attaché à *qui* a partagé. Il part avec le
+      reste de la requête, puisqu'on ne recopie jamais l'adresse saisie.
+    */
+    const nature = NATURES_INSTAGRAM[morceaux[0] ?? ""];
+    return nature ? instagram(nature, morceaux[1]) : undefined;
+  }
+
   return undefined;
 }
 
@@ -110,6 +135,27 @@ function youtube(id: string | null | undefined): Video | undefined {
     */
     embed: `https://www.youtube-nocookie.com/embed/${id}`,
     vignette: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+  };
+}
+
+/**
+ * Un reel, un post ou une vidéo IGTV du compte.
+ *
+ * ⚠️ **Le cadre d'Instagram porte sa propre interface** — l'avatar du compte,
+ * « View profile », les mentions J'aime, un champ de commentaire. On ne peut
+ * pas la retirer : c'est le prix de l'intégration, et c'est aussi pourquoi une
+ * vidéo qui compte devrait finir sur YouTube, où le cadre est le nôtre.
+ *
+ * ⚠️ **Et il ne publie aucune vignette devinable.** Sans image d'attente
+ * déposée à côté, la carte montre son aplat — jamais une image inventée.
+ */
+function instagram(nature: string, code: string | null | undefined): Video | undefined {
+  if (!code || !ID_INSTAGRAM.test(code)) return undefined;
+  return {
+    fournisseur: "instagram",
+    id: code,
+    embed: `https://www.instagram.com/${nature}/${code}/embed/`,
+    portrait: true,
   };
 }
 
