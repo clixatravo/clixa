@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { lectureLibre, reserveA } from "@/access/roles";
+import { champPersonnel, lectureLibre, reserveA } from "@/access/roles";
 import { revaliderSession, revaliderSessionSupprimee } from "@/collections/revalider";
 import { capaciteTenue } from "@/lib/places";
 
@@ -263,10 +263,21 @@ export const Sessions: CollectionConfig = {
     },
 
     /* ── Distanciel ─────────────────────────────────────────────────── */
+    /*
+      ⚠️ **Le lien ouvre la classe : il ne sort que pour l'équipe.** La collection
+      est en lecture libre — c'est elle qui nourrit le catalogue — et le champ
+      l'était avec elle : `/api/sessions` rendait le lien de chaque classe
+      virtuelle à n'importe qui, sans compte. Constaté le 14 septembre 2026.
+
+      Aucune page publique ne l'affiche : le catalogue n'en a pas besoin. Le jour
+      où la page du dossier le montrera à un inscrit, elle le lira côté serveur,
+      après avoir vérifié le dossier — pas en rouvrant ce champ.
+    */
     {
       name: "lienVisio",
       type: "text",
       label: "Lien de la classe virtuelle",
+      access: { read: champPersonnel },
       admin: {
         condition: (data) => data?.mode === "visio",
         description:
