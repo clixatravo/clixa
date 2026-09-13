@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
-import { Etincelle } from "@/components/AssistantIA";
+import { Robot } from "@/components/AssistantIA";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -218,7 +218,7 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
       <header className="border-line bg-panel flex items-center justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-center gap-2.5">
           <span className="border-gold/40 text-gold rounded-clixa flex size-9 items-center justify-center border">
-            <Etincelle className="size-5" />
+            <Robot className="size-6" />
           </span>
           <div className="leading-tight">
             <p className="font-display text-ivory text-[0.98rem]">Assistant IA</p>
