@@ -13,16 +13,24 @@ const AssistantFenetre = dynamic(
   { ssr: false },
 );
 
+/** Les étincelles, pictogramme reconnu de l'IA (dessin Lucide, licence ISC). */
 export function Etincelle({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
-      <path
-        d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7L19 16z" fill="currentColor" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+      <path d="M20 3v4" />
+      <path d="M22 5h-4" />
+      <path d="M4 17v2" />
+      <path d="M5 18H3" />
     </svg>
   );
 }
@@ -43,27 +51,52 @@ export function AssistantIA() {
   return (
     <>
       {charge && <AssistantFenetre ouvert={ouvert} onFermer={() => setOuvert(false)} />}
-      <button
-        type="button"
-        onClick={() => {
-          setCharge(true);
-          setOuvert((o) => !o);
-        }}
-        aria-expanded={ouvert}
-        aria-label={ouvert ? "Fermer l'assistant" : "Poser une question à l'assistant IA"}
-        className="border-gold bg-panel text-gold hover:bg-gold hover:text-ink rounded-clixa fixed right-4 bottom-4 z-30 flex h-13 cursor-pointer items-center gap-2 border px-4 shadow-2xl transition-colors"
-      >
-        {ouvert ? (
-          <span aria-hidden="true" className="text-xl leading-none">
-            ×
+      {/*
+        Rond et doré, comme le bouton d'action du site de conseil : c'est la forme
+        qu'on reconnaît d'un coup d'œil comme « poser une question ». Le point vert
+        dit qu'il répond tout de suite, à toute heure.
+      */}
+      <div className="group fixed right-5 bottom-5 z-30 flex items-center gap-3">
+        {!ouvert && (
+          <span className="border-line bg-panel text-ivory rounded-clixa pointer-events-none hidden border px-3 py-1.5 text-[0.78rem] font-semibold whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
+            Assistant IA · vos questions sur les formations
           </span>
-        ) : (
-          <Etincelle className="size-5" />
         )}
-        <span className="mono-label hidden text-[0.66rem] sm:inline">
-          {ouvert ? "Fermer" : "Assistant IA"}
-        </span>
-      </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setCharge(true);
+              setOuvert((o) => !o);
+            }}
+            aria-expanded={ouvert}
+            aria-label={ouvert ? "Fermer l'assistant" : "Poser une question à l'assistant IA"}
+            className="text-ink ring-gold-bright/40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#e9cd84_0%,#c9a24c_100%)] shadow-[0_10px_30px_rgba(201,162,76,0.35)] ring-2 transition-transform duration-200 hover:scale-105 active:scale-95"
+          >
+            {ouvert ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                aria-hidden="true"
+                className="size-6"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <Etincelle className="size-7" />
+            )}
+          </button>
+          {!ouvert && (
+            <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex size-3.5">
+              <span className="absolute inline-flex size-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+              <span className="border-ink relative inline-flex size-3.5 rounded-full border-2 bg-emerald-500" />
+            </span>
+          )}
+        </div>
+      </div>
     </>
   );
 }

@@ -213,7 +213,7 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
       role="dialog"
       aria-label="Assistant IA CLIXA Institute"
       hidden={!ouvert}
-      className="border-line-strong bg-ink fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] flex-col border shadow-2xl sm:inset-x-auto sm:right-4 sm:bottom-20 sm:h-[min(600px,calc(100dvh-7rem))] sm:w-[400px]"
+      className="border-line-strong bg-ink fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] flex-col border shadow-2xl sm:inset-x-auto sm:right-5 sm:bottom-24 sm:h-[min(600px,calc(100dvh-7rem))] sm:w-[400px]"
     >
       <header className="border-line bg-panel flex items-center justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-center gap-2.5">
