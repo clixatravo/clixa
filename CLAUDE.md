@@ -65,6 +65,8 @@ npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promett
 npx payload run scripts/verifier-orientation.ts   # quand il parle, quand il se tait
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
 npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
+npx payload run scripts/verifier-video.ts         # ce qu'on accepte d'encadrer
+npx payload run scripts/verifier-vitrine.ts       # la séance filmée qui n'est pas encore relue
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -3458,12 +3460,118 @@ que toutes les clés du projet sont fausses — y compris celles qui font tourne
 le site. La seule vérification qui vaille est fonctionnelle : redéployer, puis
 regarder si le service accepte.
 
+⚠️ **La preuve par ceux qui y sont passés** (`/temoignages`, `Realisations`,
+`Videos`, `lib/video.ts`, demandé par la direction le 13 septembre 2026 :
+« page dyal les commentaires dyal les clients, bhal l ichhar, o that fih les
+formations li deja daro — 3andna vediowat wajdin »).
+
+Le site dit ce qu'il **propose** ; il ne montrait nulle part ce qu'on a **déjà
+fait**. Un prospect venu de l'annonce Facebook lit douze programmes et n'a
+aucune preuve qu'une seule séance ait eu lieu. La page réunit les retours des
+participants, puis les séances filmées.
+
+- **Une réalisation, c'est un titre, une phrase, une vidéo.** Ni date, ni nombre
+  de participants, ni ville : décision de la direction, et c'est le bon choix —
+  « 18 participants » vieillit, se conteste, et demande d'être tenu à jour par
+  quelqu'un.
+- **Deux sources, un sélecteur** : un lien YouTube/Vimeo, ou un fichier déposé.
+  Deux cases facultatives côte à côte laisseraient remplir les deux, et il
+  faudrait alors décider laquelle gagne à un endroit que personne ne relira.
+- ⚠️ **`Videos` est plafonnée à 4 Mo, et ce n'est pas nous qui le décidons.**
+  Vercel refuse tout corps de requête au-delà de 4,5 Mo — un dépôt depuis /admin
+  traverse une fonction. Le plafond n'existe pas en développement : sans une
+  limite posée dans le logiciel, le refus arriverait en production sous la forme
+  d'une erreur de plateforme que personne ne sait lire. Quatre mégaoctets valent
+  une quinzaine de secondes de vidéo prise au téléphone ; au-delà, le champ dit
+  d'aller sur YouTube plutôt que de laisser essayer.
+
+⚠️ **`lib/video.ts` : on ne fabrique jamais une adresse à partir de ce qui est
+saisi.** C'est la seule donnée du site qui **charge du code venu d'ailleurs**
+dans la page du visiteur. La règle est donc l'inverse de « nettoyer l'entrée » :
+on extrait un identifiant, on vérifie sa forme (onze caractères d'un alphabet
+fermé pour YouTube, six à douze chiffres pour Vimeo), et l'on recompose
+l'adresse depuis un hôte écrit en dur. Ce qui n'entre pas dans ce moule ne rend
+rien, et la carte se contente de son titre.
+
+- ⚠️ **Le piège est `includes()`.** `https://youtube.com.attaquant.test/watch?v=…`
+  *contient* youtube.com sans en être : c'est une égalité de nom d'hôte, jamais
+  une inclusion. Un contrôle le garde.
+- ⚠️ **`new URL("javascript:alert(1)")` est parfaitement valide** — c'est le
+  protocole qui la rend dangereuse, pas sa forme. Le schéma est donc exigé
+  explicitement, et le préfixe `https://` n'est ajouté que si l'adresse n'en
+  porte aucun.
+- ⚠️ **Les paramètres du partage sont jetés** : `?t=42`, `&list=…`, `&si=…`.
+  Les garder ferait démarrer la vidéo au milieu ou enchaîner sur une playlist
+  qui n'est pas la nôtre.
+- **`youtube-nocookie.com`, pas `youtube.com`.** Le site porte un bandeau de
+  consentement et n'allume aucune mesure sans accord ; encadrer un lecteur qui
+  dépose ses cookies à l'affichage le contredirait.
+- **La collection refuse à la saisie ce qu'elle ne saura pas afficher**, en
+  nommant les formes acceptées : un refus qui n'apprend rien fait recoller la
+  même chose. Sans lui, un lien mal recopié s'enregistre sans un mot et la page
+  ne montre rien — on cherche alors le défaut dans le code alors qu'il est dans
+  la case.
+- `verifier-video.ts` compte **31 contrôles**, dont dix-sept refus. **Prouvé en
+  remettant le défaut** — un `includes()` sur l'hôte et l'hôte avec cookies :
+  onze passent au rouge, dont l'hôte qui imite YouTube.
+
+⚠️ **Rien du fournisseur ne se charge avant un clic** (`GalerieRealisations.tsx`).
+Une `<iframe>` posée au rendu télécharge son lecteur et signale la visite avant
+que le visiteur ait rien demandé — la faute exacte que le pixel Meta a corrigée
+le 4 septembre 2026, sous le même bandeau. **Mesuré** : avant le clic, la page
+n'appelle que `localhost` ; après, le lecteur part chez YouTube. C'est aussi ce
+que le visiteur paie — douze lecteurs sur une page, c'est plusieurs mégaoctets
+de scripts tiers sur un forfait mobile, pour une vidéo qu'il regardera.
+
+⚠️ **L'adresse n'existe que si elle a quelque chose à montrer.** Sans témoignage
+ni vidéo publiés, `/temoignages` répond **404**, ne figure pas au plan du site,
+et son lien disparaît du pied de page et de l'accueil. C'est la règle de la
+rubrique de filtre sans choix : un intitulé qui mène à une page nue se lit comme
+un site à moitié chargé, et cela tombe sur le trafic acheté. Vérifié dans les
+deux sens, base vide et base servie.
+
+- ⚠️ **Le lien n'est pas dans l'en-tête, et c'est mesuré.** `NavDesktop` note
+  que six liens plus « FR », « Mon espace » et « Nous contacter » réclament déjà
+  936 px, d'où la bascule à `lg`. Un septième lien ferait déborder à 1024 px
+  exactement — le défaut du 12 septembre, une porte plus loin.
+
+⚠️ **Deux crochets de rafraîchissement manquaient depuis l'origine**
+(`revaliderVitrine`). `Temoignages` n'en avait aucun : un témoignage publié
+n'apparaissait qu'au déploiement suivant. Personne ne s'en était aperçu parce
+qu'aucun n'a jamais été publié — le défaut attendait la première publication.
+Les deux collections lèvent maintenant l'étiquette `vitrine` et rafraîchissent
+l'accueil, la page, le plan du site et la fiche du parcours cité.
+
+- ⚠️ **Constaté en conditions réelles** : après suppression des données
+  d'essai, `/temoignages` répondait encore 200 avec ses trois cartes — le cache
+  de données tenait, et un `rm -rf .next` a rendu le 404 attendu. C'est
+  exactement ce que le crochet évite en production ; un script lancé par
+  `payload run`, lui, ne rafraîchit rien (déjà documenté pour `revalidatePath`).
+- **`getTemoignages` rejoint `getRealisations` dans le cache de données.** Elle
+  interrogeait la base à chaque affichage de l'accueil.
+
+⚠️ **`next/image` refusait les deux hôtes distants, et personne ne l'avait vu.**
+`images.remotePatterns` n'existait pas dans `next.config.ts` : `<Image src="https://…">`
+**lève**. Les deux seuls usages — les logos de partenaires et, maintenant, les
+affiches de séances — portent sur des collections vides ; **le premier logo
+déposé aurait cassé l'accueil**. Deux hôtes sont admis, le magasin de médias et
+`i.ytimg.com`, et pas un de plus : ouvrir la liste ferait servir depuis notre
+domaine n'importe quelle image d'ailleurs.
+
+⚠️ **Il n'y a pas d'épreuve Playwright sur cette page**, et c'est un choix : la
+série tourne contre une base que le ménage vide, où la page répond 404 par
+construction. Ce qu'un navigateur seul peut voir — l'iframe qui ne part pas
+avant le clic, 375 px pour 375 px, 1024 px pour 1024 px — a été mesuré à la
+main, sur trois réalisations et un témoignage posés puis retirés. À refaire de
+la même façon si la galerie change.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |
 |---|---|---|
 | Pages légales | brouillon, 3 mentions manquantes | **la direction** |
-| Témoignages et partenaires réels | 0 publié sur 6 et 5 ; les exemples sont dépubliés | la direction |
+| Témoignages et séances filmées | la page existe ; 0 publié sur 6, 0 vidéo | **la direction** |
+| Partenaires réels | 0 publié sur 5 | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
 | Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
 

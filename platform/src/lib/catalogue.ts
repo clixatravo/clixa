@@ -14,7 +14,12 @@
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 
-import { ETIQUETTE_CATALOGUE, ETIQUETTE_TARIFS, PEREMPTION } from "@/lib/etiquettes";
+import {
+  ETIQUETTE_CATALOGUE,
+  ETIQUETTE_TARIFS,
+  ETIQUETTE_VITRINE,
+  PEREMPTION,
+} from "@/lib/etiquettes";
 
 import type {
   ModeDiffusion,
@@ -24,6 +29,7 @@ import type {
   Specialisation,
   Tarifs,
   Temoignage,
+  Realisation,
 } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
 import { aplatir, rechercher, type DocumentIndexe } from "@/lib/recherche";
@@ -34,6 +40,7 @@ import {
   versSpecialisation,
   versTarifs,
   versTemoignage,
+  versRealisation,
   versPartenaire,
 } from "@/lib/payload";
 
@@ -314,22 +321,86 @@ export const getTarifs = cache(
  * liste est non vide — un bandeau de partenaires vide vaut moins que pas de
  * bandeau.
  */
-export const getTemoignages = cache(async (): Promise<Temoignage[]> => {
-  const payload = await payloadClient();
-  const { docs } = await payload.find({
-    collection: "temoignages",
-    limit: 50,
-    locale: "fr",
-    depth: 1,
-    sort: "id",
-    overrideAccess: false,
-  });
-  return docs.map(versTemoignage);
-});
+export const getTemoignages = cache(
+  unstable_cache(
+    async (): Promise<Temoignage[]> => {
+      const payload = await payloadClient();
+      const { docs } = await payload.find({
+        collection: "temoignages",
+        limit: 50,
+        locale: "fr",
+        depth: 1,
+        sort: "id",
+        overrideAccess: false,
+      });
+      return docs.map(versTemoignage);
+    },
+    ["temoignages"],
+    { tags: [ETIQUETTE_VITRINE], revalidate: PEREMPTION },
+  ),
+);
 
 /** Les témoignages rattachés à un parcours donné. */
 export async function getTemoignagesDe(programmeSlug: string): Promise<Temoignage[]> {
   return (await getTemoignages()).filter((t) => t.programmeSlug === programmeSlug);
+}
+
+/**
+ * Les formations déjà données, en vidéo.
+ *
+ * ⚠️ **`overrideAccess: false`, comme les témoignages.** C'est `lecturePubliee`
+ * qui écarte les brouillons pour un visiteur anonyme — sans cela, une
+ * réalisation en préparation paraîtrait sur le site public, avec des visages de
+ * participants que personne n'a encore relus.
+ *
+ * ⚠️ **`depth: 1`** : sans lui, `fichier` et `affiche` restent des identifiants
+ * et la carte n'a ni vidéo ni image — elle se rendrait, simplement vide.
+ */
+export const getRealisations = cache(
+  unstable_cache(
+    async (): Promise<Realisation[]> => {
+      const payload = await payloadClient();
+      const { docs } = await payload.find({
+        collection: "realisations",
+        limit: 60,
+        locale: "fr",
+        depth: 1,
+        /*
+          L'ordre choisi d'abord, la plus récente ensuite. Une galerie se
+          compose ; « le plus récent » seul mettrait en tête ce qu'on vient de
+          saisir, pas ce qu'on veut montrer en premier.
+        */
+        sort: ["ordre", "-createdAt"],
+        overrideAccess: false,
+      });
+      return docs.map(versRealisation);
+    },
+    ["realisations"],
+    { tags: [ETIQUETTE_VITRINE], revalidate: PEREMPTION },
+  ),
+);
+
+/**
+ * Ce que la page « Ils l'ont fait » a à montrer, en une lecture.
+ *
+ * ⚠️ **Le lien de navigation en dépend, et c'est pour cela qu'il est ici.** Une
+ * rubrique qui mène à une page vide se lit comme une page à moitié chargée, pas
+ * comme une intention — c'est la leçon du filtre « Ville » sans choix. L'en-tête
+ * et le pied de page appellent donc cette fonction ; les deux caches font que
+ * cela ne coûte ni une requête par page ni une requête par visite.
+ */
+export async function getVitrine(): Promise<{
+  temoignages: Temoignage[];
+  realisations: Realisation[];
+}> {
+  const [temoignages, realisations] = await Promise.all([getTemoignages(), getRealisations()]);
+  return { temoignages, realisations };
+}
+
+/** Y a-t-il de quoi ouvrir `/temoignages` ? */
+export async function laVitrineExiste(): Promise<boolean> {
+  const { temoignages, realisations } = await getVitrine();
+  return temoignages.length > 0 || realisations.length > 0;
 }
 
 export const getPartenaires = cache(async (): Promise<Partenaire[]> => {

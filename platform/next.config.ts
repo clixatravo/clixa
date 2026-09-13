@@ -61,6 +61,29 @@ const redirections = async () => [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /*
+    ── ⚠️ Les hôtes que `next/image` a le droit d'optimiser ──────────────────
+    Sans cette liste, `<Image src="https://…">` **lève** : « hostname is not
+    configured under images ». Ce n'était encore arrivé à personne parce que
+    les deux seuls usages d'images distantes — les logos de partenaires et,
+    depuis le 13 septembre 2026, les affiches de séances filmées — portent sur
+    des collections vides. Le premier logo déposé aurait cassé l'accueil.
+
+    Deux hôtes, et pas un de plus :
+
+      • le magasin de médias, d'où viennent les fichiers déposés dans /admin ;
+      • les vignettes de YouTube, que `lib/video.ts` compose à partir d'un
+        identifiant vérifié — jamais à partir d'une adresse saisie.
+
+    Ouvrir la liste plus large ferait afficher, et surtout **servir depuis
+    notre domaine**, n'importe quelle image d'ailleurs.
+  */
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "**.public.blob.vercel-storage.com" },
+      { protocol: "https", hostname: "i.ytimg.com" },
+    ],
+  },
   // Un <Link> vers une route inexistante casse le build au lieu de livrer un 404.
   typedRoutes: true,
   redirects: redirections,

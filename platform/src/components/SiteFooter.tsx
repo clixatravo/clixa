@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { getPages } from "@/lib/pages";
+import { laVitrineExiste } from "@/lib/catalogue";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import { DEVISE } from "@/lib/societe";
@@ -37,6 +38,14 @@ const colonnes = [
 
 export async function SiteFooter() {
   const pages = await getPages();
+  /*
+    ⚠️ **Le lien n'existe que si la page existe.** `/temoignages` répond 404
+    tant qu'aucun témoignage ni aucune vidéo n'est publié : c'est la même règle
+    que les pages légales juste en dessous — on ne montre pas une rubrique qui
+    mène au vide. La lecture ne coûte rien de plus, elle est déjà en cache sous
+    l'étiquette « vitrine ».
+  */
+  const vitrine = await laVitrineExiste();
 
   return (
     <footer className="bg-ink/95 border-t border-white/[0.08]">
@@ -75,6 +84,16 @@ export async function SiteFooter() {
             <div key={c.titre}>
               <span className="mono-label text-gold mb-4 block">{c.titre}</span>
               <ul className="flex flex-col space-y-1">
+                {c.titre === "L'institut" && vitrine && (
+                  <li>
+                    <Link
+                      href="/temoignages"
+                      className="text-ivory-dim hover:text-gold-bright inline-block py-1 text-[0.88rem] transition-colors"
+                    >
+                      Ils l&apos;ont fait
+                    </Link>
+                  </li>
+                )}
                 {c.liens.map((l) => (
                   <li key={l.href}>
                     <Link

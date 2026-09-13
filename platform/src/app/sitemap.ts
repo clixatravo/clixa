@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProgrammes, getSpecialisations, getSessions } from "@/lib/catalogue";
+import { getProgrammes, getSpecialisations, getSessions, laVitrineExiste } from "@/lib/catalogue";
 import { getArticles } from "@/lib/blog";
 import { getPages } from "@/lib/pages";
 import { SITE_URL } from "@/lib/seo";
@@ -54,6 +54,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.4,
     },
   ];
+
+  /*
+    ⚠️ `/temoignages` répond 404 tant que rien n'y est publié : l'annoncer aux
+    moteurs les enverrait sur une adresse morte, et Google retient ce genre de
+    chose. Le crochet `revaliderVitrine` rebâtit ce plan à la première
+    publication.
+  */
+  if (await laVitrineExiste()) {
+    statiques.push({
+      url: `${SITE_URL}/temoignages`,
+      lastModified: maintenant,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
 
   const programmes: MetadataRoute.Sitemap = await Promise.all(
     (await getProgrammes()).map(async (p) => {

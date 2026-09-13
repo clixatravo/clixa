@@ -1,5 +1,10 @@
 import { revalidatePath, revalidateTag } from "next/cache";
-import { ETIQUETTE_CATALOGUE, ETIQUETTE_PAGES, ETIQUETTE_TARIFS } from "@/lib/etiquettes";
+import {
+  ETIQUETTE_CATALOGUE,
+  ETIQUETTE_PAGES,
+  ETIQUETTE_TARIFS,
+  ETIQUETTE_VITRINE,
+} from "@/lib/etiquettes";
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
@@ -123,6 +128,39 @@ export const revaliderArticle: CollectionAfterChangeHook = ({ doc, previousDoc }
     if (d?.slug) chemins.add(`/blog/${d.slug}`);
   }
   rafraichir([...chemins], `article « ${doc?.titre ?? "?"} »`);
+  return doc;
+};
+
+/**
+ * Un témoignage ou une séance filmée touche la page qui les réunit, l'accueil
+ * qui en montre trois, et le plan du site — dont l'adresse `/temoignages`
+ * dépend justement de l'existence d'au moins un des deux.
+ *
+ * ⚠️ **Sans ce crochet, la rédaction publie et ne voit rien changer.** C'est le
+ * défaut qu'INT-02 existe pour empêcher, et les témoignages y échappaient
+ * depuis l'origine : la collection n'avait aucun crochet, si bien qu'un
+ * témoignage publié n'apparaissait qu'au déploiement suivant. Personne ne s'en
+ * était aperçu parce qu'aucun n'a jamais été publié.
+ *
+ * La fiche du parcours cité suit aussi : elle affiche les témoignages qui lui
+ * sont rattachés. `previousDoc` compte autant que `doc` — un témoignage
+ * déplacé d'un parcours à l'autre doit disparaître de l'ancien.
+ */
+export const revaliderVitrine: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
+  const chemins = new Set(["/", "/temoignages", "/sitemap.xml"]);
+  for (const d of [doc, previousDoc]) {
+    const slug = slugDe(d?.programme);
+    if (slug) chemins.add(`/formations/${slug}`);
+  }
+  rafraichir([...chemins], "vitrine", [ETIQUETTE_VITRINE]);
+  return doc;
+};
+
+export const revaliderVitrineSupprimee: CollectionAfterDeleteHook = ({ doc }) => {
+  const chemins = new Set(["/", "/temoignages", "/sitemap.xml"]);
+  const slug = slugDe(doc?.programme);
+  if (slug) chemins.add(`/formations/${slug}`);
+  rafraichir([...chemins], "vitrine allégée", [ETIQUETTE_VITRINE]);
   return doc;
 };
 

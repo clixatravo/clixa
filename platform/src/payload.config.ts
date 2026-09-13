@@ -20,6 +20,8 @@ import { Programmes } from "@/collections/Programmes";
 import { Sessions } from "@/collections/Sessions";
 import { Articles } from "@/collections/Articles";
 import { Temoignages } from "@/collections/Temoignages";
+import { Realisations } from "@/collections/Realisations";
+import { Videos } from "@/collections/Videos";
 import { Partenaires } from "@/collections/Partenaires";
 import { Pages } from "@/collections/Pages";
 import { Medias } from "@/collections/Medias";
@@ -103,9 +105,11 @@ export default buildConfig({
     // Éditorial
     Articles,
     Temoignages,
+    Realisations,
     Partenaires,
     Pages,
     Medias,
+    Videos,
     // Admissions
     DemandesRappel,
     Conversations,
@@ -277,7 +281,17 @@ export default buildConfig({
             c'est précisément ce contrôle qui les protège, et `lib/recus.ts` ne
             passe pas par ce greffon.
           */
-          collections: { medias: { disablePayloadAccessControl: true } },
+          /*
+            ⚠️ Les vidéos suivent la même règle que les images : servies depuis
+            le magasin, pas par une fonction. Un clip de trois mégaoctets relayé
+            par une fonction serverless serait facturé à chaque lecture, et
+            arriverait plus lentement qu'un CDN — pour un fichier qui est
+            public par nature.
+          */
+          collections: {
+            medias: { disablePayloadAccessControl: true },
+            videos: { disablePayloadAccessControl: true },
+          },
           token: process.env.BLOB_MEDIAS_TOKEN,
         }),
       ]

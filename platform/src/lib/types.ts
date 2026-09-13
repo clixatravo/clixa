@@ -228,6 +228,26 @@ export interface Temoignage {
   programmeSlug?: string;
 }
 
+/**
+ * Une formation déjà donnée, montrée en vidéo.
+ *
+ * ⚠️ **Une galerie, pas un historique** : ni date, ni nombre de participants,
+ * ni ville. Décision de la direction le 13 septembre 2026 — un compteur
+ * « 18 participants » vieillit, se conteste, et demande d'être tenu à jour.
+ */
+export interface Realisation {
+  id: string;
+  titre: string;
+  description?: string;
+  /** L'adresse du lecteur, déjà validée et recomposée — voir `lib/video.ts`. */
+  embed?: string;
+  /** Le fichier déposé, quand la vidéo ne vient pas d'un lien. */
+  fichier?: string;
+  /** Ce qu'on voit avant de lancer la lecture. */
+  affiche?: string;
+  afficheAlt?: string;
+}
+
 /** Une organisation partenaire, certificatrice ou de référence. */
 export interface Partenaire {
   id: string;

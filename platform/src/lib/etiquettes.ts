@@ -13,6 +13,15 @@
 export const ETIQUETTE_CATALOGUE = "catalogue";
 export const ETIQUETTE_TARIFS = "tarifs";
 export const ETIQUETTE_PAGES = "pages";
+/**
+ * Ce que la vitrine montre d'elle-même : témoignages et séances filmées.
+ *
+ * ⚠️ **Une étiquette à part du catalogue**, parce que ce n'est pas la même
+ * main qui écrit. Le catalogue bouge quand un parcours change ; ces deux
+ * collections bougent quand la rédaction publie une vidéo ou un retour, et
+ * lever le catalogue entier pour cela ferait relire douze fiches sans raison.
+ */
+export const ETIQUETTE_VITRINE = "vitrine";
 
 /**
  * Plafond de fraîcheur, en secondes.

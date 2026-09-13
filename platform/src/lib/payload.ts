@@ -17,8 +17,10 @@ import type {
   Tarifs,
   Temoignage,
   Partenaire,
+  Realisation,
 } from "@/lib/types";
 import type { Article, CategorieArticle } from "@/lib/blog";
+import { lireLaVideo } from "@/lib/video";
 
 /**
  * INT-01 — Accès à Payload et traduction vers le modèle de domaine.
@@ -197,6 +199,61 @@ export function versTarifs(d: {
     ...(d.beneficiairePays ? { beneficiairePays: d.beneficiairePays } : {}),
     ...(d.consignesPaiement ? { consignesPaiement: t(d.consignesPaiement) } : {}),
   };
+}
+
+/**
+ * Une réalisation, telle que la page l'affiche.
+ *
+ * ⚠️ **L'adresse du lecteur est recomposée ici, jamais recopiée.** C'est
+ * `lireLaVideo` qui décide : elle extrait un identifiant, en vérifie la forme,
+ * et rebâtit l'adresse depuis un hôte écrit en dur. Une adresse que la base
+ * porterait mais qu'on ne reconnaît pas ne rend rien — la carte se contente
+ * alors de son titre plutôt que d'encadrer l'inconnu. Voir `lib/video.ts`.
+ */
+export function versRealisation(d: {
+  id: number | string;
+  titre?: string | null;
+  description?: string | null;
+  source?: string | null;
+  lien?: string | null;
+  fichier?: unknown;
+  affiche?: unknown;
+}): Realisation {
+  const video = d.source === "lien" ? lireLaVideo(d.lien) : undefined;
+  const fichier = urlDuMedia(d.fichier);
+  const affiche = urlDuMedia(d.affiche);
+
+  return {
+    id: String(d.id),
+    titre: t(d.titre),
+    ...(t(d.description) ? { description: t(d.description) } : {}),
+    ...(video ? { embed: video.embed } : {}),
+    ...(fichier ? { fichier } : {}),
+    /*
+      L'affiche déposée l'emporte sur la vignette du fournisseur : c'est un
+      choix de l'équipe, et il vaut mieux que ce que YouTube tire au hasard
+      d'une image de la vidéo.
+    */
+    ...((affiche ?? video?.vignette) ? { affiche: affiche ?? video?.vignette } : {}),
+    ...(texteAlternatif(d.affiche) ? { afficheAlt: texteAlternatif(d.affiche) } : {}),
+  };
+}
+
+/** L'adresse d'un fichier téléversé, quand la relation a été résolue. */
+function urlDuMedia(v: unknown): string | undefined {
+  if (v && typeof v === "object" && "url" in v) {
+    const url = (v as { url?: unknown }).url;
+    if (typeof url === "string" && url) return url;
+  }
+  return undefined;
+}
+
+function texteAlternatif(v: unknown): string | undefined {
+  if (v && typeof v === "object" && "alt" in v) {
+    const alt = (v as { alt?: unknown }).alt;
+    if (typeof alt === "string" && alt) return alt;
+  }
+  return undefined;
 }
 
 export function versTemoignage(d: {

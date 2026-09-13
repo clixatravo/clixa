@@ -14,6 +14,7 @@ import {
   getSpecialisations,
   getTemoignages,
   getPartenaires,
+  laVitrineExiste,
   getTarifs,
   lieuSession,
   villesDisponibles,
@@ -61,6 +62,7 @@ export default async function Accueil() {
 
   const temoignages = await getTemoignages();
   const partenaires = await getPartenaires();
+  const vitrine = await laVitrineExiste();
 
   const nbParSpecialisation = new Map(
     specs.map((s) => [s.slug, programmes.filter((p) => p.specialisation === s.slug).length]),
@@ -577,6 +579,23 @@ export default async function Accueil() {
         Les deux sections se taisent tant qu'aucun contenu n'est publié.
       */}
       <Temoignages temoignages={temoignages} titre="Ils sont passés par CLIXA." />
+
+      {/*
+        Le renvoi vers la page entière — retours et séances filmées — n'apparaît
+        que s'il y a quelque chose à y voir : l'adresse répond 404 sinon.
+      */}
+      {vitrine && (
+        <div className="border-line border-t px-8 pt-8 text-center">
+          <Link
+            href="/temoignages"
+            className="text-gold-bright hover:text-gold inline-flex min-h-11 items-center gap-1.5 text-[0.9rem] transition-colors"
+          >
+            Voir tous les retours et les séances filmées
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      )}
+
       <Partenaires partenaires={partenaires} />
     </>
   );

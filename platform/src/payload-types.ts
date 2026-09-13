@@ -73,9 +73,11 @@ export interface Config {
     sessions: Session;
     articles: Article;
     temoignages: Temoignage;
+    realisations: Realisation;
     partenaires: Partenaire;
     pages: Page;
     medias: Media;
+    videos: Video;
     'demandes-rappel': DemandesRappel;
     conversations: Conversation;
     'rendez-vous': RendezVous;
@@ -95,9 +97,11 @@ export interface Config {
     sessions: SessionsSelect<false> | SessionsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     temoignages: TemoignagesSelect<false> | TemoignagesSelect<true>;
+    realisations: RealisationsSelect<false> | RealisationsSelect<true>;
     partenaires: PartenairesSelect<false> | PartenairesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     'demandes-rappel': DemandesRappelSelect<false> | DemandesRappelSelect<true>;
     conversations: ConversationsSelect<false> | ConversationsSelect<true>;
     'rendez-vous': RendezVousSelect<false> | RendezVousSelect<true>;
@@ -504,6 +508,67 @@ export interface Temoignage {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Vidéos des formations déjà données. Elles s'affichent sur /temoignages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "realisations".
+ */
+export interface Realisation {
+  id: number;
+  /**
+   * « Séance Directeur Administratif et Financier », par exemple.
+   */
+  titre?: string | null;
+  /**
+   * Facultatif. Ce qu'on voit dans la vidéo, en une ligne. Pas un résumé du programme.
+   */
+  description?: string | null;
+  source: 'lien' | 'fichier';
+  /**
+   * Coller l'adresse telle quelle : youtu.be/…, youtube.com/watch?v=…, youtube.com/shorts/… ou vimeo.com/…
+   */
+  lien?: string | null;
+  /**
+   * L'hébergeur refuse au-delà de 4,5 Mo — une quinzaine de secondes de vidéo. Au-delà, passer par YouTube.
+   */
+  fichier?: (number | null) | Video;
+  /**
+   * Ce qu'on voit avant de lancer la lecture. Indispensable pour un fichier déposé ; facultative pour un lien YouTube, qui en fournit une.
+   */
+  affiche?: (number | null) | Media;
+  /**
+   * Le plus petit passe en premier. Vide : la plus récente d'abord.
+   */
+  ordre?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Clips courts déposés sur le site. Au-delà de 4 Mo, passer par YouTube.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  /**
+   * Pour retrouver le fichier dans cette liste. Ce n'est pas ce que lit le visiteur.
+   */
+  titre: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * Référentiels et standards visés par les parcours.
@@ -954,6 +1019,10 @@ export interface PayloadLockedDocument {
         value: number | Temoignage;
       } | null)
     | ({
+        relationTo: 'realisations';
+        value: number | Realisation;
+      } | null)
+    | ({
         relationTo: 'partenaires';
         value: number | Partenaire;
       } | null)
@@ -964,6 +1033,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'medias';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
       } | null)
     | ({
         relationTo: 'demandes-rappel';
@@ -1235,6 +1308,22 @@ export interface TemoignagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "realisations_select".
+ */
+export interface RealisationsSelect<T extends boolean = true> {
+  titre?: T;
+  description?: T;
+  source?: T;
+  lien?: T;
+  fichier?: T;
+  affiche?: T;
+  ordre?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "partenaires_select".
  */
 export interface PartenairesSelect<T extends boolean = true> {
@@ -1341,6 +1430,24 @@ export interface MediasSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  titre?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

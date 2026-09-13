@@ -1,13 +1,14 @@
 import type { CollectionConfig } from "payload";
 import { lecturePubliee, reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
+import { revaliderVitrine, revaliderVitrineSupprimee } from "@/collections/revalider";
 
 /**
  * BE-05 — Témoignages d'anciens participants.
  *
- * Présents dans index.html (carrousel « Ils ont transformé leur trajectoire »),
- * ils n'ont pas encore été repris sur le nouveau site : la collection existe,
- * l'affichage reste à faire côté front.
+ * Repris d'index.html (carrousel « Ils ont transformé leur trajectoire »). Ils
+ * s'affichent sur l'accueil, sur la fiche du parcours cité, et sur
+ * `/temoignages` — la page que la direction a demandée le 13 septembre 2026.
  */
 export const Temoignages: CollectionConfig = {
   slug: "temoignages",
@@ -27,6 +28,10 @@ export const Temoignages: CollectionConfig = {
   versions: {
     drafts: true,
     maxPerDoc: 20,
+  },
+  hooks: {
+    afterChange: [revaliderVitrine],
+    afterDelete: [revaliderVitrineSupprimee],
   },
   fields: [
     {
