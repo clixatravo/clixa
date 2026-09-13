@@ -3511,6 +3511,18 @@ rien, et la carte se contente de son titre.
   même chose. Sans lui, un lien mal recopié s'enregistre sans un mot et la page
   ne montre rien — on cherche alors le défaut dans le code alors qu'il est dans
   la case.
+- ⚠️ **Et ce refus a d'abord été muet** (corrigé le 13 septembre 2026, en
+  regardant l'écran pour montrer la marche à suivre à la direction). Il levait
+  dans un crochet `beforeValidate` : Payload rend alors **500 · « Something
+  went wrong. »** — en anglais, sans dire quoi, et la phrase écrite dans la
+  collection n'atteignait personne. C'est un `validate` de champ : **400**, le
+  message **sous la case**, en rouge, et un bandeau qui nomme le champ fautif.
+  Rien au type, rien au build, rien au grep ne distinguait les deux ; seul le
+  navigateur. La garde éprouve donc le **texte** rendu, pas seulement le refus —
+  prouvé en le remplaçant par « Adresse invalide. ».
+- ⚠️ **Une valeur inchangée passe toujours.** C'est la leçon du champ « Pays » :
+  un validateur ajouté aujourd'hui rejoue sur chaque écriture et gèlerait une
+  ligne écrite hier.
 - `verifier-video.ts` compte **31 contrôles**, dont dix-sept refus. **Prouvé en
   remettant le défaut** — un `includes()` sur l'hôte et l'hôte avec cookies :
   onze passent au rouge, dont l'hôte qui imite YouTube.

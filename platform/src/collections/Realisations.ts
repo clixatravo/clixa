@@ -47,29 +47,6 @@ export const Realisations: CollectionConfig = {
     */
     afterChange: [revaliderVitrine],
     afterDelete: [revaliderVitrineSupprimee],
-    beforeValidate: [
-      ({ data }) => {
-        if (!data) return data;
-
-        /*
-          ── ⚠️ On refuse une adresse qu'on ne saura pas afficher ─────────────
-          Sans ce contrôle, un lien mal recopié s'enregistre sans un mot et la
-          page se contente de ne rien montrer : la vidéo « ne marche pas », et
-          l'on cherche le défaut dans le code alors qu'il est dans la case. Le
-          refus arrive ici, au moment où la personne a encore l'adresse sous les
-          yeux — et il dit **quelles formes** sont acceptées, parce qu'un refus
-          qui n'apprend rien fait recoller la même chose.
-        */
-        if (data.source === "lien" && data.lien && !lireLaVideo(data.lien)) {
-          throw new Error(
-            "Cette adresse n'est pas une vidéo YouTube ou Vimeo reconnue. " +
-              "Formes acceptées : youtu.be/…, youtube.com/watch?v=…, " +
-              "youtube.com/shorts/…, vimeo.com/…",
-          );
-        }
-        return data;
-      },
-    ],
   },
 
   fields: [
@@ -113,6 +90,40 @@ export const Realisations: CollectionConfig = {
       name: "lien",
       type: "text",
       label: "Adresse de la vidéo",
+      /*
+        ── ⚠️ Le refus est un `validate`, pas une exception ─────────────────
+        Le premier jet levait dans un crochet `beforeValidate`. Mesuré à
+        l'écran : Payload rend alors **500 · « Something went wrong. »** — en
+        anglais, sans dire quoi, et la phrase écrite juste ici n'atteignait
+        personne. Un refus qui n'apprend rien fait recoller la même adresse,
+        et fait chercher le défaut dans le code alors qu'il est dans la case.
+
+        Un `validate` s'affiche **sous le champ**, en rouge, avec les formes
+        acceptées — au moment où la personne a encore l'adresse sous les yeux.
+      */
+      validate: (valeur: unknown, options: unknown) => {
+        const { siblingData, previousValue } = (options ?? {}) as {
+          siblingData?: { source?: string };
+          previousValue?: unknown;
+        };
+        if (siblingData?.source !== "lien") return true;
+
+        /*
+          ⚠️ Une valeur inchangée passe toujours. Un contrôle ajouté
+          aujourd'hui ne peut pas geler une ligne écrite hier : c'est la leçon
+          du champ « Pays », où un validateur rejouait sur chaque écriture et
+          empêchait la tâche de 8 h de toucher un dossier ancien.
+        */
+        if (valeur === previousValue) return true;
+
+        if (!valeur)
+          return "Collez l'adresse de la vidéo, ou choisissez « un fichier déposé ici ».";
+
+        return lireLaVideo(valeur)
+          ? true
+          : "Cette adresse n'est pas une vidéo YouTube ou Vimeo reconnue. Formes acceptées : " +
+              "youtu.be/…, youtube.com/watch?v=…, youtube.com/shorts/… ou vimeo.com/…";
+      },
       admin: {
         condition: (_, frere) => frere?.source === "lien",
         description:

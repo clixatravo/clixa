@@ -189,6 +189,7 @@ try {
     défaut dans le code alors qu'il est dans la case.
   */
   let refuse = false;
+  let dit = "";
   try {
     const mauvaise = await payload.create({
       collection: "realisations",
@@ -202,10 +203,29 @@ try {
       },
     });
     aRetirer.push({ collection: "realisations", id: mauvaise.id });
-  } catch {
+  } catch (e) {
     refuse = true;
+    /*
+      Le message des erreurs de validation vit dans `data.errors`, pas dans
+      `message` — qui ne dit que « The following field is invalid ».
+    */
+    const err = e as { message?: string; data?: { errors?: { message?: string }[] } };
+    dit = [err.message, ...(err.data?.errors ?? []).map((x) => x.message)].join(" ");
   }
   dire("une adresse qui n'est pas une vidéo reconnue est refusée à la saisie", refuse);
+
+  /*
+    ⚠️ **Le refus doit apprendre quelque chose, et c'est ce qui a lâché.**
+    Le premier jet levait dans un crochet : Payload rendait alors **500 ·
+    « Something went wrong. »**, en anglais, et la phrase écrite dans la
+    collection n'atteignait personne. Vu à l'écran, jamais au type — d'où ce
+    contrôle sur le texte lui-même, et pas seulement sur le fait qu'on refuse.
+  */
+  dire(
+    "et il nomme les formes acceptées",
+    dit.includes("youtu.be") && dit.includes("vimeo.com"),
+    dit.slice(0, 90) || "aucun message",
+  );
 
   /*
     Et le témoin de ce refus : une adresse reconnue passe. Une validation qui
