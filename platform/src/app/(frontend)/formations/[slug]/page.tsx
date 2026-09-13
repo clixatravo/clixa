@@ -427,9 +427,10 @@ export default async function FicheFormation({ params }: Props) {
 
       {programme.slug === "directeur-administratif-et-financier" && (
         <TrailerImmersion
-          titre="La formation DAF en direct"
-          sousTitre="Visionnez un extrait réel de masterclass et le retour spontané d'un participant de la cohorte."
+          titre="La formation DAF en vidéo"
+          sousTitre="Visionnez la masterclass réelle, le retour spontané de la cohorte DAF et le film officiel CLIXA Institute."
           afficherCtaProgramme={false}
+          pisteInitiale={1}
         />
       )}
 

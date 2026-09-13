@@ -2,10 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import type { Route } from "next";
+
+interface Pilier {
+  titre: string;
+  description: string;
+}
 
 interface PisteVideo {
   id: string;
   onglet: string;
+  icone: string;
   badge: string;
   programmeTitre: string;
   programmeSlug: string;
@@ -14,13 +21,56 @@ interface PisteVideo {
   sourceFichier: string;
   affiche: string;
   dureeFormat: string;
-  lienInstagram: string;
+  ratio: "16/9" | "carre";
+  lienExterne: string;
+  labelLien: string;
+  piliers: Pilier[];
+  ctaTitre: string;
+  ctaLien: string;
 }
 
 const PISTES: PisteVideo[] = [
   {
+    id: "trailer-officiel",
+    onglet: "Trailer Officiel CLIXA",
+    icone: "🎬",
+    badge: "Film Officiel 2026 · CLIXA Institute",
+    programmeTitre: "Toutes Formations · DAF, PMP®, Management & Leadership",
+    programmeSlug: "formations",
+    citation:
+      "« L’excellence exécutive pour les leaders d’Afrique : Finance de direction, Gouvernance de projets PMP® et Management stratégique. Le leadership commence par un clic. »",
+    explication:
+      "Découvrez en 48 secondes l'expérience CLIXA Institute : cas réels d'entreprise, cohortes de dirigeants en direct, préparation aux certifications internationales et délivrance du certificat professionnel vérifié.",
+    sourceFichier: "/videos/trailer_clixa_officiel.mp4",
+    affiche: "/videos/trailer_clixa_officiel_poster.jpg",
+    dureeFormat: "0:48",
+    ratio: "16/9",
+    lienExterne: "https://www.clixa.africa",
+    labelLien: "www.clixa.africa",
+    piliers: [
+      {
+        titre: "DAF & Finance Stratégique :",
+        description:
+          "pilotage de la performance économique, modélisation de trésorerie et décisions de direction.",
+      },
+      {
+        titre: "PMP® & Gouvernance de Projets :",
+        description:
+          "alignement stratégique, méthodologies agiles/hybrides et préparation à la certification PMI.",
+      },
+      {
+        titre: "Certificat & Réseau Pan-Africain :",
+        description:
+          "diplôme professionnel avec code unique de vérification et communauté active de décideurs.",
+      },
+    ],
+    ctaTitre: "Explorer toutes les formations",
+    ctaLien: "/formations",
+  },
+  {
     id: "extrait-daf",
-    onglet: "Extrait de Masterclass",
+    onglet: "Extrait Masterclass DAF",
+    icone: "🎥",
     badge: "Séance réelle enregistrée",
     programmeTitre: "Directeur Administratif et Financier (DAF)",
     programmeSlug: "directeur-administratif-et-financier",
@@ -31,35 +81,82 @@ const PISTES: PisteVideo[] = [
     sourceFichier: "/videos/immersion/reel_daf_extrait.mp4",
     affiche: "/videos/immersion/reel_daf_extrait_poster.png",
     dureeFormat: "0:32",
-    lienInstagram: "https://www.instagram.com/reel/DdNOvrLuj7-/",
+    ratio: "carre",
+    lienExterne: "https://www.instagram.com/reel/DdNOvrLuj7-/",
+    labelLien: "Voir sur @clixa.africa",
+    piliers: [
+      {
+        titre: "Cas réels d'entreprise :",
+        description:
+          "aucun exposé abstrait, chaque module résout une décision de direction générale.",
+      },
+      {
+        titre: "Interactivité en direct :",
+        description:
+          "débats contradictoires, simulations de comités et retours d'expérience entre pairs directeurs.",
+      },
+      {
+        titre: "Validation certifiante :",
+        description:
+          "parcours structuré délivrant un certificat professionnel référencé de haut niveau.",
+      },
+    ],
+    ctaTitre: "Découvrir le programme DAF",
+    ctaLien: "/formations/directeur-administratif-et-financier",
   },
   {
     id: "temoignage-daf",
-    onglet: "Retour à chaud",
+    onglet: "Retour à chaud cohorte",
+    icone: "🎙️",
     badge: "À chaud · 1ʳᵉ séance",
-    programmeTitre: "Cohorte DAF · Participant",
+    programmeTitre: "Cohorte DAF · Témoignage Participant",
     programmeSlug: "directeur-administratif-et-financier",
     citation:
       "« Un retour spontané dès la première séance : des échanges de très haut niveau, concrets et immédiatement applicables. L’aventure ne fait que commencer. »",
     explication:
-      "Le témoignage sans filtre d'un cadre financier participant à la cohorte DAF chez CLIXA Institute, enregistré dès la sortie de son premier cours en direct.",
+      "Le témoignage sans filtre d'un cadre financier participant à la cohorte DAF chez CLIXA Institute, enregistré dès la sortie de son tout premier cours en direct.",
     sourceFichier: "/videos/immersion/reel_daf_temoignage.mp4",
     affiche: "/videos/immersion/reel_daf_temoignage_poster.png",
     dureeFormat: "0:57",
-    lienInstagram: "https://www.instagram.com/reel/DdMoJOKsIbe/",
+    ratio: "carre",
+    lienExterne: "https://www.instagram.com/reel/DdMoJOKsIbe/",
+    labelLien: "Voir sur @clixa.africa",
+    piliers: [
+      {
+        titre: "Émulation collective :",
+        description:
+          "diversité des secteurs représentés et synergies stratégiques entre directeurs d'Afrique.",
+      },
+      {
+        titre: "Pragmatisme immédiat :",
+        description:
+          "concepts et grilles de lecture actionnables dès le lendemain matin dans son organisation.",
+      },
+      {
+        titre: "Mentorats & Suivi continu :",
+        description:
+          "accompagnement personnalisé par des formateurs praticiens tout au long du parcours.",
+      },
+    ],
+    ctaTitre: "Découvrir le programme DAF",
+    ctaLien: "/formations/directeur-administratif-et-financier",
   },
 ];
 
 export function TrailerImmersion({
   titre = "Au cœur de l'expérience CLIXA",
-  sousTitre = "Des séances réelles, des retours spontanés : vivez l'immersion avant même de rejoindre votre cohorte.",
+  sousTitre = "Film officiel, extraits de masterclasses réelles et retours d'expérience à chaud : vivez l'immersion CLIXA Institute.",
   afficherCtaProgramme = true,
+  pisteInitiale = 0,
 }: {
   titre?: string;
   sousTitre?: string;
   afficherCtaProgramme?: boolean;
+  pisteInitiale?: number;
 }) {
-  const [indexPiste, setIndexPiste] = useState(0);
+  const [indexPiste, setIndexPiste] = useState(
+    pisteInitiale >= 0 && pisteInitiale < PISTES.length ? pisteInitiale : 0,
+  );
   const [enLecture, setEnLecture] = useState(false);
   const [muet, setMuet] = useState(false);
   const [progression, setProgression] = useState(0);
@@ -167,15 +264,13 @@ export function TrailerImmersion({
                 key={p.id}
                 type="button"
                 onClick={() => changerPiste(i)}
-                className={`rounded-clixa flex cursor-pointer items-center gap-2.5 px-5 py-2.5 font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-300 ${
+                className={`rounded-clixa flex cursor-pointer items-center gap-2.5 px-4.5 py-2.5 font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-300 ${
                   estActif
                     ? "border-gold bg-gold/15 text-gold-bright border shadow-[0_0_20px_rgba(201,162,76,0.2)]"
                     : "border-line bg-panel/60 text-ivory-dim hover:border-gold/40 hover:text-ivory border"
                 }`}
               >
-                <span className={estActif ? "text-gold" : "text-ivory-dim/60"}>
-                  {i === 0 ? "🎥" : "🎙️"}
-                </span>
+                <span>{p.icone}</span>
                 <span>{p.onglet}</span>
                 <span className="border-line/60 bg-ink/50 text-ivory-dim/70 rounded-full border px-2 py-0.5 text-[0.62rem]">
                   {p.dureeFormat}
@@ -186,16 +281,26 @@ export function TrailerImmersion({
         </div>
 
         {/* Conteneur principal 2 colonnes (Lecteur vidéo + Carte de contexte) */}
-        <div className="executive-card rounded-clixa border-line/80 grid grid-cols-1 items-center gap-8 overflow-hidden p-6 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:p-10">
+        <div className="executive-card rounded-clixa border-line/80 grid grid-cols-1 items-center gap-8 overflow-hidden p-6 lg:grid-cols-[1.1fr_1fr] lg:gap-12 lg:p-10">
           {/* Colonne gauche : Lecteur vidéo exécutif */}
-          <div className="relative mx-auto w-full max-w-[500px]">
-            <div className="rounded-clixa border-gold/30 bg-ink group relative aspect-square w-full overflow-hidden border shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)]">
-              {/* Vidéo MP4 native */}
+          <div
+            className={`relative mx-auto w-full transition-all duration-300 ${
+              active.ratio === "16/9" ? "max-w-[560px]" : "max-w-[440px]"
+            }`}
+          >
+            <div
+              className={`rounded-clixa border-gold/30 bg-ink group relative w-full overflow-hidden border shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)] ${
+                active.ratio === "16/9" ? "aspect-video" : "aspect-square"
+              }`}
+            >
+              {/* Vidéo MP4 native avec key pour forcer le remontage propre au changement de piste */}
               <video
+                key={active.id}
                 ref={videoRef}
                 src={active.sourceFichier}
                 poster={active.affiche}
                 playsInline
+                preload="metadata"
                 onTimeUpdate={gererTemps}
                 onEnded={() => {
                   setEnLecture(false);
@@ -204,7 +309,7 @@ export function TrailerImmersion({
                 className="size-full object-cover"
               />
 
-              {/* Bouton Play géant au centre si la vidéo n'est pas lancée */}
+              {/* Bouton Play au centre si la vidéo n'est pas lancée */}
               {!enLecture && (
                 <button
                   type="button"
@@ -222,8 +327,8 @@ export function TrailerImmersion({
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </span>
-                  <span className="border-line/60 bg-ink/80 text-ivory rounded-clixa mt-4 border px-3 py-1 font-mono text-[0.72rem] tracking-wider uppercase backdrop-blur-md">
-                    Regarder l&apos;extrait ({active.dureeFormat})
+                  <span className="border-line/60 bg-ink/80 text-ivory rounded-clixa mt-4 border px-3.5 py-1.5 font-mono text-[0.72rem] tracking-wider uppercase backdrop-blur-md">
+                    Lancer la vidéo ({active.dureeFormat})
                   </span>
                 </button>
               )}
@@ -309,19 +414,19 @@ export function TrailerImmersion({
               </div>
             </div>
 
-            {/* Lien discret vers l'Instagram officiel */}
+            {/* Légende & source officielle */}
             <div className="mt-3 flex items-center justify-between px-1">
               <span className="text-ivory-dim/70 flex items-center gap-1.5 font-mono text-[0.7rem]">
                 <span className="size-1.5 rounded-full bg-emerald-400" />
-                Format réel Instagram Reel
+                {active.ratio === "16/9" ? "Production Haute Définition" : "Format Reel Certifié"}
               </span>
               <a
-                href={active.lienInstagram}
+                href={active.lienExterne}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-ivory-dim hover:text-gold-bright inline-flex items-center gap-1 font-mono text-[0.72rem] transition-colors"
               >
-                <span>Voir sur @clixa.africa</span>
+                <span>{active.labelLien}</span>
                 <span aria-hidden="true">↗</span>
               </a>
             </div>
@@ -331,7 +436,7 @@ export function TrailerImmersion({
           <div className="flex flex-col justify-between">
             <div>
               {/* Badge supérieur */}
-              <div className="mb-3 flex items-center gap-2.5">
+              <div className="mb-3 flex flex-wrap items-center gap-2.5">
                 <span className="border-gold/30 bg-gold/10 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[0.66rem] font-bold tracking-wider uppercase">
                   {active.badge}
                 </span>
@@ -341,56 +446,45 @@ export function TrailerImmersion({
               </div>
 
               {/* Citation principale */}
-              <blockquote className="border-gold/60 text-ivory my-4 border-l-2 pl-4 text-[1.12rem] leading-relaxed font-medium italic">
+              <blockquote className="border-gold/60 text-ivory my-4 border-l-2 pl-4 text-[1.08rem] leading-relaxed font-medium italic">
                 {active.citation}
               </blockquote>
 
-              {/* Explication du contexte réel */}
+              {/* Explication du contexte */}
               <p className="text-ivory-dim/90 mt-4 text-[0.92rem] leading-relaxed">
                 {active.explication}
               </p>
 
-              {/* Piliers d'excellence observés dans l'extrait */}
+              {/* Piliers clés observés dans la piste */}
               <div className="border-line/60 my-6 space-y-2.5 border-t pt-5">
-                <div className="flex items-start gap-2.5 text-[0.84rem]">
-                  <span className="text-gold font-bold">✦</span>
-                  <span className="text-ivory-dim">
-                    <strong className="text-ivory font-medium">
-                      Cas réels d&apos;entreprise :
-                    </strong>{" "}
-                    aucun exposé abstrait, chaque module résout une décision de direction.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5 text-[0.84rem]">
-                  <span className="text-gold font-bold">✦</span>
-                  <span className="text-ivory-dim">
-                    <strong className="text-ivory font-medium">Interactivité en direct :</strong>{" "}
-                    débats stratégiques, retours d&apos;expérience entre pairs directeurs.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5 text-[0.84rem]">
-                  <span className="text-gold font-bold">✦</span>
-                  <span className="text-ivory-dim">
-                    <strong className="text-ivory font-medium">Validation certifiante :</strong>{" "}
-                    parcours structuré délivrant un certificat professionnel référencé.
-                  </span>
-                </div>
+                {active.piliers.map((p, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 text-[0.84rem]">
+                    <span className="text-gold font-bold">✦</span>
+                    <span className="text-ivory-dim">
+                      <strong className="text-ivory font-medium">{p.titre}</strong> {p.description}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Actions & Redirection vers le programme DAF */}
+            {/* Actions & Redirection dynamique */}
             {afficherCtaProgramme && (
               <div className="border-line/60 flex flex-wrap items-center gap-3.5 border-t pt-5">
                 <Link
-                  href={`/formations/${active.programmeSlug}`}
+                  href={active.ctaLien as Route}
                   className="bg-gold text-ink hover:bg-gold-bright rounded-clixa inline-flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-wider uppercase shadow-md transition-all"
                 >
-                  <span>Découvrir le programme DAF</span>
+                  <span>{active.ctaTitre}</span>
                   <span>→</span>
                 </Link>
 
                 <Link
-                  href={`/inscription?formation=${active.programmeSlug}`}
+                  href={
+                    (active.programmeSlug === "formations"
+                      ? "/inscription"
+                      : `/inscription?formation=${active.programmeSlug}`) as Route
+                  }
                   className="border-line-strong text-ivory hover:border-gold hover:text-gold-bright rounded-clixa bg-panel/50 inline-flex items-center gap-2 border px-4 py-3 text-xs font-semibold transition-all"
                 >
                   <span>Rejoindre la prochaine cohorte</span>
