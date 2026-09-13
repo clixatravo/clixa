@@ -8,6 +8,7 @@ import { PixelMeta } from "@/components/PixelMeta";
 import { BandeauCookies } from "@/components/BandeauCookies";
 import { PopupInscription } from "@/components/PopupInscription";
 import { Apparitions } from "@/components/Apparitions";
+import { AssistantIA } from "@/components/AssistantIA";
 import { SITE_URL, estProduction, jsonLdOrganisation } from "@/lib/seo";
 import "./globals.css";
 
@@ -112,6 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BandeauCookies />
         <PopupInscription />
         <Apparitions />
+        <AssistantIA />
       </body>
     </html>
   );
