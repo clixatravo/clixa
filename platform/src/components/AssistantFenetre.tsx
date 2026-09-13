@@ -36,12 +36,31 @@ const lireHistorique = (): Message[] => {
   éléments React, jamais du HTML injecté — une réponse ne peut pas glisser de
   balise dans la page.
 */
-const MOTIF = /(\*\*[^*]+\*\*|https?:\/\/[^\s)]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g;
+const MOTIF =
+  /(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|\*\*[^*]+\*\*|https?:\/\/[^\s)\]]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g;
 const lien = "text-gold-bright underline underline-offset-2 hover:text-gold break-words";
 
 function enLigne(texte: string, cle: string): ReactNode[] {
   return texte.split(MOTIF).map((part, i) => {
     const k = `${cle}-${i}`;
+    const md = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (md?.[1] && md[2]) {
+      // Lien écrit en markdown [libellé](url) : si le libellé est l'URL elle-même, on l'abrège.
+      const libelle = /^https?:\/\//.test(md[1])
+        ? md[1].replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
+        : md[1].replace(/^\*\*|\*\*$/g, "");
+      return (
+        <a
+          key={k}
+          href={md[2]}
+          className={lien}
+          target={md[2].includes("clixa.africa") ? undefined : "_blank"}
+          rel="noopener noreferrer"
+        >
+          {libelle}
+        </a>
+      );
+    }
     if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
       return (
         <strong key={k} className="text-ivory font-semibold">
