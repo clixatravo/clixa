@@ -3588,12 +3588,40 @@ n'appelle que `localhost` ; après, le lecteur part chez YouTube. C'est aussi ce
 que le visiteur paie — douze lecteurs sur une page, c'est plusieurs mégaoctets
 de scripts tiers sur un forfait mobile, pour une vidéo qu'il regardera.
 
-⚠️ **L'adresse n'existe que si elle a quelque chose à montrer.** Sans témoignage
-ni vidéo publiés, `/temoignages` répond **404**, ne figure pas au plan du site,
-et son lien disparaît du pied de page et de l'accueil. C'est la règle de la
-rubrique de filtre sans choix : un intitulé qui mène à une page nue se lit comme
-un site à moitié chargé, et cela tombe sur le trafic acheté. Vérifié dans les
-deux sens, base vide et base servie.
+⚠️ **Cette page a d'abord répondu 404 quand la base était vide** — pas de
+témoignage, pas de vidéo, pas d'adresse, pas de lien dans le pied de page ni au
+plan du site. C'était juste tant que tout son contenu venait du CMS. Depuis que
+le bandeau `TrailerImmersion` y porte deux séances servies par nous, **elle a
+toujours quelque chose à montrer** : le 404 est levé, le lien est permanent, et
+le plan du site l'annonce. La règle n'a pas changé ; ce qu'elle a à montrer, si.
+
+⚠️ **Le renvoi de l'accueil, lui, reste conditionnel** — et pour une autre
+raison. L'accueil porte déjà le bandeau ; « Voir tous les retours et les séances
+filmées » qui mènerait au même bloc est une promesse qu'on ne tient pas. Il ne
+paraît donc que si la page a **plus** : un témoignage publié, ou une séance
+filmée de plus (`laVitrineDepasseLAccueil`).
+
+⚠️ **Une vidéo, un seul endroit** (réconcilié le 13 septembre 2026 au soir, à la
+demande de la direction : « t9ad lkhedma dyali o dyalk, tahaja matb9a
+m3aweda »). Les deux reels de la cohorte DAF ont paru quelques heures **deux
+fois sur la même page** : dans le bandeau, servis depuis `public/videos/`, et
+dans la galerie, encadrés depuis Instagram. Même vidéo, deux sources — celles-ci
+divergent toujours, et l'une des deux serait morte le jour où le post Instagram
+change.
+
+- **Le bandeau porte les séances mises en avant**, la galerie **les autres** :
+  celles que la rédaction ajoute depuis /admin. Les deux fiches en double ont
+  été retirées de la base (`scripts/retirer-les-reels.ts`, rejouable), affiche
+  comprise — un média orphelin reparaît dans le sélecteur d'images et finit par
+  être choisi sans qu'on sache d'où il vient.
+- ⚠️ **Le script vérifie qu'aucune autre carte ne se sert de l'affiche** avant
+  de la supprimer. Une image retirée sous une carte qui l'affiche encore laisse
+  un cadre vide que rien ne signale.
+- **Ce que cela coûte, écrit pour qu'on le sache** : les deux vidéos du bandeau
+  ne se changent pas depuis /admin — leurs chemins, leurs citations et leurs
+  durées sont écrits dans `TrailerImmersion.tsx`. C'est un bloc éditorial, pas
+  une liste ; le jour où la direction voudra les changer elle-même, il faudra
+  les faire venir du CMS comme le reste.
 
 - ⚠️ **Le lien n'est pas dans l'en-tête, et c'est mesuré.** `NavDesktop` note
   que six liens plus « FR », « Mon espace » et « Nous contacter » réclament déjà

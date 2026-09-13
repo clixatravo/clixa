@@ -15,7 +15,7 @@ import {
   getSpecialisations,
   getTemoignages,
   getPartenaires,
-  laVitrineExiste,
+  laVitrineDepasseLAccueil,
   getTarifs,
   lieuSession,
   villesDisponibles,
@@ -63,7 +63,7 @@ export default async function Accueil() {
 
   const temoignages = await getTemoignages();
   const partenaires = await getPartenaires();
-  const vitrine = await laVitrineExiste();
+  const vitrineDepasse = await laVitrineDepasseLAccueil();
 
   const nbParSpecialisation = new Map(
     specs.map((s) => [s.slug, programmes.filter((p) => p.specialisation === s.slug).length]),
@@ -585,10 +585,11 @@ export default async function Accueil() {
       <Temoignages temoignages={temoignages} titre="Ils sont passés par CLIXA." />
 
       {/*
-        Le renvoi vers la page entière — retours et séances filmées — n'apparaît
-        que s'il y a quelque chose à y voir : l'adresse répond 404 sinon.
+        ⚠️ Ce renvoi ne paraît que si la page a **plus** que ce bandeau, qui est
+        déjà au-dessus. « Voir tous les retours » qui mène à ce qu'on vient de
+        voir est une promesse qu'on ne tient pas.
       */}
-      {vitrine && (
+      {vitrineDepasse && (
         <div className="border-line border-t px-8 pt-8 text-center">
           <Link
             href="/temoignages"

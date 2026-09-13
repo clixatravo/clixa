@@ -383,11 +383,8 @@ export const getRealisations = cache(
 /**
  * Ce que la page « Ils l'ont fait » a à montrer, en une lecture.
  *
- * ⚠️ **Le lien de navigation en dépend, et c'est pour cela qu'il est ici.** Une
- * rubrique qui mène à une page vide se lit comme une page à moitié chargée, pas
- * comme une intention — c'est la leçon du filtre « Ville » sans choix. L'en-tête
- * et le pied de page appellent donc cette fonction ; les deux caches font que
- * cela ne coûte ni une requête par page ni une requête par visite.
+ * Les deux caches font que la page ne paie ni une requête par affichage ni une
+ * requête par visite.
  */
 export async function getVitrine(): Promise<{
   temoignages: Temoignage[];
@@ -397,8 +394,17 @@ export async function getVitrine(): Promise<{
   return { temoignages, realisations };
 }
 
-/** Y a-t-il de quoi ouvrir `/temoignages` ? */
-export async function laVitrineExiste(): Promise<boolean> {
+/**
+ * `/temoignages` a-t-elle **plus** à montrer que l'accueil ?
+ *
+ * ⚠️ **La question n'est plus « la page existe-t-elle »**, depuis que le bandeau
+ * vidéo y porte deux séances : elle existe toujours. C'est le renvoi de
+ * l'accueil qui en dépend — il promet « tous les retours et les séances
+ * filmées », et l'accueil montre déjà le bandeau. Sans témoignage ni séance
+ * supplémentaire, ce lien mène au même bloc : on l'a lu, on clique, on retrouve
+ * ce qu'on venait de voir.
+ */
+export async function laVitrineDepasseLAccueil(): Promise<boolean> {
   const { temoignages, realisations } = await getVitrine();
   return temoignages.length > 0 || realisations.length > 0;
 }

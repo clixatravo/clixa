@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { Temoignages } from "@/components/Temoignages";
 import { GalerieRealisations } from "@/components/GalerieRealisations";
@@ -28,17 +27,21 @@ export const metadata: Metadata = {
  * voit. La parole d'abord — c'est elle qu'on lit en diagonale ; la vidéo
  * ensuite, parce qu'elle demande un clic et du réseau.
  *
- * ⚠️ **L'adresse n'existe que si elle a quelque chose à montrer.** Sans
- * témoignage ni vidéo publiés, la page répond 404 et le lien disparaît de la
- * navigation. C'est la règle de la rubrique de filtre sans choix : un intitulé
- * qui mène à une page nue se lit comme un site à moitié chargé, et cela tombe
- * sur le trafic acheté. Rien à faire le jour de la première publication — le
- * crochet `revaliderVitrine` remet la page et le plan du site à jour.
+ * ⚠️ **La page a toujours quelque chose à montrer depuis le 13 septembre 2026
+ * au soir** : le bandeau `TrailerImmersion` porte deux vidéos servies par nous.
+ * Elle ne répond donc plus 404 quand la base est vide, et son lien reste dans
+ * la navigation. La règle d'avant — « l'adresse n'existe que si elle a quelque
+ * chose à montrer » — n'a pas changé ; c'est ce qu'elle a à montrer qui a
+ * changé.
+ *
+ * ⚠️ **Et chaque vidéo n'est ici qu'une fois.** Le bandeau porte les deux
+ * séances mises en avant, la galerie en dessous **les autres** — celles que la
+ * rédaction ajoute depuis /admin. Les mêmes vidéos ont paru un moment dans les
+ * deux blocs, l'une sous forme de fichier, l'autre encadrée depuis Instagram :
+ * deux sources pour un même fait, qui auraient fini par diverger.
  */
 export default async function PageTemoignages() {
   const { temoignages, realisations } = await getVitrine();
-
-  if (temoignages.length === 0 && realisations.length === 0) notFound();
 
   return (
     <>
@@ -53,12 +56,11 @@ export default async function PageTemoignages() {
           </h1>
           <p className="text-ivory-dim/95 max-w-[62ch] text-[1.05rem] leading-relaxed">
             {/*
-              Ce que la page promet doit correspondre à ce qu'elle porte : les
-              deux moitiés de la phrase se taisent quand leur section est vide.
-              Une introduction qui annonce des vidéos au-dessus d'une page qui
-              n'en a pas est le même défaut qu'un compteur de places inventé.
+              Ce que la page promet doit correspondre à ce qu'elle porte. La
+              vidéo, elle, y est toujours — le bandeau la porte ; c'est la
+              parole des participants qui peut manquer.
             */}
-            {phraseDIntroduction(temoignages.length, realisations.length)}
+            {phraseDIntroduction(temoignages.length)}
           </p>
         </div>
       </section>
@@ -69,7 +71,11 @@ export default async function PageTemoignages() {
       />
 
       <Temoignages temoignages={temoignages} titre="Ce qu'ils en disent" />
-      <GalerieRealisations realisations={realisations} />
+      {/*
+        Le bandeau au-dessus porte les deux séances mises en avant ; celle-ci
+        montre les autres. Tant qu'il n'y en a pas, elle se tait.
+      */}
+      <GalerieRealisations realisations={realisations} titre="Les autres séances filmées" />
 
       <section className="border-line border-t px-8 py-16">
         <div className="mx-auto max-w-[1180px] text-center">
@@ -93,20 +99,14 @@ export default async function PageTemoignages() {
 }
 
 /** L'introduction ne promet que ce que la page porte réellement. */
-function phraseDIntroduction(temoignages: number, videos: number): string {
+function phraseDIntroduction(temoignages: number): string {
   const commun =
     " Aucune mise en scène : des participants réels, sur des parcours réellement donnés.";
 
-  if (temoignages > 0 && videos > 0) {
-    return (
-      "Ce que disent celles et ceux qui ont suivi nos parcours, et les séances déjà tenues, en vidéo." +
-      commun
-    );
-  }
-  if (videos > 0) {
-    return "Les séances déjà tenues, en vidéo." + commun;
-  }
-  return "Ce que disent celles et ceux qui ont suivi nos parcours." + commun;
+  return temoignages > 0
+    ? "Ce que disent celles et ceux qui ont suivi nos parcours, et les séances déjà tenues, en vidéo." +
+        commun
+    : "Les séances déjà tenues, en vidéo." + commun;
 }
 
 /*
