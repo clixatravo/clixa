@@ -1785,6 +1785,46 @@ c'est-à-dire précisément à qui la question se pose.
   compte au moment du geste, et le réécrire ferait dire à une trace d'hier ce
   qu'on sait aujourd'hui. `nommer-les-relances.ts` traite le cas différent d'une
   ligne qui n'a *aucun* nom.
+⚠️ **On sait maintenant *qui mène* chaque dossier, pas seulement qui a parlé**
+(`charge`, colonne « Suivi par », bouton « Message d'accueil », demandé par la
+direction le 12 septembre 2026 : « radin nkono 3arfin chkon mjeri dosser »).
+
+Le journal disait qui avait parlé en dernier. Il ne disait pas si quelqu'un
+s'occupait du dossier — un dossier peut avoir reçu trois courriels automatiques
+et n'être pris par personne. Devant trente dossiers neufs, c'est la première
+question : lesquels sont pris, lesquels attendent encore quelqu'un.
+
+- **Un bouton fait les trois choses d'un geste** : il ouvre WhatsApp avec le mot
+  d'accueil, note la ligne au journal, et inscrit son auteur comme responsable.
+  C'est le premier de la rangée parce qu'il est le premier dans le temps — on
+  prend le dossier, puis on relance.
+- ⚠️ **WhatsApp s'ouvre par une vraie ancre, pas par du script.** Un
+  `window.open` posé après un `await` n'est plus rattaché au clic, et le
+  navigateur le bloque. Le lien ouvre l'onglet lui-même ; l'enregistrement part
+  à côté.
+- ⚠️ **Le message porte le nom de qui écrit**, parce que c'est le sujet : le
+  prospect saura à qui il parle, et nous aussi.
+- **Le premier qui prend le garde.** Le bouton disparaît une fois le dossier
+  pris, remplacé par « Suivi par X depuis le … ». Se le repasser est un geste
+  délibéré — on change le champ à la main — et non l'effet de bord d'un clic.
+- ⚠️ **Une colonne, pas seulement un champ.** Sans « Suivi par » dans la liste
+  il faut ouvrir chaque dossier pour savoir s'il est pris, c'est-à-dire qu'on ne
+  le fait pas. « Libre » y est écrit en gris : c'est l'état ordinaire d'un
+  dossier neuf, pas une alerte — l'or y mettrait trente lignes d'un coup.
+- ⚠️ **Le nom est recopié, comme pour le journal** : `comptesLecture` ne laisse
+  lire que son propre compte, et la relation ne se résout que pour la direction.
+  Sans instantané, la colonne serait vide pour l'administration — à qui la
+  question se pose.
+- ⚠️ **Une seconde table des noms de gestes avait déjà divergé.** `lib/suivi.ts`
+  en tient une pour la colonne de la liste, `EtapesContrat.tsx` une autre pour le
+  journal de la fiche : « WhatsApp ouvert » et « Message d'accueil » manquaient
+  dans la seconde, et les deux lignes s'affichaient « Relance » — le repli, sur
+  l'écran où l'on vient justement lire ce qui s'est passé. Vu à l'écran, pas au
+  type.
+- ⚠️ **Deux colonnes et une valeur d'énumération : la base passe avant le code.**
+  `charge_id`, `charge_le`, `charge_nom` et `accueil` poussés sur `dev` puis sur
+  la production avant le déploiement.
+
 ⚠️ **Et le bouton WhatsApp de la liste laisse enfin une trace** (`api/admin/journal`,
 le même jour). Les quatre boutons de la fiche notaient qui a relancé ; celui-là
 était un **simple lien** — il ouvrait la conversation et n'écrivait rien. Or

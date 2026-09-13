@@ -159,10 +159,20 @@ function Etape({
   écritures d'un même libellé finissent par se contredire — c'est ce qui est
   arrivé au numéro d'admissions et aux moyens de paiement.
 */
+/*
+  ⚠️ **Une seconde table des noms, et elle avait déjà divergé.** `lib/suivi.ts`
+  en tient une pour la colonne de la liste ; celle-ci sert au journal de la
+  fiche. « WhatsApp ouvert » et « Message d'accueil » y manquaient : les deux
+  lignes s'affichaient « Relance », c'est-à-dire le repli — sur l'écran où l'on
+  vient justement lire ce qui s'est passé. Les deux écrans se consultent à deux
+  clics l'un de l'autre ; ils doivent nommer les gestes pareil.
+*/
 const OBJETS: Record<string, string> = {
+  accueil: "Message d'accueil",
   signature: "Relance signature",
   paiement: "Relance paiement",
   rappel: "Rappel par courriel",
+  whatsapp: "WhatsApp ouvert",
   appel: "Appelé",
 };
 
@@ -317,6 +327,15 @@ export function EtapesContrat() {
     fausse.
   */
   const rappeleeLe = useField<string>({ path: "placeRappeleeLe" });
+  /*
+    ⚠️ Qui mène ce dossier. Le nom recopié suffit à l'afficher : la relation
+    n'est lisible que par la direction (`comptesLecture`), et c'est justement
+    l'administration qui a besoin de savoir si le dossier est pris.
+  */
+  const chargeNom = useField<string>({ path: "chargeNom" });
+  const chargeLe = useField<string>({ path: "chargeLe" });
+  const nomComplet = useField<string>({ path: "apprenantNom" });
+  const whatsapp = useField<string>({ path: "apprenantWhatsapp" });
 
   /*
     ⚠️ Qui appelle est la moitié de la réponse. « Ce dossier a été appelé hier »
@@ -472,6 +491,63 @@ export function EtapesContrat() {
         [porte]: { etat: "erreur", dit: "Le serveur n'a pas répondu. Rien n'a été fait." },
       }));
     }
+  };
+
+  /*
+    ── ⚠️ Prendre le dossier, et écrire le premier mot ───────────────────────
+    Un dossier neuf arrive : quelqu'un de l'équipe doit s'en saisir. Jusqu'ici
+    rien ne le disait — deux personnes pouvaient écrire au même prospect le même
+    matin, chacune persuadée d'être la première. La direction l'a demandé le
+    12 septembre 2026 : « radin nkono 3arfin chkon mjeri dosser ».
+
+    Le bouton fait les trois choses d'un seul geste, dans cet ordre :
+    il ouvre WhatsApp avec le mot d'accueil, note la ligne au journal, et
+    **inscrit son auteur comme responsable du dossier**.
+
+    ⚠️ **WhatsApp s'ouvre par le lien, pas par du script.** Un `window.open`
+    après un `await` est bloqué par le navigateur — il n'est plus rattaché au
+    clic. C'est donc une vraie ancre : le navigateur ouvre l'onglet lui-même, et
+    l'enregistrement part à côté.
+
+    ⚠️ **Le message est un brouillon.** Il porte le nom de qui écrit, parce que
+    c'est le sujet : le prospect saura à qui il parle, et nous aussi.
+  */
+  const numeroWhatsapp = (() => {
+    let chiffres = String(whatsapp.value ?? "").replace(/\D/g, "");
+    if (chiffres.startsWith("00")) chiffres = chiffres.slice(2);
+    if (!chiffres || chiffres.startsWith("0")) return undefined;
+    return chiffres.length >= 8 ? chiffres : undefined;
+  })();
+
+  const motDAccueil = [
+    `Bonjour ${
+      String(nomComplet.value ?? "")
+        .trim()
+        .split(/\s+/)[0] || ""
+    },`,
+    "",
+    `Ici ${libelleDuCompte(user as never) || "l'équipe admissions"}, de CLIXA Institute.`,
+    `Je suis votre interlocuteur pour votre pré-inscription (référence ${reference.value ?? ""}).`,
+    "",
+    "Quand seriez-vous disponible quelques minutes pour en parler ?",
+  ].join("\n");
+
+  const prendreLeDossier = () => {
+    const maintenant = new Date().toISOString();
+    const ligne: Echange & { par?: number | string } = {
+      quoi: "accueil",
+      le: maintenant,
+      ...(user?.id ? { par: user.id } : {}),
+      ...(user ? { parNom: libelleDuCompte(user as never) } : {}),
+    };
+    void submit({
+      overrides: {
+        echanges: [...echanges, ligne],
+        ...(user?.id ? { charge: user.id } : {}),
+        ...(user ? { chargeNom: libelleDuCompte(user as never) } : {}),
+        chargeLe: maintenant,
+      },
+    });
   };
 
   const noter = (quoi: NatureEchange) => () => {
@@ -748,6 +824,33 @@ export function EtapesContrat() {
               écrit à un client, la différence mérite d'être nommée.
             */}
             <span className="clixa-relances__groupe">Noter un appel</span>
+
+            {/*
+              ── ⚠️ Le premier geste d'un dossier neuf ───────────────────────
+              Il vient avant les deux autres parce qu'il vient avant dans le
+              temps : on prend le dossier, puis on relance. Une fois pris, le
+              bouton disparaît et la ligne le dit — se le repasser est un geste
+              délibéré, on change le champ « Dossier suivi par » à la main.
+            */}
+            {!chargeNom.value && numeroWhatsapp && (
+              <a
+                href={`https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(motDAccueil)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--style-secondary btn--size-small clixa-relances__bouton clixa-relances__accueil"
+                onClick={prendreLeDossier}
+                title="Ouvre WhatsApp avec le mot d'accueil, et vous inscrit comme responsable du dossier"
+              >
+                Message d&apos;accueil — je prends ce dossier
+              </a>
+            )}
+
+            {chargeNom.value && (
+              <p className="clixa-relances__charge">
+                Suivi par <strong>{chargeNom.value}</strong>
+                {chargeLe.value ? ` depuis le ${JOUR(String(chargeLe.value))}` : ""}
+              </p>
+            )}
             {/*
               ⚠️ Chaque bouton disparaît quand son objet est acquis. Relancer
               pour une signature déjà donnée, ou pour un règlement déjà soldé,

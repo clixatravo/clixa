@@ -793,11 +793,20 @@ export interface Inscription {
    */
   notes?: string | null;
   /**
+   * Posé par le bouton « Message d'accueil ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.
+   */
+  charge?: (number | null) | Utilisateur;
+  chargeLe?: string | null;
+  /**
+   * Recopié à l'écriture : la relation ci-dessus n'est lisible que par la direction.
+   */
+  chargeNom?: string | null;
+  /**
    * Posé par les boutons du dossier. Sert à ne pas relancer quelqu'un qu'un collègue vient d'avoir.
    */
   echanges?:
     | {
-        quoi: 'signature' | 'paiement' | 'rappel' | 'whatsapp' | 'appel';
+        quoi: 'signature' | 'paiement' | 'rappel' | 'whatsapp' | 'accueil' | 'appel';
         le: string;
         par?: (number | null) | Utilisateur;
         /**
@@ -1435,6 +1444,9 @@ export interface InscriptionsSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
+  charge?: T;
+  chargeLe?: T;
+  chargeNom?: T;
   echanges?:
     | T
     | {

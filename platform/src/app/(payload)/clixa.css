@@ -2387,6 +2387,65 @@ h3,
 }
 
 /*
+  ── La colonne « Suivi par » ───────────────────────────────────────────────
+  Elle dit qui mène le dossier, pas qui a parlé en dernier. « Libre » est
+  l'état ordinaire d'un dossier neuf, pas une alerte : l'or y mettrait trente
+  lignes d'un coup et viderait la file de travail de son sens.
+*/
+.clixa-charge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.clixa-charge__nom {
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+.clixa-charge__depuis {
+  font-size: 0.66rem;
+  opacity: 0.6;
+}
+
+.clixa-charge__vide {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--theme-elevation-500);
+}
+
+/*
+  ── Le premier geste d'un dossier neuf ─────────────────────────────────────
+  Il ouvre WhatsApp **et** prend le dossier : deux effets pour un clic, ce qui
+  justifie qu'il ne ressemble pas tout à fait aux autres. Le trait doré à gauche
+  le distingue sans lui donner le fond doré, réservé au bouton armé — celui
+  qu'on ne rattrape pas.
+*/
+.clixa-relances__accueil {
+  border-left: 2px solid var(--clixa-or) !important;
+  text-decoration: none !important;
+}
+
+/*
+  Une fois le dossier pris, la phrase remplace le bouton. Elle n'est pas une
+  alerte : elle constate, et elle nomme.
+*/
+.clixa-relances__charge {
+  flex-basis: 100%;
+  margin: 0 0 0.2rem;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-600);
+}
+
+.clixa-relances__charge strong {
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+
+/*
   ⚠️ **Qui, sous quand — et en or.** La colonne disait « Relance signature ·
   hier » sans jamais nommer l'auteur : le directeur avait eu la personne au
   téléphone, l'administration ne le savait pas et reprenait la conversation

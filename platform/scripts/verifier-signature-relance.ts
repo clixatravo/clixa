@@ -281,6 +281,110 @@ if (!sessions[0] || comptes.length === 0) {
   }
 }
 
+/* ── Qui mène le dossier ─────────────────────────────────────────────────── */
+/*
+  ⚠️ « Suivi » dit qui a parlé en dernier ; elle ne dit pas qui **s'occupe** du
+  dossier. Un dossier peut avoir reçu trois courriels automatiques et n'être
+  pris par personne — et c'est celui-là qu'on cherche dans une liste de dossiers
+  neufs. Demandé par la direction le 12 septembre 2026.
+*/
+console.log("\n  Qui mène le dossier\n");
+
+{
+  const { docs: sessions } = await payload.find({
+    collection: "sessions",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    where: { fin: { greater_than: new Date().toISOString() } },
+  });
+
+  if (!sessions[0]) {
+    console.log("  · Aucune session à venir : la prise en charge n'est pas éprouvée.");
+  } else {
+    const d = await payload.create({
+      collection: "inscriptions",
+      overrideAccess: true,
+      data: {
+        session: sessions[0].id,
+        statut: "demandee",
+        apprenantNom: "Épreuve Charge",
+        apprenantEmail: `charge.${Math.random().toString(36).slice(2)}@epreuve.invalid`,
+        apprenantWhatsapp: "+212600000000",
+        apprenantPays: "Maroc",
+        planPaiement: "P1",
+        echeances: [{ montant: 423, statut: "attendu" }],
+      } as never,
+    });
+
+    try {
+      const neuf = await payload.findByID({
+        collection: "inscriptions",
+        id: d.id,
+        depth: 0,
+        overrideAccess: true,
+      });
+      /*
+        ⚠️ Un dossier neuf n'est pris par personne, et la colonne doit le dire
+        « Libre » — pas se taire, et surtout pas nommer quelqu'un au hasard.
+      */
+      dire(
+        "un dossier neuf n'est suivi par personne",
+        !neuf.chargeNom && !neuf.charge,
+        `chargeNom=${JSON.stringify(neuf.chargeNom ?? null)}`,
+      );
+      dire(
+        "et la colonne n'a donc personne à nommer",
+        nomDeLAuteur({ parNom: neuf.chargeNom }) === "",
+      );
+
+      const quand = new Date().toISOString();
+      await payload.update({
+        collection: "inscriptions",
+        id: d.id,
+        overrideAccess: true,
+        data: { charge: comptes[0]!.id, chargeNom: "Hajar El Khadiri", chargeLe: quand } as never,
+      });
+
+      const pris = await payload.findByID({
+        collection: "inscriptions",
+        id: d.id,
+        depth: 0,
+        overrideAccess: true,
+      });
+      dire("le dossier pris porte son responsable", pris.chargeNom === "Hajar El Khadiri");
+      dire("et la date de la prise en charge", Boolean(pris.chargeLe));
+      /*
+        ⚠️ La relation reste, à côté de l'instantané : c'est elle qui permettrait
+        un filtre « mes dossiers », et elle survit à un renommage.
+      */
+      dire("la relation est posée elle aussi", pris.charge !== null && pris.charge !== undefined);
+      dire(
+        "⚠️ et la colonne lit l'instantané, pas la relation",
+        nomDeLAuteur({ parNom: pris.chargeNom, par: pris.charge as never }) === "Hajar El Khadiri",
+      );
+    } finally {
+      await payload
+        .delete({ collection: "inscriptions", id: d.id, overrideAccess: true })
+        .catch(() => {});
+    }
+  }
+
+  /*
+    ⚠️ **Une colonne déclarée, sinon rien ne s'affiche.** Le champ peut exister
+    et la liste ne jamais le montrer : c'est le cas de « Prochaine échéance »,
+    retirée de `defaultColumns` en gardant son champ. Un contrôle statique suffit
+    à garder celle-ci en place.
+  */
+  const { Inscriptions } = await import("@/collections/Inscriptions");
+  const colonnes = (Inscriptions.admin?.defaultColumns ?? []) as string[];
+  dire(
+    "⚠️ « Suivi par » est bien une colonne de la liste",
+    colonnes.includes("suiviPar"),
+    colonnes.join(", "),
+  );
+}
+
 console.log(
   manques === 0 ? "\n  On sait qui a parlé au client.\n" : `\n  ${manques} contrôle(s) au rouge.\n`,
 );

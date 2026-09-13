@@ -224,6 +224,13 @@ export const Inscriptions: CollectionConfig = {
         la même liste le lendemain et rappelait la même personne.
       */
       "suivi",
+      /*
+        ⚠️ **Et « Suivi par » répond à la troisième.** « Suivi » dit qui a parlé
+        en dernier ; celle-ci dit **qui mène** le dossier. Un dossier peut avoir
+        reçu trois courriels automatiques et n'être pris par personne — et c'est
+        justement celui-là qu'on cherche dans une liste de dossiers neufs.
+      */
+      "suiviPar",
       "apprenantEmail",
       "apprenantWhatsapp",
       "session",
@@ -1187,6 +1194,77 @@ export const Inscriptions: CollectionConfig = {
     },
     {
       /*
+        ⚠️ **Une colonne, pas seulement un champ.** Sans elle il faut ouvrir
+        chaque dossier pour savoir s'il est pris — c'est-à-dire qu'on ne le fait
+        pas, et que deux personnes écrivent au même prospect. Même raison que la
+        colonne « Relances » elle-même. Un champ `ui` ne porte pas de colonne en
+        base : il lit la ligne.
+      */
+      name: "suiviPar",
+      type: "ui",
+      label: "Suivi par",
+      admin: { components: { Cell: "@/components/admin/Charge#Charge" } },
+    },
+    /*
+      ── ⚠️ Qui mène ce dossier ────────────────────────────────────────────
+      Le journal dit qui a parlé, et quand. Il ne dit pas **qui s'en occupe** —
+      or c'est la question qu'on se pose devant une liste de trente dossiers
+      neufs : lesquels sont pris, lesquels attendent encore. Demandé par la
+      direction le 12 septembre 2026 : « radin nkono 3arfin chkon mjeri
+      dosser ».
+
+      ⚠️ **Le premier qui prend le garde.** Le bouton « Message d'accueil » ne
+      paraît que sur un dossier libre ; une fois pris, il disparaît. Se le
+      repasser est un geste délibéré — on change le champ à la main — et non un
+      effet de bord d'un clic. Deux personnes qui se prennent le dossier à tour
+      de rôle sans le savoir, c'est ce que ce champ existe pour empêcher.
+    */
+    {
+      type: "row",
+      fields: [
+        {
+          name: "charge",
+          type: "relationship",
+          relationTo: "utilisateurs",
+          label: "Dossier suivi par",
+          index: true,
+          admin: {
+            width: "50%",
+            description:
+              "Posé par le bouton « Message d'accueil ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.",
+          },
+        },
+        {
+          name: "chargeLe",
+          type: "date",
+          label: "Pris en charge le",
+          admin: {
+            width: "50%",
+            readOnly: true,
+            date: { pickerAppearance: "dayAndTime", displayFormat: "d MMM yyyy · HH:mm" },
+          },
+        },
+      ],
+    },
+    {
+      /*
+        ⚠️ Recopié, pour la même raison que `echanges.parNom` :
+        `comptesLecture` ne laisse lire que son propre compte, et la relation
+        ci-dessus ne se résout donc que pour la direction. Sans cet instantané,
+        la colonne de la liste afficherait un vide à l'administration —
+        c'est-à-dire à qui la question se pose. Voir `lib/equipe.ts`.
+      */
+      name: "chargeNom",
+      type: "text",
+      label: "Nom au moment de la prise en charge",
+      admin: {
+        readOnly: true,
+        description:
+          "Recopié à l'écriture : la relation ci-dessus n'est lisible que par la direction.",
+      },
+    },
+    {
+      /*
         ── ⚠️ Qui a déjà parlé à ce participant ────────────────────────────────
         Après une pré-inscription, quelqu'un de l'équipe appelle. Rien ne le
         notait : le lendemain, un collègue ouvrait la même liste, voyait le même
@@ -1262,6 +1340,13 @@ export const Inscriptions: CollectionConfig = {
                   il y a cinq minutes » n'écrit pas par-dessus.
                 */
                 { label: "WhatsApp ouvert", value: "whatsapp" },
+                /*
+                  ⚠️ Le premier contact d'un dossier neuf, et le seul geste du
+                  journal qui **prenne** le dossier : il pose aussi « Dossier
+                  suivi par ». Il ne se répète pas — le bouton disparaît une
+                  fois quelqu'un aux commandes.
+                */
+                { label: "Message d'accueil", value: "accueil" },
                 { label: "Appelé (avant le 9 septembre 2026)", value: "appel" },
               ],
               admin: { width: "40%" },

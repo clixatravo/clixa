@@ -97,6 +97,8 @@ const NOMS: Record<string, string> = {
     écrire — suffit à empêcher le second message d'un collègue.
   */
   whatsapp: "WhatsApp ouvert",
+  /* Le premier contact : quelqu'un a pris le dossier en main. */
+  accueil: "Message d'accueil",
   /* Ancien geste, sans bouton : les lignes d'avant le 9 septembre 2026. */
   appel: "Appelé",
 };
