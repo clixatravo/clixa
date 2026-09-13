@@ -104,6 +104,21 @@ export async function SiteFooter() {
                     </Link>
                   </li>
                 ))}
+                {/*
+                  Le cabinet de conseil du groupe, sur son propre domaine. Un <a> et
+                  non un <Link> : c'est un autre site. Sans `nofollow`, exprès — ce
+                  lien est aussi ce qui fait découvrir clixaconseil.com aux moteurs.
+                */}
+                {c.titre === "L'institut" && (
+                  <li>
+                    <a
+                      href="https://www.clixaconseil.com"
+                      className="text-ivory-dim hover:text-gold-bright inline-block py-1 text-[0.88rem] transition-colors"
+                    >
+                      CLIXA Consulting ↗
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           ))}
