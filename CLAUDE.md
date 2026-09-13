@@ -3777,11 +3777,30 @@ document est réellement : nominatif, référencé, et détaillant les modules s
   ne pouvaient les voir. Elles se trouvent en **échantillonnant le film** —
   quelques images à des instants choisis — et en confrontant chaque chiffre à
   la base. À refaire à chaque regénération.
-- **Reste à trancher par la direction**, noté sans être touché : « formateurs
-  certifiés PMP » (rien ne l'étaye au catalogue), « réussir dès le 1er passage »
-  (une promesse de résultat d'examen), et la photo de séminaire en présentiel
-  sous une filière dont les douze parcours se donnent en visio — c'est une vraie
-  photo de la maison, mais elle suggère autre chose.
+**Les trois affirmations restantes ont été tranchées le même soir** — la
+direction a demandé de les corriger aussi. Chacune est remplacée par ce que le
+catalogue dit déjà, mot pour mot quand c'est possible :
+
+- ⚠️ **« avec formateurs certifiés PMP »** → « rythmées sur le déroulé de
+  l'examen ». Ni la fiche ni le catalogue ne disent que les intervenants portent
+  eux-mêmes la certification. C'est peut-être vrai ; une vidéo n'est pas
+  l'endroit où l'apprendre, et un candidat choisit sa préparation là-dessus.
+- ⚠️ **« pour réussir dès le 1er passage »** → « situations d'examen, arbitrages
+  et pièges fréquents », qui sont les termes des objectifs du parcours. Le PMP se
+  passe chez PMI et aucun taux de réussite n'est mesuré ici : promettre le
+  résultat d'un examen qu'on ne fait pas passer n'engage que celui qui y croit.
+- ⚠️ **La photo de séminaire porte maintenant sa légende, sur l'image** :
+  « Séminaire dirigeants · Agadir — les parcours se donnent en classe
+  virtuelle ». La photo est vraie, c'est celle de la carte « Séminaires & Salle
+  de Conseil » de l'accueil ; muette, elle promettait du présentiel là où les
+  douze parcours sont en visio. L'accueil dit la même chose depuis le
+  5 septembre, en toutes lettres.
+
+⚠️ **Une image ne se corrige pas comme une phrase** : il faut relancer le rendu
+(`node scripts/generer-trailer-officiel.mjs`, une minute), puis **rééchantillonner
+le film** pour vérifier que la correction est bien à l'écran. Le fichier
+regénéré pèse 5,0 Mo et dure 48,3 s — l'intitulé « 0:48 » du composant reste
+juste, et c'est aussi à revérifier à chaque rendu.
 
 ## Déploiement
 

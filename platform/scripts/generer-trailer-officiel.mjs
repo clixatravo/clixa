@@ -363,8 +363,16 @@ async function genererTrailer() {
         ctx.fillText("35 HEURES LIVE", 150, bY + 45);
         ctx.fillStyle = "rgba(243, 239, 228, 0.8)";
         ctx.font = "14px sans-serif";
-        ctx.fillText("Sessions intensives en direct", 150, bY + 80);
-        ctx.fillText("avec formateurs certifiés PMP", 150, bY + 105);
+        /*
+          ⚠️ **« avec formateurs certifiés PMP » n'est étayé nulle part.** Ni la
+          fiche du parcours ni le catalogue ne disent que les intervenants
+          portent eux-mêmes la certification. C'est peut-être vrai — mais une
+          vidéo n'est pas l'endroit où l'apprendre, et un candidat choisit sa
+          préparation là-dessus. Ce qui est écrit au catalogue, en revanche, est
+          repris mot pour mot : « 35 heures », « sessions live ».
+        */
+        ctx.fillText("Sessions intensives en direct,", 150, bY + 80);
+        ctx.fillText("rythmées sur le déroulé de l'examen", 150, bY + 105);
 
         // Bloc 2
         ctx.fillStyle = "rgba(255,255,255,0.04)";
@@ -385,8 +393,15 @@ async function genererTrailer() {
         ctx.fillText("SIMULATEURS EXAMEN", 150 + (colW + 20) * 2, bY + 45);
         ctx.fillStyle = "rgba(243, 239, 228, 0.8)";
         ctx.font = "14px sans-serif";
-        ctx.fillText("Entraînement en conditions réelles", 150 + (colW + 20) * 2, bY + 80);
-        ctx.fillText("pour réussir dès le 1er passage", 150 + (colW + 20) * 2, bY + 105);
+        /*
+          ⚠️ **« pour réussir dès le 1er passage » promet un résultat d'examen**,
+          que personne ici ne délivre : le PMP se passe chez PMI, et aucun taux
+          de réussite n'est mesuré de notre côté. La phrase dit maintenant ce
+          qu'on fait vraiment — les mots sont ceux des objectifs du catalogue :
+          « travailler les situations d'examen, les arbitrages et les pièges ».
+        */
+        ctx.fillText("Situations d'examen, arbitrages", 150 + (colW + 20) * 2, bY + 80);
+        ctx.fillText("et pièges fréquents", 150 + (colW + 20) * 2, bY + 105);
 
         ctx.globalAlpha = 1;
       }
@@ -408,6 +423,26 @@ async function genererTrailer() {
         ctx.fillRect(80, 120, 480, 480);
         ctx.strokeStyle = "rgba(201, 162, 76, 0.4)";
         ctx.strokeRect(80, 120, 480, 480);
+
+        /*
+          ⚠️ **Une salle pleine, sous une filière qui se donne en visio.** La
+          photo est vraie — c'est un séminaire de la maison, celui que porte
+          déjà la carte « Séminaires & Salle de Conseil » de l'accueil — mais
+          sans un mot, elle promet du présentiel là où les douze parcours sont
+          en classe virtuelle. L'accueil le dit ainsi depuis le 5 septembre :
+          « en classe virtuelle — et bientôt en présentiel ». La vidéo le dit
+          aussi, sur l'image même.
+        */
+        ctx.save();
+        ctx.fillStyle = "rgba(7, 11, 22, 0.78)";
+        ctx.fillRect(80, 552, 480, 48);
+        ctx.fillStyle = "rgba(243, 239, 228, 0.85)";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("SÉMINAIRE DIRIGEANTS · AGADIR", 320, 572);
+        ctx.fillStyle = "rgba(201, 162, 76, 0.85)";
+        ctx.fillText("LES PARCOURS SE DONNENT EN CLASSE VIRTUELLE", 320, 590);
+        ctx.restore();
 
         // Panneau de droite
         const tX = 610;
