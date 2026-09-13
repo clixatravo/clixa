@@ -80,6 +80,17 @@ const nextConfig: NextConfig = {
   */
   images: {
     remotePatterns: [
+      /*
+        ⚠️ **Un 400 sur ces images en développement n'est pas cette règle.**
+        Next 16 refuse une image dont l'hôte résout vers une adresse qu'il tient
+        pour privée, et le journal du serveur le dit en toutes lettres :
+        « hostname resolved to private IP ["64:ff9b::…"] ». C'est le NAT64 du
+        réseau local, pas le magasin — qui répond 200. La règle, elle, est
+        bonne : le matcher de Next l'accepte, et la production ne passe pas par
+        ce réseau. Vérifier `/_next/image` **en ligne** avant d'accuser cette
+        liste. (Un premier jet de ce commentaire accusait `**` : c'était faux,
+        les deux formes correspondent.)
+      */
       { protocol: "https", hostname: "**.public.blob.vercel-storage.com" },
       { protocol: "https", hostname: "i.ytimg.com" },
     ],

@@ -3554,6 +3554,21 @@ sans rien redemander à personne.
   instagram.com sans en être. Prouvé en remettant le défaut — un contrôle passe
   au rouge.
 
+⚠️ **Un 400 sur une image de magasin, en développement, n'est pas
+`remotePatterns`.** Next 16 refuse une image dont l'hôte résout vers une adresse
+qu'il tient pour privée : sur ce poste, le NAT64 du réseau rend
+`64:ff9b::…` pour `*.public.blob.vercel-storage.com`, et l'optimiseur répond
+« "url" parameter is not allowed » — un message qui désigne la mauvaise cause.
+Le magasin, lui, sert le fichier (200, 19 Ko), et **la production l'affiche**
+(vérifié : `/_next/image` répond 200). Le journal du serveur dit la vraie
+raison, en toutes lettres ; un premier jet de ce commentaire accusait la forme
+`**` du motif — c'était faux, les deux formes correspondent.
+
+`scripts/poser-les-reels.ts` a posé les deux cartes, et reste rejouable : il
+reconnaît une réalisation **à son lien** et met à jour celle qui existe, plutôt
+que d'en publier une seconde. Sans `ECRIRE=1` il montre et s'arrête — c'est du
+contenu qui paraît en ligne.
+
 ⚠️ **Quel texte va avec quel reel ne se devine pas.** Les deux couvertures
 contredisaient l'ordre des légendes : l'une montre un écran de cours, l'autre
 une personne qui parle. La direction a répondu « vérifie et corrige » — c'est
