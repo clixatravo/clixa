@@ -40,7 +40,7 @@ const PISTES: PisteVideo[] = [
     citation:
       "« L’excellence exécutive pour les leaders d’Afrique : Finance de direction, Gouvernance de projets PMP® et Management stratégique. Le leadership commence par un clic. »",
     explication:
-      "Découvrez en 48 secondes l'expérience CLIXA Institute : cas réels d'entreprise, cohortes de dirigeants en direct, préparation aux certifications internationales et délivrance du certificat professionnel vérifié.",
+      "Découvrez en 48 secondes l'expérience CLIXA Institute : cas réels d'entreprise, cohortes de dirigeants en direct, préparation aux certifications internationales et délivrance d'un certificat professionnel nominatif.",
     sourceFichier: "/videos/trailer_clixa_officiel.mp4",
     affiche: "/videos/trailer_clixa_officiel_poster.jpg",
     dureeFormat: "0:48",
@@ -59,9 +59,15 @@ const PISTES: PisteVideo[] = [
           "alignement stratégique, méthodologies agiles/hybrides et préparation à la certification PMI.",
       },
       {
-        titre: "Certificat & Réseau Pan-Africain :",
+        /*
+          ⚠️ Le titre promettait un « Réseau Pan-Africain » et une « communauté
+          active de décideurs » — rien sur le site ne l'étaye, et la mention
+          « Institut Panafricain » est justement notée comme à trancher par la
+          direction. Il ne promet plus que ce que le parcours délivre vraiment.
+        */
+        titre: "Certificat professionnel :",
         description:
-          "diplôme professionnel avec code unique de vérification et communauté active de décideurs.",
+          "certificat nominatif, référencé et détaillant les modules suivis, remis à l'issue du parcours.",
       },
     ],
     ctaTitre: "Explorer toutes les formations",

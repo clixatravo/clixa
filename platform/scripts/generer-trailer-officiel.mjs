@@ -229,7 +229,15 @@ async function genererTrailer() {
         ctx.font = "14px monospace";
         ctx.fillStyle = "rgba(201, 162, 76, 0.9)";
         ctx.fillText("100% PRATICIENS EN EXERCICE · CAS RÉELS · EN DIRECT", W / 2, 470);
-        ctx.fillText("AGADIR · ABIDJAN · DAKAR · CLASSE VIRTUELLE", W / 2, 500);
+        /*
+          ⚠️ **Abidjan et Dakar sont « prochainement », pas des campus ouverts.**
+          Décision de la direction du 5 septembre 2026 : aucune séance ne s'y est
+          jamais tenue, et la mention a été retirée de cinq endroits du site — la
+          page campus, le pied de page, « À propos », la description lue par
+          Google et le pied des courriels. Le trailer est le support qui circule
+          le plus : il dit la même chose que le reste.
+        */
+        ctx.fillText("AGADIR · CLASSE VIRTUELLE · ABIDJAN ET DAKAR PROCHAINEMENT", W / 2, 500);
 
         ctx.globalAlpha = 1;
         if (sec >= 3.0 && !posterDataUrl) {
@@ -292,7 +300,15 @@ async function genererTrailer() {
         // Points forts
         ctx.fillStyle = "rgba(243, 239, 228, 0.85)";
         ctx.font = "15px sans-serif";
-        ctx.fillText("✦ 40 heures de masterclass exécutive interactive", tX + 10, 430);
+        /*
+          ⚠️ **32 heures, pas 40** : huit séances de quatre heures, et c'est ce
+          que porte le catalogue (`dureeHeures`) pour les onze parcours
+          « Directeur … ». Seule la préparation PMP® en compte 35 — la carte
+          suivante le dit, et elle a raison. Un chiffre annoncé plus grand que
+          celui de la fiche se découvre à l'inscription, sur le parcours que
+          l'annonce Facebook porte.
+        */
+        ctx.fillText("✦ 32 heures de masterclass exécutive interactive", tX + 10, 430);
         ctx.fillText("✦ Décisions réelles d'entreprise & arbitrages de direction", tX + 10, 465);
         ctx.fillText("✦ Certificat professionnel nominatif et référencé", tX + 10, 500);
 
@@ -513,7 +529,8 @@ async function genererTrailer() {
 
         ctx.fillStyle = "rgba(243, 239, 228, 0.7)";
         ctx.font = "14px monospace";
-        ctx.fillText("AGADIR · ABIDJAN · DAKAR · EN DIRECT EN CLASSE VIRTUELLE", W / 2, 525);
+        // Même mention qu'à l'ouverture, et que le pied de page du site.
+        ctx.fillText("AGADIR · CLASSE VIRTUELLE · ABIDJAN ET DAKAR PROCHAINEMENT", W / 2, 525);
 
         ctx.globalAlpha = 1;
       }

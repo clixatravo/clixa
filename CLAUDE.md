@@ -3744,6 +3744,45 @@ dit la même chose que le reste du site. Vérifié en production le 6 septembre
 2026. ⚠️ Les épreuves ne savent pas attraper une contradiction de ce genre —
 c'est une relecture, pas un contrôle.
 
+⚠️ **Le trailer officiel disait deux choses fausses** (corrigé le 13 septembre
+2026 au soir, en le regardant image par image). Le film de 48 secondes
+(`scripts/generer-trailer-officiel.mjs`, rendu par Chromium et MediaRecorder) est
+le support qui circule le plus — et rien dans une vidéo ne se relit au grep :
+
+1. ⚠️ **« AGADIR · ABIDJAN · DAKAR »**, à l'ouverture *et* sur la carte finale.
+   C'est exactement la mention que la direction a fait retirer de cinq endroits
+   du site le 5 septembre : aucune séance ne s'est jamais tenue dans ces deux
+   villes. Le trailer la réintroduisait, présentée comme trois campus ouverts.
+   Il dit désormais ce que dit le pied de page — « Agadir · classe virtuelle ·
+   Abidjan et Dakar prochainement ».
+2. ⚠️ **« 40 heures de masterclass »** sur la carte DAF, quand le catalogue en
+   porte **32** (huit séances de quatre heures). Vérifié en base sur les douze
+   parcours : 32 h partout, sauf la préparation PMP® à 35 h — que le trailer
+   annonçait juste. C'est le parcours porté par l'annonce Facebook : le chiffre
+   se serait découvert à l'inscription.
+
+Et une troisième dans le composant : **« code unique de vérification »**. Rien
+ne vérifie un certificat aujourd'hui — le PDF porte une référence dérivée du
+dossier, il n'existe ni page ni route où la saisir. La phrase promettait à un
+employeur ou à une banque un geste impossible ; elle dit maintenant ce que le
+document est réellement : nominatif, référencé, et détaillant les modules suivis
+(ce que le certificat imprime bien, sous « ÉLÉMENTS DE LA FORMATION »).
+
+- **Ce qui a été mesuré et tenait déjà** : les durées annoncées sont les durées
+  réelles des fichiers (0:48 · 0:32 · 0:57) ; `preload="metadata"` fait que la
+  page ne tire que **65 Ko** du fichier de 5 Mo tant que personne ne clique, et
+  ne boucle pas ; les commandes du lecteur portent leurs `aria-label`.
+- ⚠️ **Une vidéo ne se relit pas au grep.** Les deux fautes vivaient dans des
+  `ctx.fillText` d'un script de rendu : ni le type, ni le build, ni la recette
+  ne pouvaient les voir. Elles se trouvent en **échantillonnant le film** —
+  quelques images à des instants choisis — et en confrontant chaque chiffre à
+  la base. À refaire à chaque regénération.
+- **Reste à trancher par la direction**, noté sans être touché : « formateurs
+  certifiés PMP » (rien ne l'étaye au catalogue), « réussir dès le 1er passage »
+  (une promesse de résultat d'examen), et la photo de séminaire en présentiel
+  sous une filière dont les douze parcours se donnent en visio — c'est une vraie
+  photo de la maison, mais elle suggère autre chose.
+
 ## Déploiement
 
 - GitHub : `clixatravo/clixa` — CI verte sur chaque push. Les secrets
