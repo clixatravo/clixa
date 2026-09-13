@@ -1213,7 +1213,7 @@ export const Inscriptions: CollectionConfig = {
       direction le 12 septembre 2026 : « radin nkono 3arfin chkon mjeri
       dosser ».
 
-      ⚠️ **Le premier qui prend le garde.** Le bouton « Message d'accueil » ne
+      ⚠️ **Le premier qui prend le garde.** Le bouton « Je prends ce dossier » ne
       paraît que sur un dossier libre ; une fois pris, il disparaît. Se le
       repasser est un geste délibéré — on change le champ à la main — et non un
       effet de bord d'un clic. Deux personnes qui se prennent le dossier à tour
@@ -1231,7 +1231,7 @@ export const Inscriptions: CollectionConfig = {
           admin: {
             width: "50%",
             description:
-              "Posé par le bouton « Message d'accueil ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.",
+              "Posé par le bouton « Je prends ce dossier ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.",
           },
         },
         {
@@ -1346,7 +1346,7 @@ export const Inscriptions: CollectionConfig = {
                   suivi par ». Il ne se répète pas — le bouton disparaît une
                   fois quelqu'un aux commandes.
                 */
-                { label: "Message d'accueil", value: "accueil" },
+                { label: "Dossier pris en charge", value: "accueil" },
                 { label: "Appelé (avant le 9 septembre 2026)", value: "appel" },
               ],
               admin: { width: "40%" },

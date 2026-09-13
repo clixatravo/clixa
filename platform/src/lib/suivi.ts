@@ -97,8 +97,13 @@ const NOMS: Record<string, string> = {
     écrire — suffit à empêcher le second message d'un collègue.
   */
   whatsapp: "WhatsApp ouvert",
-  /* Le premier contact : quelqu'un a pris le dossier en main. */
-  accueil: "Message d'accueil",
+  /*
+    Quelqu'un de l'équipe a pris le dossier en main. ⚠️ La valeur reste
+    `accueil` — quatre lignes de production la portent, et l'on ne retire pas
+    d'un type énuméré une valeur que des lignes utilisent. C'est l'intitulé qui
+    a changé le 13 septembre, quand le bouton a cessé d'ouvrir WhatsApp.
+  */
+  accueil: "Dossier pris en charge",
   /* Ancien geste, sans bouton : les lignes d'avant le 9 septembre 2026. */
   appel: "Appelé",
 };

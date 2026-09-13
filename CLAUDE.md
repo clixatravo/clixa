@@ -1794,16 +1794,24 @@ s'occupait du dossier — un dossier peut avoir reçu trois courriels automatiqu
 et n'être pris par personne. Devant trente dossiers neufs, c'est la première
 question : lesquels sont pris, lesquels attendent encore quelqu'un.
 
-- **Un bouton fait les trois choses d'un geste** : il ouvre WhatsApp avec le mot
-  d'accueil, note la ligne au journal, et inscrit son auteur comme responsable.
-  C'est le premier de la rangée parce qu'il est le premier dans le temps — on
-  prend le dossier, puis on relance.
-- ⚠️ **WhatsApp s'ouvre par une vraie ancre, pas par du script.** Un
-  `window.open` posé après un `await` n'est plus rattaché au clic, et le
-  navigateur le bloque. Le lien ouvre l'onglet lui-même ; l'enregistrement part
-  à côté.
-- ⚠️ **Le message porte le nom de qui écrit**, parce que c'est le sujet : le
-  prospect saura à qui il parle, et nous aussi.
+- **Un bouton, « Je prends ce dossier »** : il note la ligne au journal et
+  inscrit son auteur comme responsable. C'est le premier de la rangée parce
+  qu'il est le premier dans le temps — on prend le dossier, puis on relance.
+- ⚠️ **Il ouvrait aussi WhatsApp, et ce doublon a été retiré le 13 septembre
+  2026.** Le bouton WhatsApp de la liste existe déjà, à sa place, et il note son
+  propre clic depuis la veille : deux portes vers la même conversation faisaient
+  deux façons de la noter, et l'une des deux aurait fini par mentir. « sf l
+  whatssap rah bayena blassto, makin 3lax t3awed ». Le bouton ne fait donc plus
+  qu'une chose — dire qui mène le dossier.
+- ⚠️ **La valeur `accueil` reste, seul l'intitulé a changé** (« Message
+  d'accueil » → « Dossier pris en charge »). Quatre lignes de production la
+  portaient déjà, et l'on ne retire pas d'un type énuméré une valeur que des
+  lignes utilisent — elles deviendraient invalides à la première écriture du
+  dossier. Vérifié en base **avant** d'y toucher, comme pour `appel`.
+- ⚠️ **Et l'intitulé se change à trois endroits.** `lib/suivi.ts` pour la colonne
+  de la liste, `EtapesContrat.tsx` pour le journal de la fiche, la collection
+  pour le menu de /admin. C'est la seconde table des noms de gestes qui avait
+  déjà divergé la veille.
 - **Le premier qui prend le garde.** Le bouton disparaît une fois le dossier
   pris, remplacé par « Suivi par X depuis le … ». Se le repasser est un geste
   délibéré — on change le champ à la main — et non l'effet de bord d'un clic.

@@ -793,7 +793,7 @@ export interface Inscription {
    */
   notes?: string | null;
   /**
-   * Posé par le bouton « Message d'accueil ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.
+   * Posé par le bouton « Je prends ce dossier ». Modifiable à la main pour repasser le dossier à quelqu'un d'autre.
    */
   charge?: (number | null) | Utilisateur;
   chargeLe?: string | null;

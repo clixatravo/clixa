@@ -168,7 +168,7 @@ function Etape({
   clics l'un de l'autre ; ils doivent nommer les gestes pareil.
 */
 const OBJETS: Record<string, string> = {
-  accueil: "Message d'accueil",
+  accueil: "Dossier pris en charge",
   signature: "Relance signature",
   paiement: "Relance paiement",
   rappel: "Rappel par courriel",
@@ -334,8 +334,6 @@ export function EtapesContrat() {
   */
   const chargeNom = useField<string>({ path: "chargeNom" });
   const chargeLe = useField<string>({ path: "chargeLe" });
-  const nomComplet = useField<string>({ path: "apprenantNom" });
-  const whatsapp = useField<string>({ path: "apprenantWhatsapp" });
 
   /*
     ⚠️ Qui appelle est la moitié de la réponse. « Ce dossier a été appelé hier »
@@ -494,44 +492,20 @@ export function EtapesContrat() {
   };
 
   /*
-    ── ⚠️ Prendre le dossier, et écrire le premier mot ───────────────────────
+    ── ⚠️ Prendre le dossier ─────────────────────────────────────────────────
     Un dossier neuf arrive : quelqu'un de l'équipe doit s'en saisir. Jusqu'ici
     rien ne le disait — deux personnes pouvaient écrire au même prospect le même
-    matin, chacune persuadée d'être la première. La direction l'a demandé le
+    matin, chacune persuadée d'être la première. Demandé par la direction le
     12 septembre 2026 : « radin nkono 3arfin chkon mjeri dosser ».
 
-    Le bouton fait les trois choses d'un seul geste, dans cet ordre :
-    il ouvre WhatsApp avec le mot d'accueil, note la ligne au journal, et
-    **inscrit son auteur comme responsable du dossier**.
+    ⚠️ **Le bouton ouvrait aussi WhatsApp, et ce doublon a été retiré** le
+    13 septembre. Le bouton WhatsApp de la liste existe déjà, à sa place, et il
+    note son propre clic : deux portes vers la même conversation faisaient deux
+    façons de la noter, et l'une des deux aurait fini par mentir. Celui-ci ne
+    fait donc plus qu'une chose — dire qui mène le dossier — et il la fait bien.
 
-    ⚠️ **WhatsApp s'ouvre par le lien, pas par du script.** Un `window.open`
-    après un `await` est bloqué par le navigateur — il n'est plus rattaché au
-    clic. C'est donc une vraie ancre : le navigateur ouvre l'onglet lui-même, et
-    l'enregistrement part à côté.
-
-    ⚠️ **Le message est un brouillon.** Il porte le nom de qui écrit, parce que
-    c'est le sujet : le prospect saura à qui il parle, et nous aussi.
+    Ce qui reste : la ligne au journal, et le responsable inscrit sur la fiche.
   */
-  const numeroWhatsapp = (() => {
-    let chiffres = String(whatsapp.value ?? "").replace(/\D/g, "");
-    if (chiffres.startsWith("00")) chiffres = chiffres.slice(2);
-    if (!chiffres || chiffres.startsWith("0")) return undefined;
-    return chiffres.length >= 8 ? chiffres : undefined;
-  })();
-
-  const motDAccueil = [
-    `Bonjour ${
-      String(nomComplet.value ?? "")
-        .trim()
-        .split(/\s+/)[0] || ""
-    },`,
-    "",
-    `Ici ${libelleDuCompte(user as never) || "l'équipe admissions"}, de CLIXA Institute.`,
-    `Je suis votre interlocuteur pour votre pré-inscription (référence ${reference.value ?? ""}).`,
-    "",
-    "Quand seriez-vous disponible quelques minutes pour en parler ?",
-  ].join("\n");
-
   const prendreLeDossier = () => {
     const maintenant = new Date().toISOString();
     const ligne: Echange & { par?: number | string } = {
@@ -832,17 +806,15 @@ export function EtapesContrat() {
               bouton disparaît et la ligne le dit — se le repasser est un geste
               délibéré, on change le champ « Dossier suivi par » à la main.
             */}
-            {!chargeNom.value && numeroWhatsapp && (
-              <a
-                href={`https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(motDAccueil)}`}
-                target="_blank"
-                rel="noopener noreferrer"
+            {!chargeNom.value && (
+              <button
+                type="button"
                 className="btn btn--style-secondary btn--size-small clixa-relances__bouton clixa-relances__accueil"
                 onClick={prendreLeDossier}
-                title="Ouvre WhatsApp avec le mot d'accueil, et vous inscrit comme responsable du dossier"
+                title="Vous inscrit comme responsable de ce dossier, et le note au journal"
               >
-                Message d&apos;accueil — je prends ce dossier
-              </a>
+                Je prends ce dossier
+              </button>
             )}
 
             {chargeNom.value && (
