@@ -104,6 +104,23 @@ plaquettes PDF, doublé de Neon qui sort de veille — n'est pas vérifiée. **N
 la chercher dans le code avant d'avoir lu quelle ligne est tombée** ; le
 récapitulatif ci-dessous existe pour cela, et la prochaine occurrence tranchera.
 
+⚠️ **Le récapitulatif n'a pas suffi, et une passe l'a prouvé** (13 septembre
+2026, troisième occurrence). Cette page affirmait qu'il rendait la perte
+« impossible » : le jour même, une passe a rendu « 1 point à regarder », la
+sortie a de nouveau été lue par un `tail -3`, et le ✗ a de nouveau été perdu.
+Deux passes vertes ont suivi — on sait qu'un contrôle est tombé, jamais lequel,
+pour la troisième fois.
+
+Le défaut n'était pas dans ce qui s'imprime : **c'est relancer qui détruit la
+preuve**. La recette écrit donc sa sortie entière sur le disque à chaque passage
+(`platform/.recette.log`), et **une passe tombée laisse en plus un fichier
+horodaté** (`.recette-<instant>.log`) qu'aucune passe suivante ne réécrit. Le
+verdict nomme ce fichier : quoi qu'on coupe à la lecture, la dernière ligne dit
+où est la scène. Les deux sont ignorés par git (`*.log`).
+
+**Prouvé en forçant un contrôle au rouge** : sortie 1, le fichier horodaté est
+écrit, il nomme le contrôle tombé — et il est toujours là après une passe verte.
+
 ⚠️ **Ce qui échoue se relit à la fin, pas seulement à sa place** (depuis le
 12 septembre 2026). Une passe a rendu « 1 point à regarder » ; la sortie était
 lue par un `tail` de trois lignes, et le ✗ — trente lignes plus haut — a été

@@ -13,10 +13,31 @@
  */
 
 import { execSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 const BASE = (process.argv[2] || "https://www.clixa.africa").replace(/\/$/, "");
 const NAVIGATEUR =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0 Safari/537.36";
+
+/*
+  ── ⚠️ La sortie s'écrit aussi sur le disque, et ce n'est pas du confort ─────
+  Trois fois — les 12 et 13 septembre 2026 — une passe a rendu « 1 point à
+  regarder », et trois fois on a su qu'un contrôle était tombé sans jamais
+  savoir lequel : la sortie était lue par un `tail` trop court, et la passe
+  suivante, verte, effaçait la scène.
+
+  Le récapitulatif juste au-dessus du verdict devait suffire. Il n'a pas suffi,
+  parce que le défaut n'est pas dans ce qui s'imprime : c'est **relancer** qui
+  détruit la preuve. Une passe qui tombe laisse donc un fichier **horodaté**,
+  que rien ne réécrit — la passe suivante peut être verte, la trace reste.
+*/
+const lignes = [];
+const imprimer = console.log;
+console.log = (...args) => {
+  lignes.push(args.map((a) => (typeof a === "string" ? a : String(a))).join(" "));
+  imprimer(...args);
+};
 
 let manques = 0;
 /*
@@ -283,9 +304,24 @@ if (manques > 0) {
   for (const t of tombes) console.log(`    ✗ ${t}`);
 }
 
+/*
+  Le fichier est nommé dans le verdict : quoi qu'on coupe à la lecture, la
+  dernière ligne dit où se trouve la sortie entière.
+*/
+const dossier = resolve(import.meta.dirname, "..");
+const derniere = resolve(dossier, ".recette.log");
+const horodatage = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+const archive = resolve(dossier, `.recette-${horodatage}.log`);
+
 console.log(
   manques === 0
     ? "\nRecette : rien à signaler.\n"
-    : `\nRecette : ${manques} point(s) à regarder.\n`,
+    : `\nRecette : ${manques} point(s) à regarder. Sortie entière : ${archive}\n`,
 );
+
+const texte = lignes.join("\n") + "\n";
+writeFileSync(derniere, texte);
+// Une passe tombée laisse une trace que la passe suivante ne réécrira pas.
+if (manques > 0) writeFileSync(archive, texte);
+
 process.exit(manques === 0 ? 0 : 1);
