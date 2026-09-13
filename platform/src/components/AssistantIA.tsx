@@ -66,7 +66,7 @@ export function AssistantIA() {
       <div className="group fixed right-5 bottom-5 z-30 flex items-center gap-3">
         {!ouvert && (
           <span className="border-line bg-panel text-ivory rounded-clixa pointer-events-none hidden border px-3 py-1.5 text-[0.78rem] font-semibold whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
-            Une question ? Demandez à l'assistant
+            Une question ? Demandez à l&apos;assistant
           </span>
         )}
         <div className="relative">
