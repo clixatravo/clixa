@@ -7,6 +7,7 @@ import { jsonLdCourse } from "@/lib/seo";
 import { PlanDeCours } from "@/components/PlanDeCours";
 import { SessionsDisponibles } from "@/components/SessionsDisponibles";
 import { Temoignages } from "@/components/Temoignages";
+import { TrailerImmersion } from "@/components/TrailerImmersion";
 import { Badge, PlacesBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { placesRestantes } from "@/lib/types";
@@ -423,6 +424,14 @@ export default async function FicheFormation({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      {programme.slug === "directeur-administratif-et-financier" && (
+        <TrailerImmersion
+          titre="La formation DAF en direct"
+          sousTitre="Visionnez un extrait réel de masterclass et le retour spontané d'un participant de la cohorte."
+          afficherCtaProgramme={false}
+        />
+      )}
 
       <Temoignages temoignages={temoignages} />
     </>

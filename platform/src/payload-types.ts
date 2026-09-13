@@ -527,7 +527,7 @@ export interface Realisation {
   description?: string | null;
   source: 'lien' | 'fichier';
   /**
-   * Coller l'adresse telle quelle : youtu.be/…, youtube.com/watch?v=…, youtube.com/shorts/… ou vimeo.com/…
+   * Coller l'adresse telle quelle : YouTube, Vimeo ou Instagram Reel (instagram.com/reel/…).
    */
   lien?: string | null;
   /**

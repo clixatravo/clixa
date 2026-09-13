@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
 import { Temoignages } from "@/components/Temoignages";
 import { GalerieRealisations } from "@/components/GalerieRealisations";
+import { TrailerImmersion } from "@/components/TrailerImmersion";
 import { Button } from "@/components/ui/Button";
 import { getVitrine } from "@/lib/catalogue";
 
@@ -61,6 +62,11 @@ export default async function PageTemoignages() {
           </p>
         </div>
       </section>
+
+      <TrailerImmersion
+        titre="Les séances de formation en vidéo"
+        sousTitre="Extrait de masterclass en direct et retours d'expérience à chaud de nos participants."
+      />
 
       <Temoignages temoignages={temoignages} titre="Ce qu'ils en disent" />
       <GalerieRealisations realisations={realisations} />

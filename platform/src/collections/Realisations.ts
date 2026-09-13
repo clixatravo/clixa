@@ -82,7 +82,7 @@ export const Realisations: CollectionConfig = {
       required: true,
       defaultValue: "lien",
       options: [
-        { label: "Un lien YouTube ou Vimeo", value: "lien" },
+        { label: "Un lien YouTube, Vimeo ou Instagram", value: "lien" },
         { label: "Un fichier déposé ici (moins de 4 Mo)", value: "fichier" },
       ],
     },
@@ -121,13 +121,13 @@ export const Realisations: CollectionConfig = {
 
         return lireLaVideo(valeur)
           ? true
-          : "Cette adresse n'est pas une vidéo YouTube ou Vimeo reconnue. Formes acceptées : " +
-              "youtu.be/…, youtube.com/watch?v=…, youtube.com/shorts/… ou vimeo.com/…";
+          : "Cette adresse n'est pas une vidéo reconnue. Formes acceptées : " +
+              "YouTube (youtu.be/…, youtube.com/watch?v=…), Vimeo (vimeo.com/…) ou Instagram (instagram.com/reel/…).";
       },
       admin: {
         condition: (_, frere) => frere?.source === "lien",
         description:
-          "Coller l'adresse telle quelle : youtu.be/…, youtube.com/watch?v=…, youtube.com/shorts/… ou vimeo.com/…",
+          "Coller l'adresse telle quelle : YouTube, Vimeo ou Instagram Reel (instagram.com/reel/…).",
       },
     },
     {

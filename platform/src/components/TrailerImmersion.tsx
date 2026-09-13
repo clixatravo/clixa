@@ -1,0 +1,405 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+
+interface PisteVideo {
+  id: string;
+  onglet: string;
+  badge: string;
+  programmeTitre: string;
+  programmeSlug: string;
+  citation: string;
+  explication: string;
+  sourceFichier: string;
+  affiche: string;
+  dureeFormat: string;
+  lienInstagram: string;
+}
+
+const PISTES: PisteVideo[] = [
+  {
+    id: "extrait-daf",
+    onglet: "Extrait de Masterclass",
+    badge: "Séance réelle enregistrée",
+    programmeTitre: "Directeur Administratif et Financier (DAF)",
+    programmeSlug: "directeur-administratif-et-financier",
+    citation:
+      "« Être DAF, ce n’est pas seulement faire de la finance. C’est piloter la performance, sécuriser la gestion, structurer les processus et savoir interagir avec l’ensemble des parties prenantes. »",
+    explication:
+      "Aller au-delà des concepts théoriques pour comprendre le métier, ses responsabilités et les décisions stratégiques auxquelles un dirigeant financier est réellement confronté.",
+    sourceFichier: "/videos/immersion/reel_daf_extrait.mp4",
+    affiche: "/videos/immersion/reel_daf_extrait_poster.png",
+    dureeFormat: "0:32",
+    lienInstagram: "https://www.instagram.com/reel/DdNOvrLuj7-/",
+  },
+  {
+    id: "temoignage-daf",
+    onglet: "Retour à chaud",
+    badge: "À chaud · 1ʳᵉ séance",
+    programmeTitre: "Cohorte DAF · Participant",
+    programmeSlug: "directeur-administratif-et-financier",
+    citation:
+      "« Un retour spontané dès la première séance : des échanges de très haut niveau, concrets et immédiatement applicables. L’aventure ne fait que commencer. »",
+    explication:
+      "Le témoignage sans filtre d'un cadre financier participant à la cohorte DAF chez CLIXA Institute, enregistré dès la sortie de son premier cours en direct.",
+    sourceFichier: "/videos/immersion/reel_daf_temoignage.mp4",
+    affiche: "/videos/immersion/reel_daf_temoignage_poster.png",
+    dureeFormat: "0:57",
+    lienInstagram: "https://www.instagram.com/reel/DdMoJOKsIbe/",
+  },
+];
+
+export function TrailerImmersion({
+  titre = "Au cœur de l'expérience CLIXA",
+  sousTitre = "Des séances réelles, des retours spontanés : vivez l'immersion avant même de rejoindre votre cohorte.",
+  afficherCtaProgramme = true,
+}: {
+  titre?: string;
+  sousTitre?: string;
+  afficherCtaProgramme?: boolean;
+}) {
+  const [indexPiste, setIndexPiste] = useState(0);
+  const [enLecture, setEnLecture] = useState(false);
+  const [muet, setMuet] = useState(false);
+  const [progression, setProgression] = useState(0);
+  const [tempsEcoule, setTempsEcoule] = useState("0:00");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const active = PISTES[indexPiste]!;
+
+  const changerPiste = (idx: number) => {
+    if (idx === indexPiste) return;
+    setIndexPiste(idx);
+    setEnLecture(false);
+    setProgression(0);
+    setTempsEcoule("0:00");
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.pause();
+    }
+  };
+
+  const basculerLecture = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play()
+        .then(() => setEnLecture(true))
+        .catch(() => setEnLecture(false));
+    } else {
+      v.pause();
+      setEnLecture(false);
+    }
+  };
+
+  const basculerSon = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuet(v.muted);
+  };
+
+  const gererTemps = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const pct = (v.currentTime / v.duration) * 100;
+    setProgression(pct);
+
+    const min = Math.floor(v.currentTime / 60);
+    const sec = Math.floor(v.currentTime % 60);
+    setTempsEcoule(`${min}:${sec < 10 ? "0" : ""}${sec}`);
+  };
+
+  const chercherTemps = (e: React.MouseEvent<HTMLDivElement>) => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    v.currentTime = pos * v.duration;
+  };
+
+  const basculerPleinEcran = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else if (v.requestFullscreen) {
+      void v.requestFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v) {
+      v.muted = muet;
+    }
+  }, [indexPiste, muet]);
+
+  return (
+    <section className="border-line relative overflow-hidden border-t border-b px-8 py-16 lg:py-24">
+      {/* Halo d'ambiance doré subtil */}
+      <div
+        className="pointer-events-none absolute top-1/2 left-1/4 -translate-y-1/2 rounded-full bg-amber-500/5 blur-[120px] filter"
+        style={{ width: "420px", height: "420px" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 mx-auto max-w-[1180px]">
+        {/* En-tête de section */}
+        <div className="mb-12 text-center">
+          <div className="border-gold/30 bg-panel/80 text-gold-bright rounded-clixa mb-4 inline-flex items-center gap-2 border px-3.5 py-1.5 font-mono text-[0.68rem] tracking-[0.14em] uppercase backdrop-blur-md">
+            <span className="text-gold font-bold">✦</span>
+            <span>Immersion Directe · Preuve par l&apos;Image</span>
+          </div>
+          <h2 className="text-[clamp(1.6rem,3.2vw,2.5rem)] font-bold tracking-tight">{titre}</h2>
+          <p className="text-ivory-dim/90 mx-auto mt-3 max-w-[62ch] text-[0.98rem] leading-relaxed">
+            {sousTitre}
+          </p>
+        </div>
+
+        {/* Sélecteur d'onglets / Pistes vidéo */}
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
+          {PISTES.map((p, i) => {
+            const estActif = i === indexPiste;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => changerPiste(i)}
+                className={`rounded-clixa flex cursor-pointer items-center gap-2.5 px-5 py-2.5 font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-300 ${
+                  estActif
+                    ? "border-gold bg-gold/15 text-gold-bright border shadow-[0_0_20px_rgba(201,162,76,0.2)]"
+                    : "border-line bg-panel/60 text-ivory-dim hover:border-gold/40 hover:text-ivory border"
+                }`}
+              >
+                <span className={estActif ? "text-gold" : "text-ivory-dim/60"}>
+                  {i === 0 ? "🎥" : "🎙️"}
+                </span>
+                <span>{p.onglet}</span>
+                <span className="border-line/60 bg-ink/50 text-ivory-dim/70 rounded-full border px-2 py-0.5 text-[0.62rem]">
+                  {p.dureeFormat}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Conteneur principal 2 colonnes (Lecteur vidéo + Carte de contexte) */}
+        <div className="executive-card rounded-clixa border-line/80 grid grid-cols-1 items-center gap-8 overflow-hidden p-6 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:p-10">
+          {/* Colonne gauche : Lecteur vidéo exécutif */}
+          <div className="relative mx-auto w-full max-w-[500px]">
+            <div className="rounded-clixa border-gold/30 bg-ink group relative aspect-square w-full overflow-hidden border shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)]">
+              {/* Vidéo MP4 native */}
+              <video
+                ref={videoRef}
+                src={active.sourceFichier}
+                poster={active.affiche}
+                playsInline
+                onTimeUpdate={gererTemps}
+                onEnded={() => {
+                  setEnLecture(false);
+                  setProgression(100);
+                }}
+                className="size-full object-cover"
+              />
+
+              {/* Bouton Play géant au centre si la vidéo n'est pas lancée */}
+              {!enLecture && (
+                <button
+                  type="button"
+                  onClick={basculerLecture}
+                  aria-label="Lancer la lecture de la vidéo"
+                  className="group/btn absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/45 backdrop-blur-[2px] transition-all duration-300 hover:bg-black/35"
+                >
+                  <span className="border-gold bg-panel/90 text-gold-bright flex size-18 items-center justify-center rounded-full border shadow-[0_0_30px_rgba(201,162,76,0.35)] transition-transform duration-300 group-hover/btn:scale-110">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="ml-1 size-8"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </span>
+                  <span className="border-line/60 bg-ink/80 text-ivory rounded-clixa mt-4 border px-3 py-1 font-mono text-[0.72rem] tracking-wider uppercase backdrop-blur-md">
+                    Regarder l&apos;extrait ({active.dureeFormat})
+                  </span>
+                </button>
+              )}
+
+              {/* Barre de commandes personnalisée */}
+              <div
+                className={`from-ink/95 via-ink/75 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent p-4 transition-opacity duration-300 ${
+                  enLecture ? "opacity-90 hover:opacity-100" : "pointer-events-none opacity-0"
+                }`}
+              >
+                {/* Barre de progression cliquable */}
+                <div
+                  onClick={chercherTemps}
+                  className="bg-ivory/20 mb-3 h-1.5 w-full cursor-pointer overflow-hidden rounded-full"
+                  role="slider"
+                  aria-valuenow={progression}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Progression de la vidéo"
+                  tabIndex={0}
+                >
+                  <div
+                    className="bg-gold h-full transition-[width] duration-150"
+                    style={{ width: `${progression}%` }}
+                  />
+                </div>
+
+                {/* Boutons de contrôle */}
+                <div className="flex items-center justify-between text-xs text-white">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={basculerLecture}
+                      className="hover:text-gold-bright text-ivory cursor-pointer p-1 transition-colors"
+                      aria-label={enLecture ? "Mettre en pause" : "Lire"}
+                    >
+                      {enLecture ? (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={basculerSon}
+                      className="hover:text-gold-bright text-ivory cursor-pointer p-1 transition-colors"
+                      aria-label={muet ? "Activer le son" : "Couper le son"}
+                    >
+                      {muet ? (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        </svg>
+                      )}
+                    </button>
+
+                    <span className="text-ivory-dim font-mono text-[0.74rem]">
+                      {tempsEcoule} / {active.dureeFormat}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={basculerPleinEcran}
+                      className="hover:text-gold-bright text-ivory-dim cursor-pointer p-1 transition-colors"
+                      aria-label="Plein écran"
+                    >
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Lien discret vers l'Instagram officiel */}
+            <div className="mt-3 flex items-center justify-between px-1">
+              <span className="text-ivory-dim/70 flex items-center gap-1.5 font-mono text-[0.7rem]">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                Format réel Instagram Reel
+              </span>
+              <a
+                href={active.lienInstagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ivory-dim hover:text-gold-bright inline-flex items-center gap-1 font-mono text-[0.72rem] transition-colors"
+              >
+                <span>Voir sur @clixa.africa</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Colonne droite : Fiche d'impact & Contexte pédagogique */}
+          <div className="flex flex-col justify-between">
+            <div>
+              {/* Badge supérieur */}
+              <div className="mb-3 flex items-center gap-2.5">
+                <span className="border-gold/30 bg-gold/10 text-gold-bright rounded-clixa border px-2.5 py-1 font-mono text-[0.66rem] font-bold tracking-wider uppercase">
+                  {active.badge}
+                </span>
+                <span className="text-ivory-dim font-mono text-[0.76rem]">
+                  {active.programmeTitre}
+                </span>
+              </div>
+
+              {/* Citation principale */}
+              <blockquote className="border-gold/60 text-ivory my-4 border-l-2 pl-4 text-[1.12rem] leading-relaxed font-medium italic">
+                {active.citation}
+              </blockquote>
+
+              {/* Explication du contexte réel */}
+              <p className="text-ivory-dim/90 mt-4 text-[0.92rem] leading-relaxed">
+                {active.explication}
+              </p>
+
+              {/* Piliers d'excellence observés dans l'extrait */}
+              <div className="border-line/60 my-6 space-y-2.5 border-t pt-5">
+                <div className="flex items-start gap-2.5 text-[0.84rem]">
+                  <span className="text-gold font-bold">✦</span>
+                  <span className="text-ivory-dim">
+                    <strong className="text-ivory font-medium">
+                      Cas réels d&apos;entreprise :
+                    </strong>{" "}
+                    aucun exposé abstrait, chaque module résout une décision de direction.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5 text-[0.84rem]">
+                  <span className="text-gold font-bold">✦</span>
+                  <span className="text-ivory-dim">
+                    <strong className="text-ivory font-medium">Interactivité en direct :</strong>{" "}
+                    débats stratégiques, retours d&apos;expérience entre pairs directeurs.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5 text-[0.84rem]">
+                  <span className="text-gold font-bold">✦</span>
+                  <span className="text-ivory-dim">
+                    <strong className="text-ivory font-medium">Validation certifiante :</strong>{" "}
+                    parcours structuré délivrant un certificat professionnel référencé.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions & Redirection vers le programme DAF */}
+            {afficherCtaProgramme && (
+              <div className="border-line/60 flex flex-wrap items-center gap-3.5 border-t pt-5">
+                <Link
+                  href={`/formations/${active.programmeSlug}`}
+                  className="bg-gold text-ink hover:bg-gold-bright rounded-clixa inline-flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-wider uppercase shadow-md transition-all"
+                >
+                  <span>Découvrir le programme DAF</span>
+                  <span>→</span>
+                </Link>
+
+                <Link
+                  href={`/inscription?formation=${active.programmeSlug}`}
+                  className="border-line-strong text-ivory hover:border-gold hover:text-gold-bright rounded-clixa bg-panel/50 inline-flex items-center gap-2 border px-4 py-3 text-xs font-semibold transition-all"
+                >
+                  <span>Rejoindre la prochaine cohorte</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { PlacesBadge } from "@/components/ui/Badge";
 import { placesRestantes } from "@/lib/types";
 import { MarqueSkillAfrique } from "@/components/MarqueSkillAfrique";
+import { TrailerImmersion } from "@/components/TrailerImmersion";
 import {
   formatDateCourte,
   getAgenda,
@@ -574,6 +575,9 @@ export default async function Accueil() {
           </div>
         </div>
       </section>
+
+      {/* ── Immersion Vidéo & Masterclass Réelle ── */}
+      <TrailerImmersion />
 
       {/*
         Les deux sections se taisent tant qu'aucun contenu n'est publié.
