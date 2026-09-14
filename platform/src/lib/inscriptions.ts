@@ -104,6 +104,8 @@ export interface Dossier {
    * exemplaires du même certificat porteraient deux dates différentes.
    */
   certificatEmisLe?: string;
+  /** Le code imprimé sur le certificat, qui le fait vérifier sans ouvrir le dossier. */
+  certificatCode?: string;
 }
 
 /**
@@ -171,6 +173,7 @@ export const getDossier = cache(async (reference: string): Promise<Dossier | und
         }
       : {}),
     ...(d.certificatEmisLe ? { certificatEmisLe: String(d.certificatEmisLe) } : {}),
+    ...(d.certificatCode ? { certificatCode: String(d.certificatCode) } : {}),
     ...(d.createdAt ? { depuis: String(d.createdAt) } : {}),
     ...(d.moyenSouhaite ? { moyenSouhaite: d.moyenSouhaite } : {}),
     ...(d.coordonneesEnvoyeesLe ? { coordonneesEnvoyeesLe: String(d.coordonneesEnvoyeesLe) } : {}),
@@ -319,4 +322,61 @@ export function prochaineEtape(d: Dossier): string {
   return d.sessionDebut
     ? `Tout est réglé. Rendez-vous le ${JOUR.format(new Date(d.sessionDebut))}.`
     : "Tout est réglé.";
+}
+
+/** Ce qu'un tiers apprend en vérifiant un certificat — et rien de plus. */
+export interface CertificatVerifie {
+  titulaire: string;
+  parcours: string;
+  emisLe?: string;
+}
+
+/**
+ * Retrouver un certificat par son code de vérification.
+ *
+ * ⚠️ **Le moins possible, et par une porte à part.** `getDossier` rend le
+ * dossier entier — téléphone, adresse, échéancier — parce que le participant
+ * l'ouvre avec sa propre clef. Celui qui vérifie un certificat est un tiers :
+ * un employeur, une banque. Il apprend que le certificat existe, à quel nom,
+ * pour quel parcours et à quelle date ; rien qui permette de joindre la
+ * personne ni d'ouvrir son dossier. `select` le garantit à la lecture, pas
+ * seulement à l'affichage.
+ *
+ * ⚠️ **Seul un dossier « Terminée » répond.** Le code est tiré au passage à ce
+ * statut ; un dossier revenu en arrière — une erreur de saisie corrigée — ne
+ * doit plus faire valoir un certificat qu'on ne délivre plus. Le route du PDF
+ * applique la même règle : les deux ne peuvent pas se contredire.
+ */
+export async function trouverCertificat(code: string): Promise<CertificatVerifie | undefined> {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "inscriptions",
+    where: {
+      and: [{ certificatCode: { equals: code } }, { statut: { equals: "terminee" } }],
+    },
+    limit: 1,
+    depth: 2,
+    overrideAccess: true,
+    select: { apprenantNom: true, certificatEmisLe: true, session: true },
+  });
+  const d = docs[0] as
+    | {
+        apprenantNom?: string | null;
+        certificatEmisLe?: string | null;
+        session?: { programme?: { titre?: string | null } | number | null } | number | null;
+      }
+    | undefined;
+  if (!d) return undefined;
+
+  const session = typeof d.session === "object" && d.session ? d.session : undefined;
+  const programme =
+    session && typeof session.programme === "object" && session.programme
+      ? session.programme
+      : undefined;
+
+  return {
+    titulaire: d.apprenantNom ?? "",
+    parcours: programme?.titre ?? "",
+    ...(d.certificatEmisLe ? { emisLe: String(d.certificatEmisLe) } : {}),
+  };
 }

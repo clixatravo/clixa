@@ -258,12 +258,25 @@ const DESCRIPTION_CLIXA =
 const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
 
 /**
- * La référence imprimée sur le document, dérivée de celle du dossier.
- * `CLX-73WR8CVT` devient `CLIXA-73WR8CVT` : rien de plus à tirer, rien de
- * plus à stocker.
+ * Ce que le pied du certificat imprime pour qu'on puisse le vérifier.
+ *
+ * ⚠️ **Jamais la référence du dossier, sous aucune forme.** Le pied imprimait
+ * `CLIXA-` suivi de cette référence sans son préfixe : remettre `CLX-` devant
+ * ouvrait la fiche du participant, et un certificat circule — employeur, banque,
+ * candidature. Le code imprimé est tiré à part (`lib/code-certificat.ts`).
+ *
+ * Un certificat sans code — ce qui ne peut arriver qu'à un dossier terminé
+ * avant le 14 septembre 2026, et il n'en existe aucun — n'imprime rien plutôt
+ * que de retomber sur la référence. Le spécimen, lui, montre la forme.
  */
-function referenceCertificat(reference: string): string {
-  return `CLIXA-${reference.replace(/^CLX-/i, "")}`;
+export function piedDeVerification(
+  dossier: Pick<Dossier, "certificatCode">,
+  specimen = false,
+): string | undefined {
+  const code = dossier.certificatCode ?? (specimen ? "CLIXA-XXXX-XXXX" : undefined);
+  return code
+    ? `Code de vérification : ${code} · vérifiable sur www.clixa.africa/verifier`
+    : undefined;
 }
 
 export function CertificatPDF({
@@ -280,7 +293,11 @@ export function CertificatPDF({
 
   return (
     <Document
-      title={`Certificat professionnel ${dossier.reference}`}
+      /*
+        ⚠️ Le titre du PDF se lit dans l'aperçu de n'importe quelle messagerie :
+        il portait la référence du dossier en clair. Il nomme le parcours.
+      */
+      title={`Certificat professionnel — ${dossier.programmeTitre}`}
       author="CLIXA Institute"
       subject={dossier.programmeTitre}
     >
@@ -415,9 +432,11 @@ export function CertificatPDF({
           </View>
         )}
 
-        <Text style={s.pied} fixed>
-          Référence certificat : {referenceCertificat(dossier.reference)}
-        </Text>
+        {piedDeVerification(dossier, specimen) && (
+          <Text style={s.pied} fixed>
+            {piedDeVerification(dossier, specimen)}
+          </Text>
+        )}
       </Page>
     </Document>
   );

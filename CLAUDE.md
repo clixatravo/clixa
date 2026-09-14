@@ -41,6 +41,7 @@ npx payload run scripts/verifier-google.ts        # une personne, un compte
 npx payload run scripts/verifier-places.ts        # la place tenue puis rendue
 npx payload run scripts/verifier-signature.ts     # l'empreinte du contrat
 npx payload run scripts/verifier-certificat.ts    # le certificat ne se réclame pas avant d'être mérité
+                                                  # et ne porte rien de la clef du dossier
 npx payload run scripts/verifier-confirmation.ts  # l'adresse confirmée
 npx payload run scripts/verifier-relances.ts      # la relance qui ne part pas
 npx payload run scripts/verifier-rappels.ts       # prévenir avant le terme, une fois par seuil
@@ -2040,6 +2041,67 @@ génération, pas seulement au code, la même leçon que le PDF de la plaquette.
   certificat avait besoin du même nom de gérant pour sa signature ; l'y
   retaper aurait ouvert une seconde copie, exactement le défaut déjà vu sur le
   numéro d'admissions et les moyens de paiement affichés sur la fiche.
+
+⚠️ **Le certificat imprimait la clef du dossier** (corrigé le 14 septembre 2026,
+en préparant la page de vérification). Son pied portait « Référence certificat :
+CLIXA-73WR8CVT » — la référence du dossier `CLX-73WR8CVT` sans son préfixe. Il
+suffisait de remettre `CLX-` devant pour ouvrir la fiche du participant :
+nom, adresse, téléphone, échéancier, et le formulaire d'annonce de transfert.
+Pire, deux endroits la portaient **en clair** : le titre du PDF (« Certificat
+professionnel CLX-… », lisible dans l'aperçu de n'importe quelle messagerie) et
+le **nom du fichier** (`CLIXA-certificat-CLX-….pdf`).
+
+Un certificat est fait pour circuler — employeur, banque, candidature. Un
+participant qui joignait le sien à un dossier de recrutement joignait la clef de
+son dossier dans le nom de la pièce jointe.
+
+- ⚠️ **Aucun certificat n'avait encore été émis** : soixante et onze dossiers en
+  production, tous « demandée », et la première cohorte finit le 21 novembre.
+  Rien à rattraper, rien en circulation — c'est ce qui rend la correction propre.
+- **Le document porte un code de vérification tiré à part**
+  (`lib/code-certificat.ts`, `certificatCode`) : `CLIXA-XXXX-XXXX`, quarante bits,
+  tiré au premier passage à « Terminée », dans le même écrit que la date « Fait
+  le ». Il ne dérive de rien, et rien ne se retrouve à partir de lui. Sa forme
+  groupée le distingue à l'œil de `CLX-XXXXXXXX` : les confondre au téléphone,
+  ce serait dicter la clef.
+- **L'alphabet a quitté `Inscriptions.ts` pour `lib/tirage.ts`** : la référence
+  et le code tirent dans la même table de symboles — sans I, O, 0 ni 1 — et deux
+  copies d'une table finissent par diverger.
+- ⚠️ **La garde exigeait la faute.** `verifier-certificat.ts` contrôlait « le nom
+  du fichier porte la référence du dossier » — vert, et exactement ce qu'il ne
+  fallait pas. Retourné : il vérifie maintenant que ni le pied, ni le titre, ni
+  le nom du fichier ne portent rien de la référence, et que le code n'en
+  contient aucun des huit symboles.
+- **Un code ne bouge pas une fois tiré**, comme la date : un employeur l'a
+  peut-être déjà. Et il se tire sur le statut **résultant**, pas seulement sur
+  `data` — une écriture partielle ne porte pas le statut.
+
+⚠️ **Ce que la page `/verifier` rend, et ce qu'elle tait.** Le tiers tape le code
+— ou suit l'adresse imprimée — et apprend si le certificat est authentique, à
+quel nom, pour quel parcours, émis quand. **Rien d'autre** :
+`trouverCertificat` ne sélectionne que ces trois champs à la lecture, pas
+seulement à l'affichage, et un contrôle compte les clés rendues.
+
+- ⚠️ **Seul un dossier « Terminée » répond** — la même règle que la route du
+  PDF. Un dossier revenu en arrière ne fait plus valoir son certificat ; sans le
+  témoin qui le prouve, une recherche qui ignorerait le statut passerait au vert.
+- ⚠️ **« N'existe pas » et « plus valide » se disent pareil** : distinguer les
+  deux apprendrait à qui essaie des codes lesquels ont existé. Une forme
+  invalide, elle, se dit comme telle — « aucun certificat » ferait douter d'un
+  document quand c'est la saisie qui est fausse.
+- **La saisie pardonne ce qui se tape autrement** — minuscules, espaces, tirets
+  ou préfixe omis — mais pas un symbole hors alphabet : il n'existe sur aucun
+  certificat, et le « corriger » ferait valider un code que personne n'a tapé.
+- **`noindex`**, hors du plan du site : un résultat porte le nom d'une personne,
+  et la page se trouve par le certificat, qui en imprime l'adresse.
+- **Un frein de vingt vérifications par minute**, comme l'attestation. Il ne
+  protège pas les codes — quarante bits s'en chargent — il empêche une boucle
+  d'interroger la base sans fin.
+- **Prouvé en remettant les trois défauts** — le code dérivé de la référence, la
+  référence dans le nom du fichier, la recherche sans filtre de statut : quatre
+  contrôles au rouge. Le PDF a été rendu et **regardé**, et `strings` n'y trouve
+  plus la référence. La recette de production vérifie qu'un code inventé ne vaut
+  pas certificat et que la page ne se laisse pas indexer.
 
 ⚠️ **Le cachet et la signature ont changé le 5 septembre 2026.** La direction
 a transmis un visuel unique — le disque « CLIXA INSTITUTE · AFRICA · 2026 »

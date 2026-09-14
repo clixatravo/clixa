@@ -281,6 +281,24 @@ dire(
   `reçu ${certificatInvente.code}`,
 );
 
+/*
+  ── La vérification d'un certificat, vue d'un tiers ─────────────────────────
+  On ne peut pas monter ici de certificat réel. On vérifie donc les deux choses
+  qui tiennent sans lui : la page ne se laisse pas indexer — un résultat porte
+  le nom d'une personne — et un code inventé ne vaut pas certificat.
+*/
+const verification = await repond("/verifier?code=CLIXA-2345-6789");
+const pageVerification = verification.code === 200 ? await verification.corps.text() : "";
+dire(
+  verification.code === 200 && /Aucun certificat valide/.test(pageVerification),
+  "un code de certificat inventé ne vaut pas certificat",
+  `reçu ${verification.code}`,
+);
+dire(
+  /<meta name="robots" content="noindex/.test(pageVerification),
+  "la page de vérification ne se laisse pas indexer",
+);
+
 const signatureInventee = await repond("/api/signature", {
   method: "POST",
   body: "dossier=CLX-RECETTE0&nom=Personne&mention=Lu+et+approuv%C3%A9",

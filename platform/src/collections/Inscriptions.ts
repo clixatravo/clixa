@@ -1,5 +1,6 @@
 import { occupeUnePlace } from "@/lib/places";
-import { randomBytes } from "crypto";
+import { tirage } from "@/lib/tirage";
+import { nouveauCodeCertificat } from "@/lib/code-certificat";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { pasDansLeFutur, paysValide } from "@/collections/champs";
@@ -141,43 +142,6 @@ async function recompterUne(id: number, req: PayloadRequest): Promise<void> {
       req,
     });
   }
-}
-
-/*
-  L'alphabet exclut I, O, 0 et 1.
-
-  Une référence se dicte au téléphone et se recopie d'un courriel : les quatre
-  caractères qu'on confond à l'oral ou à l'œil coûtent plus qu'ils ne
-  rapportent. Trente-deux symboles suffisent largement.
-*/
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const LONGUEUR = 8;
-
-/**
- * Tirer une référence de dossier.
- *
- * ⚠️ `randomBytes`, pas `Math.random()`.
- *
- * La référence n'est pas un simple identifiant : c'est la seule clef qui
- * protège la fiche d'un dossier — nom, adresse, téléphone, échéancier — et
- * l'annonce d'un transfert. `Math.random()` est un générateur rapide, non
- * cryptographique : son état interne se reconstitue à partir de quelques
- * sorties, et qui a ouvert deux ou trois dossiers peut alors prédire ceux
- * qu'on délivrera ensuite.
- *
- * Huit symboles sur trente-deux valent quarante bits — mille milliards de
- * combinaisons, là où cinq caractères en base 36 en donnaient soixante
- * millions. Les références déjà émises restent valables : elles sont
- * enregistrées, pas recalculées.
- */
-function tirage(): string {
-  const octets = randomBytes(LONGUEUR);
-  let sortie = "";
-  for (let i = 0; i < LONGUEUR; i += 1) {
-    // Le modulo est sans biais : 256 est un multiple de 32.
-    sortie += ALPHABET[octets[i]! % ALPHABET.length];
-  }
-  return sortie;
 }
 
 export const Inscriptions: CollectionConfig = {
@@ -443,6 +407,27 @@ export const Inscriptions: CollectionConfig = {
         */
         if (data.statut === "terminee" && originalDoc?.statut !== "terminee") {
           data.certificatEmisLe = new Date().toISOString();
+        }
+
+        /*
+          ── Le code de vérification, tiré une fois ──────────────────────────
+          Il ne dérive de rien : ni de la référence du dossier, ni d'un
+          compteur. C'est ce qui permet de l'imprimer sur un document qui
+          circule — voir `lib/code-certificat.ts`, et la faute qu'il corrige.
+
+          ⚠️ Il se lit sur le statut **résultant**, pas seulement sur `data` :
+          une écriture partielle (la tâche de 8 h ne pose que sa trace) ne porte
+          pas le statut, et un dossier déjà terminé sans code — qui n'existe pas
+          aujourd'hui — en recevrait un au premier enregistrement plutôt que
+          jamais. Et il ne se remplace pas : un code déjà remis à un employeur
+          doit continuer de répondre.
+        */
+        if (
+          (data.statut ?? originalDoc?.statut) === "terminee" &&
+          !originalDoc?.certificatCode &&
+          !data.certificatCode
+        ) {
+          data.certificatCode = nouveauCodeCertificat();
         }
 
         // La prochaine échéance impayée, pour trier les relances sans ouvrir les dossiers.
@@ -1009,6 +994,25 @@ export const Inscriptions: CollectionConfig = {
                 readOnly: true,
                 description: "Posée automatiquement au premier passage à « Terminée ».",
                 date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              /*
+                ⚠️ **Unique et indexé** : c'est par lui qu'un tiers retrouve le
+                certificat sur `/verifier`. Et en lecture seule — un code
+                réécrit à la main ne répondrait plus pour l'employeur à qui le
+                participant l'a déjà transmis.
+              */
+              name: "certificatCode",
+              type: "text",
+              label: "Code de vérification",
+              unique: true,
+              index: true,
+              admin: {
+                width: "30%",
+                readOnly: true,
+                description:
+                  "Tiré au premier passage à « Terminée ». Imprimé sur le certificat ; vérifiable sur /verifier.",
               },
             },
             {

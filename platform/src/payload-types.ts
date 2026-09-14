@@ -828,6 +828,10 @@ export interface Inscription {
    */
   certificatEmisLe?: string | null;
   /**
+   * Tiré au premier passage à « Terminée ». Imprimé sur le certificat ; vérifiable sur /verifier.
+   */
+  certificatCode?: string | null;
+  /**
    * Figé à l'inscription : un barème qui change ne rouvre pas un dossier.
    */
   montantTotal?: number | null;
@@ -1536,6 +1540,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   dernierRappelAvantTerme?: T;
   placeRappeleeLe?: T;
   certificatEmisLe?: T;
+  certificatCode?: T;
   montantTotal?: T;
   devise?: T;
   echeances?:

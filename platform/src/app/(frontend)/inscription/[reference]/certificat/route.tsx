@@ -17,10 +17,11 @@ import { renderToBuffer } from "@react-pdf/renderer";
  * Le dessin vit dans `lib/certificat.tsx`, partagé avec le script qui
  * fabrique le spécimen : un spécimen dessiné à part finit toujours par mentir.
  *
- * ⚠️ La référence imprimée sur le document (« CLIXA-… ») n'est pas la clef de
- * l'URL : elle se dérive de la référence du dossier, sans compteur ni table
- * de plus à tenir à jour — le même choix que la référence du dossier
- * elle-même, tirée une fois et jamais recalculée.
+ * ⚠️ Le document n'imprime **aucune forme** de la référence du dossier. Il
+ * imprimait « CLIXA- » suivi de cette référence sans son préfixe, et c'était
+ * la clef de la fiche du participant, réversible en ajoutant « CLX- » devant.
+ * Il porte désormais un code tiré à part (`lib/code-certificat.ts`), que la
+ * page `/verifier` sait lire — et rien qui mène au dossier.
  */
 
 export const dynamic = "force-dynamic";
@@ -64,7 +65,12 @@ export async function GET(
   return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="CLIXA-certificat-${dossier.reference}.pdf"`,
+      /*
+        ⚠️ Le nom du fichier suit la pièce jointe partout où elle part : il
+        portait la référence du dossier en clair. Il porte le code, qui ne
+        mène qu'à la page de vérification.
+      */
+      "Content-Disposition": `inline; filename="certificat-${dossier.certificatCode ?? "clixa"}.pdf"`,
       // Un certificat porte le nom du participant : jamais dans un cache partagé.
       "Cache-Control": "private, no-store",
     },
