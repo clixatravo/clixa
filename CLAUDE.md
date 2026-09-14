@@ -2711,9 +2711,9 @@ performance** : une page plus rapide parce qu'elle a perdu sa mise en forme est
 un rendu plus rapide de rien.
 
 ✅ **Next 16.3.5 le répare, et le gain est réel** (mesuré le 14 septembre 2026,
-dans un arbre git séparé, avant toute mise en ligne). Même protocole que la
-mesure des polices : build de production, 3G lente, processeur ralenti ×4, écran
-de téléphone, cinq passes.
+dans un arbre git séparé ; **en ligne depuis le même jour**, commit `8c6439d`).
+Même protocole que la mesure des polices : build de production, 3G lente,
+processeur ralenti ×4, écran de téléphone, cinq passes.
 
 | Next 16.3.5 | Accueil — FCP | Fiche DAF — FCP | Règles CSS |
 |---|---|---|---|
@@ -2728,6 +2728,13 @@ de téléphone, cinq passes.
   et la page a été regardée : l'accueil est identique à la production.
 - **`/admin` garde sa marque** — 592 règles, aucune erreur JavaScript — et la
   navigation côté client après un premier chargement fonctionne.
+- ⚠️ **Et la même question a été reposée à la production**, parce qu'un build
+  local qui va bien ne dit rien de ce qui est servi : `/api/version` rend
+  `8c6439d`, l'accueil porte **une balise `<style>` et aucune feuille externe**,
+  `/admin` trois balises, aucune feuille, et l'or de la marque y figure. La
+  recette sort en 0. C'était le contrôle qui manquait le jour de la 16.3.1 : la
+  panne d'alors ne cassait ni build, ni type, ni épreuve — elle servait une page
+  nue, avec un chiffre de performance flatteur.
 - ⚠️ **Le coût, écrit pour qu'on le sache** : le HTML passe à ~53 Ko compressés
   au lieu d'un HTML plus une feuille mise en cache. **Le CSS y figure deux
   fois** — la balise et les données de React — et il ne se met plus en cache
