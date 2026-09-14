@@ -77,10 +77,22 @@ export async function POST(request: Request) {
   } catch (e) {
     const status = e instanceof ErreurAssistant ? e.status : 500;
     console.error("assistant", status, e instanceof Error ? e.message : e);
+    /*
+      ⚠️ « Non configuré » ne se dit **que** si la clef manque : c'est le
+      drapeau porté par l'erreur, pas son statut. Gemini rend lui aussi des 503
+      quand ses modèles sont chargés — deux requêtes sur huit, mesuré en
+      production le 14 septembre 2026 — et les confondre faisait annoncer au
+      visiteur un assistant « en cours de mise en service » alors qu'il tourne.
+    */
     if (e instanceof ErreurAssistant && e.nonConfigure) {
       return erreur(503, { code: "NOT_CONFIGURED", error: "Assistant non configuré." });
     }
-    if (status === 429) {
+    /*
+      Une surcharge qui a épuisé tous les modèles se dit comme un quota : très
+      sollicité, réessayez — et non « l'assistant ne répond pas », qui n'apprend
+      rien et ne propose rien.
+    */
+    if (status === 429 || status === 503) {
       return erreur(429, {
         error:
           "L'assistant est très sollicité. Réessayez dans un instant ou écrivez-nous sur WhatsApp.",

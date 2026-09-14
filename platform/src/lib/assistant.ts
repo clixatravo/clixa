@@ -1,3 +1,4 @@
+import { MOYENS_AFFICHES } from "@/lib/moyens";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import {
   placesRestantes,
@@ -104,7 +105,15 @@ function decrireTarifs(t: Tarifs): string {
           .map((c) => euros(c, t.devise))
           .join(" + ")}) — ${p.conditions}`,
     ),
-    t.moyensPaiement.length ? `Moyens de paiement : ${t.moyensPaiement.join(", ")}` : "",
+    /*
+      ⚠️ **La liste vraie est celle du code, pas celle du CMS.** `moyensPaiement`
+      du global `tarifs` porte encore « Western Union · Ria · MoneyGram » — la
+      liste d'avant le 28 août, masquée dans /admin et retirée de la fiche le
+      1er septembre 2026 pour cette raison même. L'assistant la récitait : à qui
+      demandait s'il pouvait payer par carte, il répondait que non. C'est le
+      défaut qui a coûté un vrai prospect, réapparu une porte plus loin.
+    */
+    `Moyens de paiement acceptés : ${MOYENS_AFFICHES.join(", ")}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -244,6 +253,21 @@ export function extraireTexte(flux: ReadableStream<Uint8Array>): ReadableStream<
   const decodeur = new TextDecoder();
   const encodeur = new TextEncoder();
   let tampon = "";
+  /*
+    ── ⚠️ Une réponse coupée ne doit pas passer pour une réponse ─────────────
+    Mesuré en production : « Cette information ne figure pas dans notre
+    catalogue. Notre formation constitue un accompagnement complet à la
+    préparation de » — et c'est tout. Le flux s'arrête en plein mot, la fenêtre
+    affiche la moitié d'une phrase, et rien ne dit au visiteur qu'il lui manque
+    quelque chose. Il repart avec un renseignement tronqué, ce qui est pire que
+    pas de renseignement.
+
+    Gemini annonce pourtant comment il termine (`finishReason`) : « STOP » est
+    une fin normale, tout le reste — plafond de jetons atteint, filtre, arrêt du
+    modèle — ne l'est pas. On le dit alors, en une ligne, avec quoi faire.
+  */
+  let finPropre = false;
+  let duTexte = false;
 
   const lignes = (fin: boolean, sortie: TransformStreamDefaultController<Uint8Array>) => {
     let i: number;
@@ -253,12 +277,20 @@ export function extraireTexte(flux: ReadableStream<Uint8Array>): ReadableStream<
       if (!ligne.startsWith("data:")) continue;
       try {
         const donnees = JSON.parse(ligne.slice(5)) as {
-          candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
+          candidates?: {
+            finishReason?: string;
+            content?: { parts?: { text?: string; thought?: boolean }[] };
+          }[];
         };
-        const texte = (donnees.candidates?.[0]?.content?.parts ?? [])
+        const candidat = donnees.candidates?.[0];
+        if (candidat?.finishReason) finPropre = candidat.finishReason === "STOP";
+        const texte = (candidat?.content?.parts ?? [])
           .map((p) => (p.thought ? "" : (p.text ?? "")))
           .join("");
-        if (texte) sortie.enqueue(encodeur.encode(texte));
+        if (texte) {
+          duTexte = true;
+          sortie.enqueue(encodeur.encode(texte));
+        }
       } catch {
         // Ligne partielle ou événement sans texte.
       }
@@ -273,6 +305,13 @@ export function extraireTexte(flux: ReadableStream<Uint8Array>): ReadableStream<
       },
       flush(sortie) {
         lignes(true, sortie);
+        if (duTexte && !finPropre) {
+          sortie.enqueue(
+            encodeur.encode(
+              `\n\n_(Réponse interrompue. Reposez la question, ou écrivez-nous : ${RESEAUX_CLIXA.whatsapp.url})_`,
+            ),
+          );
+        }
       },
     }),
   );
