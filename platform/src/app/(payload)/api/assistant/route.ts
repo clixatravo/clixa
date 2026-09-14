@@ -77,8 +77,9 @@ export async function POST(request: Request) {
   } catch (e) {
     const status = e instanceof ErreurAssistant ? e.status : 500;
     console.error("assistant", status, e instanceof Error ? e.message : e);
-    if (status === 503)
+    if (e instanceof ErreurAssistant && e.nonConfigure) {
       return erreur(503, { code: "NOT_CONFIGURED", error: "Assistant non configuré." });
+    }
     if (status === 429) {
       return erreur(429, {
         error:

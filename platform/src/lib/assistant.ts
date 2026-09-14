@@ -167,16 +167,27 @@ export class ErreurAssistant extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /*
+      ⚠️ Distinct du statut. Gemini répond lui-même 503 quand un modèle est
+      surchargé : confondre les deux faisait annoncer au visiteur un assistant
+      « en cours de mise en service » alors qu'il l'était depuis longtemps.
+    */
+    readonly nonConfigure = false,
   ) {
     super(message);
   }
 }
 
+const reessayable = (status: number) => status === 404 || status === 429 || status >= 500;
+
 /*
   ⚠️ Plusieurs modèles, essayés dans l'ordre. Google renomme et retire les siens
   régulièrement : un nom en dur qui disparaît rendrait l'assistant muet du jour
-  au lendemain. Un 404 (modèle inconnu) ou un 429 (quota du modèle épuisé) fait
-  passer au suivant ; toute autre erreur est remontée. Flash d'abord : Flash-Lite répondait en français à une question posée en
+  au lendemain. Un 404 (modèle inconnu), un 429 (quota épuisé) ou une erreur 5xx
+  (modèle surchargé, fréquent aux heures de pointe) fait passer au suivant ;
+  une autre erreur est remontée.
+
+  Flash d'abord : Flash-Lite répondait en français à une question posée en
   anglais et mêlait les alphabets en darija. Son quota gratuit est plus large,
   il prend donc le relais quand celui de Flash est épuisé pour la journée —
   l'assistant perd en finesse, il ne se tait pas.
@@ -195,7 +206,7 @@ export async function repondreEnFlux(
   messages: MessageAssistant[],
 ): Promise<ReadableStream<Uint8Array>> {
   const cle = process.env.GEMINI_API_KEY;
-  if (!cle) throw new ErreurAssistant("GEMINI_API_KEY absente", 503);
+  if (!cle) throw new ErreurAssistant("GEMINI_API_KEY absente", 503, true);
 
   const corps = JSON.stringify({
     systemInstruction: { parts: [{ text: systeme }] },
@@ -223,7 +234,7 @@ export async function repondreEnFlux(
       `${modele} → ${reponse.status} ${await reponse.text()}`,
       reponse.status,
     );
-    if (reponse.status !== 404 && reponse.status !== 429) break;
+    if (!reessayable(reponse.status)) break;
   }
   throw derniere ?? new ErreurAssistant("aucun modèle", 502);
 }
