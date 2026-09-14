@@ -132,6 +132,17 @@ dire(
   /N'invente jamais un prix, une date/.test(consignes),
 );
 
+/*
+  ⚠️ **Une seule langue par réponse.** Vu en production le 14 septembre 2026 :
+  à une question en darija, l'assistant commençait en darija — « Tfaddal chof
+  details kamlin » — et finissait le même message en français. Ce n'est pas une
+  faute de traduction, c'est un message qu'une moitié du lecteur ne lit pas.
+*/
+dire(
+  "la consigne exige une seule langue par réponse",
+  /UNE SEULE LANGUE PAR RÉPONSE/.test(consignes) && /du premier mot au dernier/.test(consignes),
+);
+
 console.log("\n▸ Une réponse coupée le dit\n");
 
 /** Fabrique un flux SSE comme celui de Gemini. */
