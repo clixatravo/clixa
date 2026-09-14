@@ -71,7 +71,7 @@ function slugDe(relation: unknown): string | undefined {
  * et le plan du site, dont la liste d'adresses change avec elle.
  */
 export const revaliderProgramme: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
-  const chemins = new Set(["/", "/formations", "/sitemap.xml"]);
+  const chemins = new Set(["/", "/formations", "/faq", "/sitemap.xml"]);
   for (const d of [doc, previousDoc]) {
     if (d?.slug) chemins.add(`/formations/${d.slug}`);
     const spec = slugDe(d?.specialisation);
@@ -82,7 +82,7 @@ export const revaliderProgramme: CollectionAfterChangeHook = ({ doc, previousDoc
 };
 
 export const revaliderProgrammeSupprime: CollectionAfterDeleteHook = ({ doc }) => {
-  const chemins = ["/", "/formations", "/sitemap.xml"];
+  const chemins = ["/", "/formations", "/faq", "/sitemap.xml"];
   if (doc?.slug) chemins.push(`/formations/${doc.slug}`);
   rafraichir(chemins, `formation retirée « ${doc?.titre ?? "?"} »`, [ETIQUETTE_CATALOGUE]);
   return doc;
@@ -93,7 +93,8 @@ export const revaliderProgrammeSupprime: CollectionAfterDeleteHook = ({ doc }) =
  * parcours, dans le catalogue et dans l'agenda de l'accueil.
  */
 export const revaliderSession: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
-  const chemins = new Set(["/", "/formations"]);
+  // `/faq` annonce la date de rentrée et les fuseaux : une session la touche.
+  const chemins = new Set(["/", "/formations", "/faq"]);
   for (const d of [doc, previousDoc]) {
     const slug = slugDe(d?.programme);
     if (slug) chemins.add(`/formations/${slug}`);
@@ -103,7 +104,7 @@ export const revaliderSession: CollectionAfterChangeHook = ({ doc, previousDoc }
 };
 
 export const revaliderSessionSupprimee: CollectionAfterDeleteHook = ({ doc }) => {
-  const chemins = new Set(["/", "/formations"]);
+  const chemins = new Set(["/", "/formations", "/faq"]);
   const slug = slugDe(doc?.programme);
   if (slug) chemins.add(`/formations/${slug}`);
   rafraichir([...chemins], "session retirée", [ETIQUETTE_CATALOGUE]);
@@ -171,7 +172,8 @@ export const revaliderVitrineSupprimee: CollectionAfterDeleteHook = ({ doc }) =>
  * fiches, le catalogue et le formulaire, qui répète les montants dans sa liste.
  */
 export const revaliderTarifs: GlobalAfterChangeHook = async ({ doc, req }) => {
-  const chemins = new Set(["/", "/formations", "/contact"]);
+  // `/faq` récite le barème : le changer doit la rafraîchir le même jour.
+  const chemins = new Set(["/", "/formations", "/contact", "/faq"]);
   const { docs } = await req.payload.find({
     collection: "programmes",
     limit: 200,

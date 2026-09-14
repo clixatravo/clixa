@@ -23,6 +23,7 @@ const colonnes = [
       { href: "/skillafrique", label: "SkillAfrique" },
       { href: "/campus", label: "Nos campus" },
       { href: "/blog", label: "Blog" },
+      { href: "/faq", label: "Questions fréquentes" },
     ],
   },
   {

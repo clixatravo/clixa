@@ -66,6 +66,7 @@ npx payload run scripts/verifier-creneaux.ts      # ce que le robot peut promett
 npx payload run scripts/verifier-orientation.ts   # quand il parle, quand il se tait
 npx payload run scripts/verifier-veille.ts        # les vignettes mènent où elles disent
 npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
+npx payload run scripts/verifier-faq.ts           # ce que la FAQ affirme suit ce que le site tient
 npx payload run scripts/verifier-video.ts         # ce qu'on accepte d'encadrer
 npx payload run scripts/verifier-vitrine.ts       # la séance filmée qui n'est pas encore relue
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
@@ -3843,6 +3844,39 @@ passait.
 - **L'assistant, lui, répond déjà en anglais** : c'est aujourd'hui la seule porte
   anglophone du site, et elle dit vrai.
 - Vérifié à 1280, 1024, 768 et 375 px : plus de « FR », aucun débordement.
+
+⚠️ **La FAQ ne recopie rien de ce qui se compte** (`/faq`, `lib/faq.ts`,
+14 septembre 2026). C'est la page qui vieillit le plus vite d'un site : un prix,
+un délai, une date de rentrée y restent vrais jusqu'au jour où la fiche change
+sans elle — et le journal compte assez de copies qui ont divergé pour ne pas en
+ouvrir une de plus.
+
+- **Les réponses sont une fonction des mêmes sources que la fiche** : le barème
+  (`getTarifs`), les moyens de paiement (`MOYENS`, jamais la liste du CMS), la
+  tenue de la place (`JOURS_DE_GRACE`), les dates, modes et fuseaux des sessions
+  publiées, les contacts (`RESEAUX_CLIXA`). Le texte ne porte que ce qui ne se
+  compte pas : comment le tunnel se déroule.
+- ⚠️ **Elle se tait sur ce que rien ne tient** : pas de replays (un seul parcours
+  les mentionne, et rien ne les produit), pas de taux de réussite, pas de campus
+  ouverts hors d'Agadir — Abidjan et Dakar « ouvriront prochainement », les mots
+  de la direction.
+- ⚠️ **Préparer une certification n'est pas la délivrer** : pour la préparation
+  PMP®, elle dit que l'examen se passe auprès de l'organisme certificateur.
+- ⚠️ **« sept jours », en lettres**, comme la fiche et le formulaire. Le même
+  délai écrit « 7 » ici et « sept » là se lit comme deux délais.
+- ⚠️ **La date d'envoi des coordonnées y est rappelée** — la seule défense qu'on
+  offre contre un faux message réclamant un virement. Une FAQ muette là-dessus
+  le serait sur la question que pose un hameçonnage.
+- **Des `<details>` natifs**, pas un accordéon en JavaScript : ils s'ouvrent au
+  clavier, se lisent sans script, et le texte replié reste dans la page.
+- **Un lien dans le pied de page**, pas dans l'en-tête : un septième lien y
+  ferait déborder à 1024 px. Au plan du site, et rafraîchie par les crochets du
+  barème, des sessions et des parcours.
+- `verifier-faq.ts` : vingt-trois contrôles, dans les deux sens — ce qu'on lui
+  donne ressort, ce qu'on ne lui donne pas n'apparaît jamais, et les témoins
+  changent la source pour voir la réponse changer. **Prouvé en remettant quatre
+  défauts** — un prix écrit en dur, « replays », la liste du CMS, une session
+  passée annoncée comme la prochaine : quatre rouges.
 
 ## Points ouverts
 
