@@ -2710,6 +2710,53 @@ déshabillé. **Vérifier `document.styleSheets` avant de croire un gain de
 performance** : une page plus rapide parce qu'elle a perdu sa mise en forme est
 un rendu plus rapide de rien.
 
+✅ **Next 16.3.5 le répare, et le gain est réel** (mesuré le 14 septembre 2026,
+dans un arbre git séparé, avant toute mise en ligne). Même protocole que la
+mesure des polices : build de production, 3G lente, processeur ralenti ×4, écran
+de téléphone, cinq passes.
+
+| Next 16.3.5 | Accueil — FCP | Fiche DAF — FCP | Règles CSS |
+|---|---|---|---|
+| sans `inlineCss` | 3 024 ms (3 012–3 092) | 3 000 ms (2 996–3 040) | 131 |
+| **avec `inlineCss`** | **1 360 ms** (1 352–1 456) | **1 360 ms** (1 352–1 388) | **131** |
+
+**−1,65 s, −55 %** — et cette fois ce n'est pas le rendu d'une page nue :
+
+- **Le piège de la 16.3.1 a été cherché avant de croire le chiffre.** Une balise
+  `<style>` porte 91 Ko de CSS, aucun lien vers une feuille ne reste, les
+  **131 règles** sont présentes comme sans l'option, le fond sombre est appliqué,
+  et la page a été regardée : l'accueil est identique à la production.
+- **`/admin` garde sa marque** — 592 règles, aucune erreur JavaScript — et la
+  navigation côté client après un premier chargement fonctionne.
+- ⚠️ **Le coût, écrit pour qu'on le sache** : le HTML passe à ~53 Ko compressés
+  au lieu d'un HTML plus une feuille mise en cache. **Le CSS y figure deux
+  fois** — la balise et les données de React — et il ne se met plus en cache
+  d'une page entière à l'autre. Il n'est payé qu'aux chargements complets : la
+  navigation interne passe par les données RSC, pas par le HTML.
+- ⚠️ **La recette locale rend trois rouges, et ce ne sont pas les siens.**
+  L'indexabilité, `robots.txt` et la balise canonique dépendent de
+  l'environnement — en local le site se ferme aux moteurs et son adresse est
+  `localhost`. Prouvé par le témoin : **les trois mêmes** tombent sur le build
+  sans `inlineCss`. Les trente autres passent des deux côtés.
+- **Les gardes qui appellent les routes passent sous la 16.3.5** : portes
+  d'équipe, certificat PDF, session sans mot de passe, portes manuelles,
+  assistant, FAQ, vidéos — 167 contrôles.
+- ⚠️ **La série Playwright aurait menti sans qu'on y prenne garde** : sa
+  configuration réutilise un serveur déjà ouvert sur le port 3000
+  (`reuseExistingServer`), et celui-là tournait encore en 16.3.1 dans l'autre
+  copie du dépôt. Lancée telle quelle, elle aurait éprouvé l'ancienne version et
+  rendu un vert sans objet. Elle a tourné sur le port 3200, dans l'arbre d'essai
+  seulement : **94 épreuves vertes**.
+- ⚠️ **Et changer de port a fait tomber une épreuve saine.** `espace.spec` —
+  « les trois échéances sont empilées » — a rendu « 0 échéance » : le compte
+  s'ouvrait, mais le rattachement du dossier renvoyait vers la connexion. Ce
+  n'était pas Next : `csrf` n'accepte que `NEXT_PUBLIC_SITE_URL`
+  (`localhost:3000`), le formulaire postait depuis `localhost:3200`, et Payload
+  refusait le cookie — la garde exactement comme elle doit être. Lu dans la
+  trace **avant** de relancer ; prouvé en relançant le fichier avec
+  `NEXT_PUBLIC_SITE_URL=http://localhost:3200` : 3/3. **Qui déplace le serveur
+  des épreuves déplace aussi l'origine.**
+
 ⚠️ **Et `pkill -f "next start"` ne tue pas ce serveur.** Le processus survit
 sous un autre nom, et les mesures suivantes portent alors sur l'ancien build —
 c'est ce qui a d'abord fait croire au gain. `lsof -ti :3000 | xargs kill -9`.
@@ -2742,9 +2789,9 @@ la substitution de police que cela coûte. **Non livré.**
   main à la feuille de style. Le chiffre de terrain — celui des vrais visiteurs —
   n'est pas mesuré.
 - **Le remède qui viserait juste reste le CSS dans le HTML**, et
-  `experimental.inlineCss` est cassé sur la version installée (voir plus haut).
-  Next **16.3.5** existe ; qu'il le répare n'est pas vérifié. Monter Next pour
-  l'essayer est une décision à part, pas un effet de bord d'une mesure. 36 Ko
+  `experimental.inlineCss` était cassé sur la 16.3.1 — la 16.3.5 le répare (voir plus haut).
+  Monter Next pour l'essayer a été traité à part, dans un arbre séparé, et non
+  comme l'effet de bord d'une mesure. 36 Ko
 pour Fraunces, 24 pour Manrope, 2 × 10 pour la chasse fixe. Le HTML pèse moins
 de 1 Ko compressé et le JavaScript ne bloque pas le premier rendu.
 

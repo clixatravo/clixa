@@ -97,6 +97,15 @@ const nextConfig: NextConfig = {
   },
   // Un <Link> vers une route inexistante casse le build au lieu de livrer un 404.
   typedRoutes: true,
+  /*
+    ⚠️ La feuille de style est écrite dans le HTML, et c'est ce qui fait le
+    premier affichage sur 3G : elle arrivait dernière, après le JavaScript et les
+    polices qui ne bloquent rien. Mesuré sur Next 16.3.5 (3G lente, 5 passes) :
+    3,0 s → 1,36 s sur l'accueil et sur la fiche DAF, 131 règles appliquées.
+    Sur 16.3.1 la même option servait une page sans une seule règle, sans erreur
+    au build : vérifier `document.styleSheets` après toute montée de version.
+  */
+  experimental: { inlineCss: true },
   redirects: redirections,
 };
 
