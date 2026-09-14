@@ -36,6 +36,338 @@ interface Echeance {
   dateLimite?: string | null;
 }
 
+// Micro-icônes vectorielles SVG pour le Cockpit Exécutif (remplaçant les émojis bruts)
+function IconePlus() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function IconeExport() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
+function IconeTelephone() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+function IconeLienExterne() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
+
+function IconeEclair() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
+
+function IconeSablier() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 22h14" />
+      <path d="M5 2h14" />
+      <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+      <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+    </svg>
+  );
+}
+
+function IconeFlecheRetour() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+    </svg>
+  );
+}
+
+function IconePlume() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 19l7-7 3 3-7 7-3-3z" />
+      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+      <path d="M2 2l7.586 7.586" />
+    </svg>
+  );
+}
+
+function IconeBulle() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconeTendance() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+      <polyline points="17 6 23 6 23 12" />
+    </svg>
+  );
+}
+
+function IconeDiplome() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+  );
+}
+
+function IconeDossier() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  );
+}
+
+function IconeUtilisateurs() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function IconeRecu() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  );
+}
+
+function IconeLivre() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  );
+}
+
+function IconeCalendrier() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function IconeTarif() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
 function obtenirFiltresDates() {
   const d = new Date();
   const aujourdhui = d.toISOString().slice(0, 10);
@@ -509,24 +841,17 @@ export async function Veille() {
             className="clixa-cockpit__btn clixa-cockpit__btn--primary"
             title="Créer manuellement un nouveau dossier d'inscription"
           >
-            <span>+ Nouvelle Inscription</span>
+            <IconePlus />
+            <span>Nouvelle Inscription</span>
           </Link>
           <a
             href="/api/admin/export-admissions"
             download
             className="clixa-cockpit__btn clixa-cockpit__btn--accent"
-            /*
-              ⚠️ **Le fichier n'est plus un CSV depuis le 7 septembre 2026.** La
-              route rend un vrai classeur `.xlsx` — une feuille par nature de
-              donnée, en-tête figée, montants et dates en nombres. Le bouton
-              annonçait encore « CSV » : qui le lit s'attend à un fichier texte
-              qu'il ouvrira dans n'importe quoi, et reçoit autre chose. Un
-              intitulé qui vieillit sur place est le même défaut que « Places au
-              total : 30 » — il ne casse rien, il désigne mal.
-            */
             title="Télécharger le classeur des admissions (.xlsx) : une feuille par nature de donnée"
           >
-            <span>📥 Exporter le classeur</span>
+            <IconeExport />
+            <span>Exporter (.xlsx)</span>
           </a>
           <Link
             href={
@@ -537,7 +862,8 @@ export async function Veille() {
             className={`clixa-cockpit__btn ${nouvellesDemandes > 0 ? "clixa-cockpit__btn--notif" : ""}`}
             title="Voir les demandes de rappel téléphonique"
           >
-            <span>📞 Rappels {nouvellesDemandes > 0 ? `(${nouvellesDemandes})` : ""}</span>
+            <IconeTelephone />
+            <span>Rappels {nouvellesDemandes > 0 ? `(${nouvellesDemandes})` : ""}</span>
           </Link>
           <a
             href="/"
@@ -546,7 +872,8 @@ export async function Veille() {
             className="clixa-cockpit__btn clixa-cockpit__btn--ghost"
             title="Ouvrir le site public dans un nouvel onglet"
           >
-            <span>Site public ↗</span>
+            <span>Site public</span>
+            <IconeLienExterne />
           </a>
         </div>
       </div>
@@ -570,7 +897,9 @@ export async function Veille() {
           className={`clixa-kpi ${aVerifier > 0 ? "clixa-kpi--alerte-or" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">⚡</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--or">
+              <IconeEclair />
+            </span>
             <span className="clixa-kpi__tag">Paiements</span>
           </div>
           <div className="clixa-kpi__valeur">{aVerifier}</div>
@@ -583,11 +912,6 @@ export async function Veille() {
         </Link>
 
         {/* KPI 1 bis : les places qui arrivent à leur terme */}
-        {/*
-          ⚠️ Elle dit ce qui va se produire **tout seul**, pas ce qu'on a laissé
-          traîner. C'est la seule vignette de ce genre, et c'est ce qui la rend
-          utile : passé 8 h, il est trop tard pour appeler avant le courriel.
-        */}
         <Link
           href={
             (placesAuTerme > 0 ? filtres.placesAuTerme : "/admin/collections/inscriptions") as Route
@@ -595,7 +919,9 @@ export async function Veille() {
           className={`clixa-kpi ${placesAuTerme > 0 ? "clixa-kpi--alerte-or" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">⌛</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--cyan">
+              <IconeSablier />
+            </span>
             <span className="clixa-kpi__tag">Places</span>
           </div>
           <div className="clixa-kpi__valeur">{placesAuTerme}</div>
@@ -615,7 +941,9 @@ export async function Veille() {
           className={`clixa-kpi ${placesARendre > 0 ? "clixa-kpi--alerte-or" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">↩️</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--cyan">
+              <IconeFlecheRetour />
+            </span>
             <span className="clixa-kpi__tag">Places</span>
           </div>
           <div className="clixa-kpi__valeur">{placesARendre}</div>
@@ -635,7 +963,9 @@ export async function Veille() {
           className={`clixa-kpi ${contratsATraiter > 0 ? "clixa-kpi--alerte-or" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">✍️</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--violet">
+              <IconePlume />
+            </span>
             <span className="clixa-kpi__tag">Contrats</span>
           </div>
           <div className="clixa-kpi__valeur">{contratsATraiter}</div>
@@ -654,20 +984,12 @@ export async function Veille() {
               ? filtres.conversations
               : "/admin/collections/conversations") as Route
           }
-          /*
-            ⚠️ `--alerte-rouge`, pas `--alerte`. Cette dernière n'existe pas :
-            la feuille ne déclare que `-or`, `-rouge` et `-vert`. Une classe
-            inventée ne casse rien et ne fait rien — la vignette serait restée
-            grise pour toujours, sans qu'aucune erreur ne le dise. Le journal
-            met en garde contre ce piège exact ; il fallait encore le vérifier.
-
-            Le rouge est celui de l'urgence, et c'est bien de cela qu'il
-            s'agit : quelqu'un attend une réponse maintenant.
-          */
           className={`clixa-kpi ${conversationsAReprendre > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">💬</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--ambre">
+              <IconeBulle />
+            </span>
             <span className="clixa-kpi__tag">Orientation</span>
           </div>
           <div className="clixa-kpi__valeur">{conversationsAReprendre}</div>
@@ -693,7 +1015,9 @@ export async function Veille() {
           className={`clixa-kpi ${nouvellesDemandes > 0 ? "clixa-kpi--alerte-vert" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">📞</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--emeraude">
+              <IconeTelephone />
+            </span>
             <span className="clixa-kpi__tag">Admissions</span>
           </div>
           <div className="clixa-kpi__valeur">{nouvellesDemandes}</div>
@@ -713,7 +1037,9 @@ export async function Veille() {
           className={`clixa-kpi ${enRetard > 0 ? "clixa-kpi--alerte-rouge" : ""}`}
         >
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">⏳</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--rose">
+              <IconeSablier />
+            </span>
             <span className="clixa-kpi__tag">Relances</span>
           </div>
           <div className="clixa-kpi__valeur">{enRetard}</div>
@@ -728,7 +1054,9 @@ export async function Veille() {
         {/* KPI 4 : Activité de la semaine */}
         <Link href={filtres.recentes as Route} className="clixa-kpi">
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">📈</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--bleu">
+              <IconeTendance />
+            </span>
             <span className="clixa-kpi__tag">Activité (7j)</span>
           </div>
           <div className="clixa-kpi__valeur">{inscriptionsSemaine}</div>
@@ -743,7 +1071,9 @@ export async function Veille() {
         {/* KPI 5 : Prochaine rentrée */}
         <Link href="/admin/collections/sessions" className="clixa-kpi">
           <div className="clixa-kpi__haut">
-            <span className="clixa-kpi__indicateur">🎓</span>
+            <span className="clixa-kpi__indicateur clixa-kpi__indicateur--or">
+              <IconeDiplome />
+            </span>
             <span className="clixa-kpi__tag">Calendrier</span>
           </div>
           <div className="clixa-kpi__valeur-date">
@@ -766,25 +1096,31 @@ export async function Veille() {
 
       {/* ── Raccourcis Rapides de Navigation ── */}
       <div className="clixa-raccourcis">
-        <span className="clixa-raccourcis__titre">⚡ ACCÈS DIRECTS :</span>
+        <span className="clixa-raccourcis__titre">ACCÈS DIRECTS :</span>
         <div className="clixa-raccourcis__pills">
           <Link href="/admin/collections/inscriptions" className="clixa-raccourcis__pill">
-            <span>📋 Inscriptions</span>
+            <IconeDossier />
+            <span>Inscriptions</span>
           </Link>
           <Link href="/admin/collections/apprenants" className="clixa-raccourcis__pill">
-            <span>👥 Apprenants</span>
+            <IconeUtilisateurs />
+            <span>Apprenants</span>
           </Link>
           <Link href="/admin/collections/recus" className="clixa-raccourcis__pill">
-            <span>🧾 Reçus &amp; Transferts</span>
+            <IconeRecu />
+            <span>Reçus &amp; Transferts</span>
           </Link>
           <Link href="/admin/collections/programmes" className="clixa-raccourcis__pill">
-            <span>📚 Formations</span>
+            <IconeLivre />
+            <span>Formations</span>
           </Link>
           <Link href="/admin/collections/sessions" className="clixa-raccourcis__pill">
-            <span>📅 Sessions &amp; Dates</span>
+            <IconeCalendrier />
+            <span>Sessions &amp; Dates</span>
           </Link>
           <Link href="/admin/globals/tarifs" className="clixa-raccourcis__pill">
-            <span>💰 Tarifs</span>
+            <IconeTarif />
+            <span>Tarifs</span>
           </Link>
         </div>
       </div>

@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 
 /**
  * La marque du back-office CLIXA.
@@ -46,25 +48,59 @@ export function Logo() {
 
 /** Le bouton d'accueil explicite pour le fil d'Ariane et l'en-tête (StepNav) */
 export function Icone() {
+  useEffect(() => {
+    function gererClicExterieur(e: MouseEvent | TouchEvent) {
+      const nav = document.querySelector(".nav--nav-open");
+      if (!nav) return;
+      const cible = e.target as HTMLElement | null;
+      if (!cible) return;
+      // Si le clic est dans le tiroir de navigation ou sur le bouton du menu, laisser l'événement normal
+      if (nav.contains(cible) || cible.closest(".app-header__mobile-nav-toggler")) {
+        return;
+      }
+      // Clic à l'extérieur du tiroir ouvert : déclenche la fermeture immédiate
+      const btnFermer = nav.querySelector<HTMLButtonElement>(".nav__mobile-close");
+      if (btnFermer) {
+        btnFermer.click();
+      }
+    }
+
+    document.addEventListener("click", gererClicExterieur, true);
+    document.addEventListener("touchstart", gererClicExterieur, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener("click", gererClicExterieur, true);
+      document.removeEventListener("touchstart", gererClicExterieur, true);
+    };
+  }, []);
   return (
     <span className="clixa-btn-accueil">
       <span className="clixa-btn-accueil__icone-wrap">
         <svg
-          width="15"
-          height="15"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="clixa-admin-icon"
           aria-hidden="true"
         >
-          <path
-            d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H15C14.4477 21 14 20.5523 14 20V15H10V20C10 20.5523 9.55228 21 9 21H4C3.44772 21 3 20.5523 3 20V10.5Z"
+          <rect
+            x="2"
+            y="2"
+            width="20"
+            height="20"
+            rx="4"
             stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeWidth="1.6"
+            fill="rgba(201, 162, 76, 0.18)"
           />
+          <path
+            d="M14.5 8.5C13.8 7.9 12.8 7.5 11.8 7.5C9.6 7.5 7.8 9.3 7.8 11.7C7.8 14.1 9.6 15.9 11.8 15.9C12.8 15.9 13.8 15.5 14.5 14.9"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <circle cx="16" cy="15" r="1.1" fill="currentColor" />
         </svg>
       </span>
       <span className="clixa-btn-accueil__label">
