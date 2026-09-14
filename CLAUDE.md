@@ -2715,7 +2715,35 @@ c'est ce qui a d'abord fait croire au gain. `lsof -ti :3000 | xargs kill -9`.
 
 ⚠️ **Retirer le préchargement de la chasse fixe** (`preload: false`) fait gagner
 une cinquantaine de millisecondes : à l'intérieur de l'écart entre deux mesures.
-Mesuré, pas déduit. 36 Ko
+Mesuré, pas déduit.
+
+⚠️ **Et le retirer sur les trois familles ne fait pas mieux** (mesuré le
+14 septembre 2026, build de production, 3G lente, processeur ralenti ×4, cinq
+passes par variante) :
+
+| | Accueil — FCP | Fiche DAF — FCP |
+|---|---|---|
+| polices préchargées | 3 108 ms (3 096–3 204) | 3 064 ms (3 032–3 112) |
+| sans préchargement | 2 952 ms (2 892–3 076) | 3 040 ms (2 988–3 076) |
+
+Au bord du bruit sur l'accueil, dans le bruit sur la fiche : pas de quoi payer
+la substitution de police que cela coûte. **Non livré.**
+
+- ⚠️ **La cascade dit pourquoi.** Les douze ressources du `<head>` partent au même
+  instant, et **toutes reçoivent leur premier octet en moins de 150 ms** — ce
+  n'est pas le serveur. La feuille de style, seule ressource bloquante (15 Ko),
+  met ensuite plusieurs secondes à descendre parce qu'elle partage la ligne avec
+  ~230 Ko de polices **et de scripts**. Les polices ne sont que quatre des douze
+  concurrents : les retirer laisse les huit scripts.
+- ⚠️ **Le ralentissement de laboratoire exagère peut-être cette concurrence.**
+  L'émulation de Chrome partage le débit à parts égales, sans tenir compte de la
+  priorité des requêtes ; un serveur réel qui honore les priorités donnerait la
+  main à la feuille de style. Le chiffre de terrain — celui des vrais visiteurs —
+  n'est pas mesuré.
+- **Le remède qui viserait juste reste le CSS dans le HTML**, et
+  `experimental.inlineCss` est cassé sur la version installée (voir plus haut).
+  Next **16.3.5** existe ; qu'il le répare n'est pas vérifié. Monter Next pour
+  l'essayer est une décision à part, pas un effet de bord d'une mesure. 36 Ko
 pour Fraunces, 24 pour Manrope, 2 × 10 pour la chasse fixe. Le HTML pèse moins
 de 1 Ko compressé et le JavaScript ne bloque pas le premier rendu.
 
