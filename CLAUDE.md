@@ -3800,6 +3800,22 @@ découvrirait. Ne pas « corriger » cela en croyant bien faire.
   rouges), la coupure muette (2), le lien de la classe dans le prompt (1), et
   les trois aiguillages du 503 (3).
 
+⚠️ **Le « FR » de l'en-tête ne menait nulle part, et il est retiré** (14 septembre
+2026). Il se tenait à côté de « Mon espace » en attendant le routage par langue :
+un visiteur d'Accra ou de Lagos le lisait comme un choix, cliquait, et rien ne se
+passait.
+
+- **Mesuré avant de trancher** : aucun contenu n'existe en anglais en
+  production — douze parcours et cinq spécialisations, tous en `fr`. La
+  localisation de Payload est configurée (`fr`, `en`, `fallback: true`), mais
+  rien n'a été traduit.
+- ⚠️ **Construire le routage aujourd'hui aurait été le même mensonge dans
+  l'autre sens** : avec le repli activé, une page « EN » afficherait le texte
+  français. Le sélecteur reviendra quand il aura une traduction à proposer.
+- **L'assistant, lui, répond déjà en anglais** : c'est aujourd'hui la seule porte
+  anglophone du site, et elle dit vrai.
+- Vérifié à 1280, 1024, 768 et 375 px : plus de « FR », aucun débordement.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |
@@ -3808,7 +3824,7 @@ découvrirait. Ne pas « corriger » cela en croyant bien faire.
 | Témoignages et séances filmées | la page existe ; 0 publié sur 6, 0 vidéo | **la direction** |
 | Partenaires réels | 0 publié sur 5 | la direction |
 | Affichage du nombre de places | `ui/Badge.tsx` → `AFFICHER_DECOMPTE_TOUJOURS` | décision client |
-| Routage par langue | `SiteHeader` affiche « FR » sans effet | `SOC-02` |
+| Routage par langue | le libellé « FR » est retiré ; **0 contenu traduit** en anglais | `SOC-02`, puis la traduction |
 
 ⚠️ **La fiche ne porte qu'un geste : la pré-inscription** (décision de la
 direction, le 6 septembre 2026 au soir). Le héros a porté « Parler à un

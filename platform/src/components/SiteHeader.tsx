@@ -43,12 +43,17 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-4">
           {/*
-            Sélecteur de langue : l'interface existe, le routage par langue
-            arrive avec SOC-02 / BE-06 quand le CMS multilingue est en place.
+            ⚠️ **Il n'y a pas de sélecteur de langue, et c'est voulu.** Un « FR »
+            se tenait ici, à côté de « Mon espace », en attendant le routage par
+            langue (SOC-02). Il ne menait nulle part : un visiteur d'Accra ou de
+            Lagos le lisait comme un choix, cliquait, et rien ne se passait.
+
+            Retiré le 14 septembre 2026 après mesure : **aucun contenu n'existe en
+            anglais** — douze parcours et cinq spécialisations, tous en français.
+            Une version anglaise aujourd'hui afficherait du français sous « EN »
+            (`fallback: true`) : le même mensonge, dans l'autre sens. Le
+            sélecteur reviendra le jour où il aura une traduction à proposer.
           */}
-          <span className="mono-label text-ivory-dim/80 border-line hidden border-r pr-4 sm:inline">
-            FR
-          </span>
           {/*
             Un seul lien, et il ne dépend pas de la session : lire le cookie ici
             rendrait tout le site dynamique et ferait perdre la pré-génération de
