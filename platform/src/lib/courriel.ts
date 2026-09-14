@@ -1435,12 +1435,26 @@ export async function courrielInstructionsEnvoyees(
  * existe désormais sur son dossier. C'est le même défaut que celui déjà
  * corrigé pour le contrat vérifié et les instructions de paiement : un état
  * qui change sans que personne n'en soit prévenu.
+ *
+ * ⚠️ **Il dit aussi que le document se vérifie, et c'est à lui de le dire.**
+ * Le certificat porte un code depuis le 14 septembre 2026, et `/verifier` le
+ * lit ; mais c'est le participant qui remet le document à un employeur ou à une
+ * banque, et il ne peut pas leur en vanter une propriété qu'il ignore. Le code
+ * ne dit rien de son dossier — c'est toute la raison pour laquelle il est tiré
+ * à part — donc l'écrire ici ne découvre rien que le certificat ne porte déjà.
  */
 export async function courrielCertificatDisponible(
   payload: Payload,
-  d: { reference: string; apprenantNom: string; apprenantEmail: string; programmeTitre: string },
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    certificatCode?: string;
+  },
 ): Promise<boolean> {
   const url = `${SITE}/inscription/${d.reference}`;
+  const verif = `${SITE}/verifier`;
 
   return envoyer(payload, {
     to: d.apprenantEmail,
@@ -1453,6 +1467,17 @@ export async function courrielCertificatDisponible(
       "",
       "Vous le trouverez sur la page de votre dossier :",
       `  ${url}`,
+      ...(d.certificatCode
+        ? [
+            "",
+            "Le document porte en bas de page un code de vérification :",
+            `  ${d.certificatCode}`,
+            "",
+            "Un employeur, une banque ou une école peut le saisir ici pour",
+            "confirmer que le certificat est authentique :",
+            `  ${verif}`,
+          ]
+        : []),
       "",
       "Merci de votre confiance.",
       "",
@@ -1468,6 +1493,13 @@ export async function courrielCertificatDisponible(
           Votre parcours <strong>« ${echapper(d.programmeTitre)} »</strong> est marqué terminé, et votre <strong>certificat professionnel est prêt</strong>.
         </p>
         <p>Vous le trouverez sur la page de votre dossier, en PDF.</p>
+        ${
+          d.certificatCode
+            ? `<p style="margin: 16px 0 0 0;">Le document porte en bas de page un <strong>code de vérification</strong> :</p>
+        <p style="margin: 8px 0 0 0; font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 17px; letter-spacing: 1px; color: #ffffff;">${echapper(d.certificatCode)}</p>
+        <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 13px;">Un employeur, une banque ou une école peut le saisir sur <a href="${verif}" style="color: #e9cd84;">${verif.replace(/^https?:\/\//, "")}</a> pour confirmer que votre certificat est authentique.</p>`
+            : ""
+        }
         <p style="color: #94a3b8; font-size: 13px; margin-top: 18px;">Merci de votre confiance.</p>
       `,
       boutonTexte: "Ouvrir mon dossier",

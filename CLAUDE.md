@@ -2104,6 +2104,50 @@ seulement à l'affichage, et un contrôle compte les clés rendues.
   plus la référence. La recette de production vérifie qu'un code inventé ne vaut
   pas certificat et que la page ne se laisse pas indexer.
 
+⚠️ **Et personne ne le disait** (15 septembre 2026). La page existait, le
+document imprimait son code — et les quatre endroits qui décrivent le certificat
+à qui décide d'acheter promettaient toujours « nominatif et **référencé** ». Un
+certificat qu'un employeur peut contrôler lui-même ne vaut pas la même chose
+qu'un certificat qui l'affirme ; c'est même la seule propriété qui intéresse
+celui qui le reçoit. Le mot « référencé » ne la porte pas, et le 13 septembre le
+film avait justement dû retirer « code unique de vérification » parce que rien ne
+vérifiait rien.
+
+- ⚠️ **Le courriel de remise le dit, et c'était à lui de le dire.** C'est le
+  participant qui remet le document à un employeur ou à une banque : il ne peut
+  pas en vanter une propriété qu'il ignore. Le message porte donc le code et
+  l'adresse. L'y écrire ne découvre rien — le code ne dit rien du dossier, c'est
+  toute la raison pour laquelle il est tiré à part.
+- ⚠️ **L'aperçu a montré un message que personne ne reçoit.** Le bloc est
+  conditionnel, et le faux dossier d'`apercu-courriel.ts` n'avait pas de code :
+  le gabarit s'affichait sans sa moitié neuve, et on l'aurait relu rassuré. Tout
+  certificat réel en porte un — il est tiré dans le même écrit que la date
+  d'émission. La donnée d'essai en porte un désormais. **Un gabarit se regarde,
+  et une donnée d'essai incomplète le fait mentir en silence.**
+- ⚠️ **Le spécimen montré à l'accueil et dans le film datait du 4 septembre**, et
+  portait encore « Référence certificat : CLIXA-SPECIMEN » — l'intitulé retiré
+  du vrai document dix jours plus tard, précisément parce qu'il était la clef du
+  dossier. La carte de l'accueil aurait donc annoncé un code vérifiable au-dessus
+  de l'image d'un document qui n'en porte pas. `scripts/specimen-certificat.tsx`
+  l'a refait depuis le composant réel : il s'en avertissait lui-même dès sa
+  première ligne — « un spécimen dessiné à part finit toujours par mentir » —
+  et c'est ce qui était arrivé.
+- **Recomposé au même format** : le rendu du PDF est en 1,414, le cadre de
+  l'accueil en 16/10. L'image est donc posée sur fond d'encre (`#080c18`) jusqu'à
+  1600 × 1000, comme la précédente, sans qu'aucun bord ne soit rogné.
+- ⚠️ **Le film a été regénéré et rééchantillonné**, parce qu'il incruste cette
+  image et que rien d'une vidéo ne se relit au grep. Les deux cartes touchées ont
+  été **regardées** : la fiche DAF dit « Certificat nominatif, vérifiable en
+  ligne par son code », la scène 5 « Nominatif, cachet officiel, détail des
+  modules — et un code vérifiable en ligne », au-dessus d'un document qui porte
+  la même promesse. Durée inchangée, 48,5 s — l'intitulé « 0:48 » reste juste.
+- ⚠️ **Échantillonner demande le Chrome du poste, pas le Chromium de
+  Playwright** : le film est en H.264, et le Chromium livré n'a pas les codecs
+  propriétaires — `readyState` n'y dépasse jamais 0 et l'on conclut à un fichier
+  illisible. `chromium.launch({ channel: "chrome" })`, et la page navigue
+  directement sur le `file://` du film : depuis une page vide, Chrome refuse de
+  charger la vidéo.
+
 ⚠️ **Le cachet et la signature ont changé le 5 septembre 2026.** La direction
 a transmis un visuel unique — le disque « CLIXA INSTITUTE · AFRICA · 2026 »
 avec la signature du gérant par-dessus. Il remplace le tampon encré de la

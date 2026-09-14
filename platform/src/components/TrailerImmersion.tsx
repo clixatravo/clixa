@@ -40,7 +40,7 @@ const PISTES: PisteVideo[] = [
     citation:
       "« L’excellence exécutive pour les leaders d’Afrique : Finance de direction, Gouvernance de projets PMP® et Management stratégique. Le leadership commence par un clic. »",
     explication:
-      "Découvrez en 48 secondes l'expérience CLIXA Institute : cas réels d'entreprise, cohortes de dirigeants en direct, préparation aux certifications internationales et délivrance d'un certificat professionnel nominatif.",
+      "Découvrez en 48 secondes l'expérience CLIXA Institute : cas réels d'entreprise, cohortes de dirigeants en direct, préparation aux certifications internationales et délivrance d'un certificat professionnel nominatif, vérifiable en ligne.",
     sourceFichier: "/videos/trailer_clixa_officiel.mp4",
     affiche: "/videos/trailer_clixa_officiel_poster.jpg",
     dureeFormat: "0:48",
@@ -64,10 +64,17 @@ const PISTES: PisteVideo[] = [
           active de décideurs » — rien sur le site ne l'étaye, et la mention
           « Institut Panafricain » est justement notée comme à trancher par la
           direction. Il ne promet plus que ce que le parcours délivre vraiment.
+
+          ⚠️ Et il annonce la vérification depuis le 15 septembre 2026. Le
+          13 septembre, « code unique de vérification » avait dû être retiré du
+          film : rien ne vérifiait un certificat, il n'existait ni page ni route
+          où saisir quoi que ce soit. `/verifier` a été livrée le lendemain — la
+          promesse est redevenue vraie, et c'est celle qui compte pour qui reçoit
+          le document.
         */
         titre: "Certificat professionnel :",
         description:
-          "certificat nominatif, référencé et détaillant les modules suivis, remis à l'issue du parcours.",
+          "certificat nominatif détaillant les modules suivis, remis à l'issue du parcours et vérifiable en ligne par son code.",
       },
     ],
     ctaTitre: "Explorer toutes les formations",
@@ -104,7 +111,7 @@ const PISTES: PisteVideo[] = [
       {
         titre: "Validation certifiante :",
         description:
-          "parcours structuré délivrant un certificat professionnel référencé de haut niveau.",
+          "parcours structuré délivrant un certificat professionnel dont l'authenticité se vérifie en ligne.",
       },
     ],
     ctaTitre: "Découvrir le programme DAF",

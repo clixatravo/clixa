@@ -554,11 +554,19 @@ export default async function Accueil() {
                     et cela se vend mieux, parce que c'est vérifiable : un
                     document nominatif, référencé, qui détaille les modules et
                     les heures se dépose dans un dossier.
+
+                    ⚠️ « Référencé » a laissé la place au code de vérification,
+                    depuis que `/verifier` existe (14 septembre 2026). Ce n'est
+                    pas un synonyme plus flatteur : c'est le seul endroit de la
+                    page où l'on peut dire que le document se contrôle sans nous
+                    — et c'est ce qu'un employeur ou une banque cherche à savoir.
+                    La référence du dossier, elle, ne figure plus sur le papier :
+                    elle y était la clef de la fiche du participant.
                   */}
                   <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
-                    Un certificat professionnel nominatif et référencé, portant le cachet de la
-                    société et la signature du gérant, avec le détail des modules et le volume
-                    horaire.
+                    Un certificat professionnel nominatif, portant le cachet de la société et la
+                    signature du gérant, avec le détail des modules et le volume horaire. Il porte
+                    un code qu&apos;un employeur vérifie en ligne.
                   </p>
                 </div>
                 <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">

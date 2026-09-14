@@ -299,7 +299,10 @@ export const Inscriptions: CollectionConfig = {
           coche un statut dans /admin et le participant ne l'apprend jamais.
         */
         if (doc.certificatEmisLe && !previousDoc?.certificatEmisLe) {
-          await courrielCertificatDisponible(req.payload, commun);
+          await courrielCertificatDisponible(req.payload, {
+            ...commun,
+            ...(doc.certificatCode ? { certificatCode: String(doc.certificatCode) } : {}),
+          });
         }
 
         /*

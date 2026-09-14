@@ -91,6 +91,14 @@ const inscription = {
   urlDossier: URL_DOSSIER,
   tenueJusquau: dans(7),
   moyenSouhaite: "transfert" as const,
+  /*
+    ⚠️ Sans code, l'aperçu du certificat montrait un message que personne ne
+    reçoit : le bloc de vérification est conditionnel, et tout certificat réel
+    porte un code — il est tiré dans le même écrit que la date d'émission. Un
+    aperçu qui tait la moitié du message ferait relire, rassuré, un gabarit
+    incomplet. C'est la faute que ce script existe pour éviter.
+  */
+  certificatCode: "CLIXA-7K4M-2XQD",
 };
 
 /**

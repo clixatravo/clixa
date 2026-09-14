@@ -310,7 +310,15 @@ async function genererTrailer() {
         */
         ctx.fillText("✦ 32 heures de masterclass exécutive interactive", tX + 10, 430);
         ctx.fillText("✦ Décisions réelles d'entreprise & arbitrages de direction", tX + 10, 465);
-        ctx.fillText("✦ Certificat professionnel nominatif et référencé", tX + 10, 500);
+        /*
+          ⚠️ **« Vérifiable » est redevenu vrai le 14 septembre 2026.** La
+          veille, « code unique de vérification » avait dû être retiré de ce
+          film : rien ne vérifiait un certificat, il n'existait ni page ni route
+          où saisir quoi que ce soit, et la phrase promettait à un employeur un
+          geste impossible. `/verifier` lit désormais le code que le document
+          imprime en bas de page.
+        */
+        ctx.fillText("✦ Certificat nominatif, vérifiable en ligne par son code", tX + 10, 500);
 
         ctx.globalAlpha = 1;
       }
@@ -517,7 +525,7 @@ async function genererTrailer() {
         ctx.fillText("Certificat Professionnel CLIXA Institute", tX + 20, 512);
         ctx.fillStyle = "rgba(243, 239, 228, 0.85)";
         ctx.font = "14px sans-serif";
-        ctx.fillText("Nominatif, référencé, avec cachet officiel et détail complet des modules.", tX + 20, 538);
+        ctx.fillText("Nominatif, cachet officiel, détail des modules — et un code vérifiable en ligne.", tX + 20, 538);
 
         ctx.globalAlpha = 1;
       }
