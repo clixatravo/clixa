@@ -32,6 +32,19 @@ const colonnes = [
       { href: "/a-propos", label: "À propos" },
       { href: "/entreprises", label: "Pour les entreprises" },
       { href: "/contact", label: "Être rappelé" },
+      /*
+        ⚠️ Le seul lien du pied de page qui ne s'adresse pas à un visiteur.
+        Celui qui vérifie un certificat est un employeur, une banque, une école
+        — il n'est pas venu se former, et il arrive avec un document en main.
+        Il est donc dans « L'institut » et non dans « Se former ».
+
+        La page reste `noindex` et hors du plan du site : un résultat porte le
+        nom d'une personne. Le lien la rend atteignable depuis le site sans rien
+        changer à cela — on la trouvait jusqu'ici par la seule adresse imprimée
+        en bas du certificat, ce qui suppose de l'avoir sous les yeux et de la
+        recopier à la main.
+      */
+      { href: "/verifier", label: "Vérifier un certificat" },
     ],
   },
 ] as const;

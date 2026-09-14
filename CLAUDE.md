@@ -2093,8 +2093,15 @@ seulement à l'affichage, et un contrôle compte les clés rendues.
 - **La saisie pardonne ce qui se tape autrement** — minuscules, espaces, tirets
   ou préfixe omis — mais pas un symbole hors alphabet : il n'existe sur aucun
   certificat, et le « corriger » ferait valider un code que personne n'a tapé.
-- **`noindex`**, hors du plan du site : un résultat porte le nom d'une personne,
-  et la page se trouve par le certificat, qui en imprime l'adresse.
+- **`noindex`**, hors du plan du site : un résultat porte le nom d'une personne.
+  ⚠️ **Mais elle est liée depuis le pied de page** (décision de la direction, le
+  15 septembre 2026) — « Vérifier un certificat », dans « L'institut ». Elle ne
+  se trouvait que par l'adresse imprimée en bas du certificat, ce qui suppose de
+  l'avoir sous les yeux et de la recopier à la main ; un employeur qui arrive sur
+  le site n'avait aucun chemin. Les deux règles ne s'opposent pas : `noindex`
+  décide de ce qui entre dans un moteur, le lien de ce qu'on peut atteindre.
+  C'est le seul lien du pied qui ne s'adresse pas à un visiteur venu se former —
+  d'où « L'institut » plutôt que « Se former ».
 - **Un frein de vingt vérifications par minute**, comme l'attestation. Il ne
   protège pas les codes — quarante bits s'en chargent — il empêche une boucle
   d'interroger la base sans fin.
