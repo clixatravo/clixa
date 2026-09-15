@@ -6,13 +6,16 @@
  *     FORMATION=directeur-administratif-et-financier PUBLIER=1 \
  *     npx payload run scripts/publier-un-extrait.ts <vidéo>
  *
- * ── Pourquoi un script, et pas /admin ───────────────────────────────────────
- * ⚠️ **Le plafond de 4 Mo d'/admin est celui de Vercel, pas le nôtre.** Un envoi
- * depuis le back-office traverse une fonction serverless, qui refuse tout corps
- * de requête au-delà de 4,5 Mo — une quinzaine de secondes de vidéo. Ici, le
- * fichier va du disque au magasin par l'API locale : aucune fonction ne le
- * porte, donc aucune limite de ce genre. C'est la seule voie praticable pour un
- * extrait de cours, qui pèse des dizaines de mégaoctets.
+ * ── Quand s'en servir, maintenant que /admin sait le faire ──────────────────
+ * ⚠️ **Ce script était la seule voie praticable ; il ne l'est plus.** /admin
+ * refusait au-delà de 4 Mo — le plafond de Vercel sur les corps de requête —
+ * et une minute de vidéo en bonne qualité pèse bien plus. Depuis que
+ * `clientUploads` est posé (voir `payload.config.ts`), le navigateur verse
+ * directement dans le magasin et le back-office accepte jusqu'à 100 Mo.
+ *
+ * Il garde deux usages : verser sans ouvrir le navigateur, et **faire les trois
+ * gestes d'un coup** — la vidéo, l'affiche et l'extrait publié, avec le lien
+ * imprimé à la fin.
  *
  * ── Sans `PUBLIER=1`, il ne publie pas ──────────────────────────────────────
  * L'extrait est créé en brouillon : l'adresse répond alors 404, le temps qu'on

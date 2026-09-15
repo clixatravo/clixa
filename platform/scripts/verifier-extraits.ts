@@ -218,24 +218,38 @@ try {
   }
   dire("une forme correcte est acceptée", accepte);
 
-  console.log("\n▸ Le plafond de 4 Mo\n");
+  console.log("\n▸ Le plafond des vidéos\n");
 
   /*
-    ⚠️ Un contrôle qui lit la source, comme `verifier-assistant.ts`. Ce qui est
-    en jeu n'est ni une valeur ni un rendu, mais un **branchement** : le plafond
-    de Vercel ne doit s'appliquer qu'à ce qui traverse Vercel. Le vérifier à
-    l'exécution demanderait de monter une requête REST avec un corps de 5 Mo —
-    et un script, par construction, ne passe jamais par là.
+    ⚠️ Deux contrôles qui lisent la source, comme `verifier-assistant.ts`. Ce qui
+    est en jeu n'est ni une valeur ni un rendu, mais **ce que le plafond regarde**.
+
+    Depuis que le navigateur verse directement dans le magasin, le serveur ne
+    voit plus les octets : seule la fiche porte `filesize`. Un plafond qui ne
+    lirait que `req.file` cesserait de s'appliquer à /admin — c'est-à-dire à la
+    seule porte par laquelle la direction verse — **sans que rien ne le dise**.
+    C'est la panne silencieuse type : la garde reste écrite, elle ne garde plus
+    rien.
   */
   const source = readFileSync(path.resolve(dirname, "../src/collections/Videos.ts"), "utf8");
   dire(
-    "il ne s'applique pas à l'API locale",
-    /req\.payloadAPI\s*!==\s*"local"/.test(source),
-    "sinon aucun extrait de cours ne pourrait être versé",
+    "il lit la taille annoncée par la fiche",
+    /data\?\.filesize/.test(source),
+    "sinon il ne s'applique plus aux versements du navigateur",
   );
+  dire("et celle du fichier reçu par le serveur", /req\.file\?\.size/.test(source));
+
+  /*
+    Le jeton de versement se demande au serveur : sans règle explicite, le
+    greffon l'accorde à `!!req.user` — donc à un participant. Voir
+    `payload.config.ts`.
+  */
+  const conf = readFileSync(path.resolve(dirname, "../src/payload.config.ts"), "utf8");
+  const bloc = conf.slice(conf.indexOf("clientUploads"), conf.indexOf("clientUploads") + 400);
   dire(
-    "mais il s'applique encore à ce qui vient du réseau",
-    /fichier\.size\s*>\s*PLAFOND/.test(source),
+    "le jeton de versement exige une session d'équipe",
+    /collection\s*===\s*"utilisateurs"/.test(bloc),
+    "sinon un participant pourrait écrire dans le magasin public",
   );
 } finally {
   for (const quoi of aRetirer.reverse()) {

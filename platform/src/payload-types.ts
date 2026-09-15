@@ -549,7 +549,7 @@ export interface Realisation {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Clips courts déposés sur le site. Au-delà de 4 Mo, passer par YouTube.
+ * Clips déposés sur le site. Au-delà de 100 Mo, passer par YouTube.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "videos".
@@ -593,7 +593,7 @@ export interface Extrait {
    */
   accroche?: string | null;
   /**
-   * Au-delà de 4 Mo, /admin ne peut pas la recevoir : passer par scripts/publier-un-extrait.ts.
+   * Jusqu'à 100 Mo depuis cette page. Au-delà, mettre la vidéo sur YouTube.
    */
   fichier: number | Video;
   /**

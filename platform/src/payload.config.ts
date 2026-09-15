@@ -294,6 +294,29 @@ export default buildConfig({
             medias: { disablePayloadAccessControl: true },
             videos: { disablePayloadAccessControl: true },
           },
+          /*
+            ⚠️ **Le navigateur verse directement dans le magasin**, sans que le
+            fichier traverse une fonction. C'est ce qui lève le plafond de
+            4,5 Mo : Vercel refuse tout corps de requête au-delà, et une minute
+            de vidéo en bonne qualité en pèse plusieurs fois plus. La direction
+            l'a signalé — « briit n hot des vedio akhrin b quality tal3a, li
+            sghar max 1min, makaythatox ». Sans cela, /admin ne pouvait recevoir
+            qu'une quinzaine de secondes, et tout le reste passait par un script
+            en ligne de commande.
+
+            ⚠️ **L'accès par défaut est `!!req.user`, et il ne fallait surtout
+            pas le garder.** `apprenants` est une collection authentifiée elle
+            aussi : n'importe quel participant ayant ouvert un compte depuis
+            `/compte` aurait obtenu un jeton de versement, et pu écrire ce qu'il
+            voulait dans le magasin public du site — sous notre domaine. C'est
+            mot pour mot le trou d'`export-admissions`, à une porte de plus. On
+            exige donc la même chose que partout ailleurs : une session
+            **d'équipe**.
+          */
+          clientUploads: {
+            access: ({ req }) =>
+              (req.user as { collection?: string } | undefined)?.collection === "utilisateurs",
+          },
           token: process.env.BLOB_MEDIAS_TOKEN,
         }),
       ]

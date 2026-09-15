@@ -6,30 +6,35 @@ import { connecte, lectureLibre } from "@/access/roles";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * ⚠️ **Quatre mégaoctets, et ce n'est pas nous qui le décidons.**
+ * ⚠️ **Le plafond a changé de nature le 15 septembre 2026, et de chiffre.**
  *
- * Vercel refuse tout corps de requête au-delà de **4,5 Mo** : un envoi depuis
- * /admin traverse une fonction serverless, et le fichier est refusé avant même
- * d'arriver ici. Ce plafond n'existe pas en développement — d'où une limite
- * posée dans le logiciel, un peu en dessous, pour que le refus arrive **avec sa
- * raison** au lieu d'une erreur de plateforme que personne ne sait lire.
+ * Il valait **4 Mo**, et ce n'était pas notre décision : Vercel refuse tout
+ * corps de requête au-delà de 4,5 Mo, or un envoi depuis /admin traversait une
+ * fonction serverless. Quatre mégaoctets valent une quinzaine de secondes de
+ * vidéo — si bien que la direction ne pouvait rien verser depuis le back-office
+ * (« briit n hot des vedio akhrin b quality tal3a, li sghar max 1min,
+ * makaythatox ») et que tout passait par un script en ligne de commande.
  *
- * Quatre mégaoctets valent une quinzaine de secondes de vidéo prise au
- * téléphone. C'est tout, et c'est pourquoi le champ dit d'aller sur YouTube
- * au-delà plutôt que de laisser essayer.
+ * Depuis que `clientUploads` est posé sur le greffon (voir `payload.config.ts`),
+ * **le navigateur verse directement dans le magasin** : aucun fichier ne
+ * traverse plus de fonction, et la limite de la plateforme ne s'applique plus.
  *
- * ⚠️ **Mais il ne vaut que pour ce qui traverse la plateforme.** Un script
- * lancé depuis un poste passe par l'API locale : le fichier va du disque au
- * magasin sans qu'aucune fonction serverless le porte, donc la limite de
- * Vercel ne s'applique pas. Refuser là aussi reviendrait à faire respecter une
- * contrainte qui n'existe pas — et à interdire la seule voie praticable pour un
- * extrait de cours, qui pèse des dizaines de mégaoctets.
+ * ── Ce qu'un plafond garde encore ───────────────────────────────────────────
+ * Une raison demeure, et elle n'a rien d'une contrainte technique : **ce qu'on
+ * verse ici est servi à des téléphones**, souvent sur un forfait mobile. Un
+ * fichier déposé par mégarde — un enregistrement d'une heure, un export non
+ * compressé — se paierait sur la facture et sur l'attente du visiteur. Cent
+ * mégaoctets laissent passer plusieurs minutes de 1080p (l'extrait DAF en pèse
+ * 33 pour 2 min 50) et arrêtent l'accident.
  *
- * C'est ce que fait `scripts/publier-un-extrait.ts`. Le garde-fou d'/admin,
- * lui, ne bouge pas : c'est là qu'il protège quelqu'un d'une erreur de
- * plateforme illisible.
+ * ⚠️ **La taille se lit à deux endroits, et il faut les deux.** Quand le fichier
+ * traverse encore le serveur — un script, l'API locale — elle est dans
+ * `req.file`. Quand le navigateur l'a versé lui-même, le serveur ne voit jamais
+ * les octets : seule la fiche porte `filesize`. Ne regarder que le premier
+ * ferait un plafond qui ne s'applique plus à personne, **sans que rien ne le
+ * dise** — exactement le genre de garde qui s'efface en silence.
  */
-const PLAFOND = 4 * 1024 * 1024;
+const PLAFOND = 100 * 1024 * 1024;
 
 /**
  * Les clips courts déposés directement, à côté des liens YouTube.
@@ -52,7 +57,7 @@ export const Videos: CollectionConfig = {
     useAsTitle: "titre",
     defaultColumns: ["titre", "filename", "updatedAt"],
     group: "Éditorial",
-    description: "Clips courts déposés sur le site. Au-delà de 4 Mo, passer par YouTube.",
+    description: "Clips déposés sur le site. Au-delà de 100 Mo, passer par YouTube.",
   },
   access: {
     read: lectureLibre,
@@ -63,13 +68,23 @@ export const Videos: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
-      ({ req }) => {
-        const fichier = req.file;
-        if (req.payloadAPI !== "local" && fichier && fichier.size > PLAFOND) {
+      ({ data, req }) => {
+        /*
+          Deux sources, parce qu'il y a deux chemins : le fichier passé au
+          serveur, et la fiche que le navigateur renvoie après avoir versé
+          lui-même. La plus grande des deux fait foi — une seule des deux est
+          renseignée à la fois.
+        */
+        const octets = Math.max(
+          req.file?.size ?? 0,
+          typeof data?.filesize === "number" ? data.filesize : 0,
+        );
+        if (octets > PLAFOND) {
           throw new APIError(
-            `Cette vidéo pèse ${Math.round(fichier.size / 1024 / 1024)} Mo. ` +
-              `L'hébergeur refuse tout envoi au-delà de 4,5 Mo — au-delà, mettez la vidéo ` +
-              `sur YouTube et collez son lien dans la réalisation.`,
+            `Cette vidéo pèse ${Math.round(octets / 1024 / 1024)} Mo, et le site en accepte ` +
+              `${PLAFOND / 1024 / 1024} au plus — elle serait servie telle quelle à des ` +
+              `téléphones. Au-delà, mettez-la sur YouTube et collez son lien dans la ` +
+              `réalisation.`,
             413,
           );
         }

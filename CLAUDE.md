@@ -3727,13 +3727,46 @@ participants, puis les séances filmées.
 - **Deux sources, un sélecteur** : un lien YouTube/Vimeo, ou un fichier déposé.
   Deux cases facultatives côte à côte laisseraient remplir les deux, et il
   faudrait alors décider laquelle gagne à un endroit que personne ne relira.
-- ⚠️ **`Videos` est plafonnée à 4 Mo, et ce n'est pas nous qui le décidons.**
-  Vercel refuse tout corps de requête au-delà de 4,5 Mo — un dépôt depuis /admin
-  traverse une fonction. Le plafond n'existe pas en développement : sans une
-  limite posée dans le logiciel, le refus arriverait en production sous la forme
-  d'une erreur de plateforme que personne ne sait lire. Quatre mégaoctets valent
-  une quinzaine de secondes de vidéo prise au téléphone ; au-delà, le champ dit
-  d'aller sur YouTube plutôt que de laisser essayer.
+- ⚠️ **`Videos` était plafonnée à 4 Mo, et ce n'était pas nous qui le
+  décidions.** Vercel refuse tout corps de requête au-delà de 4,5 Mo — un dépôt
+  depuis /admin traversait une fonction. Quatre mégaoctets valent une quinzaine
+  de secondes de vidéo prise au téléphone.
+
+⚠️ **Le navigateur verse maintenant directement dans le magasin** (`clientUploads`
+sur le greffon, 15 septembre 2026). La direction l'a signalé — « briit n hot des
+vedio akhrin b quality tal3a, li sghar max 1min, makaythatox » : une minute en
+bonne qualité pèse plusieurs fois le plafond, si bien que le back-office ne
+pouvait rien recevoir et que tout passait par un script en ligne de commande.
+
+Le greffon sait le faire depuis toujours ; il suffisait de le poser. Le fichier
+va du navigateur au magasin sans traverser de fonction, et **le plafond de la
+plateforme cesse de s'appliquer**. Éprouvé pour de vrai : un fichier de 6 Mo
+versé depuis `/admin`, fiche créée sans erreur, et **6 291 456 octets relus dans
+le magasin** — exactement le fichier.
+
+- ⚠️ **L'accès par défaut est `!!req.user`, et il ne fallait surtout pas le
+  garder.** `apprenants` est authentifiée elle aussi : n'importe quel
+  participant ayant ouvert un compte depuis `/compte` aurait obtenu un jeton de
+  versement, et pu écrire ce qu'il voulait dans le magasin public, sous notre
+  domaine. C'est mot pour mot le trou d'`export-admissions`. On exige une
+  session **d'équipe**, et `verifier-extraits.ts` garde la règle.
+- **Le plafond reste, mais il ne garde plus la même chose** : 100 Mo, parce que
+  ce qu'on verse est servi à des téléphones sur un forfait mobile. Ce n'est plus
+  une contrainte de plateforme, c'est un garde-fou contre l'accident — un
+  enregistrement d'une heure déposé par mégarde.
+- ⚠️ **Et il se lit à deux endroits, sans quoi il ne garde rien.** Quand le
+  fichier traverse le serveur, la taille est dans `req.file` ; quand le
+  navigateur l'a versé lui-même, le serveur ne voit jamais les octets et seule la
+  fiche porte `filesize`. Un plafond qui ne lirait que le premier cesserait de
+  s'appliquer à /admin — la seule porte par laquelle la direction verse — **sans
+  que rien ne le dise**.
+- ⚠️ **Les variantes d'images ne sont pas tombées**, vérifié : `verifier-medias.ts`
+  rend toujours WebP et ses trois tailles. C'était le risque de ce réglage —
+  `sharp` a besoin du fichier côté serveur — et il fallait le mesurer, pas le
+  supposer.
+- ⚠️ **Le bouton d'enregistrement de Payload s'appelle « Sauvegarder »**, pas
+  « Enregistrer » : une épreuve qui le cherche par son intitulé français doit
+  viser le bon mot, sinon elle expire sur une page parfaitement saine.
 
 ⚠️ **`lib/video.ts` : on ne fabrique jamais une adresse à partir de ce qui est
 saisi.** C'est la seule donnée du site qui **charge du code venu d'ailleurs**

@@ -117,8 +117,7 @@ export const Extraits: CollectionConfig = {
       label: "La vidéo",
       required: true,
       admin: {
-        description:
-          "Au-delà de 4 Mo, /admin ne peut pas la recevoir : passer par scripts/publier-un-extrait.ts.",
+        description: "Jusqu'à 100 Mo depuis cette page. Au-delà, mettre la vidéo sur YouTube.",
       },
     },
     {
