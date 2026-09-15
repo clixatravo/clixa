@@ -211,7 +211,15 @@ const PISTES: PisteVideo[] = [
 
 export function TrailerImmersion({
   titre = "Au cœur de l'expérience CLIXA",
-  sousTitre = "Film officiel, extraits de masterclasses réelles et retours d'expérience à chaud : vivez l'immersion CLIXA Institute.",
+  /*
+    ⚠️ **Cette phrase énumère les pistes à la main, et elle n'est pas seule.**
+    `/temoignages` et la fiche d'un parcours en passent chacune une autre. Les
+    trois disaient encore « film, extraits, retours » le jour où l'espace de
+    formation est devenu la quatrième piste : une énumération juste devient
+    fausse sans que rien ne casse, comme le « 12 Formations » écrit en dur du
+    tableau de bord. **Ajouter une piste, c'est relire les trois.**
+  */
+  sousTitre = "Film officiel, extraits de masterclasses réelles, retours d'expérience à chaud et l'espace de formation des cohortes : vivez l'immersion CLIXA Institute.",
   afficherCtaProgramme = true,
   pisteInitiale = 0,
 }: {

@@ -67,7 +67,7 @@ export default async function PageTemoignages() {
 
       <TrailerImmersion
         titre="L'institut et les séances en vidéo"
-        sousTitre="Trailer officiel de l'institut, extraits de masterclasses en direct et retours d'expérience à chaud de nos participants."
+        sousTitre="Trailer officiel de l'institut, extraits de masterclasses en direct, retours d'expérience à chaud de nos participants et l'espace de formation des cohortes."
       />
 
       <Temoignages temoignages={temoignages} titre="Ce qu'ils en disent" />
