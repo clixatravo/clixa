@@ -71,6 +71,11 @@ h3,
    ni se manquer.
    ------------------------------------------------------------- */
 @media (min-width: 769px) {
+  .app-header__mobile-nav-toggler {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
   .template-default__nav-toggler-wrapper {
     display: flex !important;
     align-items: center !important;
@@ -3230,6 +3235,18 @@ h3,
 /* ── Optimisations Responsives Mobile & Tablette (Système Exécutif) ──────── */
 
 @media (max-width: 768px) {
+  /* Masquage strict du toggler et conteneurs desktop sur mobile */
+  .template-default__nav-toggler-wrapper,
+  .template-default__nav-toggler-container,
+  .template-default__nav-toggler {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
   /* Fond d'écran Ambiance Royale & Éclairage Radial Exécutif */
   .template-default,
   .dashboard {
@@ -3408,18 +3425,18 @@ h3,
     flex-shrink: 0 !important;
   }
 
-  /* Tiroir Mobile & Overlay de Présence */
+  /* Tiroir Mobile & Overlay de Présence Haute Performance */
   .nav {
     width: min(85vw, 320px) !important;
     border-right: 1px solid rgba(201, 162, 76, 0.3) !important;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.85) !important;
-    background: rgba(8, 12, 24, 0.98) !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.9) !important;
+    background: #080c18 !important;
     z-index: 1000 !important;
+    will-change: transform !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
   }
 
-  /* Assombrissement d'arrière-plan quand le menu est ouvert */
+  /* Assombrissement d'arrière-plan quand le menu est ouvert (sans blur GPU lourd pour 60/120fps) */
   .nav--nav-open::before {
     content: "" !important;
     position: fixed !important;
@@ -3427,9 +3444,7 @@ h3,
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
+    background: rgba(4, 7, 16, 0.78) !important;
     z-index: -1 !important;
     pointer-events: none !important;
   }
@@ -3578,10 +3593,8 @@ h3,
     justify-content: center !important;
     text-align: center !important;
     border-radius: 12px !important;
-    background: rgba(255, 255, 255, 0.04) !important;
+    background: #121a2e !important;
     border: 1px solid rgba(255, 255, 255, 0.09) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
     color: var(--clixa-ivoire) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -3633,14 +3646,9 @@ h3,
     align-items: flex-start !important;
     padding: 0.9rem !important;
     border-radius: 14px !important;
-    background: linear-gradient(
-      180deg,
-      rgba(16, 24, 46, 0.65) 0%,
-      rgba(10, 16, 32, 0.85) 100%
-    ) !important;
+    background: linear-gradient(180deg, #111930 0%, #0a1020 100%) !important;
     border: 1px solid rgba(201, 162, 76, 0.2) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    contain: content !important;
     margin-bottom: 1.5rem !important;
   }
 
@@ -3696,13 +3704,8 @@ h3,
     min-height: 120px !important;
     padding: 0.95rem 0.85rem !important;
     border-radius: 14px !important;
-    background: linear-gradient(
-      180deg,
-      rgba(20, 29, 53, 0.72) 0%,
-      rgba(11, 17, 33, 0.88) 100%
-    ) !important;
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    background: linear-gradient(180deg, #141d35 0%, #0b1121 100%) !important;
+    contain: content !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow:
       0 4px 20px -2px rgba(0, 0, 0, 0.45),
@@ -3944,13 +3947,8 @@ h3,
   .clixa-formation-card {
     padding: 1.15rem !important;
     border-radius: 16px !important;
-    background: linear-gradient(
-      180deg,
-      rgba(20, 30, 56, 0.75) 0%,
-      rgba(11, 17, 33, 0.92) 100%
-    ) !important;
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    background: linear-gradient(180deg, #131d36 0%, #0b1121 100%) !important;
+    contain: content !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-top: 2px solid rgba(201, 162, 76, 0.6) !important;
     box-shadow:

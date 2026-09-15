@@ -49,27 +49,44 @@ export function Logo() {
 /** Le bouton d'accueil explicite pour le fil d'Ariane et l'en-tête (StepNav) */
 export function Icone() {
   useEffect(() => {
-    function gererClicExterieur(e: MouseEvent | TouchEvent) {
+    function fermerTiroir() {
       const nav = document.querySelector(".nav--nav-open");
       if (!nav) return;
-      const cible = e.target as HTMLElement | null;
-      if (!cible) return;
-      // Si le clic est dans le tiroir de navigation ou sur le bouton du menu, laisser l'événement normal
-      if (nav.contains(cible) || cible.closest(".app-header__mobile-nav-toggler")) {
-        return;
-      }
-      // Clic à l'extérieur du tiroir ouvert : déclenche la fermeture immédiate
       const btnFermer = nav.querySelector<HTMLButtonElement>(".nav__mobile-close");
       if (btnFermer) {
         btnFermer.click();
       }
     }
 
-    document.addEventListener("click", gererClicExterieur, true);
-    document.addEventListener("touchstart", gererClicExterieur, { passive: true, capture: true });
+    function gererClic(e: MouseEvent) {
+      const nav = document.querySelector(".nav--nav-open");
+      if (!nav) return;
+      const cible = e.target as HTMLElement | null;
+      if (!cible) return;
+
+      // 1. Clic sur un lien dans le tiroir : fermer immédiatement le tiroir pour une navigation fluide
+      if (cible.closest(".nav a")) {
+        fermerTiroir();
+        return;
+      }
+
+      // 2. Ne rien faire si on clique dans le tiroir, sur les boutons menu ou sur le bouton Accueil
+      if (
+        nav.contains(cible) ||
+        cible.closest(".app-header__mobile-nav-toggler") ||
+        cible.closest(".template-default__nav-toggler") ||
+        cible.closest(".step-nav__home")
+      ) {
+        return;
+      }
+
+      // 3. Clic sur le fond assombri (backdrop) : fermer le tiroir
+      fermerTiroir();
+    }
+
+    document.addEventListener("click", gererClic);
     return () => {
-      document.removeEventListener("click", gererClicExterieur, true);
-      document.removeEventListener("touchstart", gererClicExterieur, true);
+      document.removeEventListener("click", gererClic);
     };
   }, []);
   return (
