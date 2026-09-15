@@ -102,13 +102,33 @@ export default async function PageExtrait({ params }: Props) {
           `playsInline` : sans lui, l'iPhone ouvre la vidéo en plein écran par
           surprise, hors de la page et de sa marque.
         */}
-        <div className="rounded-clixa bg-ink mt-7 overflow-hidden border border-white/[0.08]">
+        {/*
+          ⚠️ **La hauteur est réservée d'avance, et ce n'est pas cosmétique.**
+          Sans elle, le lecteur naît à la taille par défaut d'un `<video>` (300 ×
+          150), puis grandit quand l'affiche arrive — et pousse vers le bas
+          l'accroche, le lien vers la formation et le pied de page. Mesuré sur
+          3G lente : **CLS 0,118 sur cette page contre 0,004 sur l'accueil**, et
+          les éléments qui sautaient étaient tous ceux situés sous la vidéo.
+
+          Le rapport vient des dimensions de l'affiche, qui est une image de la
+          vidéo elle-même — donc du bon rapport. À défaut, 16/9, qui est ce que
+          rend une caméra ou un partage d'écran neuf fois sur dix.
+        */}
+        <div
+          className="rounded-clixa bg-ink mt-7 overflow-hidden border border-white/[0.08]"
+          style={{
+            aspectRatio:
+              extrait.afficheLargeur && extrait.afficheHauteur
+                ? `${extrait.afficheLargeur} / ${extrait.afficheHauteur}`
+                : "16 / 9",
+          }}
+        >
           <video
             controls
             playsInline
             preload="metadata"
             {...(extrait.affiche ? { poster: extrait.affiche } : {})}
-            className="block h-auto w-full"
+            className="block h-full w-full object-contain"
           >
             <source src={extrait.video} {...(extrait.type ? { type: extrait.type } : {})} />
             Votre navigateur ne sait pas lire cette vidéo.{" "}

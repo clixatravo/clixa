@@ -3978,6 +3978,18 @@ whatsapp »).
   `.mp4` est refusé — « File type text/plain (from extension mp4) is not
   allowed » — et l'on cherche le défaut dans la collection. La garde emploie un
   vrai en-tête de conteneur MP4, vide : trente-deux octets.
+- ⚠️ **La hauteur du lecteur est réservée d'avance, et c'est mesuré.** Sans
+  `aspect-ratio` sur le cadre, un `<video>` naît à 300 × 150 puis grandit quand
+  l'affiche arrive : l'accroche, le lien vers la formation et le pied de page
+  sautent vers le bas. Sur 3G lente, **CLS 0,118 sur cette page contre 0,004
+  sur l'accueil et 0,001 sur une fiche** — le témoin est ce qui a permis de dire
+  que le défaut était le nôtre et non celui du site. Le rapport se prend sur
+  l'affiche, qui est une image de la vidéo ; à défaut, 16/9. **Retombé à 0.**
+- ⚠️ **Ce qui reste et n'est pas décidé** : la vidéo du 15 septembre porte une
+  bande noire de **133 px en haut** (12 % de l'image), qui se retrouve dans la
+  vignette WhatsApp ; la recadrer demanderait de la réencoder, ou un réglage de
+  cadrage par extrait. Et elle n'a **aucun sous-titre** — trois minutes de parole
+  sans `<track>`. Les deux se tranchent par la direction, pas par le code.
 - `verifier-extraits.ts` compte douze contrôles, **prouvés en remettant le
   défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon ne
   sort pas de la lecture du site », et le témoin — « mais le publié, lui, se
