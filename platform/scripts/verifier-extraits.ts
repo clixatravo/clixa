@@ -26,6 +26,7 @@
  */
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { lireLesExtraits } from "@/lib/extraits";
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -91,29 +92,86 @@ try {
   aRetirer.push({ collection: "extraits", id: publie.id });
 
   /*
-    `overrideAccess: false` sans utilisateur : c'est exactement ce que fait
-    `lib/extraits.ts` pour le site public.
+    La lecture du site, appelée telle quelle — et non recopiée ici. C'est pour
+    cela que `lireLesExtraits` est exportée séparément de la version mise en
+    cache : `unstable_cache` demande le contexte de Next, qu'un script n'a pas.
   */
-  const vus = await payload.find({
-    collection: "extraits",
-    where: { slug: { in: [`${marque}-brouillon`, `${marque}-publie`] } },
-    limit: 10,
-    depth: 0,
-    overrideAccess: false,
-  });
-  const slugsVus = vus.docs.map((d) => String(d.slug));
+  const vus = (await lireLesExtraits()).map((e) => e.slug);
 
   dire(
-    "le brouillon reste invisible au public",
-    !slugsVus.includes(`${marque}-brouillon`),
-    slugsVus.join(" · ") || "rien",
+    "le brouillon ne sort pas de la lecture du site",
+    !vus.includes(`${marque}-brouillon`),
+    vus.filter((s) => s.startsWith(marque)).join(" · ") || "rien",
   );
   /*
     ⚠️ Le témoin. Sans lui, une lecture qui ne rendrait **rien** — un filtre
     trop large, une collection mal déclarée — passerait au vert sur le contrôle
     d'au-dessus, et le site n'afficherait plus aucun extrait.
   */
-  dire("mais le publié, lui, se lit", slugsVus.includes(`${marque}-publie`));
+  dire("mais le publié, lui, se lit", vus.includes(`${marque}-publie`));
+
+  console.log("\n▸ Ce que l'API ne laisse pas énumérer\n");
+
+  /*
+    ⚠️ Le contrôle qui manquait, et que la direction a trouvé en demandant
+    simplement « la vidéo ne va pas se retrouver sur le site ? ». La page n'est
+    liée nulle part et porte `noindex` — mais avec `lecturePubliee`,
+    `/api/extraits` rendait la **liste entière** des extraits publiés, slug
+    compris, à qui la demandait sans session. Un lien qu'on croyait non
+    répertorié était énumérable.
+
+    On éprouve donc ce que voit un anonyme : `overrideAccess: false` et aucun
+    utilisateur, soit exactement ce que fait la route REST.
+  */
+  /*
+    ⚠️ Le refus prend deux formes selon la règle d'accès, et les deux
+    conviennent : une règle qui rend `false` fait **lever** un 403 — c'est le cas
+    ici — tandis qu'une règle qui rend un filtre laisserait passer la requête
+    avec zéro résultat. Exiger l'une des deux ferait tomber la garde sur un code
+    parfaitement sain le jour où l'on changerait de forme.
+  */
+  let rendus = -1;
+  let refuse = false;
+  try {
+    const anonyme = await payload.find({
+      collection: "extraits",
+      limit: 50,
+      depth: 0,
+      overrideAccess: false,
+    });
+    rendus = anonyme.totalDocs;
+  } catch {
+    refuse = true;
+  }
+  dire(
+    "un anonyme n'obtient aucun extrait",
+    refuse || rendus === 0,
+    refuse ? "refusé (403)" : `${rendus} rendu(s)`,
+  );
+
+  /*
+    Le témoin de ce contrôle : l'équipe, elle, doit continuer de les voir —
+    sans quoi /admin afficherait une collection vide et personne ne pourrait
+    plus corriger un titre.
+  */
+  const { docs: personnel } = await payload.find({
+    collection: "utilisateurs",
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  if (personnel[0]) {
+    const vuParLEquipe = await payload.find({
+      collection: "extraits",
+      limit: 50,
+      depth: 0,
+      overrideAccess: false,
+      user: personnel[0],
+    });
+    dire("mais l'équipe les voit", vuParLEquipe.totalDocs > 0, `${vuParLEquipe.totalDocs} rendu(s)`);
+  } else {
+    console.log("  · aucun compte d'équipe en base : témoin non joué");
+  }
 
   console.log("\n▸ L'identifiant de l'adresse\n");
 

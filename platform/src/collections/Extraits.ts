@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { lecturePubliee, reserveA } from "@/access/roles";
+import { connecte, reserveA } from "@/access/roles";
 import { revaliderExtrait, revaliderExtraitSupprime } from "@/collections/revalider";
 
 /**
@@ -34,7 +34,26 @@ export const Extraits: CollectionConfig = {
     description: "Vidéos qu'on envoie par lien. Adresse publique : /v/<identifiant>.",
   },
   access: {
-    read: lecturePubliee,
+    /*
+      ⚠️ **Réservée à l'équipe, et ce n'est pas une coquille.** `lecturePubliee`
+      — ce que portent les témoignages, les articles, les réalisations — laisse
+      l'API REST servir la collection à qui la demande : `/api/extraits` rendait
+      la **liste entière** des extraits publiés, slug compris, sans la moindre
+      session. Mesuré. Un lien qu'on croyait non répertorié devenait alors
+      énumérable : il suffisait d'appeler l'API pour connaître toutes les vidéos
+      qu'on est en train d'envoyer, à qui, et sous quel titre.
+
+      C'est le défaut d'`admin.hidden` sur le RIB, et celui d'`/api/globals/
+      tarifs` : ne pas afficher quelque chose n'est pas le protéger. La
+      différence avec les autres collections est réelle — les leurs sont faites
+      pour être parcourues depuis une page de liste ; celle-ci n'a pas de page
+      de liste, par construction.
+
+      La page publique, elle, lit avec `overrideAccess: true` et filtre
+      `_status` à la main (`lib/extraits.ts`) : elle sert une adresse qu'on lui
+      donne, jamais un inventaire.
+    */
+    read: connecte,
     create: reserveA("redaction"),
     update: reserveA("redaction"),
     delete: reserveA("redaction"),

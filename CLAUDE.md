@@ -3893,6 +3893,24 @@ whatsapp »).
   regarder, c'est tout l'objet — mais une page par extrait de cours n'a pas à
   peupler les résultats de recherche. Ce que le site montre de lui-même vit sur
   `/temoignages`, qui est indexée.
+- ⚠️ **Et « non répertorié » était faux, jusqu'à ce qu'on pose la question.** La
+  direction a demandé : « la vidéo ne va pas se retrouver sur le site ? ». La
+  page n'est liée nulle part, elle est hors du plan du site et en `noindex` — et
+  `/api/extraits` rendait quand même **la liste entière**, slug compris, à qui
+  la demandait **sans session**. Mesuré avant d'être corrigé. Il suffisait
+  d'appeler l'API pour savoir quelles vidéos on est en train d'envoyer, à qui,
+  et sous quel titre.
+
+  C'est le défaut d'`admin.hidden` sur le RIB et celui d'`/api/globals/tarifs`,
+  une porte plus loin : **ne pas afficher n'est pas protéger**. La collection
+  porte donc `read: connecte` — l'API refuse en **403** — et la page publique
+  lit avec `overrideAccess: true` en écrivant elle-même le filtre `_status`.
+  Elle sert une adresse qu'on lui donne, jamais un inventaire.
+
+  ⚠️ La différence avec les témoignages et les réalisations est réelle et
+  assumée : les leurs se parcourent depuis une page de liste, celle-ci n'en a
+  pas, par construction. `lecturePubliee` convient à ce qui s'affiche ; pas à ce
+  qui se partage.
 - ⚠️ **Une collection à part de `Realisations`, qui porte pourtant des vidéos
   elle aussi.** Celle-ci répond à « qu'avons-nous déjà fait » et tout ce qu'elle
   publie paraît sur `/temoignages` : partager un extrait obligerait à l'entrer
@@ -3927,10 +3945,16 @@ whatsapp »).
   `.mp4` est refusé — « File type text/plain (from extension mp4) is not
   allowed » — et l'on cherche le défaut dans la collection. La garde emploie un
   vrai en-tête de conteneur MP4, vide : trente-deux octets.
-- `verifier-extraits.ts` compte dix contrôles, **prouvés en remettant le
-  défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon
-  reste invisible », et le témoin — « mais le publié, lui, se lit » — reste vert,
-  sans quoi une lecture qui ne rendrait rien du tout passerait pour saine.
+- `verifier-extraits.ts` compte douze contrôles, **prouvés en remettant le
+  défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon ne
+  sort pas de la lecture du site », et le témoin — « mais le publié, lui, se
+  lit » — reste vert, sans quoi une lecture qui ne rendrait rien du tout
+  passerait pour saine. Le second témoin, « mais l'équipe les voit », garde
+  l'autre bord : une collection fermée à tout le monde ferait un /admin vide.
+  ⚠️ **Un refus prend deux formes**, et les deux conviennent : une règle qui
+  rend `false` fait lever un 403, une règle qui rend un filtre laisse passer la
+  requête avec zéro résultat. Exiger l'une des deux ferait tomber la garde sur
+  un code sain le jour où l'on changerait de forme.
 
 ⚠️ **Deux crochets de rafraîchissement manquaient depuis l'origine**
 (`revaliderVitrine`). `Temoignages` n'en avait aucun : un témoignage publié

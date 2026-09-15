@@ -42,63 +42,73 @@ function nombre(valeur: unknown): number | undefined {
   return typeof valeur === "number" && Number.isFinite(valeur) ? valeur : undefined;
 }
 
+/**
+ * La lecture nue, sans cache — c'est elle que la garde éprouve.
+ *
+ * ⚠️ **`overrideAccess: true` et le filtre posé à la main.** La collection est
+ * fermée au public (voir `Extraits.ts`) : `lecturePubliee` laissait
+ * `/api/extraits` servir la liste entière à qui la demandait, et un lien qu'on
+ * croyait non répertorié devenait énumérable. Le site, lui, doit pouvoir rendre
+ * une adresse qu'on lui donne — il passe donc outre le contrôle d'accès, et
+ * **écrit lui-même la seule condition qui compte**.
+ *
+ * Le filtre n'est pas une commodité : sans lui, cette fonction servirait les
+ * brouillons. C'est exactement ce que `verifier-extraits.ts` garde.
+ */
+export async function lireLesExtraits(): Promise<Extrait[]> {
+  const payload = await payloadClient();
+  const { docs } = await payload.find({
+    collection: "extraits",
+    limit: 200,
+    locale: "fr",
+    /*
+      Profondeur 1 : il faut le fichier, l'affiche et le titre du parcours.
+      Au-delà, Payload remonterait les modules et les sessions du programme
+      pour rendre une page qui n'en montre rien.
+    */
+    depth: 1,
+    sort: "slug",
+    where: { _status: { equals: "published" } },
+    overrideAccess: true,
+  });
+
+  return docs
+    .map((d): Extrait | undefined => {
+      const fichier = peuplee(d.fichier);
+      const video = texte(fichier?.url);
+      const slug = texte(d.slug);
+      const titre = texte(d.titre);
+      /*
+        ⚠️ Sans fichier servi, la page rendrait un lecteur vide — ce qui, sur un
+        lien qu'on vient d'envoyer à un prospect, se lit comme un site cassé.
+        Mieux vaut un 404, qui dit au moins qu'il n'y a rien là.
+      */
+      if (!video || !slug || !titre) return undefined;
+
+      const affiche = peuplee(d.affiche);
+      const programme = peuplee(d.programme);
+
+      return {
+        titre,
+        slug,
+        video,
+        ...(texte(d.accroche) ? { accroche: texte(d.accroche) as string } : {}),
+        ...(texte(fichier?.mimeType) ? { type: texte(fichier?.mimeType) as string } : {}),
+        ...(texte(affiche?.url) ? { affiche: texte(affiche?.url) as string } : {}),
+        ...(nombre(affiche?.width) ? { afficheLargeur: nombre(affiche?.width) as number } : {}),
+        ...(nombre(affiche?.height) ? { afficheHauteur: nombre(affiche?.height) as number } : {}),
+        ...(texte(programme?.titre) ? { programmeTitre: texte(programme?.titre) as string } : {}),
+        ...(texte(programme?.slug) ? { programmeSlug: texte(programme?.slug) as string } : {}),
+      };
+    })
+    .filter((e): e is Extrait => e !== undefined);
+}
+
 const lire = cache(
-  unstable_cache(
-    async (): Promise<Extrait[]> => {
-      const payload = await payloadClient();
-      const { docs } = await payload.find({
-        collection: "extraits",
-        limit: 200,
-        locale: "fr",
-        /*
-          Profondeur 1 : il faut le fichier, l'affiche et le titre du parcours.
-          Au-delà, Payload remonterait les modules et les sessions du programme
-          pour rendre une page qui n'en montre rien.
-        */
-        depth: 1,
-        sort: "slug",
-        // Comme partout côté public : les brouillons restent invisibles.
-        overrideAccess: false,
-      });
-
-      return docs
-        .map((d): Extrait | undefined => {
-          const fichier = peuplee(d.fichier);
-          const video = texte(fichier?.url);
-          const slug = texte(d.slug);
-          const titre = texte(d.titre);
-          /*
-            ⚠️ Sans fichier servi, la page rendrait un lecteur vide — ce qui, sur
-            un lien qu'on vient d'envoyer à un prospect, se lit comme un site
-            cassé. Mieux vaut un 404, qui dit au moins qu'il n'y a rien là.
-          */
-          if (!video || !slug || !titre) return undefined;
-
-          const affiche = peuplee(d.affiche);
-          const programme = peuplee(d.programme);
-
-          return {
-            titre,
-            slug,
-            video,
-            ...(texte(d.accroche) ? { accroche: texte(d.accroche) as string } : {}),
-            ...(texte(fichier?.mimeType) ? { type: texte(fichier?.mimeType) as string } : {}),
-            ...(texte(affiche?.url) ? { affiche: texte(affiche?.url) as string } : {}),
-            ...(nombre(affiche?.width) ? { afficheLargeur: nombre(affiche?.width) as number } : {}),
-            ...(nombre(affiche?.height)
-              ? { afficheHauteur: nombre(affiche?.height) as number }
-              : {}),
-            ...(texte(programme?.titre)
-              ? { programmeTitre: texte(programme?.titre) as string }
-              : {}),
-            ...(texte(programme?.slug) ? { programmeSlug: texte(programme?.slug) as string } : {}),
-          };
-        })
-        .filter((e): e is Extrait => e !== undefined);
-    },
-    ["extraits"],
-    { tags: [ETIQUETTE_EXTRAITS], revalidate: PEREMPTION },
-  ),
+  unstable_cache(lireLesExtraits, ["extraits"], {
+    tags: [ETIQUETTE_EXTRAITS],
+    revalidate: PEREMPTION,
+  }),
 );
 
 export async function getExtraits(): Promise<Extrait[]> {
