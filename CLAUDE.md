@@ -699,6 +699,42 @@ n'est pas un choix : on ne le découvre qu'en poussant la page du doigt.
 
 **Résultat : 375 px pour 375 px, sur le tableau de bord comme sur les listes.**
 
+⚠️ **Le bouton de menu du gabarit est réservé au web, et il faut qu'il le reste**
+(15 septembre 2026). Payload en sert **deux** : celui du gabarit
+(`template-default__nav-toggler`) et celui de l'en-tête
+(`app-header__mobile-nav-toggler`). Sous 768 px il replie le premier —
+`height: 0` sur le wrapper, `.hamburger { display: none }` — parce que c'est le
+second qui prend le relais. Un habillage doré posé sur le premier **sans borne**
+le rouvre : à 375 px, **deux hamburgers identiques empilés**, l'un à (9, 9),
+l'autre à (12, 67), tous deux « Ouvrir Menu », sur l'écran où l'équipe arrive le
+matin.
+
+- **La borne est `@media (min-width: 769px)`**, complément exact de la règle de
+  Payload : les deux ne peuvent ni s'appliquer ensemble, ni se manquer. Vérifié
+  des deux côtés — **768 px ne montre que celui de l'en-tête, 769 px que celui
+  du gabarit**.
+- ⚠️ **Rien ne l'attrape** : ni type, ni build, ni lint, ni la mesure de
+  débordement — les deux boutons tiennent dans 375 px, le contenu reste à
+  375 px. C'est un défaut qui **ne se voit qu'à l'écran**, comme les deux
+  intitulés du trailer.
+- ⚠️ **Et « ça vient de ton changement » se prouve, ne se suppose pas.** Remettre
+  le CSS du commit précédent, mesurer, remettre le sien : un bouton d'un côté,
+  deux de l'autre. Sans cette comparaison, on aurait aussi bien pu accuser
+  Payload d'avoir changé de comportement.
+
+⚠️ **Et la console disait le jour d'UTC** (corrigé le même jour). L'intitulé du
+tableau de bord se formatait en `timeZone: "UTC"`. Le Maroc étant à +1, l'équipe
+lisait **la veille entre minuit et une heure** : vu à 00 h 58 à Agadir, la
+console annonçait « Lundi 14 septembre » un mardi. Elle porte désormais
+`Africa/Casablanca`.
+
+- **Ce n'est pas un instant, c'est un jour de calendrier** — « quel jour
+  sommes-nous » pour celui qui lit. Les horaires de sessions restent en UTC et
+  le doivent : ceux-là sont publiés, et le visiteur les lit avec leur fuseau
+  écrit à côté.
+- Le formateur ne sert qu'à cet intitulé (un seul appel) : le reste du calcul
+  travaille sur des instants, que le fuseau d'affichage ne touche pas.
+
 ⚠️ **Le tableau de supervision des douze formations** (`SupervisionFormations.tsx`,
 posé par la direction le 12 septembre 2026). Il remplace les trois jauges : les
 douze parcours, leurs pré-inscriptions, leurs places réservées, en cartes ou en
