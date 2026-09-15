@@ -1,6 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   ETIQUETTE_CATALOGUE,
+  ETIQUETTE_EXTRAITS,
   ETIQUETTE_PAGES,
   ETIQUETTE_TARIFS,
   ETIQUETTE_VITRINE,
@@ -162,6 +163,29 @@ export const revaliderVitrineSupprimee: CollectionAfterDeleteHook = ({ doc }) =>
   const slug = slugDe(doc?.programme);
   if (slug) chemins.add(`/formations/${slug}`);
   rafraichir([...chemins], "vitrine allégée", [ETIQUETTE_VITRINE]);
+  return doc;
+};
+
+/* ── Les extraits partagés ────────────────────────────────────────────── */
+
+/**
+ * Un extrait ne touche que sa propre page — il n'est ni au plan du site, ni sur
+ * l'accueil, ni dans la vitrine.
+ *
+ * ⚠️ **L'ancien slug compte autant que le nouveau.** Le lien circule déjà dans
+ * des WhatsApp qu'on ne rattrape pas : renommer un extrait laisse l'ancienne
+ * adresse en cache, servie telle quelle, alors qu'elle répond 404 en base. On
+ * rafraîchit donc les deux.
+ */
+export const revaliderExtrait: CollectionAfterChangeHook = ({ doc, previousDoc }) => {
+  const chemins = new Set<string>();
+  for (const d of [doc, previousDoc]) if (d?.slug) chemins.add(`/v/${d.slug}`);
+  rafraichir([...chemins], "extrait partagé", [ETIQUETTE_EXTRAITS]);
+  return doc;
+};
+
+export const revaliderExtraitSupprime: CollectionAfterDeleteHook = ({ doc }) => {
+  rafraichir(doc?.slug ? [`/v/${doc.slug}`] : [], "extrait retiré", [ETIQUETTE_EXTRAITS]);
   return doc;
 };
 

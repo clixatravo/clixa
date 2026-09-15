@@ -68,6 +68,7 @@ npx payload run scripts/verifier-veille.ts        # les vignettes mènent où el
 npx payload run scripts/verifier-portes.ts        # les portes réservées à l'équipe
 npx payload run scripts/verifier-faq.ts           # ce que la FAQ affirme suit ce que le site tient
 npx payload run scripts/verifier-video.ts         # ce qu'on accepte d'encadrer
+npx payload run scripts/verifier-extraits.ts      # un brouillon ne se partage pas
 npx payload run scripts/verifier-vitrine.ts       # la séance filmée qui n'est pas encore relue
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
@@ -3876,6 +3877,60 @@ change.
   que six liens plus « FR », « Mon espace » et « Nous contacter » réclament déjà
   936 px, d'où la bascule à `lg`. Un septième lien ferait déborder à 1024 px
   exactement — le défaut du 12 septembre, une porte plus loin.
+
+⚠️ **Une vidéo qu'on envoie par lien** (`Extraits`, `/v/<slug>`,
+`scripts/publier-un-extrait.ts`, demandé par la direction le 15 septembre
+2026 : une vidéo du directeur, « juste un lien, on le partage dans un mail ou un
+whatsapp »).
+
+- ⚠️ **Le lien brut vers le fichier était le chemin court, et c'est non.** Son
+  adresse ressemble à `xk3f9.public.blob.vercel-storage.com/…` : WhatsApp n'en
+  tire aucun aperçu — ni titre, ni vignette — et elle a l'allure exacte de ce
+  que tout le reste du tunnel apprend au client à refuser. `/v/<slug>` porte
+  notre domaine, montre une vignette et un titre dans la conversation, et **reste
+  modifiable après l'envoi**, ce qu'un lien de fichier n'est jamais.
+- **`noindex`, comme `/verifier`.** L'adresse est publique — qui l'a peut
+  regarder, c'est tout l'objet — mais une page par extrait de cours n'a pas à
+  peupler les résultats de recherche. Ce que le site montre de lui-même vit sur
+  `/temoignages`, qui est indexée.
+- ⚠️ **Une collection à part de `Realisations`, qui porte pourtant des vidéos
+  elle aussi.** Celle-ci répond à « qu'avons-nous déjà fait » et tout ce qu'elle
+  publie paraît sur `/temoignages` : partager un extrait obligerait à l'entrer
+  dans la vitrine. Le fichier, lui, reste unique — il vit dans `videos`, et les
+  deux collections s'y rattachent.
+- ⚠️ **Le plafond de 4 Mo ne vaut que pour ce qui traverse la plateforme.** Il
+  vient de Vercel, qui refuse tout corps de requête au-delà de 4,5 Mo ; un
+  script passe par l'API locale, du disque au magasin, sans qu'aucune fonction
+  le porte. Le crochet teste donc `req.payloadAPI !== "local"`. **33 Mo versés
+  ainsi**, là où /admin aurait refusé — et le garde-fou d'/admin ne bouge pas,
+  c'est là qu'il évite une erreur de plateforme illisible.
+- ⚠️ **`payload run` mange les `--drapeaux`.** Mesuré :
+  `payload run x.ts fichier --titre "…" --publier` ne laisse arriver que
+  `fichier` — sa propre ligne de commande les consomme, et **rien ne le
+  signale** : le script croit qu'on a oublié ses arguments. Les positionnels
+  passent tous. D'où `TITRE=… SLUG=… PUBLIER=1`, comme l'`ECRIRE=1` du reste de
+  la maison.
+- ⚠️ **Le nom du fichier se retrouve dans l'adresse publique**, et celle-ci
+  figure dans `og:video`. Un fichier reçu par WhatsApp s'appelle « WhatsApp
+  Video 2026-09-14 at 23.12.30.mp4 » : encodé, c'est illisible, cela annonce
+  d'où vient le fichier et l'heure de la prise, et cela ne dit rien de ce qu'on
+  regarde. Le script le renomme d'après le slug.
+- ⚠️ **Sans affiche, deux choses tombent d'un coup** : le lecteur montre un
+  carré noir — que ce journal note déjà comme se lisant « vidéo cassée » — et
+  WhatsApp n'a aucune vignette, si bien que le lien paraît douteux.
+  `scripts/image-de-video.mjs` en extrait une à la seconde qu'on choisit.
+  ⚠️ **La seconde se choisit** : la première image d'une séance filmée est
+  presque toujours noire. Et il faut le **Chrome du poste** — ces fichiers sont
+  en H.264, que le Chromium de Playwright ne décode pas : `readyState` n'y
+  dépasse jamais 0 et l'on conclut à tort que le fichier est illisible.
+- ⚠️ **Payload renifle le contenu, pas l'extension.** Un buffer de texte nommé
+  `.mp4` est refusé — « File type text/plain (from extension mp4) is not
+  allowed » — et l'on cherche le défaut dans la collection. La garde emploie un
+  vrai en-tête de conteneur MP4, vide : trente-deux octets.
+- `verifier-extraits.ts` compte dix contrôles, **prouvés en remettant le
+  défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon
+  reste invisible », et le témoin — « mais le publié, lui, se lit » — reste vert,
+  sans quoi une lecture qui ne rendrait rien du tout passerait pour saine.
 
 ⚠️ **Deux crochets de rafraîchissement manquaient depuis l'origine**
 (`revaliderVitrine`). `Temoignages` n'en avait aucun : un témoignage publié

@@ -21,6 +21,7 @@ import { Sessions } from "@/collections/Sessions";
 import { Articles } from "@/collections/Articles";
 import { Temoignages } from "@/collections/Temoignages";
 import { Realisations } from "@/collections/Realisations";
+import { Extraits } from "@/collections/Extraits";
 import { Videos } from "@/collections/Videos";
 import { Partenaires } from "@/collections/Partenaires";
 import { Pages } from "@/collections/Pages";
@@ -106,6 +107,7 @@ export default buildConfig({
     Articles,
     Temoignages,
     Realisations,
+    Extraits,
     Partenaires,
     Pages,
     Medias,

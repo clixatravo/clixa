@@ -17,6 +17,17 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
  * Quatre mégaoctets valent une quinzaine de secondes de vidéo prise au
  * téléphone. C'est tout, et c'est pourquoi le champ dit d'aller sur YouTube
  * au-delà plutôt que de laisser essayer.
+ *
+ * ⚠️ **Mais il ne vaut que pour ce qui traverse la plateforme.** Un script
+ * lancé depuis un poste passe par l'API locale : le fichier va du disque au
+ * magasin sans qu'aucune fonction serverless le porte, donc la limite de
+ * Vercel ne s'applique pas. Refuser là aussi reviendrait à faire respecter une
+ * contrainte qui n'existe pas — et à interdire la seule voie praticable pour un
+ * extrait de cours, qui pèse des dizaines de mégaoctets.
+ *
+ * C'est ce que fait `scripts/publier-un-extrait.ts`. Le garde-fou d'/admin,
+ * lui, ne bouge pas : c'est là qu'il protège quelqu'un d'une erreur de
+ * plateforme illisible.
  */
 const PLAFOND = 4 * 1024 * 1024;
 
@@ -54,7 +65,7 @@ export const Videos: CollectionConfig = {
     beforeValidate: [
       ({ req }) => {
         const fichier = req.file;
-        if (fichier && fichier.size > PLAFOND) {
+        if (req.payloadAPI !== "local" && fichier && fichier.size > PLAFOND) {
           throw new APIError(
             `Cette vidéo pèse ${Math.round(fichier.size / 1024 / 1024)} Mo. ` +
               `L'hébergeur refuse tout envoi au-delà de 4,5 Mo — au-delà, mettez la vidéo ` +

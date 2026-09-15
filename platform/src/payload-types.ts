@@ -74,6 +74,7 @@ export interface Config {
     articles: Article;
     temoignages: Temoignage;
     realisations: Realisation;
+    extraits: Extrait;
     partenaires: Partenaire;
     pages: Page;
     medias: Media;
@@ -98,6 +99,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     temoignages: TemoignagesSelect<false> | TemoignagesSelect<true>;
     realisations: RealisationsSelect<false> | RealisationsSelect<true>;
+    extraits: ExtraitsSelect<false> | ExtraitsSelect<true>;
     partenaires: PartenairesSelect<false> | PartenairesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
@@ -571,6 +573,42 @@ export interface Video {
   focalY?: number | null;
 }
 /**
+ * Vidéos qu'on envoie par lien. Adresse publique : /v/<identifiant>.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "extraits".
+ */
+export interface Extrait {
+  id: number;
+  /**
+   * Ce que WhatsApp affiche au-dessus de la vignette, et le titre de la page.
+   */
+  titre: string;
+  /**
+   * L'adresse partagée sera /v/<identifiant>. Lettres, chiffres et tirets.
+   */
+  slug: string;
+  /**
+   * La ligne que WhatsApp montre sous le titre, et qui s'affiche sous la vidéo.
+   */
+  accroche?: string | null;
+  /**
+   * Au-delà de 4 Mo, /admin ne peut pas la recevoir : passer par scripts/publier-un-extrait.ts.
+   */
+  fichier: number | Video;
+  /**
+   * Une image extraite de la vidéo. Sans elle, pas de vignette dans WhatsApp.
+   */
+  affiche?: (number | null) | Media;
+  /**
+   * Facultatif. Ajoute sous la vidéo un bouton vers la fiche — c'est là que le prospect va ensuite.
+   */
+  programme?: (number | null) | Programme;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * Référentiels et standards visés par les parcours.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1027,6 +1065,10 @@ export interface PayloadLockedDocument {
         value: number | Realisation;
       } | null)
     | ({
+        relationTo: 'extraits';
+        value: number | Extrait;
+      } | null)
+    | ({
         relationTo: 'partenaires';
         value: number | Partenaire;
       } | null)
@@ -1322,6 +1364,21 @@ export interface RealisationsSelect<T extends boolean = true> {
   fichier?: T;
   affiche?: T;
   ordre?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "extraits_select".
+ */
+export interface ExtraitsSelect<T extends boolean = true> {
+  titre?: T;
+  slug?: T;
+  accroche?: T;
+  fichier?: T;
+  affiche?: T;
+  programme?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

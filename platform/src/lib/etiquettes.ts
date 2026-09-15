@@ -24,6 +24,16 @@ export const ETIQUETTE_PAGES = "pages";
 export const ETIQUETTE_VITRINE = "vitrine";
 
 /**
+ * Les extraits qu'on partage par lien.
+ *
+ * ⚠️ **Séparée de la vitrine, bien que ce soient des vidéos elles aussi.** La
+ * vitrine bouge quand la rédaction publie sur `/temoignages` ; un extrait bouge
+ * quand on prépare un lien à envoyer. Mêler les deux ferait relire l'accueil et
+ * la vitrine à chaque retouche d'un titre que personne d'autre ne voit.
+ */
+export const ETIQUETTE_EXTRAITS = "extraits";
+
+/**
  * Plafond de fraîcheur, en secondes.
  *
  * Les étiquettes suffisent quand l'écriture passe par /admin : le crochet lève
