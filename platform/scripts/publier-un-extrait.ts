@@ -179,9 +179,39 @@ const extrait = await payload.create({
   },
 });
 
-const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa").replace(/\/+$/, "");
 console.log(`\n  ✓ extrait ${publier ? "publié" : "en brouillon"} — id ${extrait.id}`);
-console.log(`\n     ${base}/v/${slug}\n`);
-if (!publier) {
-  console.log("     (brouillon : l’adresse répond 404 tant qu’on ne l’a pas publié depuis /admin)\n");
+
+/*
+  ⚠️ **Le script ne sait pas quel site sert la base qu'il vient d'écrire**, et il
+  ne doit pas faire semblant. `NEXT_PUBLIC_SITE_URL` décrit *un site* ;
+  `DATABASE_URL` désigne *une base*. Les deux se règlent séparément, et c'est
+  précisément ce qui arrive quand on lance ce script contre la production :
+  `.env.prod` ne porte que la base, l'adresse reste celle d'`.env.local`, et le
+  script imprimait « http://localhost:3000/v/… » pour un extrait bel et bien
+  publié en ligne.
+
+  Rien n'était cassé — mais un outil qui imprime une adresse fausse est
+  exactement ce que ce journal passe son temps à corriger ailleurs. Il imprime
+  donc le chemin, qui est vrai partout, et ne compose l'adresse entière que
+  lorsqu'elle ne désigne pas une machine locale.
+*/
+const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
+const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(base);
+
+console.log(`\n     /v/${slug}`);
+if (base && !local) {
+  console.log(`     ${base}/v/${slug}`);
+} else {
+  console.log(
+    `\n     ⚠️  NEXT_PUBLIC_SITE_URL ${base ? `vaut « ${base} »` : "n'est pas défini"} :` +
+      `\n         c'est l'adresse du site local, pas forcément celle du site qui sert` +
+      `\n         cette base. Le lien à partager est <ce site>/v/${slug}.`,
+  );
 }
+
+if (!publier) {
+  console.log(
+    "\n     (brouillon : l’adresse répond 404 tant qu’on ne l’a pas publié depuis /admin)",
+  );
+}
+console.log("");
