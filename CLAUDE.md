@@ -3913,9 +3913,16 @@ change.
   sur l'écran de la classe DAF — mais le cadre est **translucide**, et entre
   1 et 3 s le vrai code de la classe se lit à travers, en grosses lettres. La
   vidéo dit elle-même que ce code est personnel ; la publier sur le site le
-  donnerait à quiconque la met en pause. À trancher par la direction : changer
-  le code dans Classroom (ce qui neutralise aussi les copies déjà parties sur
-  les réseaux), ou exporter une version au cadre opaque.
+  donnerait à quiconque la met en pause.
+  **Publiée le même jour, après que la direction a réinitialisé le code dans
+  Classroom** — le seul geste qui neutralise aussi les copies déjà parties sur
+  les réseaux. ⚠️ Ce dépôt ne peut pas le vérifier : essayer l'ancien code pour
+  s'en assurer reviendrait à se servir d'un accès qui n'est pas le nôtre. Le
+  reste de la vidéo a été balayé toutes les deux secondes : aucun nom ni adresse
+  de participant, seulement le formateur, les séances et les questions des quiz.
+  L'affiche est prise à 6 s, là où aucun cadre de code ne paraît. Ses textes ne
+  disent pas **quand** le code est remis : le tunnel a deux temps, et « après
+  inscription » promettrait l'accès à une simple pré-inscription.
 - ⚠️ **Le script vérifie qu'aucune autre carte ne se sert de l'affiche** avant
   de la supprimer. Une image retirée sous une carte qui l'affiche encore laisse
   un cadre vide que rien ne signale.

@@ -161,6 +161,52 @@ const PISTES: PisteVideo[] = [
     ctaTitre: "Découvrir le programme DAF",
     ctaLien: "/formations/directeur-administratif-et-financier",
   },
+  {
+    /*
+      ⚠️ Retenue une journée, et pour une raison qui ne se voyait qu'en
+      agrandissant. Son cadre « VOTRE CODE CLASSROOM » est translucide : entre 1
+      et 3 s, le vrai code de la classe DAF se lisait à travers. Publiée le
+      15 septembre 2026 après que la direction a réinitialisé ce code dans
+      Classroom — ce que ce dépôt ne peut pas vérifier. Si la vidéo est refaite,
+      le cadre doit être opaque.
+
+      ⚠️ Les textes ne disent que ce que la vidéo montre : des séances publiées
+      avec leurs documents, des questionnaires, un code de classe. Rien sur le
+      moment où ce code est remis — le tunnel a deux temps, et « après
+      inscription » promettrait l'accès à une simple pré-inscription.
+    */
+    id: "espace-classroom",
+    onglet: "Espace de formation",
+    icone: "🎓",
+    badge: "Google Classroom",
+    programmeTitre: "Espace des cohortes · Séances, supports, quiz",
+    programmeSlug: "formations",
+    citation: "« Apprenez. Pratiquez. Progressez. »",
+    explication:
+      "Les cohortes se retrouvent dans un espace Google Classroom : chaque séance y est publiée avec ses documents, et les questionnaires permettent de vérifier ses acquis d'une semaine à l'autre.",
+    sourceFichier: "/videos/immersion/reel_espace_classroom.mp4",
+    affiche: "/videos/immersion/reel_espace_classroom_poster.jpg",
+    dureeFormat: "0:24",
+    ratio: "portrait",
+    lienExterne: "https://www.clixa.africa",
+    labelLien: "www.clixa.africa",
+    piliers: [
+      {
+        titre: "Séances et supports :",
+        description: "chaque séance de la cohorte publiée dans l'espace, avec ses documents.",
+      },
+      {
+        titre: "Travaux et quiz :",
+        description: "des questionnaires pour vérifier ses acquis entre deux séances.",
+      },
+      {
+        titre: "Accès réservé :",
+        description: "un code de classe remis aux participants de la cohorte.",
+      },
+    ],
+    ctaTitre: "Explorer les formations",
+    ctaLien: "/formations",
+  },
 ];
 
 export function TrailerImmersion({
