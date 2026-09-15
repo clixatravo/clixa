@@ -23,12 +23,23 @@ import { SupervisionFormations, type FormationResume } from "./SupervisionFormat
  * ainsi que la date de la prochaine rentrée et des raccourcis vers les flux clés.
  */
 
+/*
+  ⚠️ Le fuseau de la maison, pas UTC. Cette date ne sert qu'à l'intitulé du
+  tableau de bord — « quel jour sommes-nous » pour celui qui le lit. En UTC, le
+  Maroc étant à +1, l'équipe lisait la veille entre minuit et une heure : vu à
+  00 h 58 à Agadir, la console annonçait « Lundi 14 septembre » un mardi.
+
+  Les horaires de sessions, eux, restent en UTC et le doivent : ce sont des
+  instants publiés, que le visiteur lit avec leur fuseau écrit à côté. Ici il ne
+  s'agit pas d'un instant mais d'un jour de calendrier, et celui qui compte est
+  celui du bureau.
+*/
 const JOUR = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
-  timeZone: "UTC",
+  timeZone: "Africa/Casablanca",
 });
 
 interface Echeance {
