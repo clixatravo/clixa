@@ -21,7 +21,14 @@ interface PisteVideo {
   sourceFichier: string;
   affiche: string;
   dureeFormat: string;
-  ratio: "16/9" | "carre";
+  /*
+    ⚠️ « portrait » a remplacé « carre » le 15 septembre 2026. Les deux reels
+    étaient servis recadrés en 720 × 720, à 667 et 874 Ko : la direction a
+    transmis les originaux, 1080 × 1920, et une vidéo verticale dans un cadre
+    carré est soit coupée haut et bas — la légende incrustée « À chaud, après
+    la 1re séance » disparaît — soit réduite entre deux bandes.
+  */
+  ratio: "16/9" | "portrait";
   lienExterne: string;
   labelLien: string;
   piliers: Pilier[];
@@ -92,9 +99,9 @@ const PISTES: PisteVideo[] = [
     explication:
       "Aller au-delà des concepts théoriques pour comprendre le métier, ses responsabilités et les décisions stratégiques auxquelles un dirigeant financier est réellement confronté.",
     sourceFichier: "/videos/immersion/reel_daf_extrait.mp4",
-    affiche: "/videos/immersion/reel_daf_extrait_poster.png",
+    affiche: "/videos/immersion/reel_daf_extrait_poster.jpg",
     dureeFormat: "0:32",
-    ratio: "carre",
+    ratio: "portrait",
     lienExterne: "https://www.instagram.com/reel/DdNOvrLuj7-/",
     labelLien: "Voir sur @clixa.africa",
     piliers: [
@@ -129,9 +136,9 @@ const PISTES: PisteVideo[] = [
     explication:
       "Le témoignage sans filtre d'un cadre financier participant à la cohorte DAF chez CLIXA Institute, enregistré dès la sortie de son tout premier cours en direct.",
     sourceFichier: "/videos/immersion/reel_daf_temoignage.mp4",
-    affiche: "/videos/immersion/reel_daf_temoignage_poster.png",
+    affiche: "/videos/immersion/reel_daf_temoignage_poster.jpg",
     dureeFormat: "0:57",
-    ratio: "carre",
+    ratio: "portrait",
     lienExterne: "https://www.instagram.com/reel/DdMoJOKsIbe/",
     labelLien: "Voir sur @clixa.africa",
     piliers: [
@@ -298,12 +305,17 @@ export function TrailerImmersion({
           {/* Colonne gauche : Lecteur vidéo exécutif */}
           <div
             className={`relative mx-auto w-full transition-all duration-300 ${
-              active.ratio === "16/9" ? "max-w-[560px]" : "max-w-[440px]"
+              /*
+                Un reel à 440 px de large ferait 782 px de haut : plus haut que
+                l'écran d'un ordinateur portable, et la carte de contexte d'à
+                côté flotterait au milieu d'un vide.
+              */
+              active.ratio === "16/9" ? "max-w-[560px]" : "max-w-[320px]"
             }`}
           >
             <div
               className={`rounded-clixa border-gold/30 bg-ink group relative w-full overflow-hidden border shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)] ${
-                active.ratio === "16/9" ? "aspect-video" : "aspect-square"
+                active.ratio === "16/9" ? "aspect-video" : "aspect-[9/16]"
               }`}
             >
               {/* Vidéo MP4 native avec key pour forcer le remontage propre au changement de piste */}
@@ -431,7 +443,11 @@ export function TrailerImmersion({
             <div className="mt-3 flex items-center justify-between px-1">
               <span className="text-ivory-dim/70 flex items-center gap-1.5 font-mono text-[0.7rem]">
                 <span className="size-1.5 rounded-full bg-emerald-400" />
-                {active.ratio === "16/9" ? "Production Haute Définition" : "Format Reel Certifié"}
+                {/*
+                  « Format Reel Certifié » ne certifiait rien. Les reels sont
+                  désormais servis en 1080p : c'est ce qui se dit.
+                */}
+                {active.ratio === "16/9" ? "Production Haute Définition" : "Format Reel · 1080p"}
               </span>
               <a
                 href={active.lienExterne}

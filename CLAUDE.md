@@ -3897,6 +3897,25 @@ change.
   été retirées de la base (`scripts/retirer-les-reels.ts`, rejouable), affiche
   comprise — un média orphelin reparaît dans le sélecteur d'images et finit par
   être choisi sans qu'on sache d'où il vient.
+- ⚠️ **Les deux reels du bandeau étaient servis recadrés et compressés**
+  (corrigé le 15 septembre 2026) : 720 × 720, 667 et 874 Ko. La direction a
+  transmis les originaux — 1080 × 1920, 2,8 et 3,9 Mo — et ils sont copiés **à
+  l'octet près** (empreintes identiques), sans recompression. Vérifié à l'image
+  avant de remplacer : mêmes plans, mêmes durées (32 et 57 s), donc les textes du
+  bandeau restent justes. Le cadre carré coupait la légende incrustée « À chaud,
+  après la 1re séance » ; le bandeau connaît désormais le format `portrait`
+  (9:16, 320 px de large au plus — à 440 px un reel dépasserait l'écran d'un
+  portable), et « Format Reel Certifié », qui ne certifiait rien, dit
+  « Format Reel · 1080p ».
+- ⚠️ **Une troisième vidéo a été retenue, et pour une raison qui ne se voit
+  qu'en l'agrandissant.** La présentation de l'espace Classroom (24 s) pose un
+  cadre « VOTRE CODE CLASSROOM — accès personnel communiqué après inscription »
+  sur l'écran de la classe DAF — mais le cadre est **translucide**, et entre
+  1 et 3 s le vrai code de la classe se lit à travers, en grosses lettres. La
+  vidéo dit elle-même que ce code est personnel ; la publier sur le site le
+  donnerait à quiconque la met en pause. À trancher par la direction : changer
+  le code dans Classroom (ce qui neutralise aussi les copies déjà parties sur
+  les réseaux), ou exporter une version au cadre opaque.
 - ⚠️ **Le script vérifie qu'aucune autre carte ne se sert de l'affiche** avant
   de la supprimer. Une image retirée sous une carte qui l'affiche encore laisse
   un cadre vide que rien ne signale.
