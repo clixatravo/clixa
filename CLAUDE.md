@@ -4029,6 +4029,33 @@ whatsapp »).
 - ⚠️ **Reste, et ne se tranche pas au code** : la vidéo n'a **aucun sous-titre**
   — trois minutes de parole sans `<track>`. C'est une transcription à produire,
   pas une ligne à écrire.
+⚠️ **Le magasin est partagé entre `dev` et la production, et cela a effacé une
+vidéo en ligne** (15 septembre 2026, trouvé le 16). Pour mesurer le saut de mise
+en page, l'extrait a été **recréé sur `dev` sous le même slug** que celui de la
+production : le fichier d'essai a donc pris le même nom dans le magasin,
+`daf-4-piliers.mp4`. Le ménage de `dev` a ensuite supprimé la fiche — donc
+l'objet — **et la production a perdu sa vidéo**.
+
+- ⚠️ **Rien ne l'a signalé.** La page a continué de servir son titre, son
+  accroche et son affiche ; seul le lecteur restait noir. Ni type, ni build, ni
+  recette, ni épreuve : une fiche en base n'est pas un fichier servi, et personne
+  n'allait chercher l'adresse. Le défaut a vécu **plus d'une journée** sur un
+  lien fait pour être envoyé à des prospects.
+- **La règle** : sur `dev`, ne jamais republier un slug qui existe en
+  production. Les deux bases sont séparées, le magasin ne l'est pas.
+- **La garde** : `verifier-extraits.ts` va désormais **chercher chaque adresse**
+  des extraits publiés — vidéo et affiche — et exige un 200. Contre une base sans
+  extrait publié, il le dit au lieu d'afficher un vert vide.
+- ⚠️ **Et réparer la base ne répare pas la page.** Un script ne rafraîchit rien
+  (déjà noté pour `revalidatePath`) — mais ici **`vercel redeploy` n'a pas suffi
+  non plus** : le cache de données survit à un redéploiement, et la page a
+  continué de servir l'ancienne adresse. C'est un **build neuf, issu d'un
+  commit**, qui l'a renouvelée. Le plafond d'une heure (`PEREMPTION`) l'aurait
+  fait tout seul, plus tard.
+- **Le fichier reversé s'appelle `daf-4-piliers-1.mp4`** : au moment du
+  versement, l'ancienne fiche tenait encore le nom propre. L'adresse reste
+  lisible, et un nom n'est pas un motif de reverser 33 Mo une troisième fois.
+
 - `verifier-extraits.ts` compte douze contrôles, **prouvés en remettant le
   défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon ne
   sort pas de la lecture du site », et le témoin — « mais le publié, lui, se

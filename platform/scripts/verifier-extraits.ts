@@ -218,6 +218,40 @@ try {
   }
   dire("une forme correcte est acceptée", accepte);
 
+  console.log("\n▸ Les fichiers des extraits publiés répondent\n");
+
+  /*
+    ⚠️ **Le contrôle qui manquait, et il a coûté une journée.** Le magasin de
+    fichiers est **partagé entre `dev` et la production** : un extrait republié
+    sur `dev` sous un slug de production écrit au même nom, et le ménage de
+    `dev` supprime alors l'objet — donc celui de la production avec. C'est
+    exactement ce qui est arrivé à `daf-4-piliers.mp4` le 15 septembre 2026 : la
+    page a continué d'afficher son affiche et son titre, le lecteur restait noir,
+    et **rien ne le signalait** — ni type, ni build, ni recette.
+
+    Une fiche en base n'est pas un fichier servi. On va donc chercher chaque
+    adresse pour de vrai.
+  */
+  const publies = await lireLesExtraits();
+  if (publies.length === 0) {
+    console.log("  · aucun extrait publié sur cette base — contrôle non joué");
+    console.log("    (à relancer contre la production : set -a && . ./.env.prod && set +a)");
+  }
+  for (const e of publies) {
+    for (const [quoi, adresse] of [
+      ["la vidéo", e.video],
+      ...(e.affiche ? [["l'affiche", e.affiche] as const] : []),
+    ] as [string, string][]) {
+      let statut = 0;
+      try {
+        statut = (await fetch(adresse, { method: "HEAD" })).status;
+      } catch {
+        statut = 0;
+      }
+      dire(`/v/${e.slug} — ${quoi} répond`, statut === 200, `reçu ${statut || "rien"}`);
+    }
+  }
+
   console.log("\n▸ Le plafond des vidéos\n");
 
   /*
