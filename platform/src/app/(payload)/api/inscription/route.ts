@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import { ecrireSurLaSession } from "@/lib/interblocage";
 import config from "@payload-config";
-import { courrielEquipe, courrielParticipant } from "@/lib/courriel";
+import { courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
 import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
@@ -375,8 +375,19 @@ export async function POST(request: Request) {
     moyenSouhaite: moyen,
   };
 
+  /*
+    ⚠️ **Plus de courriel à l'équipe ici** (décision de la direction, le
+    16 septembre 2026). Il partait à chaque pré-inscription — 55 en sept jours —
+    et il disait « À faire maintenant : envoyer le RIB », une consigne que le
+    reste du système refuse à ce stade : les coordonnées de règlement ne partent
+    qu'une fois le contrat signé **et vérifié**. Une phrase d'instruction fausse,
+    répétée huit fois par jour, finit par être suivie.
+
+    Ce qu'elle apportait est désormais sur le tableau de bord — les noms, le
+    bouton WhatsApp, l'état de chaque dossier — et le participant, lui, reçoit
+    toujours le sien.
+  */
   await courrielParticipant(payload, details);
-  await courrielEquipe(payload, details);
 
   /*
     ⚠️ `?nouveau=1` n'est pas décoratif : la page du dossier signale la

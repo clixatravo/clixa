@@ -63,11 +63,14 @@ export interface CourrielInscription {
 }
 
 /**
- * Ce que l'équipe doit lui envoyer, dit dans les deux sens.
+ * Ce que le participant va recevoir pour régler, pour qu'il attende la bonne
+ * chose.
  *
- * Au participant : ce qu'il va recevoir, pour qu'il attende la bonne chose.
- * À l'équipe : ce qu'elle doit préparer, pour qu'elle n'ait pas à rouvrir le
- * dossier — c'est l'aller-retour qui coûtait le plus de temps.
+ * ⚠️ Chaque entrée portait aussi une consigne à l'équipe — « Envoyer le RIB » —
+ * lue par le message `[Nouvelle Inscription]`, retiré le 16 septembre 2026. Elle
+ * est partie avec lui : elle disait d'envoyer les coordonnées **à la
+ * pré-inscription**, quand tout le reste du système ne les envoie qu'une fois le
+ * contrat signé et vérifié.
  */
 /*
   ⚠️ `geste` et `preuve` existent parce que la suite du message ne veut pas dire
@@ -81,20 +84,17 @@ export interface CourrielInscription {
 const ATTENDU = {
   carte: {
     participant: "un lien de paiement bancaire sécurisé",
-    equipe: "Envoyer le LIEN DE PAIEMENT bancaire",
     geste: "Vous réglez en ligne, par carte, depuis ce lien.",
     preuve: "Vous nous le signalez depuis votre dossier — le justificatif de votre banque suffit.",
   },
   virement: {
     participant: "notre RIB, avec le motif à indiquer",
-    equipe: "Envoyer le RIB",
     geste: "Vous effectuez le virement depuis votre banque.",
     preuve:
       "Vous nous indiquez la référence du virement depuis votre dossier, avec l'avis d'opération.",
   },
   transfert: {
     participant: "les coordonnées du bénéficiaire (Western Union, Ria ou MoneyGram)",
-    equipe: "Envoyer les COORDONNÉES DE TRANSFERT",
     geste: "Vous effectuez le transfert au guichet.",
     preuve: "Vous nous indiquez le numéro de transfert depuis votre dossier, avec le reçu.",
   },
@@ -378,12 +378,13 @@ ${
       </tbody>
     </table>
 
-    <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 12px;">Étapes pour valider définitivement votre inscription :</div>
+    <div style="font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 12px;">Les étapes, dans l'ordre :</div>
     <ol style="margin: 0; padding-left: 20px; line-height: 1.8; color: #cbd5e1; font-size: 14px;">
-      <li>Vous allez recevoir de notre part, par courriel, <strong>${ATTENDU[d.moyenSouhaite ?? "transfert"].participant}</strong>.</li>
-      <li>Effectuez le versement de la 1<sup>re</sup> échéance.</li>
-      <li>Indiquez-nous la référence du versement depuis votre dossier en ligne.</li>
-      <li>Notre équipe vérifie, confirme votre place et vous transmet vos accès.</li>
+      <li><strong style="color: #ffffff;">Demandez votre contrat</strong> depuis la page de votre dossier. Rien ne vous engage tant qu'il n'est pas signé.</li>
+      <li>Signez-le en ligne. Nous le relisons, et nous vous prévenons.</li>
+      <li>Une fois le contrat vérifié, nous vous envoyons par courriel <strong>${ATTENDU[d.moyenSouhaite ?? "transfert"].participant}</strong>.</li>
+      <li>Effectuez le versement de la 1<sup>re</sup> échéance, puis indiquez-nous sa référence depuis votre dossier.</li>
+      <li>Nous vérifions, confirmons votre place et vous transmettons vos accès.</li>
     </ol>
 
     <p style="margin: 20px 0 0 0; padding: 12px 14px; background-color: #111a33; border-left: 3px solid #c9a24c; font-size: 13px; color: #cbd5e1;">
@@ -713,57 +714,6 @@ export async function envoyerConfirmation(
     payload.logger.error({ err: e, to: destinataire }, "[confirmation] envoi impossible");
     return false;
   }
-}
-
-/** À l'équipe : notification d'une nouvelle inscription. */
-export async function courrielEquipe(payload: Payload, d: CourrielInscription): Promise<void> {
-  if (!EQUIPE) return;
-
-  const corpsHtml = `
-    <p>Une nouvelle pré-inscription vient d'être enregistrée sur la plateforme :</p>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
-      <tr><td style="color: #94a3b8; width: 130px;">Candidat :</td><td><strong style="color: #ffffff;">${echapper(d.apprenantNom)}</strong> (${echapper(d.apprenantPays)})</td></tr>
-      <tr><td style="color: #94a3b8;">Programme :</td><td><strong style="color: #e9cd84;">${d.programmeTitre}</strong></td></tr>
-      <tr><td style="color: #94a3b8;">Session :</td><td style="color: #ffffff;">${d.sessionLibelle}</td></tr>
-      <tr><td style="color: #94a3b8;">Formule :</td><td style="color: #ffffff;">${d.planLibelle} — ${EUROS.format(d.montantTotal)}</td></tr>
-      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
-      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a></td></tr>
-    </table>
-    <p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 15px; color: #ffffff;">
-      <strong>À faire maintenant : ${ATTENDU[d.moyenSouhaite ?? "transfert"].equipe}</strong> à
-      <a href="mailto:${echapper(d.apprenantEmail)}" style="color: #e9cd84;">${echapper(d.apprenantEmail)}</a>,
-      puis renseigner la date d'envoi sur le dossier — c'est elle que le participant voit,
-      et c'est ce qui lui permet de reconnaître notre message d'un hameçonnage.
-    </p>
-    <p style="color: #94a3b8; font-size: 13px;">Ensuite : rapprocher le premier versement dans le back-office.</p>
-  `;
-
-  await envoyer(payload, {
-    to: EQUIPE,
-    subject: `[Nouvelle Inscription] ${d.apprenantNom} — ${d.programmeTitre}`,
-    text: [
-      `${d.apprenantNom} (${d.apprenantPays}) a retenu une place.`,
-      `À FAIRE : ${ATTENDU[d.moyenSouhaite ?? "transfert"].equipe} à ${d.apprenantEmail},`,
-      "puis renseigner la date d'envoi sur le dossier.",
-      "",
-      `Parcours : ${d.programmeTitre}`,
-      `Session : ${d.sessionLibelle}`,
-      `Règlement : ${d.planLibelle} — ${EUROS.format(d.montantTotal)}`,
-      `Référence : ${d.reference}`,
-      "",
-      `E-mail : ${d.apprenantEmail}`,
-      `WhatsApp : ${d.apprenantWhatsapp}`,
-      "",
-      "Le transfert est à rapprocher dans le back-office quand il arrivera.",
-    ].join("\n"),
-    html: gabaritHtmlEmail({
-      titre: "Nouvelle inscription reçue",
-      badgeRef: d.reference,
-      corpsHtml,
-      boutonTexte: "Voir l'inscription dans Payload",
-      boutonLien: `https://www.clixa.africa/admin/collections/inscriptions`,
-    }),
-  });
 }
 
 /** À l'équipe : transfert annoncé par un candidat. */

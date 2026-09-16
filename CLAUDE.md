@@ -3016,7 +3016,7 @@ Il appelle maintenant les vraies fonctions avec un faux expéditeur, écrit les
 seize, et pose un sommaire (`apercus/index.html`).
 
 - ⚠️ **`EMAIL_EQUIPE` est posé avant l'import.** Il est lu à l'évaluation du
-  module, et les six notifications internes commencent par `if (!EQUIPE)
+  module, et les notifications internes commencent par `if (!EQUIPE)
   return` : sans cette ligne, la moitié des gabarits ne rendrait rien — en
   silence, ce qui se lirait comme « il n'y en a que dix ».
 - ⚠️ **Le dossier est vidé d'abord.** Les aperçus de la version précédente
@@ -3388,9 +3388,39 @@ panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », don
 l'équivalent a été retiré du site faute de pouvoir l'étayer.
 
 
-**Les six notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
-que relève toute l'équipe : inscription, contrat demandé, contrat signé,
-transfert annoncé, bilan des relances, et **demande de rappel**.
+**Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
+que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,
+bilan des relances, et **demande de rappel**.
+
+⚠️ **La sixième — `[Nouvelle Inscription]` — a été retirée le 16 septembre 2026**
+(décision de la direction, devant une boîte Zoho saturée : « kayjini msg bzfff f
+boit zoho »). Elle partait à **chaque pré-inscription**, soit 55 messages en sept
+jours, et c'est elle qui fait l'essentiel du volume — le compte d'envois mesuré
+le même jour tournait autour de 75 par jour pour un plafond Resend de 100.
+
+Ce n'est pas seulement du bruit. Le message disait, en titre de son bloc d'action,
+**« À faire maintenant : Envoyer les COORDONNÉES DE TRANSFERT »** — une consigne
+que tout le reste du système refuse à ce stade : les coordonnées ne partent
+qu'une fois le contrat **signé et vérifié**, et les envoyer à une pré-inscription
+est le défaut qui a coûté un vrai prospect le 5 septembre 2026. Une instruction
+fausse, répétée huit fois par jour dans la boîte de l'équipe, finit par être
+suivie.
+
+- **Ce qu'elle apportait est ailleurs, et en mieux** : le tableau de bord nomme
+  les dossiers du jour, dit qui les mène, et porte le bouton WhatsApp. Un
+  courriel ne peut pas dire « quelqu'un s'en occupe déjà ».
+- **Le participant, lui, reçoit toujours le sien** — c'est le seul des deux qui
+  attend quelque chose.
+- ⚠️ **Les consignes `ATTENDU[...].equipe` sont parties avec elle**, puisque rien
+  d'autre ne les lisait. Les garder aurait laissé en place trois phrases qui
+  disent d'envoyer un RIB au mauvais moment, prêtes à être recâblées par
+  quelqu'un qui les croirait justes.
+- ⚠️ **Et le courriel du participant listait les étapes dans le désordre** —
+  trouvé en relisant celui-là. Il annonçait le versement avant le contrat, alors
+  que rien ne peut être versé avant signature **et** vérification. Il suit
+  maintenant le tunnel : demander son contrat, le signer, recevoir de quoi régler,
+  verser, être confirmé. `scripts/apercu-courriel.ts` en rend **seize** au lieu de
+  dix-sept.
 
 ⚠️ **La sixième y est revenue le 5 septembre 2026, et le détour valait leçon.**
 Elle allait à l'adresse publique du site, tenue de `lib/reseaux.ts` : une

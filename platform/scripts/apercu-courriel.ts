@@ -113,7 +113,6 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
     nom: "01-participant-place-retenue",
     produire: () => c.courrielParticipant(faux, inscription),
   },
-  { nom: "02-equipe-nouvelle-inscription", produire: () => c.courrielEquipe(faux, inscription) },
   {
     nom: "03-equipe-contrat-demande",
     produire: () => c.courrielContrat(faux, { ...inscription, dossierId: DOSSIER_ID }),
