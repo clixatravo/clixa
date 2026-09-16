@@ -42,6 +42,13 @@ const JOUR = new Intl.DateTimeFormat("fr-FR", {
   timeZone: "Africa/Casablanca",
 });
 
+/** Le même fuseau que l'intitulé, en court : « 14 sept. ». */
+const JOUR_COURT = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "short",
+  timeZone: "Africa/Casablanca",
+});
+
 interface Echeance {
   statut?: string | null;
   dateLimite?: string | null;
@@ -495,9 +502,23 @@ export async function Veille() {
   const promessePlacesARendre = payload.find({
     collection: "inscriptions",
     where: conditionsDesPlacesARendre(seuilRetour) as never,
-    limit: 0,
+    /*
+      ⚠️ La direction veut **les noms**, pas seulement le nombre : « diir smiyat
+      f tableau de bord ». Un « 8 » demande un clic avant de savoir de qui il
+      s'agit, et c'est sur ces noms qu'elle décide de rendre une place ou de
+      rappeler quelqu'un. Douze lignes suffisent — au-delà, le lien mène à la
+      liste complète.
+
+      ⚠️ `select` ne porte que ce que la liste affiche : sans lui, Payload
+      remonte le dossier entier — journal des relances, échéancier, signature,
+      chacun dans sa table, donc chacun une requête de plus. Le revers est qu'un
+      champ ajouté à l'affichage sans l'être ici arriverait vide, sans erreur.
+    */
+    limit: 12,
+    sort: "placeRappeleeLe",
     depth: 0,
     overrideAccess: true,
+    select: { reference: true, apprenantNom: true, placeRappeleeLe: true } as never,
   });
 
   // 2. Nouvelles demandes de rappel
@@ -576,7 +597,7 @@ export async function Veille() {
     { docs: inscriptions },
     { totalDocs: inscriptionsSemaine },
     { totalDocs: placesAuTerme },
-    { totalDocs: placesARendre },
+    { totalDocs: placesARendre, docs: dossiersARendre },
     { totalDocs: nouvellesDemandes },
     { totalDocs: conversationsAReprendre },
     { docs: programmes },
@@ -591,6 +612,19 @@ export async function Veille() {
     promesseProgrammes,
     promesseSessions,
   ]);
+
+  /*
+    ⚠️ Le `select` de la requête est passé en `as never` — Payload rend alors des
+    documents que TypeScript ne sait plus décrire. On nomme donc ici, en un seul
+    endroit, les quatre champs que la liste affiche : si l'un disparaît du
+    `select`, il arrivera vide, et c'est cette déclaration qu'on relit.
+  */
+  const aRendre = dossiersARendre as unknown as {
+    id: number | string;
+    reference?: string | null;
+    apprenantNom?: string | null;
+    placeRappeleeLe?: string | null;
+  }[];
 
   const vivantes = inscriptions.filter((d) => d.statut !== "annulee" && d.statut !== "terminee");
 
@@ -1104,6 +1138,58 @@ export async function Veille() {
           </div>
         </Link>
       </div>
+
+      {/*
+        ⚠️ **Les noms, et pas seulement le nombre** (demandé par la direction le
+        16 septembre 2026 : « diir smiyat f tableau de bord »). La vignette dit
+        « 8 » ; c'est un clic de plus avant de savoir de qui il s'agit, alors que
+        la décision — rendre la place, ou rappeler la personne — se prend sur le
+        nom. Les huit tiennent sous la grille, chacun menant à son dossier.
+
+        ⚠️ **Rien ne s'affiche quand il n'y a rien.** Un cadre vide sous un
+        tableau de bord se lit comme une page à moitié chargée, jamais comme une
+        intention : c'est la leçon de la rubrique de filtre sans choix.
+
+        ⚠️ **Ni or ni émeraude ici.** La vignette juste au-dessus porte déjà
+        l'alerte ; répéter l'or sur douze lignes le viderait de son sens, et le
+        vert voudrait dire « c'est fait ».
+      */}
+      {placesARendre > 0 && (
+        <div className="clixa-arendre">
+          <div className="clixa-arendre__titre">
+            <span>
+              {placesARendre > 1 ? "Places à rendre" : "Place à rendre"} — délai passé, à trancher
+            </span>
+            <Link href={filtres.placesARendre as Route} className="clixa-arendre__tout">
+              Ouvrir la liste →
+            </Link>
+          </div>
+          <ul className="clixa-arendre__liste">
+            {aRendre.map((d) => (
+              <li key={String(d.id)} className="clixa-arendre__ligne">
+                <Link
+                  href={`/admin/collections/inscriptions/${d.id}` as Route}
+                  className="clixa-arendre__nom"
+                >
+                  {String(d.apprenantNom ?? "Sans nom")}
+                </Link>
+                <span className="clixa-arendre__meta">
+                  {String(d.reference ?? "")}
+                  {d.placeRappeleeLe
+                    ? ` · prévenu le ${JOUR_COURT.format(new Date(String(d.placeRappeleeLe)))}`
+                    : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {placesARendre > aRendre.length && (
+            <Link href={filtres.placesARendre as Route} className="clixa-arendre__plus">
+              et {placesARendre - aRendre.length} autre
+              {placesARendre - aRendre.length > 1 ? "s" : ""} →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* ── Raccourcis Rapides de Navigation ── */}
       <div className="clixa-raccourcis">

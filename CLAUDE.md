@@ -291,6 +291,36 @@ l'historique où les appels déjà passés noient ceux qui restent à passer.
   compterait moins que la vérité sans le dire — c'est ce calcul qu'il faudrait
   alors porter en SQL.
 
+⚠️ **Les places à rendre montrent les noms, pas seulement le nombre** (demandé
+par la direction le 16 septembre 2026 : « diir smiyat f tableau de bord »).
+Elle voulait voir qui a laissé passer son délai avant de décider quoi en faire ;
+la vignette disait « 8 », et il fallait un clic pour savoir de qui il s'agissait
+— alors que la décision se prend sur le nom.
+
+- **Une liste sous la grille**, jusqu'à douze lignes : nom, référence, date à
+  laquelle la personne a été prévenue, chacune menant à son dossier. Au-delà,
+  « et N autres → ».
+- ⚠️ **Rien ne s'affiche quand il n'y a rien** — un cadre vide sous un tableau
+  de bord se lit comme une page à moitié chargée, jamais comme une intention.
+- ⚠️ **Ni or ni émeraude.** La vignette au-dessus porte déjà l'alerte ; répéter
+  l'or sur douze lignes le viderait de son sens, et le vert dirait « c'est
+  fait ».
+- ⚠️ **La requête ne remonte que quatre champs** (`select`) : sans lui, Payload
+  rend le dossier entier — journal, échéancier, signature, chacun dans sa table.
+  Le revers est connu : un champ affiché sans être demandé arriverait vide, sans
+  erreur. Il est donc déclaré en un seul endroit, à côté du `select`.
+- **Mêmes conditions que la vignette** (`conditionsDesPlacesARendre`) : une
+  seconde lecture finirait par afficher d'autres noms que ceux qu'on compte.
+- Vérifié à l'écran, sur trois dossiers fabriqués puis retirés : 1280 px et
+  375 px, aucun débordement, aucune erreur.
+
+⚠️ **Et ce que la direction visait, ce n'était pas « les pré-inscriptions ».**
+Le 16 septembre, sur 80 dossiers de production : **11 contrats signés**,
+**8 pré-inscriptions au délai écoulé**, et **61 pré-inscriptions qui ont encore
+leur délai**. Supprimer « les pré-inscriptions » aurait emporté 69 dossiers,
+dont 61 personnes qui peuvent encore signer — et qu'une campagne payante a
+amenées. Compter avant d'agir a fait la différence entre 8 et 69.
+
 ⚠️ **Un dossier n'y compte qu'une fois.** Ces trois états se chevauchent : un
 dossier peut être en retard *et* sans premier versement, annoncé *et* encore
 « demandé ». Trois filtres indépendants faisaient additionner quatre choses à

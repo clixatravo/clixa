@@ -4197,3 +4197,88 @@ h3,
     grid-template-columns: 1fr !important;
   }
 }
+
+/* -------------------------------------------------------------
+   PLACES À RENDRE — les noms sous les vignettes
+
+   ⚠️ Volontairement sobre. La vignette au-dessus porte déjà l'alerte en or ;
+   la répéter sur douze lignes la viderait de son sens. Ici on lit des noms,
+   pas une alarme.
+   ------------------------------------------------------------- */
+.clixa-arendre {
+  margin-top: 1.5rem;
+  padding: 0.95rem 1.15rem 1.1rem;
+  background: rgba(17, 26, 51, 0.45);
+  border: 1px solid rgba(243, 239, 228, 0.09);
+  border-radius: 6px;
+}
+
+.clixa-arendre__titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clixa-or);
+  font-weight: 700;
+}
+
+.clixa-arendre__tout,
+.clixa-arendre__plus {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: rgba(243, 239, 228, 0.72);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.clixa-arendre__tout:hover,
+.clixa-arendre__plus:hover {
+  color: var(--clixa-or-clair);
+}
+
+.clixa-arendre__liste {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  /* Jamais plus large que la colonne : le tableau de bord tient à 375 px. */
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 0.55rem 1.25rem;
+}
+
+.clixa-arendre__ligne {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.clixa-arendre__nom {
+  color: var(--clixa-ivoire, #f3efe4);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.clixa-arendre__nom:hover {
+  color: var(--clixa-or-clair);
+}
+
+.clixa-arendre__meta {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: rgba(243, 239, 228, 0.55);
+  overflow-wrap: anywhere;
+}
+
+.clixa-arendre__plus {
+  display: inline-block;
+  margin-top: 0.85rem;
+}
