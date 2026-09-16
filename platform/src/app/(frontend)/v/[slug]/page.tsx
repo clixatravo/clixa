@@ -113,6 +113,18 @@ export default async function PageExtrait({ params }: Props) {
           Le rapport vient des dimensions de l'affiche, qui est une image de la
           vidéo elle-même — donc du bon rapport. À défaut, 16/9, qui est ce que
           rend une caméra ou un partage d'écran neuf fois sur dix.
+
+          ⚠️ **L'affiche décide du cadre, et la vidéo le remplit** (`cover`, et
+          non `contain`). C'est ce qui retire les bandes noires sans toucher au
+          fichier : l'extrait du 15 septembre est enregistré en 1920 × 1080 mais
+          ne porte d'image que sur 1920 × 812 — **134 px de noir en haut et 134
+          en bas**, mesurés à trois instants. Affiche découpée sur ces 812 px, le
+          cadre prend le rapport 2,37, et `cover` rogne symétriquement ce qui
+          dépasse : exactement les deux bandes.
+
+          Réencoder aurait coûté la qualité que la direction voulait garder, pour
+          retirer du noir. Et le jour où une vidéo n'a pas de bande, son affiche
+          a le même rapport qu'elle : `cover` ne rogne alors rien du tout.
         */}
         <div
           className="rounded-clixa bg-ink mt-7 overflow-hidden border border-white/[0.08]"
@@ -128,7 +140,7 @@ export default async function PageExtrait({ params }: Props) {
             playsInline
             preload="metadata"
             {...(extrait.affiche ? { poster: extrait.affiche } : {})}
-            className="block h-full w-full object-contain"
+            className="block h-full w-full object-cover"
           >
             <source src={extrait.video} {...(extrait.type ? { type: extrait.type } : {})} />
             Votre navigateur ne sait pas lire cette vidéo.{" "}

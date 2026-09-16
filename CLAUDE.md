@@ -4011,11 +4011,24 @@ whatsapp »).
   sur l'accueil et 0,001 sur une fiche** — le témoin est ce qui a permis de dire
   que le défaut était le nôtre et non celui du site. Le rapport se prend sur
   l'affiche, qui est une image de la vidéo ; à défaut, 16/9. **Retombé à 0.**
-- ⚠️ **Ce qui reste et n'est pas décidé** : la vidéo du 15 septembre porte une
-  bande noire de **133 px en haut** (12 % de l'image), qui se retrouve dans la
-  vignette WhatsApp ; la recadrer demanderait de la réencoder, ou un réglage de
-  cadrage par extrait. Et elle n'a **aucun sous-titre** — trois minutes de parole
-  sans `<track>`. Les deux se tranchent par la direction, pas par le code.
+- ⚠️ **Les bandes noires se retirent au cadrage, sans toucher au fichier**
+  (16 septembre 2026). L'extrait est enregistré en 1920 × 1080 mais ne porte
+  d'image que sur **1920 × 812** : 134 px de noir en haut **et 134 en bas**.
+  L'affiche est découpée sur ces 812 px, le cadre prend donc le rapport 2,37, et
+  le lecteur passe de `object-contain` à `object-cover` : il rogne
+  symétriquement ce qui dépasse, c'est-à-dire exactement les deux bandes.
+  Réencoder aurait coûté la qualité que la direction voulait garder, pour
+  retirer du noir. Et une vidéo sans bande a une affiche du même rapport
+  qu'elle : `cover` ne rogne alors rien.
+
+  ⚠️ **La note précédente disait « 133 px en haut, rien en bas », et c'était
+  faux.** Le seuil de la mesure était trop bas — un pixel presque noir comptait
+  pour du contenu, si bien que la bande du bas passait inaperçue. Mesurer la
+  **part** de pixels clairs par ligne, et non leur simple présence, donne
+  134/134 à trois instants différents.
+- ⚠️ **Reste, et ne se tranche pas au code** : la vidéo n'a **aucun sous-titre**
+  — trois minutes de parole sans `<track>`. C'est une transcription à produire,
+  pas une ligne à écrire.
 - `verifier-extraits.ts` compte douze contrôles, **prouvés en remettant le
   défaut** : ouvrir la lecture en grand fait passer au rouge « le brouillon ne
   sort pas de la lecture du site », et le témoin — « mais le publié, lui, se
