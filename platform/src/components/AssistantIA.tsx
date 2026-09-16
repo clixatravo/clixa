@@ -2,6 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
+import {
+  consentementAuServeur,
+  lireConsentement,
+  MESURE_ACTIVE,
+  souscrireConsentement,
+} from "@/lib/consentement";
 import { useState } from "react";
 
 /*
@@ -48,6 +55,29 @@ export function AssistantIA() {
   const chemin = usePathname();
 
   /*
+    ⚠️ **Le bandeau de consentement occupe le même coin**, et il est au-dessus
+    (z-50 contre z-30). Sur téléphone, le rond doré se retrouvait à cheval sur
+    le bouton « Refuser » — à moitié caché derrière lui ; sur ordinateur, où le
+    bandeau se déplie en colonne, il disparaissait entièrement dessous. Le doigt
+    touchait bien « Refuser », rien n'était bloqué : c'est l'œil qui y perdait,
+    sur l'écran où l'on demande un choix qui doit rester lisible.
+
+    La bulle lit donc la **même source** que le bandeau plutôt que de deviner :
+    la condition ci-dessous est mot pour mot celle qui le fait paraître
+    (`BandeauCookies`). Deux lectures d'un même état finiraient par diverger, et
+    la bulle resterait en l'air alors que le bandeau est parti.
+
+    Les décalages sont mesurés, pas devinés : le bandeau fait 77 px de haut à
+    375 px de large et 216 px à partir de 640 px, posé à 12 px du bas.
+  */
+  const reponse = useSyncExternalStore(
+    souscrireConsentement,
+    lireConsentement,
+    consentementAuServeur,
+  );
+  const bandeauOuvert = MESURE_ACTIVE && reponse === undefined;
+
+  /*
     ⚠️ Pas sur le parcours d'inscription ni dans l'espace du participant : on y
     signe, on y paie, on y lit son dossier. Un robot qui répond « en général »
     à côté d'un échéancier personnel est la meilleure façon de contredire ce que
@@ -63,7 +93,11 @@ export function AssistantIA() {
         dedans : on le reconnaît d'un coup d'œil comme « poser une question ». Le point vert
         dit qu'il répond tout de suite, à toute heure.
       */}
-      <div className="group fixed right-5 bottom-5 z-30 flex items-center gap-3">
+      <div
+        className={`group fixed right-5 z-30 flex items-center gap-3 transition-[bottom] duration-300 ${
+          bandeauOuvert ? "bottom-28 sm:bottom-60" : "bottom-5"
+        }`}
+      >
         {!ouvert && (
           <span className="border-line bg-panel text-ivory rounded-clixa pointer-events-none hidden border px-3 py-1.5 text-[0.78rem] font-semibold whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
             Une question ? Demandez à l&apos;assistant

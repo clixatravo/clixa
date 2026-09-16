@@ -4090,6 +4090,31 @@ par un type, un build ou la recette :
    pas seulement 503. Quand deux corrections se croisent, on garde la meilleure,
    pas la sienne.
 
+⚠️ **La bulle de l'assistant et le bandeau de consentement se disputaient le
+même coin** (16 septembre 2026). Le bandeau est au-dessus (z-50 contre z-30) :
+sur téléphone, le rond doré se retrouvait **à cheval sur le bouton
+« Refuser »**, à moitié caché derrière lui ; sur ordinateur, où le bandeau se
+déplie en colonne, il disparaissait entièrement dessous.
+
+- **Rien n'était bloqué** : le doigt qui vise « Refuser » touche bien
+  « Refuser » — mesuré par `elementFromPoint`, pas supposé. C'est l'œil qui y
+  perdait, sur l'écran où l'on demande un choix qui doit rester lisible.
+- ⚠️ **La bulle lit la même source que le bandeau**, et non un signal posé dans
+  le DOM : sa condition est mot pour mot celle de `BandeauCookies`
+  (`MESURE_ACTIVE && reponse === undefined`). Deux lectures d'un même état
+  finiraient par diverger, et la bulle resterait en l'air alors que le bandeau
+  est parti.
+- **Les décalages sont mesurés** : le bandeau fait 77 px de haut à 375 px de
+  large, 216 px à partir de 640 px, posé à 12 px du bas. Vérifié des deux côtés
+  — plus aucun chevauchement tant qu'il est là, et la bulle revient à sa place
+  dès qu'on a répondu.
+- ⚠️ **Et le défaut que j'ai cru voir d'abord n'existait pas.** Une capture
+  montrait le libellé « Une question ? Demandez à l'assistant » par-dessus le
+  prix d'une fiche : il ne paraît qu'au survol, et la souris venait de cliquer
+  « Refuser », juste à cet endroit. **Une capture n'est pas un usage** — c'est la
+  même leçon que la page qui semblait sauter sous la vidéo, et que le panneau de
+  navigateur masqué qui ne peint rien.
+
 ⚠️ **Une seule langue par réponse** (14 septembre 2026). À une question posée en
 darija, l'assistant commençait en darija — « Tfaddal chof details kamlin » — et
 finissait le même message en français. Ce n'est pas une maladresse de
