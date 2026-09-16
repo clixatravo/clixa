@@ -3422,7 +3422,8 @@ suivie.
   verser, être confirmé. `scripts/apercu-courriel.ts` en rend **seize** au lieu de
   dix-sept.
 
-⚠️ **La sixième y est revenue le 5 septembre 2026, et le détour valait leçon.**
+⚠️ **La demande de rappel, elle, y est revenue le 5 septembre 2026, et le détour
+valait leçon.**
 Elle allait à l'adresse publique du site, tenue de `lib/reseaux.ts` : une
 demande de rappel n'est pas un événement à constater, disait l'argument, c'est
 un appel à passer, et un appel se donne à une personne. Le risque était noté
@@ -3433,14 +3434,14 @@ Il s'est produit. La première demande venue de la fenêtre de rappel, déposée
 depuis une fiche de parcours, est arrivée là où personne ne la cherchait :
 l'équipe surveillait le groupe. C'est justement le message qui supporte le
 moins de rester sans réponse — quelqu'un qui n'a encore rien décidé. La
-direction a tranché : elle rejoint les cinq autres.
+direction a tranché : elle rejoint les quatre autres.
 
 ⚠️ **Le raisonnement d'origine n'était pas faux, il était incomplet** : il
 optimisait la *nature* du message (un appel personnel) sans regarder l'*habitude*
 de ceux qui le reçoivent. Une boîte que personne n'ouvre ne devient pas relevée
 parce qu'un message y mérite une réponse rapide.
 
-⚠️ **Sans `EMAIL_EQUIPE`, rien ne part** — comme pour les cinq autres. Mieux
+⚠️ **Sans `EMAIL_EQUIPE`, rien ne part** — comme pour les quatre autres. Mieux
 vaut ne pas envoyer que d'envoyer à personne.
 
 ⚠️ **Un envoi réussi laisse une trace, lui aussi** (depuis le 30 août 2026).
