@@ -24,6 +24,8 @@ interface Props {
     signature?: string;
     /** Posé par la redirection de `api/inscription` : on arrive d'un envoi. */
     nouveau?: string;
+    /** Retour de `api/demande-rappel`, déclenché depuis cette page. */
+    rappel?: string;
   }>;
 }
 
@@ -98,13 +100,29 @@ function verifierTenueExpiree(tenueJusquau?: Date): boolean {
  * mot de passe avant même le paiement ferait perdre des inscrits. Elle n'est
  * pas indexée, et la référence ne se devine pas.
  */
+/**
+ * Ce que dit la page au retour d'une demande de rappel.
+ *
+ * ⚠️ **« Déjà demandé » se dit, ici.** L'ancien formulaire public répondait
+ * « c'est enregistré » à un doublon, et il avait raison : il parlait à un
+ * inconnu, à qui l'on n'apprend pas ce que la base contient. Celui-ci ouvre son
+ * propre dossier avec sa propre référence — lui taire que sa demande est déjà
+ * passée le ferait recliquer, ou appeler pour vérifier.
+ */
+const RETOUR_RAPPEL: Record<string, string> = {
+  ok: "C'est noté — un conseiller vous rappelle sur le numéro de votre dossier. Si vous préférez ne pas attendre, écrivez-nous sur WhatsApp.",
+  deja: "Nous avons déjà votre demande : un conseiller doit vous rappeler. Si c'est urgent, écrivez-nous sur WhatsApp.",
+  technique:
+    "Votre demande n'a pas pu être enregistrée. Réessayez — ou écrivez-nous sur WhatsApp, c'est immédiat.",
+};
+
 export default async function Dossier({ params, searchParams }: Props) {
   const { reference } = await params;
   const dossier = await getDossier(reference);
   if (!dossier) notFound();
 
   const participant = await participantConnecte();
-  const { annonce, contrat, signature, nouveau } = await searchParams;
+  const { annonce, contrat, signature, nouveau, rappel } = await searchParams;
 
   /*
     On ne propose d'annoncer que s'il y a quelque chose à annoncer, et seulement
@@ -281,6 +299,19 @@ export default async function Dossier({ params, searchParams }: Props) {
               }`}
             >
               {RETOUR_ANNONCE[annonce] ?? RETOUR_ANNONCE.champs}
+            </p>
+          )}
+
+          {rappel && (
+            <p
+              role="status"
+              className={`bg-panel mb-8 border-l-2 p-4 text-[0.9rem] ${
+                rappel === "technique"
+                  ? "border-gold text-ivory"
+                  : "border-emerald-bright text-ivory"
+              }`}
+            >
+              {RETOUR_RAPPEL[rappel] ?? RETOUR_RAPPEL.technique}
             </p>
           )}
 
@@ -696,16 +727,49 @@ export default async function Dossier({ params, searchParams }: Props) {
               avant de vous engager — la pré-inscription ne vous lie à rien.
             </p>
 
-            <a
-              href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
-                `Bonjour, je souhaite être conseillé au sujet de mon dossier ${dossier.reference}.`,
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa mt-5 inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
-            >
-              Parler à notre Responsable Orientation
-            </a>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <a
+                href={`${RESEAUX_CLIXA.whatsapp.url}?text=${encodeURIComponent(
+                  `Bonjour, je souhaite être conseillé au sujet de mon dossier ${dossier.reference}.`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-emerald/40 bg-emerald/10 text-emerald-bright hover:border-emerald-bright hover:bg-emerald-bright/20 rounded-clixa inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
+              >
+                Parler à notre Responsable Orientation
+              </a>
+
+              {/*
+                ── ⚠️ Demander à être rappelé, depuis ici et de nulle part ─────
+                Décision de la direction le 18 septembre 2026 : le rappel ne
+                s'obtient plus en laissant un numéro sur `/contact`, il s'obtient
+                après la pré-inscription. Mesuré le jour même sur la production :
+                des trente-six demandes déposées par l'ancien formulaire public,
+                **les trente-six étaient encore « nouvelle »** et quatre
+                seulement avaient fini par s'inscrire.
+
+                ⚠️ **Les deux boutons ne font pas la même chose, et c'est
+                pourquoi les deux restent.** WhatsApp ouvre un brouillon : c'est
+                la personne qui écrit, tout de suite, et l'équipe voit arriver un
+                message. Celui-ci **laisse une trace chez nous** — une ligne au
+                tableau de bord, avec son nom et son parcours — pour qui préfère
+                être rappelé plutôt que d'écrire, ou qui écrit hors des heures.
+                Le premier demande d'agir, le second demande qu'on agisse.
+
+                Aucun champ à remplir : le nom, le numéro et le parcours sont
+                déjà dans le dossier, vérifiés à l'inscription. Voir
+                `api/demande-rappel`.
+              */}
+              <form action="/api/demande-rappel" method="POST">
+                <input type="hidden" name="reference" value={dossier.reference} />
+                <button
+                  type="submit"
+                  className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
+                >
+                  Être rappelé par un conseiller
+                </button>
+              </form>
+            </div>
           </div>
 
           {/*

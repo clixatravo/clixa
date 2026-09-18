@@ -204,6 +204,27 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   et `getDossier` ne gobe pas les erreurs — une base injoignable lèverait au
   lieu de rendre 404. La ligne n'a donc pas été trouvée. Si cela revient,
   l'épreuve dira désormais quelle adresse elle a lue.
+⚠️ **Le plafond d'une épreuve est passé de 30 s à 45 s** (18 septembre 2026), et
+c'est une décision mesurée, pas un rouge qu'on éteint. Deux épreuves qui
+déroulent un tunnel entier — `contrat.spec` et `espace.spec` — frôlaient déjà le
+plafond ; les deux champs ajoutés au formulaire d'inscription les ont fait passer
+par-dessus. Trois mesures, dans cet ordre :
+
+- **Le témoin** : le code de la veille remis en place, les deux passent — 23,5 s
+  et 15,2 s. C'est donc le changement du jour, pas une intermittence.
+- **Le défaut supposé n'existait pas.** Playwright refusait le clic sur
+  « Signer le contrat » — « element is not stable ». Mesuré dans un vrai
+  navigateur, sur un dossier réel, tracé de signature compris : **une seule
+  position sur quarante images**, hauteur de page constante. Le bouton ne bouge
+  pas ; c'est la page qui était encore occupée et le budget qui s'épuisait.
+- **La variance** : la même épreuve, seule, trois fois — **24,0 s · 29,0 s ·
+  22,4 s**. Sept secondes d'écart sous un plafond de trente.
+
+Un budget qu'un parcours sain frôle n'est pas un budget, c'est un tirage au
+sort. ⚠️ **Le revers** : une vraie lenteur de quinze secondes ne fera plus
+rougir ces épreuves. Le chiffre est daté et sourcé dans `playwright.config.ts` —
+le relever une fois de plus demandera la même mesure, pas la même intuition.
+
 - **Le ménage refait à la main ce que fait le crochet `recompter`** : une
   suppression en SQL ne le déclenche pas, et le décompte de places resterait
   gonflé. Les deux règles doivent rester identiques.
@@ -3387,6 +3408,112 @@ les deux formes dans un fichier jetable.
 panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », dont
 l'équivalent a été retiré du site faute de pouvoir l'étayer.
 
+
+⚠️ **La demande de rappel ne s'obtient plus sans s'inscrire** (décision de la
+direction, le 18 septembre 2026 : « khass l wahed darori i diir inscription 3ad
+tla9 lih dommand de rappel »). Le formulaire public de `/contact` — nom, numéro,
+« un conseiller vous rappelle sous 24 h » — est retiré. Le rappel se demande
+depuis la page de son dossier, d'un bouton, après la pré-inscription.
+
+**Mesuré sur la production avant d'y toucher**, et c'est la mesure qui tranche :
+
+| | |
+|---|---|
+| Demandes de rappel en 13 jours | **36** |
+| Dont traitées | **0** — les 36 encore au statut « nouvelle » |
+| Dont inscrites ensuite | **4** |
+| Dossiers sur la même période | **111** |
+
+La file n'était pas longue : **elle n'était relevée par personne.** Et le geste
+qu'elle demandait — laisser un numéro — était le plus facile à obtenir, ce qui
+est précisément le reproche. C'est le raisonnement du 6 septembre 2026 sur la
+fenêtre de rappel (« on offre de parler, on ne le réclame pas ») poussé jusqu'au
+bout : la pré-inscription n'engage à rien non plus, et elle donne un dossier, un
+parcours, une formule, et désormais un poste.
+
+- **La route ne recopie plus aucune saisie.** Elle prend une **référence de
+  dossier**, et lit le nom, le numéro, l'adresse et le parcours dans le dossier.
+  C'était la moitié de son code qui disparaît — bornes, indicatif, adresse
+  plausible, pays déduit, consentement — parce que ces contrôles existaient pour
+  un inconnu qui tape. ⚠️ Accepter encore un numéro à côté de la référence
+  rouvrirait la porte qu'on ferme : on posterait la référence d'autrui avec
+  **son** numéro à soi.
+- ⚠️ **Une référence inconnue répond comme la page du dossier**, pas par un
+  refus. Distinguer les deux apprendrait à qui essaie des références lesquelles
+  existent — et une référence ouvre nom, adresse, téléphone et échéancier. Même
+  règle que les codes de `/verifier`.
+- ⚠️ **Une demande en attente suffit.** L'ancienne route écartait les doublons
+  sur dix minutes, faute de savoir *qui* redemandait. La bonne question n'est
+  pas « à quand remonte la dernière ? » mais « quelqu'un doit-il déjà rappeler
+  cette personne ? » : tant que la demande est « nouvelle », la seconde est
+  refusée. **Et on le dit** — l'ancienne répondait « c'est enregistré » à un
+  doublon, ce qui était juste face à un inconnu ; celui-ci ouvre son propre
+  dossier, et lui taire que sa demande est passée le ferait recliquer.
+- **Les deux boutons de la page du dossier ne font pas la même chose.**
+  WhatsApp ouvre un brouillon — la personne écrit, tout de suite. « Être rappelé
+  par un conseiller » laisse une trace chez nous, au tableau de bord, avec le
+  nom et le parcours. Le premier demande d'agir, le second demande qu'on agisse.
+- **`/contact` reste, sans formulaire.** « Nous contacter » est dans l'en-tête
+  de chaque page, quatorze endroits y renvoient, et c'est ce qu'un employeur
+  cherche avant de croire un certificat. Elle porte WhatsApp, le courriel, et
+  **dit en toutes lettres que le formulaire a été retiré** — ne rien dire la
+  ferait passer pour une page à moitié chargée, le défaut relevé pour la
+  rubrique de filtre sans choix.
+- ⚠️ **La cohorte complète garde sa porte, et c'est WhatsApp.** Elle ne peut pas
+  passer par la pré-inscription : il n'y a plus de place à retenir, c'est tout
+  le problème. Le message nomme le parcours.
+- ⚠️ **Ce que cela coûte à la campagne, écrit pour qu'on le sache** : plus aucun
+  `Lead` ne part de `/contact`. Le code affirmait que la demande de rappel était
+  « celui que le trafic acheté produit le plus souvent » — vrai quand la phrase a
+  été écrite, **faux aujourd'hui** : 111 dossiers contre 36 demandes. Meta
+  n'apprend donc plus que sur la pré-inscription, ce qui est exactement ce qu'on
+  veut lui faire chercher.
+- **`demandes_rappel.dossier_id`** est une colonne, poussée sur `dev` puis sur la
+  production avant le déploiement. Facultative : les 36 demandes d'avant n'en
+  ont pas, et un champ obligatoire les rendrait invalides à la première écriture.
+
+⚠️ **Et le formulaire demande enfin qui s'inscrit** (`lib/profil.ts`, le même
+jour : « zid la profession o number anne de l'experience bach ibano nass li
+m'ahelin mn nass li rire kaytfelaw »). Sur cent onze dossiers, rien ne
+distinguait un directeur financier en poste de quelqu'un qui remplit pour voir.
+
+- **Le poste est un texte libre**, l'**expérience une tranche** — moins de 2 ans,
+  2 à 5, 5 à 10, plus de 10. Trois raisons de ne pas prendre un nombre : trente
+  lignes de « 3 · 12 · 7 » se trient mais ne se lisent pas ; un champ numérique
+  sur un téléphone invite à taper l'année en cours ; et un nombre écrit
+  aujourd'hui sera faux dans deux ans sans que personne le corrige.
+- ⚠️ **Les deux sont exigés au formulaire et par la route, jamais dans la
+  collection.** Un champ `required` chez Payload est vérifié à **chaque
+  écriture**, y compris sur les cent onze dossiers qui ne le portent pas :
+  la tâche de 8 h, le bouton « Contrat vérifié », le recompte d'une place
+  échoueraient tous sur un champ qu'ils ne touchent pas. C'est mot pour mot le
+  champ « Pays » du 7 septembre. **Prouvé en le passant à `required`** — la même
+  écriture de `placeRappeleeLe` passe sans, et lève avec :
+  « ValidationError : Le champ suivant n'est pas valide : Le participant >
+  Poste actuel ».
+- ⚠️ **Et l'essai a laissé une trace dans un fichier généré.** `payload-types.ts`
+  s'était régénéré pendant que `required: true` était posé, et gardait
+  `apprenantProfession: string` — non optionnel : le build tombait sur une
+  erreur qui désignait une tout autre ligne. **Un essai qui touche au modèle se
+  termine par `payload generate:types`.**
+- ⚠️ **Une tranche inventée se refuse, elle ne se rattrape pas.** Un moyen de
+  paiement inconnu retombe sur « transfert » sans conséquence ; une ancienneté
+  que personne n'a déclarée irait dans le dossier et déciderait qui l'équipe
+  rappelle en premier.
+- **Aucune tranche n'est choisie d'avance** — la leçon du sélecteur de pays qui
+  s'ouvrait sur « Maroc » : un défaut juste pour une partie des visiteurs est un
+  piège pour les autres, et il ressemble à un choix.
+- **Les deux colonnes sont au tableau de bord et au classeur**, juste après le
+  nom : c'est ce qu'on cherche en parcourant cent lignes. Rangées après les dates
+  de contrat, elles auraient demandé de faire défiler — c'est-à-dire qu'elles
+  n'auraient pas servi. L'expérience sort **en clair** dans le classeur, jamais
+  en « 5-10 ».
+- ⚠️ **Un helper, pas quatorze copies** (`remplirProfil` dans `e2e/menage.ts`).
+  C'est la leçon du champ « Pays » : la fois où les épreuves n'ont pas suivi,
+  **quinze sont tombées d'un coup**, toutes sur un `waitForURL` qui expire parce
+  qu'un `required` n'était plus rempli.
+- **`inscriptions.apprenant_profession` et `apprenant_experience`** : la base
+  passe avant le code, poussées sur `dev` puis sur la production.
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,

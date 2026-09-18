@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { MARQUE, remplirWhatsapp, choisirPays } from "./menage";
+import { MARQUE, remplirWhatsapp, choisirPays, remplirProfil } from "./menage";
 
 /**
  * Ce qu'un audit a trouvé, et qui ne doit pas revenir.
@@ -24,6 +24,7 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="email"]', `xss.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
     await choisirPays(page);
+    await remplirProfil(page);
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
@@ -56,6 +57,7 @@ test.describe("Sécurité", () => {
     await page.fill('input[name="email"]', `ref.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
     await choisirPays(page);
+    await remplirProfil(page);
     // Comme un visiteur : la case est obligatoire, le navigateur refuse sans elle.
     await page.check('input[name="consentement"]');
     await page.click('button[type="submit"]');
@@ -107,25 +109,23 @@ test.describe("Sécurité", () => {
   dossier est déjà arrivé avec « 0689324243 » — marocain pour qui le lit,
   injoignable pour qui appelle.
 */
-test("un numéro sans indicatif est refusé, aux deux portes", async ({ request }) => {
-  const rappel = await request.post("/api/demande-rappel", {
-    form: {
-      nom: "Épreuve Indicatif",
-      email: `indicatif.${Date.now()}${MARQUE}`,
-      whatsapp: "0689324243",
-      origine: "/contact",
-      consentement: "oui",
-    },
-    maxRedirects: 0,
-  });
-  expect(rappel.headers()["location"], "le rappel doit refuser").toContain("erreur=indicatif");
-
+/*
+  ⚠️ **Une seule porte publique depuis le 18 septembre 2026.** Cette épreuve en
+  gardait deux — la pré-inscription et la demande de rappel. Le formulaire
+  public de rappel a été retiré : la route ne recopie plus aucun numéro saisi,
+  elle lit celui du dossier, qui est déjà passé par cette garde-ci. Il n'y a
+  donc plus rien à garder de ce côté, et prétendre le contraire donnerait une
+  épreuve qui ne mesure rien.
+*/
+test("un numéro sans indicatif est refusé à la pré-inscription", async ({ request }) => {
   const inscription = await request.post("/api/inscription", {
     form: {
       formation: "directeur-audit-interne",
       nom: "Épreuve Indicatif",
       email: `indicatif.${Date.now()}${MARQUE}`,
       whatsapp: "0689324243",
+      profession: "Contrôleur de gestion",
+      experience: "2-5",
       pays: "Maroc",
       plan: "P1",
       moyen: "virement",
@@ -226,25 +226,15 @@ test("aucune mesure d'audience ne démarre sans réponse du visiteur", async ({ 
  * L'épreuve poste donc **sans la case**, comme le ferait un script, et vérifie
  * que les deux portes refusent.
  */
-test("sans consentement, ni le rappel ni la pré-inscription n'aboutissent", async ({ request }) => {
-  const rappel = await request.post("/api/demande-rappel", {
-    form: {
-      nom: "Épreuve Consentement",
-      email: `consentement.${Date.now()}${MARQUE}`,
-      whatsapp: "+212600000000",
-      origine: "/contact",
-      // pas de champ « consentement » : la case n'a pas été cochée
-    },
-    maxRedirects: 0,
-  });
-  expect(rappel.headers()["location"], "le rappel doit refuser").toContain("erreur=consentement");
-
+test("sans consentement, la pré-inscription n'aboutit pas", async ({ request }) => {
   const inscription = await request.post("/api/inscription", {
     form: {
       formation: "directeur-audit-interne",
       nom: "Épreuve Consentement",
       email: `consentement.${Date.now()}${MARQUE}`,
       whatsapp: "+212600000000",
+      profession: "Contrôleur de gestion",
+      experience: "2-5",
       pays: "Maroc",
       plan: "P1",
       moyen: "virement",
@@ -261,17 +251,26 @@ test("sans consentement, ni le rappel ni la pré-inscription n'aboutissent", asy
     Et la même requête, la case cochée, doit passer : une garde qui refuse tout
     protégerait aussi bien, et casserait le tunnel sans qu'on le voie.
   */
-  const avecAccord = await request.post("/api/demande-rappel", {
+  const avecAccord = await request.post("/api/inscription", {
     form: {
+      formation: "directeur-audit-interne",
       nom: "Épreuve Consentement",
       email: `consentement.ok.${Date.now()}${MARQUE}`,
       whatsapp: "+212600000000",
-      origine: "/contact",
+      profession: "Contrôleur de gestion",
+      experience: "2-5",
+      pays: "Maroc",
+      plan: "P1",
+      moyen: "virement",
+      payeur: "particulier",
       consentement: "oui",
     },
     maxRedirects: 0,
   });
-  expect(avecAccord.headers()["location"], "avec l'accord, la demande passe").toContain("envoye=1");
+  expect(
+    avecAccord.headers()["location"],
+    "avec l'accord, la pré-inscription passe — sans quoi une garde qui refuse tout passerait au vert",
+  ).toContain("/inscription/CLX-");
 });
 
 /**
@@ -347,7 +346,14 @@ test("Lead ne part qu'après un envoi réussi, et une seule fois", async ({ page
       ),
     );
 
-  await page.goto("/contact");
+  /*
+    ⚠️ **Cette épreuve passait par `/contact`, et ce n'est plus possible.** Le
+    formulaire de rappel y a été retiré le 18 septembre 2026 : il ne reste rien
+    à y envoyer, donc plus aucun `Lead` à y compter. Elle passe par la
+    pré-inscription, qui est désormais **la seule** conversion signalée à Meta —
+    ce qui rend cette garde plus importante qu'avant, pas moins.
+  */
+  await page.goto("/inscription?formation=directeur-audit-interne");
 
   const bandeau = page.getByRole("dialog", { name: "Mesure d'audience" });
   await expect(bandeau, "le pixel doit être configuré, sinon rien n'est prouvé").toBeVisible();
@@ -358,31 +364,32 @@ test("Lead ne part qu'après un envoi réussi, et une seule fois", async ({ page
   );
 
   await page.fill('form input[name="nom"]', "Épreuve Lead");
+  await page.fill('form input[name="email"]', `lead.${Date.now()}${MARQUE}`);
   await remplirWhatsapp(page, "+212600000000");
-  /* Pas de `choisirPays` ici : c'est `/contact`, dont le pays se déduit de
-     l'indicatif depuis le 5 septembre 2026. Il n'y a pas de champ à remplir. */
+  await choisirPays(page);
+  await remplirProfil(page);
   await page.check('form input[name="consentement"]');
   await page.click('form button[type="submit"]');
-  await page.waitForURL(/envoye=1/);
+  await page.waitForURL(/\/inscription\/CLX-/);
+
   /*
     ⚠️ L'envoi recharge le document : l'événement ne peut partir qu'une fois
     React hydraté. Comparer aussitôt après `waitForURL` mesurait une page qui
     n'avait pas encore exécuté son effet — et donnait zéro, pour une raison qui
     n'a rien à voir avec la règle éprouvée.
   */
-  await expect(page.getByText("Votre demande est bien enregistrée")).toBeVisible();
   await expect.poll(async () => (await leads()).length).toBe(1);
 
   const apres = await leads();
   expect(apres, "un lead, et un seul").toHaveLength(1);
-  expect(apres[0]![2], "étiqueté, pour ne pas se confondre avec une pré-inscription").toMatchObject(
-    { content_name: "demande-de-rappel" },
-  );
+  expect(apres[0]![2], "étiqueté, pour dire de quelle sorte de lead il s'agit").toMatchObject({
+    content_name: "pre-inscription",
+  });
 
   /*
-    Et il ne repart pas au rechargement : `?envoye=1` est toujours dans l'URL,
+    Et il ne repart pas au rechargement : `?nouveau=1` est toujours dans l'URL,
     et c'est le verrou de `localStorage` qui tient — celui du paramètre ne
-    suffirait pas.
+    suffirait pas. Le participant rouvre cette page pendant des semaines.
   */
   await page.reload();
   await page.waitForLoadState("networkidle");

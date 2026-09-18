@@ -85,7 +85,7 @@ export default async function SkillAfrique() {
             <div className="flex flex-wrap gap-5">
               <Button href="/formations">Voir les formations en ligne</Button>
               <Button href="/contact" variante="contour">
-                Être rappelé
+                Nous contacter
               </Button>
             </div>
           </div>

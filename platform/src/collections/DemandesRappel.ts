@@ -98,6 +98,29 @@ export const DemandesRappel: CollectionConfig = {
         },
       ],
     },
+    /*
+      ⚠️ **Le dossier d'où vient la demande** (18 septembre 2026). Depuis que
+      seul un participant déjà pré-inscrit peut demander à être rappelé, une
+      demande n'est plus un inconnu qui a laissé un numéro : c'est une ligne du
+      fichier clients qui lève la main. Sans ce lien, l'équipe lirait un nom
+      dans une liste et devrait retrouver le dossier à la main — c'est
+      exactement le défaut des cinq gestes que les boutons de la fiche
+      corrigent ailleurs.
+
+      Il reste facultatif : trente-six demandes déposées avant cette date n'en
+      ont pas, et un champ obligatoire les rendrait invalides à la première
+      écriture — la leçon du champ « Pays ».
+    */
+    {
+      name: "dossier",
+      type: "relationship",
+      relationTo: "inscriptions",
+      label: "Dossier",
+      admin: {
+        description:
+          "Le dossier depuis lequel la demande a été faite. Vide pour les demandes d'avant le 18 septembre 2026, déposées quand la page de contact portait encore un formulaire.",
+      },
+    },
     {
       name: "programme",
       type: "relationship",

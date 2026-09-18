@@ -23,6 +23,8 @@ export const LONGUEURS = {
   telephone: 32,
   pays: 60,
   organisation: 160,
+  /** Un intitulé de poste, pas une biographie. « Directeur administratif et financier » en fait 38. */
+  profession: 120,
   message: 2000,
 } as const;
 

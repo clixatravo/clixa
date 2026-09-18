@@ -1,6 +1,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
+import { libelleExperience } from "@/lib/profil";
 import { classeur, type Valeur } from "@/lib/tableur";
 
 /**
@@ -149,6 +150,18 @@ export async function GET(request: Request) {
       libelle,
       STATUT_DOSSIER[String(ins.statut)] ?? String(ins.statut ?? ""),
       String(ins.apprenantNom ?? ""),
+      /*
+        ⚠️ **Le poste vient juste après le nom, pas en queue de feuille.** Le
+        classeur s'emporte en réunion : ce qu'on y cherche en parcourant cent
+        lignes, c'est à qui l'on a affaire. Rangé après les dates de contrat, il
+        aurait demandé de faire défiler — c'est-à-dire qu'il n'aurait pas servi.
+
+        ⚠️ Et l'expérience sort **en clair**, jamais en `5-10`. Le journal note
+        déjà le cas pour les statuts, qui sortaient bruts : ce fichier est lu par
+        des gens qui n'ont pas à déchiffrer le vocabulaire de notre base.
+      */
+      String(ins.apprenantProfession ?? ""),
+      libelleExperience(ins.apprenantExperience),
       String(ins.apprenantEmail ?? ""),
       String(ins.apprenantWhatsapp ?? ""),
       String(ins.apprenantPays ?? ""),
@@ -193,6 +206,8 @@ export async function GET(request: Request) {
         { entete: "Où en est le dossier", largeur: 38 },
         { entete: "Statut", largeur: 30 },
         { entete: "Nom", largeur: 26 },
+        { entete: "Poste actuel", largeur: 26 },
+        { entete: "Expérience", largeur: 16 },
         { entete: "E-mail", largeur: 30 },
         { entete: "WhatsApp", largeur: 18 },
         { entete: "Pays", largeur: 16 },

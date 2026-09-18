@@ -19,7 +19,7 @@ export default function Introuvable() {
         <div className="flex flex-wrap justify-center gap-5">
           <Button href="/formations">Voir le catalogue</Button>
           <Button href="/contact" variante="contour">
-            Être rappelé
+            Nous contacter
           </Button>
         </div>
       </div>

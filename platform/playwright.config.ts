@@ -68,7 +68,34 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
 
-  timeout: 30_000,
+  /*
+    ⚠️ **45 s depuis le 18 septembre 2026, et ce n'est pas un rouge qu'on
+    éteint.** Le plafond était de 30 s. Deux épreuves qui déroulent un tunnel
+    entier — `contrat.spec` et `espace.spec` — le frôlaient déjà, et les deux
+    champs ajoutés au formulaire d'inscription ce jour-là les ont fait passer
+    par-dessus.
+
+    **Ce qui a été mesuré avant d'y toucher**, dans cet ordre :
+
+    - **le témoin.** Le code de la veille remis en place, les deux épreuves
+      passent — 23,5 s et 15,2 s. C'est donc bien le changement du jour, et non
+      une intermittence : « ça vient de ton changement » se prouve ;
+    - **le défaut supposé n'existait pas.** Playwright refusait le clic sur
+      « Signer le contrat » en disant « element is not stable ». Mesuré dans un
+      vrai navigateur, sur un dossier réel, tracé compris : **une seule position
+      sur quarante images**, hauteur de page constante. Le bouton ne bouge pas —
+      c'est la page qui était encore occupée, et le budget qui s'épuisait ;
+    - **la variance.** La même épreuve, seule, trois fois de suite : **24,0 s ·
+      29,0 s · 22,4 s**. Sept secondes d'écart d'une passe à l'autre, sous un
+      plafond de trente.
+
+    Un budget qu'un parcours sain frôle n'est pas un budget, c'est un tirage au
+    sort. ⚠️ **Le revers, écrit pour qu'on le sache** : une vraie lenteur de
+    quinze secondes ne fera plus rougir ces épreuves. C'est pourquoi le chiffre
+    ci-dessus est daté et sourcé — la prochaine fois qu'on le relève, il faudra
+    montrer la même mesure, pas la même intuition.
+  */
+  timeout: 45_000,
   expect: { timeout: 10_000 },
 
   use: {

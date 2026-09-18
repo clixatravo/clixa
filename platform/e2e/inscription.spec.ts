@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import {
   MARQUE,
   choisirPays,
+  remplirProfil,
   compterEnBase,
   referenceDeLAdresse,
   remplirWhatsapp,
@@ -19,6 +20,64 @@ import {
 
 const PARCOURS = "directeur-audit-interne";
 
+/*
+  ── Ce que le formulaire exige de plus depuis le 18 septembre 2026 ───────────
+  Le poste et l'expérience. Ils ne servent pas à nous : ils servent à ce que
+  l'équipe sache à qui elle parle avant d'appeler, dans une liste où plus rien
+  ne distinguait un directeur financier en poste de quelqu'un qui remplit pour
+  voir.
+
+  ⚠️ **Le `required` du navigateur ne prouve rien**, et c'est tout l'objet de
+  ces deux contrôles : la route reste atteignable par un onglet resté ouvert,
+  un script, ou ce formulaire-ci recopié. Les deux moitiés sont gardées
+  séparément, comme pour l'indicatif et le consentement.
+*/
+test("le poste et l'expérience sont exigés par la route, pas seulement par la page", async ({
+  request,
+}) => {
+  const base = {
+    formation: PARCOURS,
+    nom: "Épreuve Profil",
+    whatsapp: "+212600000000",
+    pays: "Maroc",
+    plan: "P1",
+    moyen: "virement",
+    payeur: "particulier",
+    consentement: "oui",
+  };
+
+  const sansPoste = await request.post("/api/inscription", {
+    form: { ...base, email: `profil.a.${Date.now()}${MARQUE}`, experience: "2-5" },
+    maxRedirects: 0,
+  });
+  expect(sansPoste.headers()["location"], "sans poste, la route refuse").toContain("erreur=profil");
+
+  /*
+    ⚠️ Une tranche inventée, pas seulement une tranche absente. Le moyen de
+    paiement, lui, retombe sur « transfert » quand il est inconnu — sans
+    conséquence. Une ancienneté que personne n'a déclarée irait dans le dossier
+    et déciderait qui l'équipe rappelle en premier.
+  */
+  const trancheInventee = await request.post("/api/inscription", {
+    form: {
+      ...base,
+      email: `profil.b.${Date.now()}${MARQUE}`,
+      profession: "Contrôleur de gestion",
+      experience: "30-ans",
+    },
+    maxRedirects: 0,
+  });
+  expect(
+    trancheInventee.headers()["location"],
+    "⚠️ une tranche hors liste ne se rattrape pas, elle se refuse",
+  ).toContain("erreur=profil");
+
+  expect(
+    compterEnBase("inscriptions", `apprenant_nom = 'Épreuve Profil'`),
+    "et aucun des deux n'a rien écrit",
+  ).toBe(0);
+});
+
 /** Remplit le formulaire et rend la référence obtenue. */
 async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.goto(`/inscription?formation=${PARCOURS}`);
@@ -28,6 +87,7 @@ async function retenirUnePlace(page: Page, plan: "P1" | "P3"): Promise<string> {
   await page.fill('input[name="email"]', `epreuve.${Date.now()}${MARQUE}`);
   await remplirWhatsapp(page, "+212600000000");
   await choisirPays(page);
+  await remplirProfil(page);
   // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
   await page.check('input[name="consentement"]');
 
@@ -265,6 +325,7 @@ test.describe("Un envoi répété", () => {
       await page.fill('input[name="email"]', email);
       await remplirWhatsapp(page, "+212600000000");
       await choisirPays(page);
+      await remplirProfil(page);
       await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');
       await page.waitForURL(/\/inscription\/CLX-/);
@@ -333,6 +394,8 @@ test.describe("Un envoi répété", () => {
             nom: "Épreuve Course",
             email,
             whatsapp: "+212600000000",
+            profession: "Contrôleur de gestion",
+            experience: "2-5",
             pays: "Maroc",
             plan: "P1",
             moyen: "virement",
@@ -397,6 +460,7 @@ test.describe("Un envoi répété", () => {
       await page.fill('input[name="email"]', email);
       await remplirWhatsapp(page, "+212600000000");
       await choisirPays(page);
+      await remplirProfil(page);
       await page.check('input[name="consentement"]');
       await page.click('button[type="submit"]');
       await page.waitForURL(/\/inscription\/CLX-/);
@@ -412,48 +476,69 @@ test.describe("Un envoi répété", () => {
 });
 
 /**
- * ⚠️ Deux clics ne font pas deux appels à passer.
+ * ⚠️ Le rappel se demande depuis un dossier, et de nulle part ailleurs.
  *
- * Le bandeau du back-office compte les demandes « nouvelle » pour dire ce
- * qu'il reste à faire aujourd'hui : un doublon y ajoute un appel qui n'existe
- * pas. La production en porte deux, à moins de deux minutes d'écart.
+ * Décision de la direction le 18 septembre 2026. L'épreuve garde les deux bords
+ * du changement :
+ *
+ *  - **sans dossier, rien ne s'écrit.** La route ne recopie plus aucun champ de
+ *    saisie ; une référence inventée ne doit donc pas pouvoir fabriquer une
+ *    demande portant un numéro que l'on aurait choisi ;
+ *  - **et une demande en attente suffit.** Le bandeau du back-office compte les
+ *    demandes « nouvelle » pour dire ce qu'il reste à faire aujourd'hui : un
+ *    doublon y ajoute un appel qui n'existe pas. La production en portait déjà
+ *    deux, à moins de deux minutes d'écart, du temps du formulaire public.
  */
-test("une demande de rappel répétée aussitôt n'en crée qu'une", async ({ request }) => {
-  const numero = `+21260${String(Date.now()).slice(-7)}`;
-  const poster = () =>
-    request.post("/api/demande-rappel", {
-      form: {
-        nom: "Épreuve Rappel Double",
-        email: `rappel.double.${Date.now()}${MARQUE}`,
-        whatsapp: numero,
-        origine: "/contact",
-        consentement: "oui",
-      },
-      maxRedirects: 0,
-    });
-
-  const premiere = await poster();
-  const seconde = await poster();
-
+test("le rappel se demande depuis un dossier, et une seule fois à la fois", async ({
+  page,
+  request,
+}) => {
+  /* ── Une référence qui n'existe pas n'écrit rien ── */
+  const inventee = "CLX-ZZZZZZZZ";
+  const forgee = await request.post("/api/demande-rappel", {
+    form: { reference: inventee },
+    maxRedirects: 0,
+  });
   /*
-    Les deux répondent pareil : de son côté, sa demande est bien enregistrée.
-    Lui annoncer un doublon l'inquiéterait sans rien lui apprendre d'utile.
+    ⚠️ Elle répond comme la page du dossier, pas par un refus : distinguer
+    « ce dossier n'existe pas » de « ce dossier existe » apprendrait à qui
+    essaie des références lesquelles sont bonnes — et une référence ouvre nom,
+    adresse, téléphone et échéancier.
   */
-  expect(premiere.headers()["location"]).toContain("envoye=1");
-  expect(seconde.headers()["location"], "la seconde répond comme la première").toContain(
-    "envoye=1",
+  expect(forgee.headers()["location"], "on renvoie vers le dossier, sans rien apprendre").toContain(
+    inventee,
+  );
+  expect(
+    compterEnBase("demandes_rappel", `origine = '/inscription/${inventee}'`),
+    "et surtout : aucune demande n'est née d'une référence inventée",
+  ).toBe(0);
+
+  /* ── Depuis un vrai dossier, elle part — et une seule fois ── */
+  const reference = await retenirUnePlace(page, "P1");
+
+  const demander = () =>
+    request.post("/api/demande-rappel", { form: { reference }, maxRedirects: 0 });
+
+  const premiere = await demander();
+  expect(premiere.headers()["location"], "la demande est prise").toContain("rappel=ok");
+
+  const seconde = await demander();
+  /*
+    ⚠️ **Ici on le lui dit**, contrairement à l'ancienne route qui répondait
+    « c'est enregistré » à un doublon. Elle parlait à un inconnu ; celui-ci
+    ouvre son propre dossier avec sa propre référence, et lui taire que sa
+    demande est déjà passée le ferait recliquer — ou appeler pour vérifier.
+  */
+  expect(seconde.headers()["location"], "la seconde dit qu'elle est déjà là").toContain(
+    "rappel=deja",
   );
 
-  /*
-    ⚠️ **Et c'est pourquoi il faut compter en base.** Les deux réponses étant
-    identiques par construction, une épreuve qui s'arrête ici reste verte sans
-    la garde — vérifié en remettant le défaut : elle n'a rien vu. Seul le
-    nombre de lignes dit ce qui s'est réellement passé.
-  */
   expect(
-    compterEnBase("demandes_rappel", `whatsapp = '${numero}'`),
-    "une seule ligne pour deux envois",
+    compterEnBase("demandes_rappel", `origine = '/inscription/${reference}'`),
+    "une seule ligne pour deux clics",
   ).toBe(1);
+
+  sqlUneValeur(`DELETE FROM demandes_rappel WHERE origine = '/inscription/${reference}';`);
 });
 
 /**
@@ -522,6 +607,8 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         nom: "Épreuve Réveil Cache",
         email: `reveil.${Date.now()}${MARQUE}`,
         whatsapp: "+212600000000",
+        profession: "Contrôleur de gestion",
+        experience: "2-5",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",
@@ -579,6 +666,8 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         nom: "Épreuve Complet",
         email: `complet.${Date.now()}${MARQUE}`,
         whatsapp: "+212600000000",
+        profession: "Contrôleur de gestion",
+        experience: "2-5",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",
@@ -626,47 +715,40 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
     ).toBeVisible();
 
     /*
-      ⚠️ **Un numéro unique, et c'est indispensable.** La garde anti-doublon de
-      `api/demande-rappel` est indexée sur le **numéro**, avec une fenêtre de dix
-      minutes — et elle répond « c'est enregistré » sans rien écrire, par choix :
-      annoncer un doublon inquiéterait sans rien apprendre. Réutiliser le
-      `+212600000000` des autres épreuves du fichier faisait donc passer le
-      formulaire, atteindre `envoye=1`, et ne rien laisser en base. Le premier
-      jet a échoué ainsi, sur un correctif parfaitement bon.
-    */
-    const marque = String(Date.now()).slice(-8);
-    const nom = `Épreuve Attente ${marque}`;
-    await page.getByLabel("Nom complet").fill(nom);
-    await remplirWhatsapp(page, `+2126${marque}`);
-    await page.getByRole("checkbox").check();
-    await page.getByRole("button", { name: /envoyer|rappel/i }).click();
-    await page.waitForURL(/envoye=1/);
+      ⚠️ **Ce que cette épreuve gardait, et ce qu'elle garde maintenant.**
 
-    /*
-      ⚠️ **Le parcours, pas seulement la demande.** `api/demande-rappel` sait
-      résoudre un slug et le ranger en relation — il n'avait simplement jamais
-      rien à ranger, puisque le formulaire ne portait pas le champ.
+      Elle remplissait le formulaire de `/contact` et comptait la ligne écrite en
+      base : la demande devait porter **le parcours** dont la cohorte est pleine,
+      et **dire qu'il s'agit d'une liste d'attente** — sans quoi elle se noyait
+      parmi les demandes ordinaires, « je me renseigne » n'étant pas « je voulais
+      m'inscrire et je n'ai pas pu ».
+
+      Ce formulaire a été retiré le 18 septembre 2026, et la liste d'attente est
+      le seul cas qui ne peut pas passer par la pré-inscription : il n'y a plus
+      de place à retenir, c'est tout le problème. Elle passe donc par WhatsApp.
+
+      ⚠️ **Il n'y a plus de ligne en base à compter — c'est le prix, et il est
+      assumé.** Ce qui reste vérifiable est ce qui décidait déjà : que le message
+      proposé **nomme le parcours**. Un lien qui ouvrirait une conversation vide
+      ferait retomber l'équipe dans « de quel parcours me parle-t-on ? », le
+      défaut exact que le champ caché corrigeait.
     */
+    const versWhatsapp = page.getByRole("link", { name: /WhatsApp/i }).first();
+    await expect(versWhatsapp, "la porte de la liste d'attente reste ouverte").toBeVisible();
+
+    const lien = await versWhatsapp.getAttribute("href");
+    expect(lien, "elle mène bien à WhatsApp").toContain("wa.me");
+
+    const message = decodeURIComponent(new URL(lien!).searchParams.get("text") ?? "");
     expect(
-      compterEnBase(
-        "demandes_rappel d JOIN programmes p ON p.id = d.programme_id",
-        `d.nom = '${nom}' AND p.slug = '${slug}'`,
-      ),
-      "⚠️ la demande doit porter le parcours dont la cohorte est pleine",
-    ).toBe(1);
-
-    /*
-      ⚠️ **Et qu'il s'agit d'une liste d'attente.** Le parcours seul ne la
-      distingue pas d'une demande de rappel ordinaire : « je me renseigne » n'est
-      pas « je voulais m'inscrire et je n'ai pas pu ». Seule la seconde peut
-      encore se convertir par un appel.
-    */
+      message.toLowerCase(),
+      "⚠️ le message doit nommer le parcours dont la cohorte est pleine",
+    ).toContain(slug.replace(/-/g, " ").toLowerCase());
     expect(
-      compterEnBase("demandes_rappel", `nom = '${nom}' AND origine LIKE '%liste d''attente%'`),
-      "⚠️ et le dire, sinon elle se noie parmi les autres",
-    ).toBe(1);
+      message.toLowerCase(),
+      "⚠️ et dire de quoi il s'agit — une place qui se libère, pas un renseignement",
+    ).toMatch(/place se lib|date s'ouvre/);
 
-    sqlUneValeur(`DELETE FROM demandes_rappel WHERE nom = '${nom}';`);
   } finally {
     // Chaque session retrouve son décompte, même si l'épreuve a échoué.
     for (const paire of avant.split(",")) {

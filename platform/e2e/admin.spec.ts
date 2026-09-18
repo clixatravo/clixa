@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { MARQUE, referenceDeLAdresse, remplirWhatsapp, choisirPays } from "./menage";
+import { MARQUE, referenceDeLAdresse, remplirWhatsapp, choisirPays, remplirProfil } from "./menage";
 
 /**
  * Les boutons du back-office enregistrent-ils vraiment ?
@@ -76,6 +76,7 @@ test.describe("Back-office", () => {
     await page.fill('input[name="email"]', `bouton.${Date.now()}${MARQUE}`);
     await remplirWhatsapp(page, "+212600000000");
     await choisirPays(page);
+    await remplirProfil(page);
     // Comme un visiteur : la case de consentement est obligatoire depuis le 4 septembre 2026.
     await page.check('input[name="consentement"]');
     await page.selectOption('select[name="moyen"]', "carte");

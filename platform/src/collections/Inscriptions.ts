@@ -4,6 +4,7 @@ import { nouveauCodeCertificat } from "@/lib/code-certificat";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { pasDansLeFutur, paysValide } from "@/collections/champs";
+import { OPTIONS_EXPERIENCE } from "@/lib/profil";
 import {
   courrielCertificatDisponible,
   courrielContratVerifie,
@@ -195,6 +196,17 @@ export const Inscriptions: CollectionConfig = {
         justement celui-là qu'on cherche dans une liste de dossiers neufs.
       */
       "suiviPar",
+      /*
+        ⚠️ **Le poste vient avant l'adresse et le numéro**, et c'est le point de
+        la demande du 18 septembre 2026. Ce que l'équipe cherche en parcourant
+        cent onze lignes, c'est à qui elle a affaire — pas comment la joindre,
+        qu'elle lira une fois le dossier choisi. Rangé après le courriel, il
+        aurait été hors de l'écran sur un portable : la colonne existerait sans
+        servir, comme « Prochaine échéance » qui affichait la même date sur
+        trente lignes.
+      */
+      "apprenantProfession",
+      "apprenantExperience",
       "apprenantEmail",
       "apprenantWhatsapp",
       "session",
@@ -651,6 +663,56 @@ export const Inscriptions: CollectionConfig = {
               required: true,
               admin: { width: "50%" },
               validate: paysValide,
+            },
+          ],
+        },
+        /*
+          ── Qui demande, et depuis combien de temps ───────────────────────
+          Demandés par la direction le 18 septembre 2026 pour distinguer, dans
+          une liste de cent onze dossiers, les profils en poste de ceux qui
+          remplissent pour voir. Voir `lib/profil.ts`.
+
+          ⚠️ **Ni l'un ni l'autre n'est `required` ici, et c'est délibéré.**
+          Le formulaire les exige — c'est là que se fait le tri — mais un champ
+          obligatoire dans la collection est vérifié à **chaque écriture**, y
+          compris sur les cent onze dossiers déposés avant aujourd'hui, qui ne
+          les portent pas. La tâche de 8 h qui pose `placeRappeleeLe`, le
+          bouton « Contrat vérifié », le recompte d'une place : tous
+          échoueraient sur une `ValidationError` pour un champ qu'ils ne
+          touchent pas.
+
+          C'est mot pour mot ce qui est arrivé au champ « Pays » le 7 septembre
+          2026, et le journal le dit déjà : **un contrôle ajouté aujourd'hui ne
+          peut pas condamner une donnée d'hier.**
+
+          ⚠️ **Prouvé en le passant à `required`**, sur un dossier réel qui n'a
+          pas de poste : la même écriture passe sans, et lève avec —
+
+              ValidationError: Le champ suivant n’est pas valide :
+              Le participant > Poste actuel
+
+          C'est `placeRappeleeLe` que l'essai posait : exactement ce que la
+          tâche de 8 h écrit, et sans quoi une place n'est jamais rendue.
+        */
+        {
+          type: "row",
+          fields: [
+            {
+              name: "apprenantProfession",
+              type: "text",
+              label: "Poste actuel",
+              admin: {
+                width: "50%",
+                description:
+                  "Ce que la personne a déclaré au formulaire. Sert à savoir à qui l'on parle avant d'appeler.",
+              },
+            },
+            {
+              name: "apprenantExperience",
+              type: "select",
+              label: "Expérience",
+              options: OPTIONS_EXPERIENCE,
+              admin: { width: "50%" },
             },
           ],
         },

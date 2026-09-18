@@ -31,7 +31,7 @@ const colonnes = [
     liens: [
       { href: "/a-propos", label: "À propos" },
       { href: "/entreprises", label: "Pour les entreprises" },
-      { href: "/contact", label: "Être rappelé" },
+      { href: "/contact", label: "Nous contacter" },
       /*
         ⚠️ Le seul lien du pied de page qui ne s'adresse pas à un visiteur.
         Celui qui vérifie un certificat est un employeur, une banque, une école

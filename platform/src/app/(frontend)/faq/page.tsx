@@ -102,12 +102,12 @@ export default async function PageFaq() {
             Une question qui n&apos;est pas ici ?
           </h2>
           <p className="text-ivory-dim/90 mx-auto mb-7 max-w-[52ch] text-[0.98rem] leading-relaxed">
-            Écrivez-nous, ou demandez à être rappelé : un conseiller vous répond.
+            Écrivez-nous : notre Responsable Orientation vous répond.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button href="/formations">Voir les formations</Button>
             <Button href="/contact" variante="contour">
-              Être rappelé
+              Nous contacter
             </Button>
           </div>
         </div>

@@ -695,6 +695,10 @@ export interface DemandesRappel {
   whatsapp: string;
   pays: string;
   /**
+   * Le dossier depuis lequel la demande a été faite. Vide pour les demandes d'avant le 18 septembre 2026, déposées quand la page de contact portait encore un formulaire.
+   */
+  dossier?: (number | null) | Inscription;
+  /**
    * Vide si la personne ne savait pas encore.
    */
   programme?: (number | null) | Programme;
@@ -712,85 +716,6 @@ export interface DemandesRappel {
    * D'où venait la personne au moment de la demande.
    */
   origine?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Les échanges WhatsApp menés par le robot d'orientation.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "conversations".
- */
-export interface Conversation {
-  id: number;
-  /**
-   * Composé du nom et du numéro. Ne pas saisir.
-   */
-  intitule?: string | null;
-  /**
-   * Tel que WhatsApp le donne ; le prospect ne l'a pas forcément saisi.
-   */
-  nom?: string | null;
-  whatsapp: string;
-  /**
-   * Passée à « un conseiller », plus aucun message automatique ne part. À remettre sur « terminée » une fois l'échange fini.
-   */
-  conduite: 'robot' | 'humain' | 'close';
-  /**
-   * Posée automatiquement. C'est elle qui déclenche l'alerte à l'équipe.
-   */
-  passeeAlHumainLe?: string | null;
-  /**
-   * Ce que le prospect a écrit en dernier — de quoi savoir sur quoi il attend.
-   */
-  dernierMessage?: string | null;
-  /**
-   * Ce qui s'est dit, dans l'ordre. À lire avant de reprendre la main.
-   */
-  messages?:
-    | {
-        sens: 'entrant' | 'sortant';
-        le: string;
-        texte: string;
-        id?: string | null;
-      }[]
-    | null;
-  demande?: (number | null) | DemandesRappel;
-  /**
-   * Rempli dès qu'un créneau est retenu. Le robot cesse alors d'en proposer.
-   */
-  rendezVous?: (number | null) | RendezVous;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Les appels convenus avec les prospects, par le robot ou à la main.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "rendez-vous".
- */
-export interface RendezVous {
-  id: number;
-  /**
-   * Composé à partir du nom et de la date. Ne pas saisir.
-   */
-  intitule?: string | null;
-  nom: string;
-  /**
-   * Format international avec indicatif.
-   */
-  whatsapp: string;
-  debut: string;
-  dureeMinutes: number;
-  /**
-   * « Absent » n'est pas « annulé » : l'un se rappelle, l'autre non. Le décompte des créneaux ne libère que les annulés.
-   */
-  statut: 'convenu' | 'passe' | 'absent' | 'annule';
-  /**
-   * La demande de rappel qui a mené à cet appel, quand il y en a une.
-   */
-  demande?: (number | null) | DemandesRappel;
-  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -826,6 +751,11 @@ export interface Inscription {
    */
   apprenantWhatsapp: string;
   apprenantPays: string;
+  /**
+   * Ce que la personne a déclaré au formulaire. Sert à savoir à qui l'on parle avant d'appeler.
+   */
+  apprenantProfession?: string | null;
+  apprenantExperience?: ('moins-2' | '2-5' | '5-10' | 'plus-10') | null;
   payeurType: 'particulier' | 'organisation';
   payeurNom?: string | null;
   payeurEmail?: string | null;
@@ -995,6 +925,85 @@ export interface Utilisateur {
     | null;
   password?: string | null;
   collection: 'utilisateurs';
+}
+/**
+ * Les échanges WhatsApp menés par le robot d'orientation.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: number;
+  /**
+   * Composé du nom et du numéro. Ne pas saisir.
+   */
+  intitule?: string | null;
+  /**
+   * Tel que WhatsApp le donne ; le prospect ne l'a pas forcément saisi.
+   */
+  nom?: string | null;
+  whatsapp: string;
+  /**
+   * Passée à « un conseiller », plus aucun message automatique ne part. À remettre sur « terminée » une fois l'échange fini.
+   */
+  conduite: 'robot' | 'humain' | 'close';
+  /**
+   * Posée automatiquement. C'est elle qui déclenche l'alerte à l'équipe.
+   */
+  passeeAlHumainLe?: string | null;
+  /**
+   * Ce que le prospect a écrit en dernier — de quoi savoir sur quoi il attend.
+   */
+  dernierMessage?: string | null;
+  /**
+   * Ce qui s'est dit, dans l'ordre. À lire avant de reprendre la main.
+   */
+  messages?:
+    | {
+        sens: 'entrant' | 'sortant';
+        le: string;
+        texte: string;
+        id?: string | null;
+      }[]
+    | null;
+  demande?: (number | null) | DemandesRappel;
+  /**
+   * Rempli dès qu'un créneau est retenu. Le robot cesse alors d'en proposer.
+   */
+  rendezVous?: (number | null) | RendezVous;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Les appels convenus avec les prospects, par le robot ou à la main.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rendez-vous".
+ */
+export interface RendezVous {
+  id: number;
+  /**
+   * Composé à partir du nom et de la date. Ne pas saisir.
+   */
+  intitule?: string | null;
+  nom: string;
+  /**
+   * Format international avec indicatif.
+   */
+  whatsapp: string;
+  debut: string;
+  dureeMinutes: number;
+  /**
+   * « Absent » n'est pas « annulé » : l'un se rappelle, l'autre non. Le décompte des créneaux ne libère que les annulés.
+   */
+  statut: 'convenu' | 'passe' | 'absent' | 'annule';
+  /**
+   * La demande de rappel qui a mené à cet appel, quand il y en a une.
+   */
+  demande?: (number | null) | DemandesRappel;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Déposés par les participants depuis leur dossier. Le fichier ne s'ouvre que d'ici.
@@ -1519,6 +1528,7 @@ export interface DemandesRappelSelect<T extends boolean = true> {
   email?: T;
   whatsapp?: T;
   pays?: T;
+  dossier?: T;
   programme?: T;
   planPaiement?: T;
   message?: T;
@@ -1582,6 +1592,8 @@ export interface InscriptionsSelect<T extends boolean = true> {
   apprenantEmail?: T;
   apprenantWhatsapp?: T;
   apprenantPays?: T;
+  apprenantProfession?: T;
+  apprenantExperience?: T;
   payeurType?: T;
   payeurNom?: T;
   payeurEmail?: T;

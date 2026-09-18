@@ -8,6 +8,7 @@ import { MOYENS } from "@/lib/moyens";
 import { lienListeAttente } from "@/lib/attente";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import { ChampPays } from "@/components/ChampPays";
+import { EXPERIENCES } from "@/lib/profil";
 import {
   formatPeriode,
   formatPrix,
@@ -33,6 +34,8 @@ interface Props {
 
 const MESSAGES: Record<string, string> = {
   champs: "Il manque une information. Tous les champs marqués sont nécessaires pour vous rappeler.",
+  profil:
+    "Indiquez votre poste actuel et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
   session: "Cette session n'existe plus. Choisissez-en une autre ci-dessous.",
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
   indicatif:
@@ -247,6 +250,52 @@ export default async function Inscription({ searchParams }: Props) {
                   classeChamp="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   valeurParDefaut={participant?.pays}
                 />
+
+                {/*
+                  ── Le poste et l'expérience ────────────────────────────────
+                  Deux questions qui ne servent pas à nous : elles servent à ce
+                  que la personne qui appelle sache à qui elle parle. Voir
+                  `lib/profil.ts`.
+
+                  ⚠️ Elles sont posées **après** les coordonnées, jamais avant.
+                  On demande d'abord ce qui identifie, ensuite ce qui qualifie :
+                  un formulaire qui ouvre sur « quel est votre poste ? » se lit
+                  comme un tri à l'entrée.
+                */}
+                <Champ
+                  label="Votre poste actuel"
+                  name="profession"
+                  autoComplete="organization-title"
+                  placeholder="Comptable, DAF, chef de projet…"
+                />
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="experience" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Années d&apos;expérience <span className="text-gold">*</span>
+                  </label>
+                  <select
+                    id="experience"
+                    name="experience"
+                    required
+                    defaultValue=""
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
+                  >
+                    {/*
+                      ⚠️ Aucune tranche n'est choisie d'avance. C'est la leçon du
+                      sélecteur de pays, qui s'ouvrait sur « Maroc » : un défaut
+                      juste pour une partie des visiteurs est un piège pour les
+                      autres, et il ne se voit pas — il ressemble à un choix.
+                    */}
+                    <option value="" disabled>
+                      Choisissez…
+                    </option>
+                    {EXPERIENCES.map((e) => (
+                      <option key={e.valeur} value={e.valeur}>
+                        {e.libelle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="plan" className="mono-label text-ivory-dim text-[0.7rem]">
                     Rythme de paiement

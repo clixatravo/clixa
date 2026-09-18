@@ -1,213 +1,174 @@
-import { LONGUEURS, emailPlausible, tientDans } from "@/lib/saisie";
 import { appelant, cadenceOk, tropVite } from "@/lib/cadence";
 import { redirect } from "next/navigation";
-import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielRappel } from "@/lib/courriel";
 
 /**
- * BE-12 — Réception du formulaire de rappel.
+ * Demander à être rappelé — depuis son dossier, et de nulle part ailleurs.
  *
- * Route en POST plutôt qu'action serveur : le formulaire fonctionne alors sans
- * JavaScript, ce qui compte sur les connexions où le script met du temps à
- * s'exécuter — celles-là mêmes où l'on ne peut pas se permettre de perdre un
- * prospect.
+ * ── ⚠️ Ce que cette route était, et pourquoi elle a changé ──────────────────
+ * Elle recevait le formulaire public de `/contact` : un nom, un numéro, et un
+ * conseiller rappelait. Décision de la direction le 18 septembre 2026 — « khass
+ * l wahed darori i diir inscription 3ad tla9 lih dommand de rappel ».
  *
- * Suit le motif POST → redirection : recharger la page de confirmation ne
- * renvoie pas une seconde demande.
+ * **Mesuré avant de la refermer**, sur la production du même jour :
+ *
+ * - **36 demandes en treize jours**, et **les 36 encore au statut
+ *   « nouvelle »** — pas une n'avait été traitée. Ce n'était pas une file
+ *   d'attente, c'était un tiroir ;
+ * - **4 sur 36** ont fini par s'inscrire. Les 32 autres ont coûté un courriel à
+ *   l'équipe et un appel à passer, pour une conversation qui n'allait nulle
+ *   part.
+ *
+ * C'est le raisonnement qui avait déjà vidé la fenêtre de rappel de son
+ * formulaire le 6 septembre 2026 — « on offre de parler, on ne le réclame
+ * pas » — poussé jusqu'au bout : **le geste le plus facile à obtenir n'est pas
+ * celui qu'on cherche.** Une pré-inscription n'engage à rien et donne à
+ * l'équipe un dossier, un parcours, une formule et désormais un poste. Un
+ * numéro seul ne donne rien.
+ *
+ * ── Ce qu'elle fait maintenant ──────────────────────────────────────────────
+ * Elle prend **une référence de dossier**, et rien d'autre. Le nom, le numéro,
+ * l'adresse et le parcours viennent du dossier lui-même.
+ *
+ * ⚠️ **Plus un seul champ de saisie ne traverse cette route.** Ce n'est pas un
+ * raccourci : c'était la moitié de son code — bornes, indicatif, adresse
+ * plausible, pays déduit du numéro, consentement. Ces contrôles existaient
+ * parce qu'un inconnu tapait ; ici la donnée a déjà été vérifiée à
+ * l'inscription, et la recopier depuis un formulaire serait rouvrir la porte
+ * qu'on vient de fermer — quelqu'un pourrait poster une référence avec **son**
+ * numéro à lui.
  */
-
-/** Champ leurre : invisible pour un humain, rempli par la plupart des robots. */
-const LEURRE = "site_web";
-
 export async function POST(request: Request) {
   /*
-    Une demande de rappel part vers une boîte que l'équipe relève à la main :
-    la noyer sous un millier de messages la rend inutilisable.
+    Le frein reste, et garde autre chose qu'avant. Il ne protège plus une boîte
+    aux lettres d'un afflux d'inconnus — il empêche une boucle de fabriquer mille
+    demandes sur un dossier dont on connaît la référence.
   */
   if (!cadenceOk("rappel", appelant(request), 10, 60_000)) {
     return tropVite(60);
   }
 
   const form = await request.formData();
-  const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
+  const reference = (form.get("reference") ?? "").toString().trim().toUpperCase();
 
-  /*
-    ⚠️ **Où l'on revient, et pourquoi ce n'est pas décoratif.** La route
-    redirigeait toujours vers `/contact?envoye=1`, ce qui perdait la seule chose
-    que le visiteur venait vérifier : qu'il est bien sur la liste d'attente
-    d'une cohorte pleine. Il lisait « un conseiller vous rappelle », sans un mot
-    de la liste.
+  if (!reference) redirect("/" as Route);
 
-    ⚠️ **Rien du visiteur n'est réinjecté dans l'adresse** — ni le parcours, ni
-    un message. On reconnaît un littéral que la page a posé, et l'on rend un
-    booléen. Réfléchir une chaîne reçue dans une redirection est le chemin
-    ordinaire vers une adresse forgée ; la garde de `lib/session.ts` le dit déjà
-    pour le retour de Google.
-  */
-  const retour = (
-    texte("attente") === "1" ? "/contact?envoye=1&attente=1" : "/contact?envoye=1"
-  ) as Route;
-
-  // Robot : on répond comme si tout allait bien, sans rien enregistrer.
-  if (texte(LEURRE) !== "") {
-    redirect(retour);
-  }
-
-  const nom = texte("nom");
-  const email = texte("email");
-  const whatsapp = texte("whatsapp");
-
-  if (!nom || !whatsapp) {
-    redirect("/contact?erreur=champs" as Route);
-  }
-
-  /*
-    Sans indicatif, le numéro ne désigne personne hors de son pays : le bouton
-    WhatsApp du back-office refuse de composer, et le conseiller ne peut pas
-    rappeler. On refuse ici plutôt que d'enregistrer une demande qu'on ne
-    saurait pas honorer.
-  */
-  if (!aUnIndicatif(whatsapp)) {
-    redirect("/contact?erreur=indicatif" as Route);
-  }
-
-  // Mêmes bornes qu'à l'inscription : ces valeurs partent dans un courriel que
-  // l'équipe relève à la main, et dans une fiche qu'elle ouvre.
-  if (
-    !tientDans(nom, LONGUEURS.nom) ||
-    !tientDans(whatsapp, LONGUEURS.telephone) ||
-    !tientDans(texte("message"), LONGUEURS.message) ||
-    // L'adresse est facultative ; donnée, elle doit tout de même tenir debout.
-    (email !== "" && !emailPlausible(email))
-  ) {
-    redirect("/contact?erreur=champs" as Route);
-  }
-
-  /*
-    ── Le pays vient du numéro, plus du formulaire ───────────────────────────
-    Le champ « Pays » a été retiré : deux saisies pour un même fait laissaient
-    écrire « Maroc » sous un numéro ivoirien, et le conseiller découvrait
-    l'écart en composant. L'indicatif est de toute façon obligatoire — sans
-    lui, le bouton WhatsApp du back-office refuse de composer.
-  */
-  /*
-    ⚠️ Vérifié après les champs, et non avant — dans les deux routes, au même
-    endroit. Quelqu'un qui se trompe de numéro *et* oublie la case doit lire
-    d'abord ce qu'il doit corriger dans le formulaire ; la case, elle, se coche
-    d'un clic. Placé en tête, le consentement masquait l'erreur d'indicatif.
-
-    ⚠️ Et il se vérifie ici, pas dans la case : `required` n'engage que le
-    navigateur, se retire depuis les outils de développement, et n'existe pas
-    pour qui poste directement sur cette route. Une preuve de consentement qui
-    tient à un attribut HTML ne prouve rien le jour où on la conteste.
-  */
-  if (texte("consentement") !== "oui") {
-    redirect("/contact?erreur=consentement" as Route);
-  }
-
-  const pays = paysDeLIndicatif(whatsapp);
+  const dossier = `/inscription/${encodeURIComponent(reference)}` as Route;
 
   const payload = await getPayload({ config });
 
-  /**
-   * Le formulaire envoie le slug — la seule référence stable entre le site et
-   * la base. On le résout ici plutôt que d'exposer des identifiants internes
-   * dans le HTML public.
-   */
-  const slug = texte("programme");
-  let programme: number | undefined;
-  if (slug) {
-    const { docs } = await payload.find({
-      collection: "programmes",
-      where: { slug: { equals: slug } },
-      limit: 1,
-      depth: 0,
-      overrideAccess: true,
-    });
-    const trouve = docs[0];
-    if (trouve && typeof trouve.id === "number") programme = trouve.id;
-  }
+  const { docs } = await payload.find({
+    collection: "inscriptions",
+    where: { reference: { equals: reference } },
+    limit: 1,
+    /*
+      ⚠️ **Deux niveaux, pas un.** À `depth: 1` la session est résolue mais son
+      parcours reste un identifiant : le courriel de l'équipe serait parti sans
+      nom de formation, en silence, et le conseiller aurait appelé sans savoir
+      de quoi on va lui parler.
+    */
+    depth: 2,
+    overrideAccess: true,
+  });
+  const doc = docs[0];
 
   /*
-    ── ⚠️ Deux clics ne font pas deux appels à passer ─────────────────────────
-    Le formulaire poste puis redirige : rien n'empêchait d'envoyer deux fois,
-    et la production en porte la trace — deux demandes identiques à moins de
-    deux minutes d'écart. Ce n'est pas qu'une ligne en trop : le bandeau du
-    back-office compte les demandes « nouvelle » pour dire **ce qu'il reste à
-    faire aujourd'hui**, et un doublon y ajoute un appel qui n'existe pas.
-
-    ⚠️ **Une fenêtre, pas une règle définitive.** Redemander à être rappelé
-    trois semaines plus tard est légitime — c'est même le signe de quelqu'un
-    qui attend toujours. Seule la répétition immédiate est écartée.
-
-    ⚠️ **La clef est le numéro**, pas l'adresse : le courriel est facultatif
-    sur ce formulaire, et une clef qui peut être vide ne distingue rien.
+    ⚠️ **Une référence inconnue répond comme une page inconnue**, pas comme un
+    refus. Distinguer les deux apprendrait à qui essaie des références
+    lesquelles existent — c'est la règle que `/verifier` applique déjà aux codes
+    de certificat, et la référence ouvre bien davantage : nom, adresse,
+    téléphone, échéancier.
   */
-  const RECEMMENT = 10 * 60 * 1000;
-  const { docs: recentes } = await payload.find({
+  if (!doc) redirect(dossier);
+
+  /*
+    ── ⚠️ Une demande en attente suffit ───────────────────────────────────────
+    L'ancienne route écartait les doublons sur une fenêtre de dix minutes, faute
+    de mieux : elle ne savait pas *qui* redemandait. Ici on le sait, et la bonne
+    question n'est plus « à quand remonte la dernière ? » mais « quelqu'un
+    doit-il déjà rappeler cette personne ? ». Tant que la demande est
+    « nouvelle », un second exemplaire n'ajouterait qu'un appel qui n'existe
+    pas — exactement ce que le bandeau du tableau de bord compte pour dire quoi
+    faire aujourd'hui.
+
+    ⚠️ **Et on le lui dit**, contrairement à l'ancienne route qui répondait
+    « c'est enregistré » sans rien apprendre. Elle parlait à un inconnu ; celui-ci
+    ouvre son propre dossier avec sa propre référence, et « nous avons déjà votre
+    demande » lui évite de se demander si elle est passée.
+  */
+  const { docs: enAttente } = await payload.find({
     collection: "demandes-rappel",
-    where: {
-      and: [
-        { whatsapp: { equals: whatsapp } },
-        { createdAt: { greater_than: new Date(Date.now() - RECEMMENT).toISOString() } },
-      ],
-    },
+    where: { and: [{ dossier: { equals: doc.id } }, { statut: { equals: "nouvelle" } }] },
     limit: 1,
     depth: 0,
     overrideAccess: true,
   });
-  if (recentes.length > 0) {
-    /*
-      On répond comme si c'était passé : de son côté, c'est vrai — sa demande
-      est bien enregistrée. Lui annoncer un doublon l'inquiéterait sans rien
-      lui apprendre d'utile.
-    */
-    redirect(retour);
-  }
+  if (enAttente.length > 0) redirect(`${dossier}?rappel=deja` as Route);
+
+  const programme =
+    typeof doc.session === "object" && doc.session !== null
+      ? (doc.session as { programme?: unknown }).programme
+      : undefined;
+  const programmeId =
+    typeof programme === "object" && programme !== null
+      ? (programme as { id?: unknown }).id
+      : programme;
+  const titreProgramme =
+    typeof programme === "object" && programme !== null
+      ? String((programme as { titre?: unknown }).titre ?? "")
+      : "";
 
   try {
     await payload.create({
       collection: "demandes-rappel",
       overrideAccess: true,
       data: {
-        nom,
-        ...(email ? { email } : {}),
-        whatsapp,
-        pays,
-        programme,
-        // Seuls les trois codes du barème sont acceptés : un champ de
-        // formulaire est de la saisie visiteur, pas une valeur de confiance.
-        planPaiement: (["P1", "P2", "P3"] as const).find((c) => c === texte("plan")),
-        message: texte("message") || undefined,
-        origine: texte("origine") || "/contact",
+        dossier: doc.id,
+        nom: String(doc.apprenantNom ?? ""),
+        ...(doc.apprenantEmail ? { email: String(doc.apprenantEmail) } : {}),
+        whatsapp: String(doc.apprenantWhatsapp ?? ""),
+        pays: String(doc.apprenantPays ?? ""),
+        ...(typeof programmeId === "number" ? { programme: programmeId } : {}),
+        /*
+          Le rythme choisi au formulaire, pour que le conseiller ne découvre pas
+          au téléphone que payer en trois fois coûte plus cher.
+        */
+        planPaiement: (["P1", "P2", "P3"] as const).find((c) => c === doc.planPaiement),
+        message: `Demandé depuis son dossier ${reference}.`,
+        origine: `/inscription/${reference}`,
         statut: "nouvelle",
       },
     });
   } catch (e) {
-    // La demande n'a pas pu être enregistrée : on le dit, plutôt que d'afficher
-    // une confirmation mensongère à quelqu'un dont personne ne rappellera.
+    /*
+      On le dit, plutôt que d'afficher une confirmation à quelqu'un que personne
+      ne rappellera.
+    */
     console.error("[demande-rappel] échec de l'enregistrement :", e);
-    redirect("/contact?erreur=technique" as Route);
+    redirect(`${dossier}?rappel=technique` as Route);
   }
+
   /*
-    L'équipe est prévenue. Sans cela, une demande dormait dans le back-office
-    jusqu'à ce que quelqu'un pense à regarder.
+    L'équipe est prévenue. Sans cela, la demande dormirait dans le back-office
+    jusqu'à ce que quelqu'un pense à regarder — et c'est précisément le sort
+    qu'ont connu les trente-six demandes de la version publique.
   */
   await courrielRappel(payload, {
-    nom,
-    email,
-    whatsapp,
-    pays,
-    ...(texte("programme") ? { programme: texte("programme") } : {}),
-    ...(texte("plan") ? { plan: texte("plan") } : {}),
+    nom: String(doc.apprenantNom ?? ""),
+    email: String(doc.apprenantEmail ?? ""),
+    whatsapp: String(doc.apprenantWhatsapp ?? ""),
+    pays: String(doc.apprenantPays ?? ""),
+    /*
+      ⚠️ Le parcours part avec la demande, parce que c'est ce qui décide du ton
+      de l'appel. Il ne se déduit plus d'un champ de formulaire mais du dossier
+      lui-même : il ne peut donc plus être vide ni faux.
+    */
+    ...(titreProgramme ? { programme: titreProgramme } : {}),
+    ...(doc.planPaiement ? { plan: String(doc.planPaiement) } : {}),
   });
 
-  // La notification interne (e-mail, WhatsApp) arrive avec la phase 02, quand
-  // les comptes Resend et WhatsApp Business seront ouverts. La demande est déjà
-  // en base et visible dans le back-office : rien n'est perdu d'ici là.
-
-  redirect(retour);
+  redirect(`${dossier}?rappel=ok` as Route);
 }

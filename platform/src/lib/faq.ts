@@ -139,7 +139,7 @@ export function questionsFrequentes(e: EntreeFaq): QuestionFaq[] {
             texte(
               "Aucune date n'est publiée pour le moment. Laissez-nous vos coordonnées : nous vous prévenons à l'ouverture de la prochaine cohorte.",
             ),
-            { type: "liens", liens: [{ libelle: "Être rappelé", href: "/contact" }] },
+            { type: "liens", liens: [{ libelle: "Nous contacter", href: "/contact" }] },
           ]
         : jours.length === 1
           ? [
@@ -352,7 +352,7 @@ export function questionsFrequentes(e: EntreeFaq): QuestionFaq[] {
         type: "liens",
         liens: [
           { libelle: "Écrire sur WhatsApp", href: e.whatsapp.url },
-          { libelle: "Être rappelé", href: "/contact" },
+          { libelle: "Nous contacter", href: "/contact" },
         ],
       },
     ],

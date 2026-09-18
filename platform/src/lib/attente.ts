@@ -48,14 +48,15 @@ export function lienListeAttente(slug: string): string {
   return `/contact?programme=${encodeURIComponent(slug)}&${PARAM_ATTENTE}=1`;
 }
 
-/**
- * Ce que l'équipe lira dans la colonne « Page d'origine ».
- *
- * ⚠️ Il ne suffit pas d'enregistrer le parcours : une demande de rappel
- * ordinaire sur ce même parcours a un tout autre sens. Celle-ci dit « je
- * voulais m'inscrire et je n'ai pas pu » — c'est la seule qu'un appel peut
- * encore convertir, et elle se noierait parmi les autres sans être nommée.
- */
-export function origineListeAttente(slug: string): string {
-  return `/formations/${slug} · liste d'attente (cohorte complète)`;
-}
+/*
+  ⚠️ **`origineListeAttente` a été retirée le 18 septembre 2026**, avec le
+  formulaire public de rappel qu'elle servait : elle composait le champ caché
+  « Page d'origine » de `/contact`. Plus personne ne l'appelait.
+
+  Ce qu'elle disait reste vrai — « je voulais m'inscrire et je n'ai pas pu » est
+  un tout autre message que « je me renseigne » — mais cela se dit maintenant
+  dans le message WhatsApp que la page compose, qui nomme le parcours. Une
+  fonction que rien n'appelle finit par être recâblée par quelqu'un qui la croit
+  vivante ; c'est le raisonnement qui a fait partir les consignes
+  `ATTENDU[...].equipe` deux jours plus tôt.
+*/

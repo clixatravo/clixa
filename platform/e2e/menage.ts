@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
 import { PAYS_OFFERTS } from "../src/lib/pays";
+import { EXPERIENCES } from "../src/lib/profil";
 
 /**
  * Retirer ce que les épreuves ont écrit.
@@ -157,6 +158,30 @@ export async function choisirPays(page: Page, nom = "Maroc"): Promise<void> {
   const connu = PAYS_OFFERTS.some((p) => p.nom === nom);
   expect(connu, `« ${nom} » n'est pas dans la liste des pays offerte`).toBe(true);
   await page.selectOption("select#pays", nom);
+}
+
+/**
+ * Le poste et l'expérience, exigés par le formulaire depuis le 18 septembre 2026.
+ *
+ * ⚠️ **Un helper, pas quatorze copies.** C'est la leçon du champ « Pays » : il a
+ * changé trois fois en deux jours, huit épreuves le remplissaient à la main, et
+ * la fois où elles n'ont pas suivi **quinze sont tombées d'un coup** — toutes
+ * sur le même symptôme illisible, un `waitForURL` qui expire parce qu'un
+ * `required` n'était plus rempli et que le formulaire refusait de partir.
+ *
+ * Et comme `choisirPays`, il vérifie la valeur contre la liste réellement
+ * offerte : une tranche inventée ferait échouer l'épreuve douze lignes plus
+ * loin, sur un « reçu 404 » qui ressemble à un dossier qui n'existe pas.
+ */
+export async function remplirProfil(
+  page: Page,
+  poste = "Contrôleur de gestion",
+  experience = "2-5",
+): Promise<void> {
+  const connue = EXPERIENCES.some((e) => e.valeur === experience);
+  expect(connue, `« ${experience} » n'est pas une tranche d'expérience offerte`).toBe(true);
+  await page.fill("input#profession", poste);
+  await page.selectOption("select#experience", experience);
 }
 
 export function adresseBase(): string | undefined {

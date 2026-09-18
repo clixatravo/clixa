@@ -9,6 +9,7 @@ import { courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
 import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
+import { experienceValide } from "@/lib/profil";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -83,6 +84,22 @@ export async function POST(request: Request) {
   const MOYENS = ["carte", "virement", "transfert"] as const;
   const moyen = MOYENS.find((m) => m === texte("moyen")) ?? "transfert";
 
+  /*
+    ── Qui demande, et depuis combien de temps ───────────────────────────────
+    Le formulaire les marque obligatoires ; c'est ici qu'ils le deviennent.
+    Une case `required` ne vaut que dans le navigateur — la route reste
+    atteignable par un onglet resté ouvert, un script, ou un formulaire recopié.
+
+    ⚠️ **L'expérience ne se rattrape pas.** Un moyen de paiement inconnu retombe
+    sur « transfert » quelques lignes plus haut, et c'est sans conséquence : on
+    enverra les coordonnées les plus courantes. Une tranche d'expérience
+    inventée, elle, écrirait dans le dossier une ancienneté que personne n'a
+    déclarée — et c'est sur elle que l'équipe décidera qui rappeler en premier.
+    On refuse. Voir `lib/profil.ts`.
+  */
+  const profession = texte("profession");
+  const experience = experienceValide(texte("experience"));
+
   const echec = (cause: string) =>
     redirect(
       `/inscription?formation=${encodeURIComponent(formation)}&debut=${encodeURIComponent(debutRef)}&plan=${plan}&erreur=${cause}` as Route,
@@ -133,10 +150,14 @@ export async function POST(request: Request) {
   if (
     !tientDans(nom, LONGUEURS.nom) ||
     !tientDans(whatsapp, LONGUEURS.telephone) ||
+    !tientDans(profession, LONGUEURS.profession) ||
     !tientDans(texte("organisation"), LONGUEURS.organisation)
   ) {
     echec("champs");
   }
+
+  /* Les deux nouvelles questions sont exigées, pas seulement proposées. */
+  if (profession.length < MINIMUM_LETTRES || !experience) echec("profil");
 
   /*
     L'adresse sert à envoyer la confirmation et à rattacher le dossier à un
@@ -268,6 +289,8 @@ export async function POST(request: Request) {
             session: session!.id,
             statut: "demandee",
             apprenantNom: nom,
+            apprenantProfession: profession,
+            apprenantExperience: experience,
             apprenantEmail: email,
             apprenantWhatsapp: whatsapp,
             apprenantPays: pays,
