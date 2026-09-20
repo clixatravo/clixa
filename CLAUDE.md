@@ -3472,6 +3472,37 @@ parcours, une formule, et désormais un poste.
   production avant le déploiement. Facultative : les 36 demandes d'avant n'en
   ont pas, et un champ obligatoire les rendrait invalides à la première écriture.
 
+⚠️ **Et les trente-six demandes d'avant ont été classées** (décision de la
+direction le 20 septembre 2026 : « diir lihom sans suite dok 36 demandes »,
+`scripts/classer-les-demandes.ts`, rejouable).
+
+Tant qu'elles portaient « nouvelle », la vignette du tableau de bord annonçait
+**trente-six appels à passer** — sur un écran qui existe pour dire ce qu'il
+reste à faire *aujourd'hui*. Aucune n'avait jamais été traitée, et il n'en
+arrivera plus par cette porte.
+
+- ⚠️ **Le filtre est `dossier: { exists: false }`, et ce n'est pas une
+  commodité.** Depuis le 18 septembre, une demande ne naît que du bouton d'une
+  page de dossier : celles-là sont vivantes, quelqu'un attend un appel.
+  Balayer « toutes les nouvelles » marchait ce jour-là — il n'y en avait aucune
+  de neuve — et **enterrerait demain** une demande déposée il y a cinq minutes.
+  Un script qu'on garde s'écrit pour le jour où les données auront changé.
+  Le passage imprime d'ailleurs le témoin : « laissées intactes : 0 ».
+- ⚠️ **La note s'ajoute, elle n'écrase pas.** `notes` est là où l'équipe écrit
+  ce qu'elle a compris d'un appel ; la remplacer effacerait son travail sans que
+  rien ne le dise. Chaque ligne porte désormais, à la suite : « Classée sans
+  suite le 20 septembre 2026 : formulaire public retiré, demande jamais
+  traitée. » — sans quoi on se demanderait dans six mois pourquoi trente-six
+  demandes sont mortes le même jour.
+- **Aucun crochet sur la collection** : vérifié avant d'écrire. Un changement de
+  statut n'envoie rien — trente-six courriels partis d'un script auraient été la
+  pire façon de découvrir le contraire.
+- **Montré avant d'écrire**, comme `corriger-pays.ts` et `nommer-les-relances.ts` :
+  sans `ECRIRE=1`, le script liste les trente-six et s'arrête. C'est de la donnée
+  client réelle.
+- **Relu en base après coup** : 36 sur 36 en « sans suite », **0 au statut
+  « nouvelle »**.
+
 ⚠️ **Et le formulaire demande enfin qui s'inscrit** (`lib/profil.ts`, le même
 jour : « zid la profession o number anne de l'experience bach ibano nass li
 m'ahelin mn nass li rire kaytfelaw »). Sur cent onze dossiers, rien ne
