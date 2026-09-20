@@ -13,6 +13,7 @@ import {
   filtreDesPlacesARendre,
   filtreDesPlacesAuTerme,
 } from "@/lib/delai";
+import { repartitionParDomaine } from "@/lib/profil";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
 
 /**
@@ -521,6 +522,35 @@ export async function Veille() {
     select: { reference: true, apprenantNom: true, placeRappeleeLe: true } as never,
   });
 
+  /*
+    1 bis. D'où viennent les inscrits — demandé par la direction le 20 septembre
+    2026, le jour même où le champ « Domaine actuel » est parti en ligne.
+
+    ⚠️ **Une seule requête, pas sept.** Un compte par domaine aurait été sept
+    allers-retours pour une question qui tient dans une colonne ; on ramène la
+    colonne et l'on compte en mémoire. `select` ne porte donc que ce champ :
+    sans lui Payload remonterait le dossier entier, échéancier et journal
+    compris, chacun dans sa table.
+
+    ⚠️ **Cinq cents dossiers au plus**, comme les deux compteurs d'échéances
+    plus haut, et pour la même raison : au-delà, le tableau compterait moins que
+    la vérité sans le dire. Une cohorte de trente en est loin ; le jour où l'on
+    s'en approchera, ce calcul-là se porte en SQL.
+
+    ⚠️ **Les dossiers annulés sont hors du compte.** L'annulation est exactement
+    le dossier dont la place vient de repartir ; les garder ferait grossir le
+    portrait des inscrits à mesure qu'on en perd — le cinquième des six défauts
+    de la supervision, le 12 septembre.
+  */
+  const promesseDomaines = payload.find({
+    collection: "inscriptions",
+    where: { statut: { not_equals: "annulee" } },
+    limit: 500,
+    depth: 0,
+    overrideAccess: true,
+    select: { apprenantDomaine: true } as never,
+  });
+
   // 2. Nouvelles demandes de rappel
   const promesseDemandes = payload.find({
     collection: "demandes-rappel",
@@ -598,6 +628,7 @@ export async function Veille() {
     { totalDocs: inscriptionsSemaine },
     { totalDocs: placesAuTerme },
     { totalDocs: placesARendre, docs: dossiersARendre },
+    { docs: docsDomaines },
     { totalDocs: nouvellesDemandes },
     { totalDocs: conversationsAReprendre },
     { docs: programmes },
@@ -607,11 +638,25 @@ export async function Veille() {
     promesseSemaine,
     promessePlacesAuTerme,
     promessePlacesARendre,
+    promesseDomaines,
     promesseDemandes,
     promesseConversations,
     promesseProgrammes,
     promesseSessions,
   ]);
+
+  /*
+    ⚠️ Le calcul vit dans `lib/profil.ts`, pur, et non ici : une répartition
+    écrite dans un composant serveur ne s'éprouve qu'en ouvrant un navigateur et
+    en se connectant. C'est la leçon d'`occupationDeLaSession` et
+    d'`avancementDuDossier` — et celle des six défauts de la supervision,
+    trouvés en relisant parce qu'aucun n'était tombé au rouge.
+  */
+  const domaines = repartitionParDomaine(
+    (docsDomaines as unknown as { apprenantDomaine?: string | null }[]).map(
+      (d) => d.apprenantDomaine,
+    ),
+  );
 
   /*
     ⚠️ Le `select` de la requête est passé en `as never` — Payload rend alors des
@@ -1188,6 +1233,61 @@ export async function Veille() {
               {placesARendre - aRendre.length > 1 ? "s" : ""} →
             </Link>
           )}
+        </div>
+      )}
+
+      {/*
+        ── D'où viennent les inscrits ──────────────────────────────────────
+        Demandé par la direction le 20 septembre 2026, le jour où le champ
+        « Domaine actuel » est parti en ligne. C'est le seul des trois champs de
+        profil qui se compte : le poste, en texte libre, ne s'additionne pas.
+
+        ⚠️ **Rien ne s'affiche tant que personne n'a répondu**, et ce n'est pas
+        une panne. Le jour de la mise en ligne : 124 dossiers vivants, zéro
+        domaine déclaré. Un cadre montrant sept lignes à zéro se lirait comme un
+        écran cassé — la leçon de la rubrique de filtre sans choix. Le bloc
+        paraîtra de lui-même à la première réponse.
+
+        ⚠️ **La couverture est écrite au-dessus du décompte, jamais après.**
+        « Finance 2 » sur trois réponses ne dit rien de cent vingt-quatre
+        dossiers ; sans cette ligne, on lirait la partie pour le tout — sur
+        l'écran même depuis lequel on décide d'ouvrir une cohorte.
+
+        ⚠️ **Et chaque ligne mène aux dossiers qu'elle compte.** Un nombre qui
+        annonce un tri que le lien ne fait pas vide le tableau de bord de son
+        intérêt ; c'est la règle posée le 1er septembre pour les quatre
+        vignettes.
+      */}
+      {domaines.declares > 0 && (
+        <div className="clixa-domaines">
+          <div className="clixa-domaines__titre">
+            <span>D&apos;où viennent les inscrits</span>
+            <span className="clixa-domaines__couverture">
+              {domaines.declares} dossier{domaines.declares > 1 ? "s" : ""} sur {domaines.total}
+              {domaines.declares > 1 ? " l'ont" : " l'a"} déclaré
+            </span>
+          </div>
+          <ul className="clixa-domaines__liste">
+            {domaines.lignes.map((l) => (
+              <li key={l.valeur} className="clixa-domaines__ligne">
+                <Link
+                  href={
+                    `/admin/collections/inscriptions?where[apprenantDomaine][equals]=${l.valeur}` as Route
+                  }
+                  className="clixa-domaines__nom"
+                >
+                  {l.libelle}
+                </Link>
+                <span className="clixa-domaines__barre" aria-hidden="true">
+                  <span
+                    className="clixa-domaines__part"
+                    style={{ width: `${Math.max(l.barre, 4)}%` }}
+                  />
+                </span>
+                <span className="clixa-domaines__nombre">{l.nombre}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

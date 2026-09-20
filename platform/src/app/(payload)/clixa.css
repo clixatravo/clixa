@@ -4282,3 +4282,79 @@ h3,
   display: inline-block;
   margin-top: 0.85rem;
 }
+
+/* ── D'où viennent les inscrits (20 septembre 2026) ───────────────────────────
+   Même famille que « Places à rendre » : un bloc calme sous la grille, sans or
+   ni émeraude. L'or est la file de travail du jour, et cette répartition ne
+   demande aucun geste — elle sert à décider quelle cohorte ouvrir ensuite. */
+.clixa-domaines {
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.15rem 1.1rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 6px;
+  background: var(--theme-elevation-50);
+}
+.clixa-domaines__titre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-800);
+}
+/* La couverture n'est pas un détail : elle empêche de lire la partie pour le
+   tout. Effacée, mais au-dessus du contraste minimal — la leçon de « Jamais
+   appelé », mesuré à 2,24:1 puis porté à 4,87:1. */
+.clixa-domaines__couverture {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--theme-elevation-650);
+}
+.clixa-domaines__liste {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.clixa-domaines__ligne {
+  display: grid;
+  /* `minmax(0, 1fr)` sur la barre : sans lui, une case de grille ne descend
+     jamais sous la largeur de son contenu et la ligne déborde à 375 px. */
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.85rem;
+}
+.clixa-domaines__nom {
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+.clixa-domaines__nom:hover {
+  color: var(--theme-elevation-1000);
+  text-decoration: underline;
+}
+.clixa-domaines__barre {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--theme-elevation-150);
+  overflow: hidden;
+}
+.clixa-domaines__part {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--theme-elevation-500);
+}
+.clixa-domaines__nombre {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--theme-elevation-800);
+}

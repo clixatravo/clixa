@@ -14,6 +14,7 @@
  * cas, les trie, et les retire.
  */
 import { getPayload } from "payload";
+import { repartitionParDomaine } from "@/lib/profil";
 import config from "@payload-config";
 import { parse } from "qs-esm";
 import type { Where } from "payload";
@@ -195,6 +196,92 @@ try {
   for (const champ of ["apprenantNom", "apprenantEmail", "apprenantWhatsapp"]) {
     dire(`« ${champ} » est une colonne par défaut`, colonnes.includes(champ));
   }
+
+  /*
+    ── ⚠️ La répartition par domaine ────────────────────────────────────────
+    Elle se mesure **sans base et sans navigateur**, parce que le calcul est
+    pur. C'est tout l'intérêt de l'avoir sorti du composant : une répartition
+    écrite dans `Veille.tsx` ne s'éprouverait qu'en se connectant à /admin, et
+    les six défauts de la supervision du 12 septembre y ont été trouvés en
+    relisant, pas au rouge.
+
+    Ce qui est gardé n'est pas l'arithmétique — additionner sept nombres ne se
+    casse pas. C'est ce que la fonction **refuse** de faire.
+  */
+  console.log("\n▸ La répartition par domaine ne dit pas plus qu'elle ne sait\n");
+
+  const vide = repartitionParDomaine([]);
+  dire(
+    "aucune réponse : rien à montrer, et le bloc ne se rend pas",
+    vide.lignes.length === 0 && vide.declares === 0,
+    `${vide.lignes.length} ligne(s)`,
+  );
+
+  /*
+    ⚠️ **Le cas du jour de la mise en ligne** : des dossiers, aucun domaine. Le
+    bloc doit rester invisible — sept lignes à zéro se liraient comme un écran
+    cassé.
+  */
+  const aucunDeclare = repartitionParDomaine([null, undefined, null, undefined]);
+  dire(
+    "des dossiers, mais aucun domaine déclaré : toujours rien",
+    aucunDeclare.lignes.length === 0 && aucunDeclare.total === 4,
+    `total ${aucunDeclare.total}, déclarés ${aucunDeclare.declares}`,
+  );
+
+  const melange = repartitionParDomaine([
+    "finance",
+    "finance",
+    "audit",
+    null,
+    undefined,
+    "tresorerie",
+  ]);
+  dire(
+    "le plus fourni vient en premier",
+    melange.lignes[0]?.valeur === "finance" && melange.lignes[0]?.nombre === 2,
+    melange.lignes.map((l) => `${l.libelle} ${l.nombre}`).join(" · "),
+  );
+  /*
+    ⚠️ Quatre déclarés — finance, finance, audit, trésorerie — sur six lignes
+    regardées. Le premier jet attendait trois et le contrôle est passé au rouge
+    sur un calcul parfaitement juste : c'était l'attente qui comptait mal. Une
+    garde qu'on corrige en changeant le code aurait enterré la vraie valeur.
+  */
+  dire(
+    "⚠️ la couverture dit la partie et le tout — 4 déclarés sur 6",
+    melange.declares === 4 && melange.total === 6,
+    `${melange.declares}/${melange.total}`,
+  );
+  /*
+    ⚠️ **Le contrôle qui compte.** La barre est proportionnelle au domaine le
+    plus fourni, jamais au total : « Finance » doit remplir la sienne alors
+    qu'elle ne représente que deux dossiers sur six. Une barre calculée sur le
+    total rendrait 33 % et se lirait « un tiers de mes inscrits » — le défaut de
+    « Places au total : 30 », sur l'écran où l'on décide d'ouvrir une cohorte.
+  */
+  dire(
+    "⚠️ la barre mesure « lequel domine », pas « quelle proportion »",
+    melange.lignes[0]?.barre === 100 && melange.lignes[1]?.barre === 50,
+    melange.lignes.map((l) => `${l.libelle} ${l.barre}%`).join(" · "),
+  );
+  /*
+    ⚠️ Une valeur hors table ne se range pas dans « Autre » : ce serait inventer
+    une réponse que personne n'a cochée. Elle sort du décompte, et l'écart avec
+    le total la rend visible.
+  */
+  const inconnu = repartitionParDomaine(["finance", "astrophysique"]);
+  dire(
+    "un domaine hors liste est ignoré, jamais versé dans « Autre »",
+    inconnu.declares === 1 && !inconnu.lignes.some((l) => l.valeur === "autre"),
+    inconnu.lignes.map((l) => l.libelle).join(" · ") || "rien",
+  );
+  /* Le témoin : « Autre » compte quand il est réellement choisi. */
+  const autre = repartitionParDomaine(["autre", "autre"]);
+  dire(
+    "mais « Autre » choisi pour de vrai se compte",
+    autre.lignes[0]?.valeur === "autre" && autre.lignes[0]?.nombre === 2,
+  );
 } finally {
   for (const id of aSupprimer) {
     await payload.delete({ collection: "inscriptions", id, overrideAccess: true });

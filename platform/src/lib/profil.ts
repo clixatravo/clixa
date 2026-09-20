@@ -121,3 +121,82 @@ export function libelleExperience(valeur?: string | null): string {
   if (!valeur) return "—";
   return EXPERIENCES.find((e) => e.valeur === valeur)?.libelle ?? String(valeur);
 }
+
+/** Une ligne de la répartition par domaine, telle que le tableau de bord la rend. */
+export interface LigneDomaine {
+  valeur: Domaine;
+  libelle: string;
+  nombre: number;
+  /** Largeur de la barre, en pourcentage **du domaine le plus fourni**. */
+  barre: number;
+}
+
+export interface Repartition {
+  lignes: LigneDomaine[];
+  /** Combien de dossiers ont répondu. */
+  declares: number;
+  /** Combien de dossiers ont été regardés. */
+  total: number;
+}
+
+/**
+ * Combien de dossiers par domaine — demandé par la direction le 20 septembre
+ * 2026, le jour où le champ est parti en ligne.
+ *
+ * ── ⚠️ Ce que cette fonction refuse de faire, et pourquoi ───────────────────
+ * **Elle ne rend pas de part du total.** Le champ est neuf : le jour de sa mise
+ * en ligne, 124 dossiers vivants et **aucun** ne le portait. Trois réponses plus
+ * tard, « Finance 67 % » serait arithmétiquement juste et complètement faux —
+ * il se lirait « deux tiers de mes inscrits viennent de la finance » quand il
+ * veut dire « deux des trois qui ont répondu ».
+ *
+ * C'est le défaut de « Places au total : 30 » sous une autre forme : un chiffre
+ * juste au mauvais endroit se lit comme un chiffre faux, et celui-ci se lirait
+ * sur l'écran depuis lequel on décide d'ouvrir une cohorte.
+ *
+ * La barre est donc proportionnelle **au domaine le plus fourni**, pas au total :
+ * elle répond à « lequel domine », jamais à « quelle proportion ». Et
+ * `declares` / `total` accompagnent toujours le rendu, pour que personne ne
+ * prenne la partie pour le tout.
+ *
+ * ⚠️ **Une valeur hors table est ignorée, pas rangée dans « Autre ».** Elle ne
+ * peut venir que d'une écriture faite à la main en base ou d'un domaine retiré
+ * de la liste ; la compter parmi « Autre » inventerait une réponse. Elle
+ * disparaît donc du décompte — et l'écart entre `declares` et la somme des
+ * lignes est ce qui la rendrait visible.
+ */
+export function repartitionParDomaine(
+  valeurs: readonly (string | null | undefined)[],
+): Repartition {
+  const compte = new Map<Domaine, number>();
+  for (const v of valeurs) {
+    const d = v ? domaineValide(String(v)) : undefined;
+    if (d) compte.set(d, (compte.get(d) ?? 0) + 1);
+  }
+
+  const maximum = Math.max(0, ...compte.values());
+
+  const lignes = DOMAINES.filter((d) => (compte.get(d.valeur) ?? 0) > 0)
+    .map((d) => {
+      const nombre = compte.get(d.valeur) ?? 0;
+      return {
+        valeur: d.valeur,
+        libelle: d.libelle,
+        nombre,
+        barre: maximum > 0 ? Math.round((nombre / maximum) * 100) : 0,
+      };
+    })
+    /*
+      Le plus fourni d'abord : c'est ce que l'écran sert à voir. À égalité,
+      l'ordre de la liste tranche — sans quoi deux domaines à deux dossiers
+      changeraient de place d'une visite à l'autre, comme les trois cohortes
+      rendues au hasard par un tri sur une égalité.
+    */
+    .sort((a, b) => b.nombre - a.nombre);
+
+  return {
+    lignes,
+    declares: lignes.reduce((t, l) => t + l.nombre, 0),
+    total: valeurs.length,
+  };
+}

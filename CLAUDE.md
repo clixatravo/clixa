@@ -3477,6 +3477,47 @@ jour : « zid la profession o number anne de l'experience bach ibano nass li
 m'ahelin mn nass li rire kaytfelaw »). Sur cent onze dossiers, rien ne
 distinguait un directeur financier en poste de quelqu'un qui remplit pour voir.
 
+⚠️ **Et le tableau de bord dit d'où viennent les inscrits** (`repartitionParDomaine`,
+le même jour, demandé dans la foulée du champ). C'est tout l'intérêt d'une liste
+fermée : « sur cent vingt-quatre dossiers, combien viennent de la finance ? » ne
+se répond pas sur du texte libre.
+
+- ⚠️ **Rien ne s'affiche tant que personne n'a répondu, et ce n'est pas une
+  panne.** Le jour de la mise en ligne : **124 dossiers vivants, zéro domaine
+  déclaré**. Sept lignes à zéro se liraient comme un écran cassé — la leçon de
+  la rubrique de filtre sans choix. Le bloc paraîtra de lui-même à la première
+  réponse, et il faut le savoir avant d'ouvrir /admin en croyant que le travail
+  n'a pas été fait.
+- ⚠️ **Aucune part du total n'est affichée, jamais.** À trois réponses,
+  « Finance 67 % » serait arithmétiquement juste et complètement faux : il se
+  lirait « deux tiers de mes inscrits viennent de la finance » quand il veut
+  dire « deux des trois qui ont répondu ». **La barre est proportionnelle au
+  domaine le plus fourni**, pas au total — elle répond à « lequel domine », pas
+  à « quelle proportion ». Et la couverture est écrite **au-dessus** du
+  décompte : « 17 dossiers sur 124 l'ont déclaré ».
+- ⚠️ **Une valeur hors table est ignorée, pas versée dans « Autre ».** Elle ne
+  peut venir que d'une écriture faite à la main ; la compter parmi « Autre »
+  inventerait une réponse que personne n'a cochée.
+- **Chaque ligne mène aux dossiers qu'elle compte**, comme les quatre vignettes
+  depuis le 1er septembre.
+- **Une seule requête, pas sept** — une colonne ramenée par `select`, le compte
+  fait en mémoire. Cinq cents dossiers au plus, comme les compteurs d'échéances,
+  et les annulés sont hors du compte : les garder ferait grossir le portrait des
+  inscrits à mesure qu'on en perd.
+- **Le calcul est pur, dans `lib/profil.ts`** — une répartition écrite dans le
+  composant ne s'éprouverait qu'en ouvrant un navigateur et en se connectant.
+  `verifier-veille.ts` l'éprouve sans base ni réseau, **prouvé en remettant deux
+  défauts** : la barre calculée sur le total rend « Finance 33 % » et passe au
+  rouge ; un domaine inconnu versé dans « Autre » aussi.
+- ⚠️ **Et la garde a d'abord accusé un code juste.** Son premier jet attendait
+  « 3 déclarés sur 6 » là où la donnée d'essai en portait quatre : le rouge
+  venait de l'attente, pas du calcul. Corriger le code pour faire taire une
+  garde mal écrite aurait enterré la vraie valeur.
+- **Mesuré à l'écran, sur le bloc isolé avec sa vraie CSS** : aucun débordement
+  à 320, 375, 768 et 1280 px, et le titre passe à deux lignes sous 768. ⚠️ **Ce
+  qui n'a pas été regardé** : le bloc *en place* dans /admin, qui demande une
+  session — à confirmer d'un coup d'œil au premier domaine déclaré.
+
 ⚠️ **Et un troisième champ, le 20 septembre 2026 : le domaine actuel**
 (demandé par la direction, liste dictée : Finance · Comptabilité · Audit ·
 Contrôle de gestion · Trésorerie · Direction · Autre).
