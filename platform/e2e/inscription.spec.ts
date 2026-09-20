@@ -47,10 +47,49 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
   };
 
   const sansPoste = await request.post("/api/inscription", {
-    form: { ...base, email: `profil.a.${Date.now()}${MARQUE}`, experience: "2-5" },
+    form: {
+      ...base,
+      email: `profil.a.${Date.now()}${MARQUE}`,
+      domaine: "controle-gestion",
+      experience: "2-5",
+    },
     maxRedirects: 0,
   });
   expect(sansPoste.headers()["location"], "sans poste, la route refuse").toContain("erreur=profil");
+
+  /*
+    ⚠️ Le domaine est exigé comme les deux autres (20 septembre 2026). C'est le
+    seul des trois qui se **compte** — « combien de dossiers viennent de la
+    finance ? » ne se répond pas sur du texte libre — et un dossier sans domaine
+    manquerait à chaque total sans que rien ne le dise.
+  */
+  const sansDomaine = await request.post("/api/inscription", {
+    form: {
+      ...base,
+      email: `profil.c.${Date.now()}${MARQUE}`,
+      profession: "Contrôleur de gestion",
+      experience: "2-5",
+    },
+    maxRedirects: 0,
+  });
+  expect(sansDomaine.headers()["location"], "sans domaine, la route refuse").toContain(
+    "erreur=profil",
+  );
+
+  const domaineInvente = await request.post("/api/inscription", {
+    form: {
+      ...base,
+      email: `profil.d.${Date.now()}${MARQUE}`,
+      profession: "Contrôleur de gestion",
+      domaine: "astrophysique",
+      experience: "2-5",
+    },
+    maxRedirects: 0,
+  });
+  expect(
+    domaineInvente.headers()["location"],
+    "⚠️ un domaine hors liste ne se rattrape pas non plus",
+  ).toContain("erreur=profil");
 
   /*
     ⚠️ Une tranche inventée, pas seulement une tranche absente. Le moyen de
@@ -63,6 +102,7 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
       ...base,
       email: `profil.b.${Date.now()}${MARQUE}`,
       profession: "Contrôleur de gestion",
+      domaine: "controle-gestion",
       experience: "30-ans",
     },
     maxRedirects: 0,
@@ -396,6 +436,7 @@ test.describe("Un envoi répété", () => {
             whatsapp: "+212600000000",
             profession: "Contrôleur de gestion",
             experience: "2-5",
+            domaine: "controle-gestion",
             pays: "Maroc",
             plan: "P1",
             moyen: "virement",
@@ -609,6 +650,7 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         whatsapp: "+212600000000",
         profession: "Contrôleur de gestion",
         experience: "2-5",
+        domaine: "controle-gestion",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",
@@ -668,6 +710,7 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         whatsapp: "+212600000000",
         profession: "Contrôleur de gestion",
         experience: "2-5",
+        domaine: "controle-gestion",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",

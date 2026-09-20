@@ -756,6 +756,11 @@ export interface Inscription {
    */
   apprenantProfession?: string | null;
   apprenantExperience?: ('moins-2' | '2-5' | '5-10' | 'plus-10') | null;
+  /**
+   * Ce que la personne a déclaré au formulaire. C'est le champ sur lequel on peut filtrer et compter — le poste, en texte libre, ne s'additionne pas.
+   */
+  apprenantDomaine?:
+    ('finance' | 'comptabilite' | 'audit' | 'controle-gestion' | 'tresorerie' | 'direction' | 'autre') | null;
   payeurType: 'particulier' | 'organisation';
   payeurNom?: string | null;
   payeurEmail?: string | null;
@@ -1594,6 +1599,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   apprenantPays?: T;
   apprenantProfession?: T;
   apprenantExperience?: T;
+  apprenantDomaine?: T;
   payeurType?: T;
   payeurNom?: T;
   payeurEmail?: T;

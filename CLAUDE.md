@@ -3477,6 +3477,36 @@ jour : « zid la profession o number anne de l'experience bach ibano nass li
 m'ahelin mn nass li rire kaytfelaw »). Sur cent onze dossiers, rien ne
 distinguait un directeur financier en poste de quelqu'un qui remplit pour voir.
 
+⚠️ **Et un troisième champ, le 20 septembre 2026 : le domaine actuel**
+(demandé par la direction, liste dictée : Finance · Comptabilité · Audit ·
+Contrôle de gestion · Trésorerie · Direction · Autre).
+
+C'est **le seul des trois qui se compte.** Le poste dit à qui l'on parle —
+« Mécanicien automobile », « Aide soignant », deux vrais dossiers du
+18 septembre — et il ne s'additionne pas : « DAF », « Directeur Administratif
+et Financier » et « daf » sont trois réponses différentes pour un même métier.
+La question « sur cent quinze dossiers, combien viennent de la finance ? » ne se
+répond que sur une liste fermée.
+
+- ⚠️ **Ce n'est pas la même question posée deux fois.** Le journal garde le
+  souvenir du champ « Pays » qui doublait l'indicatif ; la ressemblance s'arrête
+  là. L'un se lit avant d'appeler, l'autre se compte avant d'ouvrir une cohorte.
+- ⚠️ **« Autre » n'ouvre aucun champ libre**, contrairement au sélecteur de
+  pays. Il n'y a rien à préciser : le poste, juste au-dessus, l'a déjà dit en
+  toutes lettres. Une case de plus serait exactement le doublon du 7 septembre.
+  Mais « Autre » ne se retire pas — une liste fermée renverrait sans recours
+  quelqu'un dont le métier n'y figure pas, pour une lacune qui est la nôtre.
+- **L'ordre du formulaire porte du sens** : ce que vous faites, dans quel
+  domaine, depuis combien de temps. Posé après l'expérience, il se lisait comme
+  une question de plus ; posé au milieu, il précise celle d'au-dessus.
+- **Mêmes règles que ses deux voisins** : exigé au formulaire **et** par la
+  route, jamais `required` dans la collection ; un domaine inventé se refuse au
+  lieu de retomber sur une valeur par défaut ; aucune option n'est cochée
+  d'avance. `inscriptions.apprenant_domaine` poussée sur `dev` puis sur la
+  production avant le déploiement.
+- **Au tableau de bord et au classeur**, entre le poste et l'expérience, en
+  clair — jamais `controle-gestion`.
+
 - **Le poste est un texte libre**, l'**expérience une tranche** — moins de 2 ans,
   2 à 5, 5 à 10, plus de 10. Trois raisons de ne pas prendre un nombre : trente
   lignes de « 3 · 12 · 7 » se trient mais ne se lisent pas ; un champ numérique

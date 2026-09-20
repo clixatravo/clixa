@@ -8,7 +8,7 @@ import { MOYENS } from "@/lib/moyens";
 import { lienListeAttente } from "@/lib/attente";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import { ChampPays } from "@/components/ChampPays";
-import { EXPERIENCES } from "@/lib/profil";
+import { DOMAINES, EXPERIENCES } from "@/lib/profil";
 import {
   formatPeriode,
   formatPrix,
@@ -35,7 +35,7 @@ interface Props {
 const MESSAGES: Record<string, string> = {
   champs: "Il manque une information. Tous les champs marqués sont nécessaires pour vous rappeler.",
   profil:
-    "Indiquez votre poste actuel et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
+    "Indiquez votre poste actuel, votre domaine et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
   session: "Cette session n'existe plus. Choisissez-en une autre ci-dessous.",
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
   indicatif:
@@ -268,6 +268,35 @@ export default async function Inscription({ searchParams }: Props) {
                   autoComplete="organization-title"
                   placeholder="Comptable, DAF, chef de projet…"
                 />
+                {/*
+                  ⚠️ **Le domaine vient entre le poste et l'ancienneté**, et
+                  l'ordre porte du sens : ce que vous faites, dans quel domaine,
+                  depuis combien de temps. Posé après l'expérience, il se serait
+                  lu comme une question de plus ; posé là, il précise celle
+                  d'au-dessus.
+                */}
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="domaine" className="mono-label text-ivory-dim text-[0.7rem]">
+                    Domaine actuel <span className="text-gold">*</span>
+                  </label>
+                  <select
+                    id="domaine"
+                    name="domaine"
+                    required
+                    defaultValue=""
+                    className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
+                  >
+                    <option value="" disabled>
+                      Choisissez…
+                    </option>
+                    {DOMAINES.map((d) => (
+                      <option key={d.valeur} value={d.valeur}>
+                        {d.libelle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex flex-col gap-2">
                   <label htmlFor="experience" className="mono-label text-ivory-dim text-[0.7rem]">
                     Années d&apos;expérience <span className="text-gold">*</span>

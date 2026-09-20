@@ -9,7 +9,7 @@ import { courrielParticipant } from "@/lib/courriel";
 import { finDeLaTenue } from "@/lib/places";
 import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
-import { experienceValide } from "@/lib/profil";
+import { domaineValide, experienceValide } from "@/lib/profil";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -98,6 +98,7 @@ export async function POST(request: Request) {
     On refuse. Voir `lib/profil.ts`.
   */
   const profession = texte("profession");
+  const domaine = domaineValide(texte("domaine"));
   const experience = experienceValide(texte("experience"));
 
   const echec = (cause: string) =>
@@ -157,7 +158,7 @@ export async function POST(request: Request) {
   }
 
   /* Les deux nouvelles questions sont exigées, pas seulement proposées. */
-  if (profession.length < MINIMUM_LETTRES || !experience) echec("profil");
+  if (profession.length < MINIMUM_LETTRES || !domaine || !experience) echec("profil");
 
   /*
     L'adresse sert à envoyer la confirmation et à rattacher le dossier à un
@@ -290,6 +291,7 @@ export async function POST(request: Request) {
             statut: "demandee",
             apprenantNom: nom,
             apprenantProfession: profession,
+            apprenantDomaine: domaine,
             apprenantExperience: experience,
             apprenantEmail: email,
             apprenantWhatsapp: whatsapp,

@@ -4,7 +4,7 @@ import { nouveauCodeCertificat } from "@/lib/code-certificat";
 import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { pasDansLeFutur, paysValide } from "@/collections/champs";
-import { OPTIONS_EXPERIENCE } from "@/lib/profil";
+import { OPTIONS_DOMAINE, OPTIONS_EXPERIENCE } from "@/lib/profil";
 import {
   courrielCertificatDisponible,
   courrielContratVerifie,
@@ -206,6 +206,7 @@ export const Inscriptions: CollectionConfig = {
         trente lignes.
       */
       "apprenantProfession",
+      "apprenantDomaine",
       "apprenantExperience",
       "apprenantEmail",
       "apprenantWhatsapp",
@@ -715,6 +716,22 @@ export const Inscriptions: CollectionConfig = {
               admin: { width: "50%" },
             },
           ],
+        },
+        {
+          /*
+            Le domaine d'exercice (20 septembre 2026). C'est celui des trois qui
+            se **compte** : le poste dit à qui l'on parle, le domaine dit combien
+            ils sont. Pas `required` ici, pour la raison écrite plus haut — les
+            cent quinze dossiers d'avant ne le portent pas.
+          */
+          name: "apprenantDomaine",
+          type: "select",
+          label: "Domaine actuel",
+          options: OPTIONS_DOMAINE,
+          admin: {
+            description:
+              "Ce que la personne a déclaré au formulaire. C'est le champ sur lequel on peut filtrer et compter — le poste, en texte libre, ne s'additionne pas.",
+          },
         },
       ],
     },

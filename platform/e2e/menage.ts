@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
 import { PAYS_OFFERTS } from "../src/lib/pays";
-import { EXPERIENCES } from "../src/lib/profil";
+import { DOMAINES, EXPERIENCES } from "../src/lib/profil";
 
 /**
  * Retirer ce que les épreuves ont écrit.
@@ -177,10 +177,14 @@ export async function remplirProfil(
   page: Page,
   poste = "Contrôleur de gestion",
   experience = "2-5",
+  domaine = "controle-gestion",
 ): Promise<void> {
   const connue = EXPERIENCES.some((e) => e.valeur === experience);
   expect(connue, `« ${experience} » n'est pas une tranche d'expérience offerte`).toBe(true);
+  const connuD = DOMAINES.some((d) => d.valeur === domaine);
+  expect(connuD, `« ${domaine} » n'est pas un domaine offert`).toBe(true);
   await page.fill("input#profession", poste);
+  await page.selectOption("select#domaine", domaine);
   await page.selectOption("select#experience", experience);
 }
 

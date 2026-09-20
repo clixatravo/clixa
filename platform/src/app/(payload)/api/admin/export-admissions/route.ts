@@ -1,7 +1,7 @@
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
-import { libelleExperience } from "@/lib/profil";
+import { libelleDomaine, libelleExperience } from "@/lib/profil";
 import { classeur, type Valeur } from "@/lib/tableur";
 
 /**
@@ -161,6 +161,7 @@ export async function GET(request: Request) {
         des gens qui n'ont pas à déchiffrer le vocabulaire de notre base.
       */
       String(ins.apprenantProfession ?? ""),
+      libelleDomaine(ins.apprenantDomaine),
       libelleExperience(ins.apprenantExperience),
       String(ins.apprenantEmail ?? ""),
       String(ins.apprenantWhatsapp ?? ""),
@@ -207,6 +208,7 @@ export async function GET(request: Request) {
         { entete: "Statut", largeur: 30 },
         { entete: "Nom", largeur: 26 },
         { entete: "Poste actuel", largeur: 26 },
+        { entete: "Domaine", largeur: 20 },
         { entete: "Expérience", largeur: 16 },
         { entete: "E-mail", largeur: 30 },
         { entete: "WhatsApp", largeur: 18 },

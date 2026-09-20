@@ -32,6 +32,62 @@
  * énuméré une valeur que des lignes utilisent.**
  */
 
+/**
+ * Le domaine d'exercice, demandé par la direction le 20 septembre 2026.
+ *
+ * ── ⚠️ Pourquoi une liste, quand le poste est déjà un texte libre ───────────
+ * Ce n'est pas la même question posée deux fois — le journal garde le souvenir
+ * du champ « Pays » qui doublait l'indicatif, et la leçon vaut : deux saisies
+ * pour un même fait finissent par se contredire. Ici les deux ne servent pas au
+ * même moment.
+ *
+ * - **Le poste** dit *à qui l'on parle* : « Mécanicien automobile », « Aide
+ *   soignant » — deux vrais dossiers du 18 septembre. On le lit avant
+ *   d'appeler, et il ne se compte pas.
+ * - **Le domaine** dit *combien* : c'est le seul des deux qui se filtre et
+ *   s'additionne. « Sur cent quinze dossiers, combien viennent de la finance ? »
+ *   ne se répond pas sur du texte libre, où « DAF », « Directeur Administratif
+ *   et Financier » et « daf » sont trois réponses différentes.
+ *
+ * ⚠️ **« Autre » n'ouvre pas de champ libre**, contrairement au sélecteur de
+ * pays. Il n'y a rien à préciser : le poste, juste au-dessus, l'a déjà dit en
+ * toutes lettres. Ajouter une case reviendrait à demander deux fois la même
+ * chose — la faute exacte qu'on a corrigée le 7 septembre.
+ *
+ * Et il ne se retire pas : une liste fermée renverrait sans recours quelqu'un
+ * dont le métier n'y figure pas, pour une lacune qui est la nôtre.
+ */
+export const DOMAINES = [
+  { valeur: "finance", libelle: "Finance" },
+  { valeur: "comptabilite", libelle: "Comptabilité" },
+  { valeur: "audit", libelle: "Audit" },
+  { valeur: "controle-gestion", libelle: "Contrôle de gestion" },
+  { valeur: "tresorerie", libelle: "Trésorerie" },
+  { valeur: "direction", libelle: "Direction" },
+  { valeur: "autre", libelle: "Autre" },
+] as const;
+
+export type Domaine = (typeof DOMAINES)[number]["valeur"];
+
+export const OPTIONS_DOMAINE = DOMAINES.map((d) => ({ label: d.libelle, value: d.valeur }));
+
+/**
+ * Le domaine correspondant, ou `undefined`.
+ *
+ * ⚠️ Même règle que pour l'expérience : on ne rattrape pas. Un domaine inventé
+ * rangerait le dossier dans une case que personne n'a cochée, et c'est sur ces
+ * cases que se comptent les cohortes à venir.
+ */
+export function domaineValide(valeur: string): Domaine | undefined {
+  return DOMAINES.find((d) => d.valeur === valeur)?.valeur;
+}
+
+/** L'intitulé à afficher, ou le tiret de « rien n'a été demandé ». */
+export function libelleDomaine(valeur?: string | null): string {
+  if (!valeur) return "—";
+  return DOMAINES.find((d) => d.valeur === valeur)?.libelle ?? String(valeur);
+}
+
 /** Les tranches offertes, dans l'ordre où on les lit. */
 export const EXPERIENCES = [
   { valeur: "moins-2", libelle: "Moins de 2 ans" },
