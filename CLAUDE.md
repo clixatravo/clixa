@@ -1358,9 +1358,65 @@ déjà cette même date sur chaque ligne.
   d'abord, ce que la liste sert à voir.
 - ⚠️ **Un tri enregistré par un membre de l'équipe l'emporte sur le défaut**, et
   ne se voit nulle part : `payload_preferences` le garde par compte. Il se
-  défait en recliquant sur un en-tête. Vérifié le même jour : **aucune
-  préférence de *colonnes*** n'était enregistrée — c'est ce qui a permis à
-  « Délai » de paraître sans que personne ait rien à faire.
+  défait en recliquant sur un en-tête. Vérifié le 9 septembre : aucune
+  préférence de *colonnes* n'était **alors** enregistrée — c'est ce qui a permis
+  à « Délai » de paraître sans que personne ait rien à faire. ⚠️ **Ce n'est plus
+  vrai depuis** : une préférence de colonnes a été posée, et elle a masqué
+  quatre colonnes sur un compte pendant neuf jours. Voir plus bas.
+
+⚠️ **Une colonne ajoutée ne paraît pas sur les comptes qui ont touché au menu
+« Colonnes »** (signalé par la direction le 21 septembre 2026 : « f compte dyal
+l'administration ma kaynax les colonnes li zedna »,
+`scripts/reparer-les-colonnes.ts`, rejouable). Elles paraissaient sur un compte
+et pas sur l'autre — ce qui ressemble à un déploiement raté, et n'en est pas un.
+
+Payload garde les réglages de liste **par compte**, dans `payload_preferences`.
+Dès qu'on ouvre ce menu et qu'on touche à quoi que ce soit, il enregistre la
+liste **telle qu'elle était ce jour-là** ; `defaultColumns` cesse alors de
+s'appliquer à ce compte, et **toute colonne ajoutée ensuite lui est
+invisible**. Rien ne le signale : ni erreur, ni type, ni épreuve — la colonne
+existe, elle n'est simplement pas cochée chez cette personne.
+
+⚠️ **Cette page affirmait le contraire depuis le 9 septembre** : « aucune
+préférence de *colonnes* n'était enregistrée ». C'était vrai ce jour-là. Une
+préférence a été posée depuis, et la phrase a vieilli sans que rien ne la
+relise.
+
+**Mesuré en production** : sur quatre comptes d'équipe, **un seul** portait une
+liste figée — `administration@clixa.africa`, trente-sept colonnes gelées. Il lui
+manquait les trois champs de profil des 18 et 20 septembre **et `suiviPar`** :
+la colonne « qui mène ce dossier », demandée par la direction le 12 septembre,
+**n'a jamais paru sur le compte à qui la question se pose le plus.**
+
+- **On répare, on ne remet pas à zéro.** Effacer la préférence rendrait les
+  colonnes et emporterait le tri choisi (« statut ») et le nombre de lignes par
+  page — un réglage que quelqu'un a posé exprès. Les manquantes sont insérées
+  **derrière leur voisin de gauche** dans `defaultColumns` : toutes mises à la
+  fin, elles se seraient retrouvées après « créé le » et les colonnes
+  volontairement décochées — présentes et hors de l'écran, c'est-à-dire le
+  défaut qu'on répare.
+- ⚠️ **La liste de référence est lue dans la collection**, jamais recopiée dans
+  le script. Une seconde table des colonnes attendues finirait par diverger —
+  et c'est précisément une divergence entre deux comptes qui a produit ce
+  défaut.
+- ⚠️ **`payload.update` ne peut pas écrire cette préférence.** `user` y est une
+  relation polymorphe **obligatoire** : une mise à jour partielle la perd et
+  Payload refuse en **400 — « Le champ suivant n'est pas valide : User »**, sur
+  un champ qu'on ne touche pas. La renvoyer telle qu'elle se lit
+  (`{ relationTo, value }`) **ne suffit pas non plus** : le refus est identique.
+  Le script écrit donc la seule colonne concernée, `value`, qui est un `jsonb`.
+  C'est un réglage d'écran, sans crochet ; la clef, le compte et les dates ne
+  bougent pas.
+- ⚠️ **Et la relecture passe par l'API de Payload**, pas par SQL : c'est elle
+  qui sert /admin. Une écriture que la base accepte et que Payload ne saurait
+  pas relire ne réparerait rien. Relu après coup : **14 colonnes visibles, dans
+  l'ordre de la collection, tri et pagination inchangés.**
+- **Le compte doit recharger /admin** : la préférence est lue au chargement.
+
+⚠️ **Cela se reproduira à chaque colonne ajoutée**, pour tout compte ayant
+ouvert ce menu une fois. Le script est fait pour être relancé : il compare la
+collection à chaque préférence figée et ne touche que ce qui manque — « rien de
+figé, il suit la collection » pour les trois autres comptes.
 
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
 depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
