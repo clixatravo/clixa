@@ -3902,7 +3902,41 @@ professional fihom des photo o rakez liya 3la DAF bl khossos »).
   dans `public/`, donc elles n'existent qu'une fois le déploiement passé. Un
   message parti d'une production qui ne les sert pas encore arrive avec trois
   cadres vides — et c'est le seul de nos messages qu'on ne peut pas rattraper.
-- `verifier-presentation.ts` passe de 33 à **49 contrôles**.
+- `verifier-presentation.ts` passe de 33 à **50 contrôles**.
+
+⚠️ **Puis la présentation est passée sur fond clair** (`gabaritClairEmail`,
+23 septembre 2026, second jet). Le premier était juste et **illisible** : sur
+fond d'encre, dense, long comme une plaquette — « majatx mzyana, briitha tkon
+fhal hado li seft lek », au vu de quatre courriels d'Accor et de Lyca, tous
+clairs.
+
+- **Un second gabarit, pas un réglage du premier.** Les seize messages du
+  tunnel gardent l'encre : ils partent à quelqu'un qui a déjà un dossier, ils
+  prolongent le site, et les basculer demanderait de les regarder un par un
+  alors qu'ils partent tous les jours. Décision de la direction.
+- ⚠️ **L'or change de valeur entre les deux gabarits.** `#c9a24c` sur blanc
+  tombe à **2,2:1** — sous le seuil, illisible pour du texte. Le texte doré est
+  donc `#8f6b1c` (4,8:1), et `#c9a24c` ne sert plus que de **fond** de bouton,
+  sous du texte encre. Ne pas recopier l'or du gabarit sombre.
+- ⚠️ **`color-scheme: light` et les couleurs en dur.** Gmail et Outlook
+  inversent volontiers un courriel clair quand le téléphone est en mode sombre,
+  et ils le font mal — texte encre sur fond redevenu sombre. La méta le leur
+  déconseille, et chaque cellule porte sa couleur plutôt que de l'hériter.
+- **La longueur a été coupée**, et c'est ce qui manquait le plus : un message
+  de prospection se parcourt en dix secondes. Restent le parcours mis en avant,
+  les douze titres, trois faits en bandeau et le barème. Les quatre façons de
+  décrire le déroulé et les quatre points du certificat ont fondu.
+- ⚠️ **Un backtick dans un littéral de gabarit le termine**, et l'erreur qui en
+  sort désigne une tout autre ligne : « Expected ) but found nowrap ». Les
+  commentaires sur le HTML vivent donc **hors** du littéral, en commentaire
+  TypeScript.
+- ⚠️ **Et la garde a accusé le logo.** Elle exigeait vingt caractères d'`alt` de
+  toute image ; le logo porte « CLIXA Institute » — quinze, et c'est exactement
+  ce qu'un logo doit annoncer. C'était la **garde** qui avait tort, pas le
+  gabarit : elle demande désormais un `alt` à toute image, et un `alt` qui
+  *décrit* aux seules images de contenu. Deuxième fois que ce fichier accuse un
+  code juste ; la première, il attendait « 3 déclarés sur 6 » sur une donnée
+  d'essai qui en portait quatre.
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,

@@ -388,9 +388,23 @@ try {
   const balises = [...html.matchAll(/<img[^>]*>/g)].map((m) => m[0]);
 
   dire("le message porte bien des images", balises.length >= 3, `${balises.length} images`);
+  /*
+    ⚠️ **Le logo n'est pas une image de contenu**, et cette garde l'a d'abord
+    accusé : elle exigeait vingt caractères d'`alt` de toute image, et le logo
+    porte « CLIXA Institute » — quinze, et c'est exactement ce qu'un logo doit
+    annoncer. Une description plus longue y serait du bruit lu à voix haute.
+
+    C'est la garde qui avait tort, pas le gabarit. La règle se dit donc en
+    deux temps : **aucune image sans alt**, et **un alt qui décrit** pour
+    celles qui portent le propos.
+  */
   dire(
-    "chacune a un alt qui décrit ce qu'elle montre",
-    balises.every((b) => /alt="[^"]{20,}"/.test(b)),
+    "aucune image sans alt",
+    balises.every((b) => /alt="[^"]+"/.test(b)),
+  );
+  dire(
+    "les images de contenu ont un alt qui décrit ce qu'elles montrent",
+    balises.filter((b) => !/logo\.png/.test(b)).every((b) => /alt="[^"]{20,}"/.test(b)),
   );
   dire(
     "chacune porte sa largeur en attribut — Outlook ignore le CSS des images",
