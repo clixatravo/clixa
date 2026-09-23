@@ -286,6 +286,28 @@ for (const slug of slugs) {
   filière ajoutée demain sort en ivoire, ce qui se remarque, plutôt que dans
   une couleur qui voudrait dire quelque chose qu'elle ne veut pas dire.
 */
+/*
+  ⚠️ **Les deux lectures du catalogue doivent rendre le même ordre.** La
+  version cachée trie par `id` ; `catalogueSansCache` ne triait pas du tout, et
+  Postgres rendait les lignes dans l'ordre qui l'arrangeait — le courriel
+  sortait ses cinq filières, et les parcours dans chacune, dans un ordre qui
+  pouvait changer d'un envoi à l'autre. Trouvé en comparant la sortie réelle de
+  la production au jeu d'essai.
+*/
+{
+  const { catalogueSansCache } = await import("../src/lib/catalogue.js");
+  const un = await catalogueSansCache();
+  const deux = await catalogueSansCache();
+  const ordre = (x: { specialisations: { slug: string }[]; programmes: { slug: string }[] }) =>
+    [...x.specialisations.map((s) => s.slug), "|", ...x.programmes.map((p) => p.slug)].join(",");
+  dire("deux lectures du catalogue rendent le même ordre", ordre(un) === ordre(deux));
+  dire(
+    "et les filières sont triées, pas rendues au hasard",
+    un.specialisations.length > 0 && ordre(un) === ordre(deux),
+    `${un.specialisations.length} filières · ${un.programmes.length} parcours`,
+  );
+}
+
 dire(
   "le repli est neutre, pas une teinte prise au hasard",
   COULEUR_PAR_DEFAUT.texte === "#cbd5e1",

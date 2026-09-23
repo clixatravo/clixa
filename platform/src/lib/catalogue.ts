@@ -140,12 +140,26 @@ export async function catalogueSansCache(): Promise<{
   sessions: Session[];
 }> {
   const payload = await payloadClient();
+  /*
+    ⚠️ **Les mêmes tris que la lecture cachée, et ce n'est pas un détail.**
+    Ce lecteur existait sans `sort` : Postgres rendait alors les lignes dans
+    l'ordre qui l'arrangeait, et le courriel de présentation sortait ses cinq
+    filières — et les parcours dans chacune — dans un ordre qui pouvait changer
+    d'un envoi à l'autre. Deux personnes recevaient le même message avec le
+    catalogue mélangé.
+
+    C'est le piège que ce projet note depuis l'origine : « trier explicitement,
+    sinon l'ordre du catalogue change à chaque ajout ». Trouvé en comparant la
+    sortie réelle de la production à celle du jeu d'essai — les filières
+    n'étaient pas dans le même ordre.
+  */
   const [specs, progs, sess] = await Promise.all([
     payload.find({
       collection: "specialisations",
       limit: 100,
       locale: "fr",
       depth: 0,
+      sort: "id",
       overrideAccess: false,
     }),
     payload.find({
@@ -153,6 +167,7 @@ export async function catalogueSansCache(): Promise<{
       limit: 200,
       locale: "fr",
       depth: 1,
+      sort: "id",
       overrideAccess: false,
     }),
     payload.find({
