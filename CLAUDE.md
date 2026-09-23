@@ -3902,7 +3902,52 @@ professional fihom des photo o rakez liya 3la DAF bl khossos »).
   dans `public/`, donc elles n'existent qu'une fois le déploiement passé. Un
   message parti d'une production qui ne les sert pas encore arrive avec trois
   cadres vides — et c'est le seul de nos messages qu'on ne peut pas rattraper.
-- `verifier-presentation.ts` passe de 33 à **50 contrôles**.
+- `verifier-presentation.ts` passe de 33 à **60 contrôles**.
+
+⚠️ **Et un gabarit composé ailleurs a été repris — sa structure, pas ses
+faits** (23 septembre 2026, troisième jet : « khedm bhado o ziid 3lihom dakxi
+dyalk »). La direction a transmis un courriel DAF écrit par un autre outil.
+Sa **forme** était bonne et elle est reprise : trois compétences numérotées en
+tête, des cartes, trois étapes, un encadré de tarifs, deux boutons. Ses
+**faits** ne tenaient pas, et **aucun n'était attrapable par un type, un build
+ou une relecture rapide** — chacun était parfaitement plausible.
+
+| ce qu'il annonçait | ce qui est vrai, mesuré |
+|---|---|
+| `/programmes/<slug>` | `/formations/<slug>` — **tous ses liens rendaient 404** |
+| « 8 séances interactives du soir » | **8 samedis, 9h00–13h00 UTC** |
+| « Promotion limitée à 20 participants » | cohorte **tenue ouverte**, **109 places déjà prises** |
+| « Places limitées » | aucune rareté ne s'invente |
+| WhatsApp `212660000000` | `212669303467` — l'autre est un numéro d'attente |
+| 4 images `email_*.jpg` | **404**, aucune n'existe |
+| « Sélection sur dossier », « Comité des Admissions » | il n'y a **pas** de sélection |
+| « Accès immédiat à la plateforme » | l'accès vient après signature **et** versement |
+| « 5 templates livrables » | **six**, et ils sont au catalogue |
+| « 3 mensualités » | trois échéances **adossées aux séances** |
+| « Attestation officielle » | elle est **provisoire** tant que rien n'est réglé |
+| `/conditions`, `/desinscription` | **404** toutes les deux |
+| `[www.clixa.africa](…)` | du Markdown laissé dans du HTML |
+
+- ⚠️ **La cadence vient de la session du parcours mis en avant**, pas de la
+  première venue. Les douze cohortes démarrent le même jour mais pas à la même
+  heure — dix le matin, les ressources humaines et la préparation PMP
+  l'après-midi. Prendre la première session triée annoncerait « 9h00–13h00 »
+  sous un parcours qui se donne à 13h00, et l'horaire est ce qui décide si
+  quelqu'un peut suivre.
+- **Les trois étapes disent le vrai tunnel** : retenir sa place, demander son
+  contrat quand on est décidé, régler. Promettre un entretien de sélection à
+  quelqu'un qui remplira un formulaire sans jamais être appelé, c'est le faire
+  attendre pour rien.
+- **Six livrables, comptés et non écrits** — `Ce que vous emportez — ${n}
+  livrables` prend la longueur de la liste. Le gabarit reçu en annonçait cinq.
+- ⚠️ **La garde retient la *classe* de chaque faute, pas ce gabarit-là** : pas
+  d'adresse en `/programmes/`, pas de séance « du soir », pas de « limitée à
+  N », pas de sélection inventée, pas d'accès promis avant le règlement, pas
+  d'échéance mensuelle, pas d'attestation « officielle », pas de convention de
+  formation. Plus deux contrôles de fond : le numéro WhatsApp est lu dans
+  `lib/reseaux.ts`, et **aucune adresse du message n'a une forme inconnue** —
+  un lien mort dans un message de prospection coûte le prospect. **Prouvé en
+  remettant `/programmes/` et « du soir » : deux rouges.**
 
 ⚠️ **Puis la présentation est passée sur fond clair** (`gabaritClairEmail`,
 23 septembre 2026, second jet). Le premier était juste et **illisible** : sur

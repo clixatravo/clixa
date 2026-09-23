@@ -122,6 +122,21 @@ export async function POST(requete: Request): Promise<Response> {
   ]);
 
   const prochaine = [...sessions].sort((a, b) => a.debut.localeCompare(b.debut))[0];
+
+  const vedette =
+    typeof corps.misEnAvant === "string" && corps.misEnAvant.trim() !== ""
+      ? corps.misEnAvant.trim()
+      : "directeur-administratif-et-financier";
+
+  /*
+    ⚠️ **La cadence vient de la session du parcours mis en avant, pas de la
+    première venue.** Les douze cohortes démarrent le même jour mais pas à la
+    même heure : dix le matin, les ressources humaines et la préparation PMP
+    l'après-midi. Prendre la cadence de la première session triée annoncerait
+    « 9h00–13h00 » sous un parcours qui se donne à 13h00 — et l'horaire est ce
+    qui décide si quelqu'un peut suivre.
+  */
+  const sessionVedette = sessions.find((x) => x.programmeSlug === vedette);
   const presentation = composerLaPresentation({
     specialisations,
     programmes,
@@ -134,10 +149,8 @@ export async function POST(requete: Request): Promise<Response> {
       montrer. Un slug inconnu ne met simplement rien en avant — le message se
       rend en liste, comme avant.
     */
-    misEnAvant:
-      typeof corps.misEnAvant === "string" && corps.misEnAvant.trim() !== ""
-        ? corps.misEnAvant.trim()
-        : "directeur-administratif-et-financier",
+    misEnAvant: vedette,
+    ...(sessionVedette?.cadence ? { cadenceEnAvant: sessionVedette.cadence } : {}),
     ...(prochaine?.debut ? { prochaineRentree: new Date(prochaine.debut) } : {}),
     ...(prochaine?.fin ? { finDeCohorte: new Date(prochaine.fin) } : {}),
     site: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa",

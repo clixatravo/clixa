@@ -384,6 +384,19 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
                     "DAF en prise de poste",
                     "Dirigeants structurant la fonction finance",
                   ],
+                  competences: [
+                    "rôle DAF et organisation de la fonction finance",
+                    "contrôle interne, anti-fraude et séparation des tâches",
+                    "closing rapide et management pack mensuel",
+                  ],
+                  livrables: [
+                    "Support de formation complet",
+                    "Template cash 13 semaines",
+                    "Budget / forecast driver-based",
+                    "Management pack mensuel",
+                    "Matrice risques-contrôles",
+                    "Dashboard et playbook DAF",
+                  ],
                 }
               : {}),
           })) as never,
@@ -419,6 +432,7 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
           finDeCohorte: new Date("2026-11-21T13:00:00.000Z"),
           site: "https://www.clixa.africa",
           misEnAvant: "directeur-administratif-et-financier",
+          cadenceEnAvant: "8 samedis · 9h00–13h00",
         }),
       }),
   },

@@ -57,7 +57,20 @@ export interface FaitsDePresentation {
     | "accroche"
     | "modules"
     | "publicVise"
+    | "competences"
+    | "livrables"
   >[];
+  /**
+   * La cadence de la session du parcours mis en avant — « 8 samedis ·
+   * 9h00–13h00 ».
+   *
+   * ⚠️ **Elle fait foi, et elle ne se devine pas.** Un gabarit reçu le
+   * 23 septembre 2026 annonçait « 8 séances interactives du soir » : les
+   * séances du DAF sont le **samedi matin**, de 9h00 à 13h00 UTC. Quelqu'un
+   * qui s'inscrit sur cette phrase découvre l'horaire réel à la première
+   * séance — et ce n'est pas un détail, c'est ce qui décide s'il peut suivre.
+   */
+  cadenceEnAvant?: string;
   /**
    * Le parcours mis en avant, par son slug.
    *
@@ -96,6 +109,12 @@ export interface ParcoursEnAvant {
   seances: string[];
   /** À qui il s'adresse — quatre au plus, la liste entière ferait un pavé. */
   pourQui: string[];
+  /** Ce qu'on emporte : supports, trames, tableaux de bord. */
+  livrables: string[];
+  /** Les trois compétences de tête — l'argument, pas l'inventaire. */
+  competences: string[];
+  /** « 8 samedis · 9h00–13h00 », telle que la session la porte. */
+  cadence?: string;
 }
 
 export interface Presentation {
@@ -181,6 +200,16 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
         heures: vedette.dureeHeures,
         seances: (vedette.modules ?? []).map((m) => m.titre).filter(Boolean),
         pourQui: (vedette.publicVise ?? []).slice(0, 4),
+        livrables: vedette.livrables ?? [],
+        /*
+          ⚠️ **Trois compétences, et les trois premières du catalogue.** Le DAF
+          en porte dix : les dérouler ferait un inventaire, et un message de
+          prospection se parcourt en dix secondes. On ne les choisit pas à la
+          main non plus — ce serait une seconde rédaction à tenir à jour, et
+          c'est exactement ce que ce fichier existe pour éviter.
+        */
+        competences: (vedette.competences ?? []).slice(0, 3),
+        ...(f.cadenceEnAvant ? { cadence: f.cadenceEnAvant } : {}),
       }
     : undefined;
 

@@ -437,6 +437,67 @@ try {
     "la photo de séminaire est légendée, en texte",
     /classe virtuelle/i.test(nu) && /S[ée]minaire dirigeants/i.test(nu),
   );
+
+  /*
+    ── ⚠️ Les treize affirmations d'un gabarit reçu, et pourquoi elles sont
+    gardées une par une ──────────────────────────────────────────────────────
+    La direction a transmis le 23 septembre 2026 un gabarit composé ailleurs,
+    à reprendre. Sa structure était bonne ; ses faits, non — et **aucun n'était
+    attrapable par un type, un build ou une relecture rapide**, parce que
+    chacun était parfaitement plausible. Chacun aurait été découvert par le
+    premier prospect qui vérifie, sur le message même qui sert à le faire
+    venir.
+
+    Mesuré en production ce jour-là : `/programmes/<slug>` rendait **404** (la
+    vraie adresse est `/formations/<slug>`), les quatre images `email_*.jpg`
+    rendaient 404, `/conditions` et `/desinscription` aussi, le numéro WhatsApp
+    était un numéro d'attente, la cohorte annoncée « limitée à 20 participants »
+    en comptait **109 de prises** et se tient ouverte, et les séances annoncées
+    « du soir » se donnent le **samedi de 9h00 à 13h00**.
+
+    On ne garde pas « ce gabarit-là » : on garde la **classe** de chaque faute,
+    pour qu'elle ne revienne pas par une autre porte.
+  */
+  const INTERDITS_DU_GABARIT: [string, RegExp][] = [
+    ["aucune adresse en /programmes/ — elles rendent 404", /\/programmes\//],
+    ["aucune séance « du soir » — l'horaire vient de la cadence", /du soir|en soir[ée]e/i],
+    ["aucune promotion « limitée à N »", /limit[ée]e? à \d+|plus que \d+ places?/i],
+    [
+      "aucune sélection inventée",
+      /s[ée]lection sur dossier|comit[ée] des admissions|entretien d'alignement/i,
+    ],
+    ["aucun accès promis avant le règlement", /acc[èe]s imm[ée]diat/i],
+    ["aucune échéance présentée comme mensuelle", /mensualit[ée]s?|\/\s?mois|par mois/i],
+    ["aucune attestation dite « officielle »", /attestation officielle/i],
+    ["aucune convention de formation inventée", /convention de formation/i],
+  ];
+  for (const [quoi, motif] of INTERDITS_DU_GABARIT) dire(quoi, !motif.test(html));
+
+  /*
+    ⚠️ **Le numéro WhatsApp se lit dans `lib/reseaux.ts`, jamais recopié.** Le
+    gabarit reçu portait `212660000000` — un numéro d'attente, qui ouvre une
+    conversation avec un inconnu. C'est la faute que la règle ESLint sur
+    `reseaux.ts` existe pour empêcher dans le code ; ici on vérifie le rendu.
+  */
+  const { RESEAUX_CLIXA } = await import("../src/lib/reseaux.js");
+  dire(
+    "le numéro WhatsApp est celui de la maison",
+    html.includes(RESEAUX_CLIXA.whatsapp.numeroAffiche),
+    RESEAUX_CLIXA.whatsapp.numeroAffiche,
+  );
+
+  /*
+    ⚠️ **Toutes les adresses du message mènent quelque part.** Un lien mort
+    dans un message de prospection coûte le prospect : il a cliqué, il est
+    tombé sur un 404, il ne reviendra pas. On ne tire pas le réseau ici — la
+    recette le fait sur la production — mais on vérifie que le message ne
+    fabrique que des adresses dont la forme existe.
+  */
+  const liens = [...html.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((m) => m[1]!);
+  const formesConnues =
+    /\/(formations|inscription|verifier|temoignages|faq|contact|compte|blog|campus|v)\b|^https:\/\/(www\.)?clixa\.africa\/?$|wa\.me/;
+  const douteux = liens.filter((l) => l.includes("clixa.africa") && !formesConnues.test(l));
+  dire("aucune adresse inventée", douteux.length === 0, douteux.join(" ") || "toutes connues");
 } finally {
   for (const quoi of aSupprimer.reverse()) {
     await payload
