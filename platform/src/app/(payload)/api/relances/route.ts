@@ -1,3 +1,44 @@
+/**
+ * ⚠️ **PLUS RIEN NE DÉCLENCHE CETTE ROUTE** (décision de la direction, le
+ * 23 septembre 2026 : « khali kolxi manual htal mn be3d o nchofo l auto »).
+ *
+ * Le cron `0 8 * * *` a été retiré de `vercel.json`. La route existe toujours,
+ * elle reste éprouvée, et elle répond toujours à qui présente le jeton — mais
+ * **personne ne l'appelle**.
+ *
+ * ── Ce qui ne part donc plus tout seul ─────────────────────────────────────
+ * Mesuré sur la production le jour de l'arrêt, par `journal-des-relances.ts` :
+ * le passage suivant aurait envoyé **six annonces « votre place n'est pas
+ * encore repartie »** — dont une à quelqu'un dont le terme datait de onze
+ * jours — plus les rappels de seuil, plus le bilan quotidien à l'équipe.
+ *
+ * | ce qui ne part plus | ce qui le remplace |
+ * |---|---|
+ * | les rappels à 4, 3 et 2 jours du terme | le bouton « Relancer pour la signature » |
+ * | l'annonce du terme | le même bouton, qui choisit le message que la réalité permet |
+ * | le rappel d'échéance | le bouton « Relancer pour le paiement » |
+ * | le bilan de 8 h à l'équipe | le tableau de bord, qui compte la même chose |
+ * | le recompte des places hors crochet | une annulation depuis /admin recompte déjà |
+ *
+ * ⚠️ **Une place ne partait déjà plus toute seule** depuis le 11 septembre
+ * 2026 : seule l'équipe en rend une. L'arrêt ne change donc rien au décompte ;
+ * il change ce que le participant reçoit, et ce que l'équipe lit le matin.
+ *
+ * ⚠️ **Et c'est l'équipe qui porte désormais le suivi.** Sans le bilan de 8 h,
+ * rien ne viendra dire qu'un dossier dort : il faut ouvrir /admin. Les
+ * vignettes du tableau de bord comptent exactement ce que la tâche comptait.
+ *
+ * ── Pour la remettre ───────────────────────────────────────────────────────
+ * Rendre à `vercel.json` le bloc retiré, puis déployer :
+ *
+ *     "crons": [{ "path": "/api/relances", "schedule": "0 8 * * *" }]
+ *
+ * ⚠️ **Avant de la remettre, projeter ce qu'elle enverra.** Un mois d'arrêt
+ * fait un rattrapage massif au premier passage — et ce rattrapage part à des
+ * gens qui n'ont plus entendu parler de nous depuis des semaines :
+ *
+ *     npx payload run scripts/journal-des-relances.ts 1
+ */
 import {
   JOURS_DE_GRACE,
   recompterLesPlaces,

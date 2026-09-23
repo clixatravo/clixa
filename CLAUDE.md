@@ -1459,6 +1459,45 @@ Chaque passage parcourt les sessions et recompte ; le premier jet en ajoutait
 deux, et le script est mort en route contre Neon sans imprimer une ligne — la
 panne décrite plus bas, rencontrée ici.
 
+⚠️ **LA TÂCHE DE 8 H NE TOURNE PLUS** (décision de la direction, le
+23 septembre 2026 : « khali kolxi manual htal mn be3d o nchofo l auto »). Le
+cron a été retiré de `vercel.json` ; la route `api/relances` existe toujours,
+reste éprouvée, et répond toujours à qui présente le jeton — **mais personne
+ne l'appelle**.
+
+**Mesuré avant de couper**, par `journal-des-relances.ts` contre la
+production : le passage suivant aurait envoyé **six annonces « votre place
+n'est pas encore repartie »** — dont une à quelqu'un dont le terme datait de
+onze jours — plus les rappels de seuil, plus le bilan quotidien.
+
+| ce qui ne part plus | ce qui le remplace |
+|---|---|
+| les rappels à 4, 3 et 2 jours du terme | le bouton « Relancer pour la signature » |
+| l'annonce du terme | le même bouton, qui choisit le message que la réalité permet |
+| le rappel d'échéance | le bouton « Relancer pour le paiement » |
+| le bilan de 8 h à l'équipe | le tableau de bord, qui compte la même chose |
+| le recompte des places hors crochet | une annulation depuis /admin recompte déjà |
+
+- ⚠️ **Le décompte ne change pas.** Une place ne partait déjà plus toute seule
+  depuis le 11 septembre 2026 : seule l'équipe en rend une. Ce qui change est
+  ce que le **participant reçoit**, et ce que l'**équipe lit le matin**.
+- ⚠️ **C'est l'équipe qui porte le suivi maintenant.** Sans le bilan de 8 h,
+  rien ne viendra dire qu'un dossier dort — il faut ouvrir /admin. Les
+  vignettes comptent exactement ce que la tâche comptait ; c'est l'habitude
+  d'aller les regarder qui doit se prendre.
+- ⚠️ **Avant de la remettre, projeter ce qu'elle enverra.** Un mois d'arrêt
+  fait un rattrapage massif au premier passage, et ce rattrapage part à des
+  gens qui n'ont plus entendu parler de nous depuis des semaines :
+  `npx payload run scripts/journal-des-relances.ts 1`.
+- **Le balayage a confirmé qu'il n'y avait qu'elle** : un seul `crons` dans
+  `vercel.json`, aucune minuterie serveur, aucun job Payload. Les crochets
+  d'`Inscriptions` envoient toujours — mais chacun suit un geste humain
+  (quelqu'un s'inscrit, l'équipe pose une date), ce qui n'est pas ce que la
+  direction appelle « automatique ».
+
+⚠️ **Ce qui suit décrit la tâche telle qu'elle était, et vaudra de nouveau le
+jour où on la rallumera.**
+
 ⚠️ **La tâche de 8 h tourne bel et bien** — confirmé par la direction le
 7 septembre 2026 : le bilan quotidien arrive dans la boîte de l'équipe. Cela
 n'avait jamais été vérifié, et deux journées de travail en dépendent
