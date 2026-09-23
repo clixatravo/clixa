@@ -541,6 +541,24 @@ export async function courrielParticipant(payload: Payload, d: CourrielInscripti
     )
     .join("");
 
+  /*
+    ── ⚠️ Les douze parcours prennent les couleurs des filières ──────────────
+    Et ce sont **celles du back-office** — clixa.css, la règle
+    « .clixa-formation-card__spec--<slug> ». L'équipe les voit tous les matins
+    dans le tableau de supervision ; une seconde palette ferait dire à une
+    couleur autre chose dans un courriel que sur l'écran d'à côté. La table vit
+    dans lib/presentation.ts, en hexadécimal — un courriel n'a ni variables CSS
+    ni feuille de style, Gmail retirant la balise style.
+
+    ⚠️ La couleur tient au **filet et à l'intitulé de filière**, jamais aux
+    douze titres : douze lignes teintées feraient un arc-en-ciel où plus rien
+    ne ressort — et c'est le parcours mis en avant qui doit ressortir. Lui seul
+    est en gras et en or.
+
+    ⚠️ Les commentaires sur ce HTML vivent ici, hors du littéral : un backtick
+    posé dedans le termine, et l'erreur qui en sort désigne une tout autre
+    ligne. Deuxième fois dans ce fichier — la première portait sur « nowrap ».
+  */
   const corpsHtml = `
     <p style="margin-top: 0;">Bonjour <strong>${echapper(d.apprenantNom)}</strong>,</p>
     <p>Votre pré-inscription est enregistrée et votre place est retenue pour le parcours exécutif :</p>
@@ -2159,16 +2177,20 @@ export async function courrielPresentation(
         .map(
           (
             f,
-          ) => `<div style="font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#64748b; padding:10px 0 4px;">${echapper(f.nom)}</div>
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-          ${f.parcours
-            .map(
-              (c) => `<tr>
-            <td style="padding:5px 0; border-bottom:1px solid rgba(243,239,228,0.06); font-size:13.5px; color:${c.slug === v?.slug ? "#e9cd84" : "#cbd5e1"};">${echapper(c.titre)}</td>
-            <td align="right" style="padding:5px 0; border-bottom:1px solid rgba(243,239,228,0.06); font-size:11.5px; color:#64748b; white-space:nowrap;">${c.heures} h</td>
-          </tr>`,
-            )
-            .join("")}
+          ) => `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px; border-left:3px solid ${f.couleur.trait}; border-radius:0 6px 6px 0; background-color:#0e1526;">
+          <tr><td style="padding:11px 14px 9px 14px;">
+            <div style="font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:${f.couleur.texte}; padding-bottom:6px;">${echapper(f.nom)}</div>
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              ${f.parcours
+                .map(
+                  (c) => `<tr>
+                <td style="padding:5px 0; font-size:13.5px; color:${c.slug === v?.slug ? "#e9cd84" : "#cbd5e1"}; ${c.slug === v?.slug ? "font-weight:bold;" : ""}">${echapper(c.titre)}</td>
+                <td align="right" style="padding:5px 0; font-size:11.5px; color:#64748b; white-space:nowrap;">${c.heures} h</td>
+              </tr>`,
+                )
+                .join("")}
+            </table>
+          </td></tr>
         </table>`,
         )
         .join("")}

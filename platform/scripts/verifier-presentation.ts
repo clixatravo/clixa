@@ -251,6 +251,58 @@ const large = composerLaPresentation({
 dire("au plus quatre publics", (large.enAvant?.pourQui.length ?? 0) === 4);
 dire("un parcours sans plan de cours ne casse rien", Array.isArray(large.enAvant?.seances));
 
+console.log("\n── 4bis. Les couleurs des filières ──");
+
+/*
+  ⚠️ **Elles viennent du back-office, et la correspondance se vérifie.**
+  `clixa.css` teinte les cinq filières dans le tableau de supervision, que
+  l'équipe voit tous les matins ; `COULEURS_FILIERE` les reprend en
+  hexadécimal, parce qu'un courriel n'a ni variables CSS ni feuille de style.
+  Deux tables qui décrivent la même chose finissent par diverger — celle-ci ne
+  peut pas dériver sans qu'un contrôle le dise.
+*/
+const { COULEURS_FILIERE, COULEUR_PAR_DEFAUT } = await import("../src/lib/presentation.js");
+
+const catalogue = await payload.find({
+  collection: "specialisations",
+  limit: 50,
+  depth: 0,
+  overrideAccess: true,
+  locale: "fr",
+});
+const slugs = catalogue.docs.map((x) => String((x as { slug?: unknown }).slug));
+
+dire("le catalogue a des filières", slugs.length > 0, `${slugs.length} filières`);
+for (const slug of slugs) {
+  dire(
+    `« ${slug} » a sa couleur`,
+    Boolean(COULEURS_FILIERE[slug]),
+    COULEURS_FILIERE[slug]?.trait ?? "aucune",
+  );
+}
+
+/*
+  ⚠️ **Le repli existe et il est neutre**, pas une teinte au hasard : une
+  filière ajoutée demain sort en ivoire, ce qui se remarque, plutôt que dans
+  une couleur qui voudrait dire quelque chose qu'elle ne veut pas dire.
+*/
+dire(
+  "le repli est neutre, pas une teinte prise au hasard",
+  COULEUR_PAR_DEFAUT.texte === "#cbd5e1",
+  COULEUR_PAR_DEFAUT.texte,
+);
+
+/*
+  ⚠️ **Et chaque famille rendue porte la sienne.** Sans ce contrôle, une
+  couleur pourrait exister dans la table sans jamais atteindre le message.
+*/
+const teintes = new Set(base.familles.map((f) => f.couleur.trait));
+dire(
+  "chaque filière rendue porte une couleur distincte",
+  teintes.size === base.familles.length,
+  [...teintes].join(" "),
+);
+
 console.log("\n── 5. Le collage d'adresses ──");
 const colle = lireLesAdresses(
   `aicha@exemple.ma, Kouamé N'Guessan <kouame@exemple.ci>

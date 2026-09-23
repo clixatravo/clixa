@@ -96,8 +96,41 @@ export interface FaitsDePresentation {
   site: string;
 }
 
+/**
+ * La couleur d'une filière.
+ *
+ * ── ⚠️ Elles viennent du back-office, elles ne s'inventent pas ─────────────
+ * `clixa.css` teinte déjà les cinq filières dans le tableau de supervision
+ * (`.clixa-formation-card__spec--<slug>`), et l'équipe les voit tous les
+ * matins. Une seconde palette ferait dire à une couleur autre chose dans un
+ * courriel que sur l'écran d'à côté — le défaut que ce projet a déjà payé sur
+ * le numéro d'admissions, les moyens de paiement et les intitulés de gestes.
+ *
+ * ⚠️ **En hexadécimal, pas en variables ni en `rgba()`.** Un courriel n'a pas
+ * de feuille de style — Gmail retire la balise `<style>` — et Outlook rend le
+ * HTML avec le moteur de Word, qui ignore `var()` et traite mal `rgba()`.
+ *
+ * ⚠️ **Et la correspondance se vérifie** : `verifier-presentation.ts` exige
+ * qu'aucune filière du catalogue ne se retrouve sans couleur. Sans ce
+ * contrôle, une filière ajoutée demain sortirait en gris au milieu de quatre
+ * autres teintées, et personne ne le verrait avant l'envoi.
+ */
+export const COULEURS_FILIERE: Record<string, { texte: string; trait: string }> = {
+  "finance-controle": { texte: "#e9cd84", trait: "#c9a24c" },
+  "industrie-operations": { texte: "#93c5fd", trait: "#60a5fa" },
+  "commercial-marketing": { texte: "#2fa37d", trait: "#2fa37d" },
+  "management-projet": { texte: "#c4b5fd", trait: "#a78bfa" },
+  "capital-humain": { texte: "#f9a8d4", trait: "#f472b6" },
+};
+
+/** Ce qu'on sert à une filière sans couleur connue — ivoire, jamais une teinte au hasard. */
+export const COULEUR_PAR_DEFAUT = { texte: "#cbd5e1", trait: "#64748b" };
+
 export interface FamilleDeParcours {
   nom: string;
+  /** Le slug, pour retrouver la couleur — et pour l'éprouver. */
+  slug: string;
+  couleur: { texte: string; trait: string };
   parcours: { titre: string; heures: number; slug: string; certification?: string }[];
 }
 
@@ -196,7 +229,14 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
         slug: p.slug,
         ...(p.certification ? { certification: p.certification } : {}),
       }));
-    if (parcours.length > 0) familles.push({ nom: s.nom, parcours });
+    if (parcours.length > 0) {
+      familles.push({
+        nom: s.nom,
+        slug: s.slug,
+        couleur: COULEURS_FILIERE[s.slug] ?? COULEUR_PAR_DEFAUT,
+        parcours,
+      });
+    }
   }
 
   /*
@@ -209,6 +249,8 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
   if (orphelins.length > 0) {
     familles.push({
       nom: "Autres parcours",
+      slug: "autres",
+      couleur: COULEUR_PAR_DEFAUT,
       parcours: orphelins.map((p) => ({
         titre: p.titre,
         heures: p.dureeHeures,

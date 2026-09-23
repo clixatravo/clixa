@@ -3954,6 +3954,25 @@ main**.
   de même valeur se lisent comme un pavé ; c'est le repère « S1 … S8 » qui
   permet d'y entrer, et il disparaissait dans la masse. Découpé sur le tiret
   cadratin, jamais sur le premier espace.
+- ⚠️ **Les douze parcours portent les couleurs des filières, et ce sont celles
+  du back-office** (`COULEURS_FILIERE`, demandé par la direction : « dire lihom
+  les coulor »). `clixa.css` teinte déjà les cinq filières dans le tableau de
+  supervision, que l'équipe voit tous les matins — une seconde palette ferait
+  dire à une couleur autre chose dans un courriel que sur l'écran d'à côté.
+  En **hexadécimal** : un courriel n'a ni `var()` ni feuille de style, Gmail
+  retirant la balise `<style>` et Outlook rendant le HTML avec le moteur de
+  Word.
+- ⚠️ **La couleur tient au filet et à l'intitulé, jamais aux douze titres.**
+  Douze lignes teintées feraient un arc-en-ciel où plus rien ne ressort — et
+  c'est le parcours mis en avant qui doit ressortir. Lui seul est en gras et en
+  or. Le repli d'une filière inconnue est **ivoire**, pas une teinte au hasard :
+  elle se remarque au lieu de dire quelque chose qu'elle ne veut pas dire.
+  **Prouvé en retirant une couleur : un rouge.**
+- ⚠️ **Un backtick dans un commentaire HTML posé à l'intérieur d'un littéral de
+  gabarit le termine** — deuxième fois dans ce fichier, après « nowrap ». À
+  force de retouches successives le fichier a fini cassé ; le geste qui a
+  débloqué est `git checkout HEAD -- courriel.ts` puis **une seule** édition
+  propre. Les commentaires sur ce HTML vivent hors du littéral.
 
 ⚠️ **Et un gabarit composé ailleurs a été repris — sa structure, pas ses
 faits** (23 septembre 2026, troisième jet : « khedm bhado o ziid 3lihom dakxi
