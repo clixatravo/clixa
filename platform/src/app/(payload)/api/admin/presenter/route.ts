@@ -83,7 +83,7 @@ export async function POST(requete: Request): Promise<Response> {
     return NextResponse.json({ erreur: "Réservé à l'équipe." }, { status: 401 });
   }
 
-  let corps: { destinataires?: unknown; essai?: unknown };
+  let corps: { destinataires?: unknown; essai?: unknown; misEnAvant?: unknown };
   try {
     corps = (await requete.json()) as typeof corps;
   } catch {
@@ -126,6 +126,18 @@ export async function POST(requete: Request): Promise<Response> {
     specialisations,
     programmes,
     tarifs,
+    /*
+      ⚠️ **Le parcours mis en avant se règle ici, et il a une valeur par
+      défaut.** La direction a demandé le 23 septembre 2026 de mettre le DAF en
+      avant : c'est celui que porte l'annonce Facebook, celui dont la cohorte
+      est tenue ouverte, et le seul dont on possède un spécimen de certificat à
+      montrer. Un slug inconnu ne met simplement rien en avant — le message se
+      rend en liste, comme avant.
+    */
+    misEnAvant:
+      typeof corps.misEnAvant === "string" && corps.misEnAvant.trim() !== ""
+        ? corps.misEnAvant.trim()
+        : "directeur-administratif-et-financier",
     ...(prochaine?.debut ? { prochaineRentree: new Date(prochaine.debut) } : {}),
     ...(prochaine?.fin ? { finDeCohorte: new Date(prochaine.fin) } : {}),
     site: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa",
@@ -136,6 +148,7 @@ export async function POST(requete: Request): Promise<Response> {
       essai: true,
       objet: presentation.objet,
       combien: presentation.combien,
+      enAvant: presentation.enAvant?.titre ?? null,
       /*
         ⚠️ On rend les adresses lues, pas seulement leur nombre. Un collage de
         travers — une colonne de tableur à côté de la bonne — donne des

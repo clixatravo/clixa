@@ -364,6 +364,28 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
             ...(String(titre).includes("PMP")
               ? { certification: "PMP® — Project Management Institute" }
               : {}),
+            ...(String(titre).includes("Administratif")
+              ? {
+                  accroche: "Parcours exécutif • 32 heures • 8 séances live • 100 % en ligne",
+                  modules: [
+                    { titre: "S1 — Mode DAF activé" },
+                    { titre: "S2 — Contrôle interne & anti-fraude" },
+                    { titre: "S3 — Closing & reporting" },
+                    { titre: "S4 — Budget & forecast" },
+                    { titre: "S5 — Cash & BFR" },
+                    { titre: "S6 — Banque & financement" },
+                    { titre: "S7 — Conformité & risques" },
+                    { titre: "S8 — Dashboard DAF & soutenance CODIR" },
+                  ],
+                  publicVise: [
+                    "Responsables financiers et RAF",
+                    "Chefs comptables souhaitant évoluer",
+                    "Contrôleurs de gestion",
+                    "DAF en prise de poste",
+                    "Dirigeants structurant la fonction finance",
+                  ],
+                }
+              : {}),
           })) as never,
           tarifs: {
             prixComptantCentimes: 42_300,
@@ -396,6 +418,7 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
           prochaineRentree: new Date("2026-10-03T09:00:00.000Z"),
           finDeCohorte: new Date("2026-11-21T13:00:00.000Z"),
           site: "https://www.clixa.africa",
+          misEnAvant: "directeur-administratif-et-financier",
         }),
       }),
   },

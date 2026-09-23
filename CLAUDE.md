@@ -3855,6 +3855,55 @@ interrogeraient la base à chaque visite, ce qu'`INT-02` existe pour éviter.
   liste achetée ou ramassée se paierait en signalements, et le premier prix en
   serait le tunnel d'inscription.
 
+⚠️ **Puis il a reçu des images, et un parcours mis en avant** (23 septembre 2026,
+au vu de trois courriels d'Accor et d'un de Lyca transmis en exemple : « ykon
+professional fihom des photo o rakez liya 3la DAF bl khossos »).
+
+- **Trois visuels, qui existaient déjà** : le catalogue exécutif en tête, le
+  **spécimen du certificat** — qui se trouve être déjà au nom du DAF, avec ses
+  huit séances imprimées et le code de vérification en pied — et la photo de
+  séminaire. Calibrés dans `public/images/email/` : 1200 px de large pour un
+  cadre de 600, ce que réclame un écran à densité double, et **212 Ko à eux
+  quatre** contre 728 pour le seul original du visuel d'accueil.
+- ⚠️ **Aucune information ne vit dans une image, et c'est là que ce courriel
+  s'écarte de ses modèles.** Accor et Lyca incrustent leur titre dans le
+  visuel ; leur message arrive **vide** chez qui bloque les images — ce que font
+  la plupart des clients pour un expéditeur inconnu, c'est-à-dire *exactement*
+  le destinataire de celui-ci. Ici les images illustrent, le texte informe.
+  La garde retire les balises `<img>` et redemande les montants, la rentrée, le
+  désabonnement et le parcours mis en avant.
+- ⚠️ **La photo de séminaire porte sa légende, en texte** — « Séminaire
+  dirigeants · Agadir — les parcours, eux, se donnent en classe virtuelle ».
+  Muette, elle promet du présentiel là où les douze parcours se donnent en
+  visio : c'est mot pour mot la correction imposée au trailer officiel le
+  13 septembre 2026. **Prouvé en la retirant : un rouge.** Une légende
+  incrustée dans l'image disparaîtrait avec elle, et la promesse resterait chez
+  qui l'a vue une fois.
+- ⚠️ **L'image OG du parcours ne s'emploie pas dans un courriel** :
+  `…/formations/<slug>/opengraph-image` répond **404** — Next la sert sous un
+  chemin haché qu'on ne peut pas écrire à l'avance. Mesuré avant d'y compter.
+- **Le parcours mis en avant est un réglage, pas une constante** (`misEnAvant`,
+  défaut `directeur-administratif-et-financier`). C'est le bon choix
+  aujourd'hui — le parcours que porte l'annonce Facebook, celui dont la cohorte
+  est tenue ouverte, le seul dont on possède un spécimen de certificat. Ce ne
+  le sera pas tous les mois. ⚠️ **Un slug inconnu ne met rien en avant et ne
+  casse rien** : le message se rend en liste, et l'objet revient à sa formule
+  générale — il ne se tait pas et n'élit pas un autre parcours, les deux se
+  remarqueraient trop tard.
+- ⚠️ **L'objet nomme le parcours mis en avant.** « 12 parcours » ouvrirait sur
+  un message dont les deux premiers tiers parlent du seul DAF ; c'est l'objet
+  qui décide si l'on ouvre, et il ne peut pas promettre autre chose que ce
+  qu'on va lire.
+- ⚠️ **Le visuel du certificat n'est posé que si la vedette est celle du
+  spécimen.** Il porte « DIRECTEUR ADMINISTRATIF ET FINANCIER » en toutes
+  lettres : sous un autre parcours, il annoncerait le mauvais. Une image qui
+  nomme le mauvais parcours est pire que pas d'image.
+- ⚠️ **Les images doivent être en ligne avant le premier envoi.** Elles vivent
+  dans `public/`, donc elles n'existent qu'une fois le déploiement passé. Un
+  message parti d'une production qui ne les sert pas encore arrive avec trois
+  cadres vides — et c'est le seul de nos messages qu'on ne peut pas rattraper.
+- `verifier-presentation.ts` passe de 33 à **49 contrôles**.
+
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,
 bilan des relances, et **demande de rappel**.

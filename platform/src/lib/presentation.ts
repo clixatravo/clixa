@@ -49,8 +49,30 @@ export interface FaitsDePresentation {
   specialisations: readonly Pick<Specialisation, "slug" | "nom">[];
   programmes: readonly Pick<
     Programme,
-    "slug" | "titre" | "dureeHeures" | "specialisation" | "certification"
+    | "slug"
+    | "titre"
+    | "dureeHeures"
+    | "specialisation"
+    | "certification"
+    | "accroche"
+    | "modules"
+    | "publicVise"
   >[];
+  /**
+   * Le parcours mis en avant, par son slug.
+   *
+   * ⚠️ **Un réglage, pas une constante.** La direction a demandé le 23 septembre
+   * 2026 de « rakez 3la DAF bl khossos » — et c'est le bon choix aujourd'hui :
+   * c'est le parcours que porte l'annonce Facebook, celui dont la cohorte est
+   * tenue ouverte, et le seul dont on possède un spécimen de certificat.
+   * Ce ne sera pas le bon choix tous les mois. Écrit en dur, il faudrait
+   * toucher au code pour mettre l'audit en avant en novembre.
+   *
+   * Un slug inconnu ne met rien en avant et ne casse rien : le message se rend
+   * comme avant, en liste. Il ne se **tait** pas et n'invente pas non plus un
+   * autre parcours — les deux se remarqueraient trop tard.
+   */
+  misEnAvant?: string;
   tarifs: Tarifs;
   /** Le début de la prochaine cohorte, si une session est publiée. */
   prochaineRentree?: Date;
@@ -64,9 +86,23 @@ export interface FamilleDeParcours {
   parcours: { titre: string; heures: number; slug: string; certification?: string }[];
 }
 
+/** Le parcours mis en avant, détaillé — le reste du catalogue ne l'est pas. */
+export interface ParcoursEnAvant {
+  slug: string;
+  titre: string;
+  accroche: string;
+  heures: number;
+  /** Les intitulés des séances, dans l'ordre du plan de cours. */
+  seances: string[];
+  /** À qui il s'adresse — quatre au plus, la liste entière ferait un pavé. */
+  pourQui: string[];
+}
+
 export interface Presentation {
   objet: string;
   accroche: string;
+  /** Absent si aucun parcours n'est mis en avant, ou si le slug est inconnu. */
+  enAvant?: ParcoursEnAvant;
   familles: FamilleDeParcours[];
   /** Combien de parcours en tout — écrit, jamais compté de tête. */
   combien: number;
@@ -126,6 +162,27 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
   }
 
   const combien = f.programmes.length;
+
+  /*
+    ── Le parcours mis en avant ───────────────────────────────────────────────
+    ⚠️ **Quatre publics au plus, et six séances au plus.** Le DAF en porte cinq
+    et huit ; tout déplier ferait, à lui seul, la longueur du reste du message —
+    et ce message a déjà douze parcours à présenter. Ce qui est coupé est dit
+    comme tel (« et N autres »), jamais laissé croire que la liste est entière :
+    c'est la règle des places à rendre au tableau de bord.
+  */
+  const vedette = f.misEnAvant ? f.programmes.find((x) => x.slug === f.misEnAvant) : undefined;
+
+  const enAvant: ParcoursEnAvant | undefined = vedette
+    ? {
+        slug: vedette.slug,
+        titre: vedette.titre,
+        accroche: vedette.accroche ?? "",
+        heures: vedette.dureeHeures,
+        seances: (vedette.modules ?? []).map((m) => m.titre).filter(Boolean),
+        pourQui: (vedette.publicVise ?? []).slice(0, 4),
+      }
+    : undefined;
 
   const deroule = [
     "Huit séances de quatre heures, le samedi, en direct avec un formateur.",
@@ -187,8 +244,16 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
       ⚠️ L'objet nomme ce qu'on propose, jamais « Découvrez CLIXA ». Le second
       ne dit rien à qui ne nous connaît pas — et c'est précisément à ceux-là que
       ce message s'adresse.
+
+      ⚠️ **Et il nomme le parcours mis en avant quand il y en a un.** Un objet
+      qui annonce « 12 parcours » ouvre sur un message dont les deux premiers
+      tiers parlent du seul DAF : c'est l'objet qui décide si l'on ouvre, et il
+      ne peut pas promettre autre chose que ce qu'on va lire.
     */
-    objet: `${combien} parcours de direction, en classe virtuelle — CLIXA Institute`,
+    objet: enAvant
+      ? `${enAvant.titre} — ${enAvant.heures} h en classe virtuelle | CLIXA Institute`
+      : `${combien} parcours de direction, en classe virtuelle — CLIXA Institute`,
+    ...(enAvant ? { enAvant } : {}),
     accroche:
       "Des parcours courts pour cadres et responsables qui visent un poste de direction — en direct, en ligne, avec un certificat vérifiable à la clé.",
     familles,

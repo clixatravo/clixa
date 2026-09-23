@@ -211,7 +211,47 @@ dire(
   !filiereVide.familles.some((f) => f.nom === "Filière sans parcours"),
 );
 
-console.log("\n── 4. Le collage d'adresses ──");
+console.log("\n── 4. Le parcours mis en avant ──");
+
+const avecDaf = composerLaPresentation({ ...SOURCE, misEnAvant: "daf" });
+dire("le parcours demandé est mis en avant", avecDaf.enAvant?.slug === "daf");
+dire("l'objet le nomme", /Directeur Administratif/.test(avecDaf.objet), avecDaf.objet);
+dire("il reste aussi dans la liste des douze", /Directeur Administratif/.test(aplatir(avecDaf)));
+
+/*
+  ⚠️ **Un slug inconnu ne met rien en avant, et ne casse rien.** Le réglage
+  vient de la route, donc d'un corps de requête : une faute de frappe ne doit
+  ni vider le message, ni — pire — mettre en avant un autre parcours que celui
+  qu'on croit. Le message se rend alors en liste, comme avant.
+*/
+const inconnu = composerLaPresentation({ ...SOURCE, misEnAvant: "parcours-qui-nexiste-pas" });
+dire("un slug inconnu ne met rien en avant", inconnu.enAvant === undefined);
+dire(
+  "et le message reste entier",
+  inconnu.combien === 3 && /Directeur Administratif/.test(aplatir(inconnu)),
+);
+dire(
+  "et l'objet revient à la formule générale",
+  /3 parcours de direction/.test(inconnu.objet),
+  inconnu.objet,
+);
+
+/*
+  ⚠️ **Les séances et les publics sont bornés.** Tout déplier ferait, pour le
+  seul parcours mis en avant, la longueur du reste du message — qui en présente
+  déjà douze.
+*/
+const large = composerLaPresentation({
+  ...SOURCE,
+  misEnAvant: "daf",
+  programmes: SOURCE.programmes.map((x) =>
+    x.slug === "daf" ? { ...x, publicVise: ["a", "b", "c", "d", "e", "f", "g"], modules: [] } : x,
+  ) as never,
+});
+dire("au plus quatre publics", (large.enAvant?.pourQui.length ?? 0) === 4);
+dire("un parcours sans plan de cours ne casse rien", Array.isArray(large.enAvant?.seances));
+
+console.log("\n── 5. Le collage d'adresses ──");
 const colle = lireLesAdresses(
   `aicha@exemple.ma, Kouamé N'Guessan <kouame@exemple.ci>
    fatou@exemple.sn ; aicha@exemple.ma
@@ -237,7 +277,7 @@ dire(
 );
 dire("ce qui n'est pas une adresse est ignoré", !colle.some((c) => c.email.includes("pas-une")));
 
-console.log("\n── 5. La porte, et l'en-tête de désabonnement ──");
+console.log("\n── 6. La porte, les images, et le désabonnement ──");
 
 const marque = Date.now();
 const aSupprimer: { collection: "utilisateurs" | "apprenants"; id: string | number }[] = [];
@@ -334,6 +374,54 @@ try {
   dire(
     "le désabonnement se lit aussi dans le corps",
     /ne vous [ée]crirons plus/i.test(envoye?.html ?? ""),
+  );
+
+  /*
+    ── ⚠️ Les images : ce qu'elles portent, et ce qu'elles ne portent pas ────
+    La direction a demandé des messages « fihom des photo », du niveau de ceux
+    d'Accor ou de Lyca. Ceux-là incrustent leur titre dans le visuel — et
+    arrivent **vides** chez qui bloque les images, ce que font la plupart des
+    clients pour un expéditeur inconnu, c'est-à-dire exactement le destinataire
+    de ce message.
+  */
+  const html = envoye?.html ?? "";
+  const balises = [...html.matchAll(/<img[^>]*>/g)].map((m) => m[0]);
+
+  dire("le message porte bien des images", balises.length >= 3, `${balises.length} images`);
+  dire(
+    "chacune a un alt qui décrit ce qu'elle montre",
+    balises.every((b) => /alt="[^"]{20,}"/.test(b)),
+  );
+  dire(
+    "chacune porte sa largeur en attribut — Outlook ignore le CSS des images",
+    balises.every((b) => /width="\d+"/.test(b)),
+  );
+
+  /*
+    ⚠️ **Le message sans ses images dit encore tout.** On les retire, et l'on
+    redemande ce que les contrôles précédents exigeaient. C'est la garde qui
+    prouve que rien d'essentiel n'a migré dans un visuel.
+  */
+  const nu = html.replace(/<img[^>]*>/g, "");
+  for (const [quoi, motif] of [
+    ["les montants", /423|470/],
+    ["la rentrée", /3 octobre 2026/],
+    ["le désabonnement", /ne vous [ée]crirons plus/i],
+    ["le parcours mis en avant", /Directeur Administratif/],
+  ] as [string, RegExp][]) {
+    dire(`images bloquées : ${quoi} se lit encore`, motif.test(nu));
+  }
+
+  /*
+    ⚠️ **La photo de séminaire porte sa légende, et la légende est du texte.**
+    Muette, elle promet du présentiel là où les douze parcours se donnent en
+    classe virtuelle — la correction imposée au trailer officiel le
+    13 septembre 2026. Une légende incrustée dans l'image disparaîtrait avec
+    elle, et la promesse resterait chez qui l'a vue une fois.
+  */
+  dire(
+    "la photo de séminaire est légendée, en texte",
+    /classe virtuelle/i.test(nu) && /S[ée]minaire dirigeants/i.test(nu),
   );
 } finally {
   for (const quoi of aSupprimer.reverse()) {
