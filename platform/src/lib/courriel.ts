@@ -298,123 +298,159 @@ export function gabaritHtmlEmail({
 }
 
 /**
- * Le gabarit **clair** — réservé aux messages qui s'adressent à des gens qui
+ * Le gabarit **vitrine** — réservé aux messages qui s'adressent à des gens qui
  * ne nous connaissent pas encore.
  *
- * ── ⚠️ Pourquoi un second gabarit, et non un réglage du premier ────────────
- * Décision de la direction, le 23 septembre 2026, au vu de quatre courriels
- * d'Accor et de Lyca : « briitha tkon fhal hado li seft lek » — tous sur fond
- * clair. Les seize messages du tunnel gardent l'encre : ils partent à
- * quelqu'un qui a déjà un dossier, ils prolongent le site, et les basculer
- * demanderait de les regarder un par un alors qu'ils partent tous les jours.
+ * ── D'où vient ce dessin ───────────────────────────────────────────────────
+ * De la direction, le 23 septembre 2026, sur un fichier qu'elle a fait composer
+ * ailleurs puis demandé de monter dans le code : « rekkeb dak dessin f template
+ * dyal l code ». Sa forme est reprise telle quelle — encre, filet doré,
+ * cartouche de marque à gauche et pastille de rentrée à droite, image en tête,
+ * cartes, double bouton. Ce qui change est que **plus rien n'y est écrit à la
+ * main** : tout vient du catalogue, du barème et de la session.
  *
- * Ce que le fond clair achète, et ce n'est pas qu'une question de goût :
+ * ⚠️ **Les seize messages du tunnel gardent `gabaritHtmlEmail`.** Celui-ci est
+ * plus riche — une image en tête, une pastille, des cartes — et cette richesse
+ * n'a de sens que pour qui ne nous connaît pas encore. Un accusé de réception
+ * de versement n'a pas besoin d'une image d'ambiance.
  *
- * - **il se rend mieux partout.** Outlook et Gmail délavent volontiers un fond
- *   sombre ; un fond clair, non ;
- * - **les visuels y ressortent** — le spécimen du certificat est lui-même
- *   blanc et bleu nuit, et il se noyait sur l'encre ;
- * - **c'est ce que fait une institution** qui écrit à quelqu'un pour la
- *   première fois.
- *
- * ⚠️ **L'or change de valeur entre les deux gabarits.** `#c9a24c` sur blanc
- * tombe à 2,2:1 — sous le seuil, illisible pour du texte. Le texte doré est
- * donc `#8f6b1c` (4,8:1), et `#c9a24c` ne sert plus que de **fond** de bouton,
- * sous du texte encre. Ne pas recopier l'or du gabarit sombre ici.
- *
- * ⚠️ **`color-scheme: light` et les couleurs en dur.** Gmail et Outlook
- * inversent volontiers un courriel clair quand le téléphone est en mode
- * sombre — et ils le font mal : texte encre sur fond redevenu sombre. La méta
- * le leur déconseille, et chaque cellule porte sa couleur explicitement plutôt
- * que d'hériter.
+ * ── ⚠️ Trois choses qui tiennent au client de messagerie, pas au goût ──────
+ * - **les conditionnels `mso`** : Outlook rend le HTML avec le moteur de Word,
+ *   qui ignore `border-radius`, `box-shadow` et redimensionne les PNG de
+ *   travers sans `PixelsPerInch` ;
+ * - **les règles `@media`** ne valent que chez les clients qui gardent la
+ *   balise `<style>` — Gmail la retire. Elles **améliorent** l'affichage
+ *   étroit, elles ne le portent pas : la mise en page tient sans elles, par
+ *   des tableaux et des largeurs en pourcentage ;
+ * - **le pré-en-tête** est le texte que la boîte de réception affiche sous
+ *   l'objet. Laissé vide, elle y met le premier texte trouvé — ici « Si ce
+ *   message ne s'affiche pas correctement ».
  */
-export function gabaritClairEmail({
+export function gabaritVitrineEmail({
   titre,
-  soustitre,
+  preEntete,
+  badge,
+  imageEnTete,
   corpsHtml,
-  boutonTexte,
-  boutonLien,
 }: {
   titre: string;
-  soustitre?: string;
+  /** Ce que la boîte de réception montre sous l'objet. */
+  preEntete: string;
+  /** La pastille en haut à droite — « Rentrée 3 octobre ». */
+  badge?: string;
+  imageEnTete?: { src: string; alt: string; hauteur: number };
   corpsHtml: string;
-  boutonTexte?: string;
-  boutonLien?: string;
 }): string {
-  const SITE_IMG = `${SITE}/images/email`;
+  /*
+    ⚠️ Le gabarit ne fabrique aucune adresse d'image : l'appelant lui passe un
+    `src` entier. Une seconde façon de composer ces adresses finirait par
+    pointer ailleurs que la première — et une image qui rend 404 dans un
+    courriel ne se rattrape pas.
+  */
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light">
-  <meta name="supported-color-schemes" content="light">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
   <title>${titre}</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings>
+    <o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch>
+  </o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; display: block; max-width: 100%; }
+    body { margin: 0; padding: 0; width: 100% !important; background-color: #070b16; }
+    @media only screen and (max-width: 600px) {
+      .enveloppe { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
+      .gouttiere { padding-left: 20px !important; padding-right: 20px !important; }
+      .colonne { display: block !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin-bottom: 16px !important; }
+      .titre-mobile { font-size: 25px !important; line-height: 1.24 !important; }
+      .bouton-mobile { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; }
+    }
+  </style>
 </head>
-<body style="margin:0; padding:0; background-color:#f2efe8; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; color:#15181f;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#f2efe8; padding:28px 14px;">
-    <tr><td align="center">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px; background-color:#ffffff; border-radius:14px; overflow:hidden; border:1px solid #e6e0d2;">
+<body style="margin:0; padding:0; background-color:#070b16; color:#f3efe4; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
-        <!-- Marque, centrée : c'est ce que font les quatre exemples -->
-        <tr><td align="center" style="background-color:#ffffff; padding:30px 28px 22px;">
-          <img src="${SITE_IMG}/logo.png" width="46" height="46" alt="CLIXA Institute"
-               style="display:block; border:0; border-radius:9px;">
-          <div style="font-family:Georgia,serif; font-size:21px; font-weight:bold; letter-spacing:0.06em; color:#15181f; padding-top:10px;">
-            CLIXA<span style="color:#8f6b1c;">.</span>
-          </div>
-          <div style="font-family:'SF Mono',Menlo,Consolas,monospace; font-size:9.5px; letter-spacing:0.15em; text-transform:uppercase; color:#8f6b1c; padding-top:4px;">
-            Executive Education &middot; Afrique
-          </div>
-        </td></tr>
+  <div style="display:none; font-size:1px; color:#070b16; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+    ${preEntete}
+  </div>
 
-        <!-- Titre, centré et court -->
-        <tr><td align="center" style="background-color:#ffffff; padding:0 32px 4px;">
-          <h1 style="margin:0; font-family:Georgia,serif; font-size:27px; font-weight:bold; color:#15181f; line-height:1.28;">
-            ${titre}
-          </h1>
-          ${
-            soustitre
-              ? `<div style="font-size:14px; color:#5c5f68; line-height:1.55; padding-top:10px; max-width:430px;">${soustitre}</div>`
-              : ""
-          }
-        </td></tr>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#070b16;">
+    <tr><td align="center" style="padding:16px 8px 40px 8px;">
 
-        <tr><td style="background-color:#ffffff; padding:24px 28px 8px; font-size:15px; line-height:1.68; color:#2b2f38;">
-          ${corpsHtml}
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="enveloppe" style="max-width:600px; background-color:#0b1122; border:1px solid rgba(201,162,76,0.3); border-radius:14px; overflow:hidden;">
+
+        <!-- Cartouche de marque -->
+        <tr><td style="background-color:#070b16; padding:22px 28px; border-bottom:2px solid #c9a24c;" class="gouttiere">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td align="left" style="vertical-align:middle;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr>
+                <td style="width:36px; height:36px; background-color:#111a33; border:1px solid #c9a24c; border-radius:6px; text-align:center; vertical-align:middle;">
+                  <span style="font-family:Georgia,serif; font-weight:bold; font-size:19px; color:#c9a24c; line-height:36px;">C</span>
+                </td>
+                <td style="padding-left:12px;">
+                  <div style="font-family:Georgia,serif; font-size:20px; font-weight:bold; letter-spacing:0.04em; color:#ffffff; line-height:1;">
+                    CLIXA<span style="color:#c9a24c;">.</span>
+                  </div>
+                  <div style="font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#c9a24c; font-weight:700; margin-top:3px;">
+                    Executive Education &middot; Afrique
+                  </div>
+                </td>
+              </tr></table>
+            </td>
+            ${
+              badge
+                ? `<td align="right" style="vertical-align:middle;">
+              <div style="display:inline-block; background-color:rgba(201,162,76,0.12); border:1px solid rgba(201,162,76,0.4); border-radius:999px; padding:5px 12px; font-size:10px; font-weight:800; color:#e9cd84; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap;">
+                ${badge}
+              </div>
+            </td>`
+                : ""
+            }
+          </tr></table>
         </td></tr>
 
         ${
-          boutonTexte && boutonLien
-            ? `<tr><td align="center" style="background-color:#ffffff; padding:12px 28px 34px;">
-          <a href="${boutonLien}" style="display:inline-block; background-color:#c9a24c; color:#15181f; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:14.5px; font-weight:bold; text-decoration:none; padding:15px 34px; border-radius:7px;">
-            ${boutonTexte} &rarr;
-          </a>
+          imageEnTete
+            ? `<tr><td style="padding:0; line-height:0; background-color:#070b16;">
+          <img src="${imageEnTete.src}" width="600" height="${imageEnTete.hauteur}" alt="${imageEnTete.alt}" style="width:100%; max-width:600px; height:auto; display:block; border:0;">
         </td></tr>`
-            : `<tr><td style="background-color:#ffffff; height:18px;"></td></tr>`
+            : ""
         }
 
-        <!-- Contacts, sur un fond à peine tiré -->
-        <tr><td align="center" style="background-color:#faf8f3; border-top:1px solid #e6e0d2; padding:24px 28px;">
-          <div style="font-family:'SF Mono',Menlo,monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#8f6b1c; padding-bottom:12px;">
-            Direction des Admissions
+        ${corpsHtml}
+
+        <!-- Pied -->
+        <tr><td style="background-color:#070b16; border-top:1px solid rgba(243,239,228,0.1); padding:28px 32px;" class="gouttiere">
+          <div style="font-family:Georgia,serif; font-size:17px; font-weight:bold; color:#ffffff; margin-bottom:6px;">
+            CLIXA<span style="color:#c9a24c;">.</span>
           </div>
-          <div style="font-size:13.5px; line-height:1.9; color:#5c5f68;">
-            WhatsApp <a href="${RESEAUX_CLIXA.whatsapp.url}" style="color:#15181f; text-decoration:none; font-weight:bold;">${RESEAUX_CLIXA.whatsapp.numeroAffiche}</a><br>
-            <a href="${RESEAUX_CLIXA.email.url}" style="color:#8f6b1c; text-decoration:none;">${RESEAUX_CLIXA.email.adresse}</a>
+          <div style="font-size:12px; color:#cbd5e1; line-height:1.7;">
+            Direction des Admissions<br>
+            <a href="${RESEAUX_CLIXA.email.url}" style="color:#e9cd84; text-decoration:none;">${RESEAUX_CLIXA.email.adresse}</a>
             &nbsp;&middot;&nbsp;
-            <a href="${SITE}" style="color:#8f6b1c; text-decoration:none;">www.clixa.africa</a>
+            <a href="${SITE}" style="color:#e9cd84; text-decoration:none;">www.clixa.africa</a>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:10px; line-height:1.5;">
+            Présence : Agadir &middot; Classe virtuelle &middot; Abidjan et Dakar prochainement
+          </div>
+          <div style="border-top:1px solid rgba(255,255,255,0.08); margin-top:18px; padding-top:16px; font-size:11px; color:#64748b; line-height:1.65;">
+            CLIXA SARLAU &mdash; RC Agadir 67759 &middot; ICE 003917718000017<br>
+            Vous recevez ce message parce que nous pensons que nos parcours peuvent vous intéresser.
+            Si ce n'est pas le cas,
+            <a href="mailto:${REPONDRE_A}?subject=${encodeURIComponent("Désabonnement")}" style="color:#e9cd84; text-decoration:underline;">dites-le nous en un clic</a>
+            et nous ne vous écrirons plus.
           </div>
         </td></tr>
 
       </table>
 
-      <!-- Pied légal, hors de la carte — comme chez Accor -->
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:600px;">
-        <tr><td align="center" style="padding:18px 22px 6px; font-size:11.5px; line-height:1.65; color:#8a8778;">
-          CLIXA SARLAU &middot; Agadir, Maroc &middot; Classe virtuelle &middot; Abidjan et Dakar prochainement
-        </td></tr>
-      </table>
     </td></tr>
   </table>
 </body>
@@ -1669,7 +1705,6 @@ export async function courrielMainPassee(
     }),
   });
 }
-
 /**
  * L'annonce du démarrage de la cohorte, adressée à chaque inscrit.
  *
@@ -1843,33 +1878,34 @@ export async function courrielDemarrageCohorte(
  * Les seize autres partent parce que quelqu'un a fait quelque chose. Celui-ci
  * part parce que **nous** avons décidé d'écrire à quelqu'un qui ne nous
  * connaît peut-être pas. D'où `List-Unsubscribe`, et le désabonnement dit
- * aussi en toutes lettres.
+ * aussi en toutes lettres dans le pied.
  *
- * ── ⚠️ Ce qui a été repris d'un gabarit reçu, et ce qui a été corrigé ──────
- * La direction a transmis le 23 septembre 2026 un gabarit composé ailleurs
- * (« khedm bhado o ziid 3lihom dakxi dyalk »). Sa **structure** était bonne et
- * elle est reprise : trois compétences en tête, des cartes, trois étapes, un
- * encadré de tarifs, deux boutons. Ses **faits** ne tenaient pas, et chacun
- * aurait été découvert par le premier prospect qui vérifie :
+ * ── Le dessin vient de la direction, le contenu du catalogue ───────────────
+ * La direction a fait composer ce dessin ailleurs, puis demandé de le monter
+ * dans le code (23 septembre 2026). Sa forme est reprise telle quelle ; ce qui
+ * change est que **plus rien n'y est écrit à la main**. Le fichier d'origine
+ * portait treize affirmations qui ne tenaient pas — tous ses liens rendaient
+ * 404, ses séances étaient annoncées « du soir » quand elles se donnent le
+ * samedi matin, sa promotion était « limitée à 20 participants » quand 109
+ * places étaient déjà prises. Aucune n'était attrapable autrement qu'en
+ * vérifiant une par une.
  *
- * | ce qu'il annonçait | ce qui est vrai |
+ * Chaque phrase vient donc d'un champ :
+ *
+ * | ce qu'on lit | d'où ça vient |
  * |---|---|
- * | `/programmes/<slug>` | `/formations/<slug>` — **tous ses liens rendaient 404** |
- * | « 8 séances du soir » | **8 samedis, 9h00–13h00 UTC** |
- * | « Promotion limitée à 20 participants » | la cohorte est **tenue ouverte**, et 109 places étaient déjà prises |
- * | « Places limitées » | aucune rareté ne s'invente |
- * | WhatsApp `212660000000` | `212669303467` — l'autre est un numéro d'attente |
- * | 4 images `email_*.jpg` | **404**, aucune n'existe |
- * | « Sélection sur dossier », « Comité des Admissions » | il n'y a pas de sélection : pré-inscription, contrat, règlement |
- * | « Accès immédiat à la plateforme » | l'accès vient après la signature et le versement |
- * | « 5 templates » | **six** livrables, et ils sont au catalogue |
- * | « 3 mensualités » | trois échéances **adossées aux séances**, pas aux mois |
- * | « Attestation officielle » | l'attestation est **provisoire** tant que rien n'est réglé |
- * | `/conditions`, `/desinscription` | **404** toutes les deux |
+ * | le titre, la durée | le programme |
+ * | les trois arguments | `objectifs`, découpé en phrases |
+ * | « Vous êtes… ? » | `publicVise` |
+ * | les deux cartes | `debouches` |
+ * | les séances | `modules` |
+ * | ce qu'on emporte | `livrables` |
+ * | l'horaire | la **cadence de la session de ce parcours** |
+ * | les trois formules | le barème |
  *
- * Tout ce que ce gabarit affirme vient donc du catalogue, du barème ou de la
- * session — jamais d'une rédaction parallèle. `verifier-presentation.ts` garde
- * chacun de ces refus.
+ * ⚠️ **Aucune information ne vit dans une image.** Les clients de messagerie
+ * les bloquent par défaut pour un expéditeur inconnu — exactement le
+ * destinataire de ce message. Les images illustrent, le texte informe.
  */
 export async function courrielPresentation(
   payload: Payload,
@@ -1883,269 +1919,268 @@ export async function courrielPresentation(
   const prenom = d.nom?.trim().split(/\s+/)[0];
   const IMG = `${SITE}/images/email`;
   const v = p.enAvant;
-
-  const image = (fichier: string, alt: string, hauteur?: number) =>
-    `<img src="${IMG}/${fichier}" width="600"${hauteur ? ` height="${hauteur}"` : ""} alt="${echapper(alt)}" style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none;">`;
-
-  const rubrique = (t: string) =>
-    `<div style="font-family:'SF Mono',Menlo,Consolas,monospace; font-size:9.5px; letter-spacing:0.15em; text-transform:uppercase; color:#8f6b1c; padding:0 0 12px;">${echapper(t)}</div>`;
-
-  const air = (h: number) => `<div style="height:${h}px; line-height:${h}px;">&nbsp;</div>`;
+  const lien = v ? `${SITE}/formations/${v.slug}` : `${SITE}/formations`;
 
   /*
-    ⚠️ `white-space: nowrap` sur les colonnes du bandeau : « 8 samedis » se
-    cassait en deux dès que la colonne se resserrait, et un bandeau dont l'un
-    des trois fait deux lignes tord l'alignement. Mesuré à l'écran.
-
-    ⚠️ Et les commentaires sur le HTML vivent **ici**, hors du littéral : un
-    backtick posé dedans le termine, et l'erreur qui en sort désigne une tout
-    autre ligne.
+    ⚠️ **On ne baisse que la première lettre.** Un `.toLowerCase()` sur
+    l'entrée entière rendait « responsables financiers et raf » — l'acronyme
+    RAF détruit, sur la ligne qui doit dire au lecteur que le message
+    s'adresse à lui. Vu à l'écran, pas au type.
   */
-  const heures = v?.heures ?? 32;
-  const jours = v?.cadence?.split("·")[0]?.trim() ?? "8 séances";
-  const faits = `
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#faf8f3; border-radius:10px;">
-      <tr>
-        ${[
-          [`${heures} h`, "en direct"],
-          [jours, "le matin"],
-          ["100 %", "en ligne"],
-        ]
-          .map(
-            ([grand, petit]) => `<td align="center" width="33%" style="padding:18px 6px;">
-            <div style="font-family:Georgia,serif; font-size:19px; font-weight:bold; color:#15181f; white-space:nowrap;">${echapper(String(grand))}</div>
-            <div style="font-size:12px; color:#5c5f68; padding-top:3px; white-space:nowrap;">${echapper(String(petit))}</div>
-          </td>`,
-          )
-          .join("")}
-      </tr>
-    </table>`;
-
-  /*
-    Les trois compétences de tête, avec une pastille numérotée — la forme du
-    gabarit reçu, dont c'était la meilleure idée. ⚠️ Un chiffre, pas un emoji :
-    les emojis ne se rendent pas pareil d'un client à l'autre, et un carré vide
-    dans un message de prospection se lit comme un message mal formé.
-  */
-  const competences =
-    v && v.competences.length > 0
-      ? `
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      ${v.competences
-        .map(
-          (c, i) => `<tr>
-        <td width="40" style="vertical-align:top; padding:0 0 16px;">
-          <div style="width:28px; height:28px; border-radius:50%; background-color:#15181f; color:#c9a24c; text-align:center; line-height:28px; font-family:Georgia,serif; font-size:14px; font-weight:bold;">${i + 1}</div>
-        </td>
-        <td style="vertical-align:top; padding:3px 0 16px 12px; font-size:15px; line-height:1.55; color:#2b2f38;">
-          ${echapper(c.charAt(0).toUpperCase() + c.slice(1))}
-        </td>
-      </tr>`,
-        )
-        .join("")}
-    </table>`
-      : "";
+  const enMinusculeInitiale = (x: string) => x.charAt(0).toLowerCase() + x.slice(1);
 
   const SPECIMEN = "directeur-administratif-et-financier";
 
-  const bloc = (titre: string, contenu: string) => `
-    ${air(32)}
-    ${rubrique(titre)}
-    ${contenu}`;
-
-  const enAvant = v
-    ? `
-    ${air(30)}
-    ${competences}
-
-    ${air(20)}
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#faf8f3; border:1px solid #e6e0d2; border-radius:12px; overflow:hidden;">
-      ${
-        v.slug === SPECIMEN
-          ? `<tr><td style="padding:0;">${image("certificat-daf.jpg", `Spécimen du certificat professionnel ${v.titre}, portant le détail des séances et un code de vérification`, 375)}</td></tr>`
-          : ""
-      }
-      <tr><td style="padding:24px;">
-        ${rubrique("Le programme, séance par séance")}
-        <div style="font-size:14.5px; line-height:2; color:#2b2f38;">
-          ${v.seances.map((s) => echapper(s)).join("<br>")}
-        </div>
-        ${
-          v.livrables.length > 0
-            ? `<div style="margin-top:20px; padding-top:18px; border-top:1px solid #e6e0d2;">
-                 ${rubrique(`Ce que vous emportez — ${v.livrables.length} livrables`)}
-                 <div style="font-size:14px; line-height:1.85; color:#5c5f68;">${v.livrables.map((l) => "&bull;&nbsp; " + echapper(l)).join("<br>")}</div>
-               </div>`
-            : ""
-        }
-        ${
-          v.pourQui.length > 0
-            ? `<div style="margin-top:18px; padding-top:16px; border-top:1px solid #e6e0d2; font-size:13.5px; line-height:1.6; color:#8a8778;">
-                 <strong style="color:#5c5f68;">Pour qui :</strong> ${echapper(v.pourQui.join(" · "))}
-               </div>`
-            : ""
-        }
-        <div style="padding-top:22px;">
-          <a href="${SITE}/formations/${v.slug}" style="display:inline-block; background-color:#15181f; color:#ffffff; font-size:13.5px; font-weight:bold; text-decoration:none; padding:12px 24px; border-radius:6px;">
-            Voir la fiche complète &rarr;
-          </a>
-          <a href="${SITE}/formations/${v.slug}/plaquette" style="display:inline-block; margin-left:8px; color:#8f6b1c; font-size:13.5px; font-weight:bold; text-decoration:none; padding:12px 4px;">
-            La plaquette (PDF)
-          </a>
-        </div>
-      </td></tr>
-    </table>`
-    : "";
-
   /*
-    ── Les trois étapes, telles qu'elles se passent vraiment ─────────────────
-    ⚠️ Le gabarit reçu décrivait une sélection sur dossier et un comité des
-    admissions. Il n'y en a pas : le tunnel a deux temps, et la pré-inscription
-    n'engage à rien. Promettre un entretien de sélection à quelqu'un qui
-    remplira un formulaire sans jamais être appelé, c'est le faire attendre
-    pour rien.
+    ⚠️ Les commentaires sur le HTML vivent ici, hors des littéraux : un
+    backtick posé dedans termine le gabarit, et l'erreur qui en sort désigne
+    une tout autre ligne.
   */
+  const pastille = (n: number, couleur: string) =>
+    `<div style="width:34px; height:34px; border-radius:50%; background-color:${couleur}22; border:2px solid ${couleur}; text-align:center; line-height:30px; font-family:Georgia,serif; font-size:15px; font-weight:bold; color:${couleur};">${n}</div>`;
+
+  const COULEURS = ["#2fa37d", "#c9a24c", "#38bdf8"];
+
+  const arguments_ =
+    v && v.objectifs.length > 0
+      ? v.objectifs
+          .map(
+            (o, i) => `<tr>
+        <td style="vertical-align:top; width:44px; padding-bottom:20px;">${pastille(i + 1, COULEURS[i % 3]!)}</td>
+        <td style="vertical-align:top; padding:3px 0 20px 12px; font-size:14.5px; line-height:1.6; color:#cbd5e1;">
+          ${echapper(o)}
+        </td>
+      </tr>`,
+          )
+          .join("")
+      : "";
+
+  const carte = (titre: string, texte: string) => `
+    <td class="colonne" width="48%" style="vertical-align:top; padding-right:8px;">
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0f172a; border:1px solid rgba(243,239,228,0.12); border-radius:10px;">
+        <tr><td style="padding:16px;">
+          <div style="font-size:15px; font-weight:700; color:#ffffff; margin-bottom:6px;">${echapper(titre)}</div>
+          <div style="font-size:12.5px; line-height:1.55; color:#94a3b8;">${echapper(texte)}</div>
+        </td></tr>
+      </table>
+    </td>`;
+
   const etapes = [
     [
       "Vous retenez votre place",
-      "Un formulaire de deux minutes. Rien ne vous engage, rien n'est encaissé, et vous repartez avec une référence de dossier.",
+      "Un formulaire de deux minutes. Rien n'est encaissé, et vous repartez avec une référence de dossier.",
+      "#c9a24c",
     ],
     [
       "Vous demandez votre contrat, quand vous êtes décidé",
       "Il se compose depuis votre dossier et se signe en ligne. Les instructions de règlement vous parviennent ensuite, par courriel.",
+      "#c9a24c",
     ],
     [
       "Vous réglez, et vous démarrez",
       "Carte bancaire, virement ou transfert — vous choisissez. Aucune donnée bancaire ne passe par le site.",
+      "#2fa37d",
     ],
   ]
     .map(
-      ([titre, texte], i) => `
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#faf8f3; border-left:3px solid ${i === 2 ? "#2f6d52" : "#c9a24c"}; border-radius:0 8px 8px 0; margin-bottom:12px;">
-      <tr><td style="padding:15px 18px;">
-        <div style="font-size:14.5px; font-weight:bold; color:#15181f;">${i + 1}. ${echapper(titre)}</div>
-        <div style="font-size:13.5px; line-height:1.6; color:#5c5f68; padding-top:5px;">${echapper(texte)}</div>
+      ([t, x, c], i) => `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px; background-color:#111a33; border-radius:8px; border-left:3px solid ${c};">
+      <tr><td style="padding:14px 18px; font-size:14px; line-height:1.55; color:#e2e8f0;">
+        <strong style="color:${c === "#2fa37d" ? "#2fa37d" : "#e9cd84"};">${i + 1}. ${echapper(String(t))}</strong><br>
+        ${echapper(String(x))}
       </td></tr>
     </table>`,
     )
     .join("");
 
   const corpsHtml = `
-    ${image("hero-catalogue.jpg", "Le catalogue exécutif CLIXA posé sur une table de conseil, face à une baie vitrée au crépuscule", 280)}
+    <!-- Accroche -->
+    <tr><td style="padding:34px 32px 24px 32px; background-color:#0b1122;" class="gouttiere">
+      <h1 class="titre-mobile" style="margin:0 0 14px 0; font-family:Georgia,serif; font-size:28px; font-weight:800; color:#ffffff; line-height:1.25;">
+        ${echapper(v ? v.titre : "Prenez la direction")}
+      </h1>
+      ${
+        v && v.pourQui.length > 0
+          ? `<p style="margin:0 0 18px 0; font-size:15px; line-height:1.65; color:#cbd5e1;">
+              <!--
+                ⚠️ « Pour les… », et non « Vous êtes… ». Les intitulés du
+                catalogue sont au pluriel — « Responsables financiers et RAF »,
+                « Chefs comptables souhaitant évoluer » — et « Vous êtes
+                Responsables financiers » cloche. Les mettre au singulier
+                demanderait de réécrire le catalogue, ou de le deviner.
+              -->
+              Pour les <strong style="color:#ffffff;">${echapper(v.pourQui.slice(0, 3).map(enMinusculeInitiale).join(", "))}</strong>.
+            </p>`
+          : ""
+      }
+      <p style="margin:0 0 24px 0; font-size:15px; line-height:1.65; color:#94a3b8;">
+        ${echapper(p.accroche)}
+      </p>
 
-    ${air(26)}
-    ${faits}
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;" class="bouton-mobile">
+        <tr><td align="center" style="background-color:#c9a24c; border-radius:8px;">
+          <a href="${lien}" target="_blank" style="display:inline-block; padding:15px 32px; font-size:15px; font-weight:800; color:#070b16; text-decoration:none;">
+            Voir le parcours et la plaquette &rarr;
+          </a>
+        </td></tr>
+      </table>
 
-    ${prenom ? `${air(26)}<div style="font-size:15px; color:#2b2f38;">Bonjour ${echapper(prenom)},</div>` : ""}
+      ${
+        arguments_
+          ? `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid rgba(243,239,228,0.1); padding-top:24px;">${arguments_}</table>`
+          : ""
+      }
+    </td></tr>
 
-    ${air(18)}
-    <div style="font-size:15.5px; line-height:1.7; color:#2b2f38;">
-      ${echapper(p.accroche)}
-    </div>
+    <!-- Au cœur du programme -->
+    <tr><td style="background-color:#070b16; padding:32px; border-top:1px solid rgba(201,162,76,0.2);" class="gouttiere">
+      <div style="text-align:center; margin-bottom:22px;">
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#c9a24c; margin-bottom:6px;">
+          Au cœur du programme
+        </div>
+        <h2 style="margin:0; font-family:Georgia,serif; font-size:23px; font-weight:800; color:#ffffff;">
+          ${v ? `Les ${v.seances.length} séances, et ce que vous emportez` : "Ce que vous allez maîtriser"}
+        </h2>
+      </div>
 
-    ${enAvant}
+      ${
+        v
+          ? `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0f172a; border:1px solid rgba(201,162,76,0.3); border-radius:10px; overflow:hidden; margin-bottom:18px;">
+        ${
+          v.slug === SPECIMEN
+            ? `<tr><td style="line-height:0; padding:0;">
+          <img src="${IMG}/certificat-daf.jpg" width="536" height="335" alt="${echapper(`Spécimen du certificat professionnel ${v.titre}, portant le détail des séances et un code de vérification`)}" style="width:100%; max-width:536px; height:auto; display:block; border:0;">
+        </td></tr>`
+            : ""
+        }
+        <tr><td style="padding:20px 22px;">
+          <div style="font-size:13.5px; line-height:2; color:#cbd5e1;">
+            ${v.seances.map((x) => echapper(x)).join("<br>")}
+          </div>
+          ${
+            v.livrables.length > 0
+              ? `<div style="margin-top:18px; padding-top:16px; border-top:1px solid rgba(243,239,228,0.1);">
+                   <div style="font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#c9a24c; margin-bottom:8px;">Ce que vous emportez — ${v.livrables.length} livrables</div>
+                   <div style="font-size:13px; line-height:1.85; color:#94a3b8;">${v.livrables.map((l) => "&bull;&nbsp; " + echapper(l)).join("<br>")}</div>
+                 </div>`
+              : ""
+          }
+        </td></tr>
+      </table>`
+          : ""
+      }
 
-    ${bloc("Comment s'inscrire", etapes)}
+      ${
+        v && v.debouches.length === 2
+          ? `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+              ${carte("Ce que vous saurez faire", v.debouches[0]!)}
+              ${carte("Et aussi", v.debouches[1]!)}
+            </tr></table>`
+          : ""
+      }
+    </td></tr>
 
-    ${bloc(
-      "Tarifs — les mêmes pour tous les parcours",
-      `<table width="100%" border="0" cellspacing="0" cellpadding="0">
-      ${p.formules
+    <!-- Comment s'inscrire, tarifs, boutons -->
+    <tr><td style="background-color:#0b1122; padding:32px;" class="gouttiere">
+      <div style="text-align:center; margin-bottom:20px;">
+        <h3 style="margin:0 0 6px 0; font-family:Georgia,serif; font-size:22px; font-weight:800; color:#ffffff;">Comment s'inscrire</h3>
+        <div style="font-size:13px; color:#94a3b8;">Trois étapes. Rien ne vous engage avant la signature du contrat.</div>
+      </div>
+      ${etapes}
+
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#070b16; border:1px solid #c9a24c; border-radius:10px; margin:22px 0 24px 0;">
+        <tr><td style="padding:22px 24px;">
+          <div style="font-size:11px; font-weight:800; color:#c9a24c; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">
+            Tarifs — les mêmes pour tous les parcours
+          </div>
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+            ${p.formules
+              .map(
+                (f) => `<tr>
+              <td style="padding:8px 0; border-bottom:1px solid rgba(243,239,228,0.08); font-size:13.5px; color:#cbd5e1;">${echapper(f.libelle)}</td>
+              <td align="right" style="padding:8px 0; border-bottom:1px solid rgba(243,239,228,0.08); font-family:Georgia,serif; font-size:17px; font-weight:bold; color:#ffffff; white-space:nowrap;">${echapper(f.total)}</td>
+              <td align="right" style="padding:8px 0 8px 12px; border-bottom:1px solid rgba(243,239,228,0.08); font-size:11.5px; color:#94a3b8; white-space:nowrap;">${echapper(f.detail)}</td>
+            </tr>`,
+              )
+              .join("")}
+          </table>
+          <div style="margin-top:14px; font-size:12px; color:#94a3b8; line-height:1.55;">
+            ${v ? `${v.heures} h en direct &middot; ${echapper(v.cadence ?? "")} (UTC) &middot; ` : ""}certificat nominatif vérifiable en ligne.
+            Payer en plusieurs fois coûte un peu plus cher : les échéances sont adossées aux séances, pas au calendrier.
+          </div>
+        </td></tr>
+      </table>
+
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="bouton-mobile">
+        <tr><td align="center" style="padding-bottom:12px;">
+          <a href="${v ? `${SITE}/inscription?formation=${v.slug}` : `${SITE}/formations`}" target="_blank" style="display:block; width:100%; box-sizing:border-box; background-color:#c9a24c; color:#070b16; font-size:15px; font-weight:800; text-align:center; text-decoration:none; padding:16px 28px; border-radius:8px;">
+            Retenir ma place &rarr;
+          </a>
+        </td></tr>
+        <tr><td align="center">
+          <a href="${RESEAUX_CLIXA.whatsapp.url}" target="_blank" style="display:block; width:100%; box-sizing:border-box; background-color:#111a33; border:1px solid #2fa37d; color:#2fa37d; font-size:14px; font-weight:700; text-align:center; text-decoration:none; padding:13px 24px; border-radius:8px;">
+            Poser une question sur WhatsApp — ${echapper(RESEAUX_CLIXA.whatsapp.numeroAffiche)}
+          </a>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- Séminaire, avec sa légende -->
+    <tr><td style="background-color:#070b16; padding:0 32px 26px 32px; border-top:1px solid rgba(243,239,228,0.08); padding-top:26px;" class="gouttiere">
+      <img src="${IMG}/seminaire.jpg" width="536" height="302" alt="Séminaire de dirigeants animé par CLIXA à Agadir, autour d'une table de conseil" style="width:100%; max-width:536px; height:auto; display:block; border:0; border-radius:8px;">
+      <div style="font-size:11.5px; line-height:1.5; color:#64748b; padding-top:9px; font-style:italic;">
+        Séminaire dirigeants &middot; Agadir — les parcours, eux, se donnent en classe virtuelle.
+      </div>
+    </td></tr>
+
+    <!-- Les autres parcours -->
+    <tr><td style="background-color:#0b1122; padding:26px 32px;" class="gouttiere">
+      <div style="font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#c9a24c; margin-bottom:12px;">
+        Les ${p.combien} parcours
+      </div>
+      ${p.familles
         .map(
-          (f) => `<tr>
-        <td style="padding:11px 0; border-bottom:1px solid #eee9dd; font-size:14.5px; color:#2b2f38;">${echapper(f.libelle)}</td>
-        <td align="right" style="padding:11px 0; border-bottom:1px solid #eee9dd; font-family:Georgia,serif; font-size:17px; font-weight:bold; color:#15181f; white-space:nowrap;">${echapper(f.total)}</td>
-        <td align="right" style="padding:11px 0 11px 14px; border-bottom:1px solid #eee9dd; font-size:12px; color:#8a8778; white-space:nowrap;">${echapper(f.detail)}</td>
-      </tr>`,
+          (
+            f,
+          ) => `<div style="font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#64748b; padding:10px 0 4px;">${echapper(f.nom)}</div>
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+          ${f.parcours
+            .map(
+              (c) => `<tr>
+            <td style="padding:5px 0; border-bottom:1px solid rgba(243,239,228,0.06); font-size:13.5px; color:${c.slug === v?.slug ? "#e9cd84" : "#cbd5e1"};">${echapper(c.titre)}</td>
+            <td align="right" style="padding:5px 0; border-bottom:1px solid rgba(243,239,228,0.06); font-size:11.5px; color:#64748b; white-space:nowrap;">${c.heures} h</td>
+          </tr>`,
+            )
+            .join("")}
+        </table>`,
         )
         .join("")}
-    </table>
-    <div style="font-size:12.5px; line-height:1.6; color:#8a8778; padding-top:10px;">
-      Payer en plusieurs fois coûte un peu plus cher. Nous préférons l'écrire ici
-      plutôt que vous le laisser découvrir au moment de régler — les échéances sont
-      adossées aux séances, pas au calendrier.
-    </div>`,
-    )}
-
-    ${air(32)}
-    ${image("seminaire.jpg", "Séminaire de dirigeants animé par CLIXA à Agadir, autour d'une table de conseil", 338)}
-    <div style="font-size:11.5px; line-height:1.55; color:#8a8778; padding:9px 2px 0; font-style:italic;">
-      Séminaire dirigeants · Agadir — les parcours, eux, se donnent en classe virtuelle.
-    </div>
-
-    ${bloc(
-      "Le certificat",
-      `<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#faf8f3; border-left:3px solid #c9a24c; border-radius:0 10px 10px 0;">
-      <tr><td style="padding:20px 22px; font-size:14.5px; line-height:1.7; color:#2b2f38;">
-        ${p.certificat.map((l) => echapper(l)).join("<br><br>")}
-      </td></tr>
-    </table>`,
-    )}
-
-    ${bloc(
-      `Les ${p.combien} parcours`,
-      p.familles
-        .map(
-          (f) => `
-      <div style="font-family:'SF Mono',Menlo,monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#8f6b1c; padding:12px 0 6px;">${echapper(f.nom)}</div>
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
-        ${f.parcours
-          .map(
-            (c) => `<tr>
-          <td style="padding:7px 0; border-bottom:1px solid #eee9dd; font-size:14.5px; color:${c.slug === v?.slug ? "#8f6b1c" : "#2b2f38"}; ${c.slug === v?.slug ? "font-weight:bold;" : ""}">${echapper(c.titre)}</td>
-          <td align="right" style="padding:7px 0; border-bottom:1px solid #eee9dd; font-size:12.5px; color:#8a8778; white-space:nowrap;">${c.heures} h</td>
-        </tr>`,
-          )
-          .join("")}
-      </table>`,
-        )
-        .join(""),
-    )}
-
-    ${
-      p.rentree
-        ? `${air(30)}
-           <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#15181f; border-radius:10px;">
-             <tr><td align="center" style="padding:22px;">
-               <div style="font-family:'SF Mono',Menlo,monospace; font-size:9.5px; letter-spacing:0.15em; text-transform:uppercase; color:#c9a24c;">Prochaine rentrée</div>
-               <div style="font-family:Georgia,serif; font-size:18px; font-weight:bold; color:#ffffff; padding-top:7px;">${echapper(p.rentree)}</div>
-             </td></tr>
-           </table>`
-        : ""
-    }
-
-    ${air(22)}
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr><td align="center" style="padding-bottom:10px;">
-        <a href="${RESEAUX_CLIXA.whatsapp.url}" style="display:block; background-color:#ffffff; border:1px solid #2f6d52; color:#2f6d52; font-size:14px; font-weight:bold; text-align:center; text-decoration:none; padding:13px 20px; border-radius:8px;">
-          Poser une question sur WhatsApp — ${echapper(RESEAUX_CLIXA.whatsapp.numeroAffiche)}
-        </a>
-      </td></tr>
-    </table>
+      ${
+        p.rentree
+          ? `<div style="margin-top:20px; padding:16px; background-color:#070b16; border-radius:8px; text-align:center;">
+               <div style="font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#c9a24c;">Prochaine rentrée</div>
+               <div style="font-family:Georgia,serif; font-size:17px; font-weight:bold; color:#ffffff; padding-top:6px;">${echapper(p.rentree)}</div>
+             </div>`
+          : ""
+      }
+    </td></tr>
   `;
-
-  const desabonnement = `mailto:${REPONDRE_A}?subject=${encodeURIComponent("Désabonnement")}`;
-  const pied = `
-    ${air(24)}
-    <div style="border-top:1px solid #eee9dd; padding-top:16px; font-size:11.5px; line-height:1.6; color:#8a8778;">
-      Vous recevez ce message parce que nous pensons que nos parcours peuvent vous
-      intéresser. Si ce n'est pas le cas,
-      <a href="${desabonnement}" style="color:#8f6b1c;">dites-le nous en un clic</a>
-      et nous ne vous écrirons plus.
-    </div>`;
 
   const texte = [
     prenom ? `Bonjour ${prenom},` : "",
     "",
+    v ? v.titre.toUpperCase() : "PRENEZ LA DIRECTION",
+    v && v.pourQui.length
+      ? `Pour les ${v.pourQui.slice(0, 3).map(enMinusculeInitiale).join(", ")}.`
+      : "",
     p.accroche,
     "",
-    v ? `${v.titre} — ${heures} h · ${v.cadence ?? "8 séances"}` : "",
-    ...(v ? v.competences.map((c) => `  · ${c}`) : []),
+    ...(v ? v.objectifs.map((o) => `  · ${o}`) : []),
     "",
     ...(v
       ? [
-          "LE PROGRAMME, SÉANCE PAR SÉANCE",
-          ...v.seances.map((s) => `  ${s}`),
+          `LES ${v.seances.length} SÉANCES`,
+          ...v.seances.map((x) => `  ${x}`),
           "",
           ...(v.livrables.length
             ? [
@@ -2154,25 +2189,22 @@ export async function courrielPresentation(
                 "",
               ]
             : []),
-          ...(v.pourQui.length ? [`Pour qui : ${v.pourQui.join(" · ")}`, ""] : []),
-          `  La fiche : ${SITE}/formations/${v.slug}`,
-          `  La plaquette : ${SITE}/formations/${v.slug}/plaquette`,
+          `  La fiche : ${lien}`,
+          `  La plaquette : ${lien}/plaquette`,
           "",
         ]
       : []),
     "COMMENT S'INSCRIRE",
-    "  1. Vous retenez votre place — rien ne vous engage, rien n'est encaissé.",
+    "  1. Vous retenez votre place — rien n'est encaissé.",
     "  2. Vous demandez votre contrat quand vous êtes décidé, et vous le signez en ligne.",
     "  3. Vous réglez — carte, virement ou transfert. Aucune donnée bancaire ne passe par le site.",
     "",
     "TARIFS — les mêmes pour tous les parcours",
     ...p.formules.map((f) => `  ${f.libelle} : ${f.total} (${f.detail})`),
+    v ? `  ${v.heures} h en direct · ${v.cadence ?? ""} (UTC)` : "",
     "  Les échéances sont adossées aux séances, pas au calendrier.",
     "",
     "Séminaire dirigeants · Agadir — les parcours, eux, se donnent en classe virtuelle.",
-    "",
-    "LE CERTIFICAT",
-    ...p.certificat.map((l) => `  · ${l}`),
     "",
     `LES ${p.combien} PARCOURS`,
     ...p.familles.flatMap((f) => [
@@ -2183,7 +2215,7 @@ export async function courrielPresentation(
     "",
     p.rentree ? `PROCHAINE RENTRÉE : ${p.rentree}` : "",
     "",
-    `Le catalogue : ${SITE}/formations`,
+    `Retenir ma place : ${v ? `${SITE}/inscription?formation=${v.slug}` : `${SITE}/formations`}`,
     `Une question ? WhatsApp ${RESEAUX_CLIXA.whatsapp.numeroAffiche} — ${RESEAUX_CLIXA.email.adresse}`,
     "",
     `Pour ne plus recevoir nos messages, répondez « Désabonnement » à ${REPONDRE_A}.`,
@@ -2191,18 +2223,40 @@ export async function courrielPresentation(
     .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
     .join("\n");
 
+  const desabonnement = `mailto:${REPONDRE_A}?subject=${encodeURIComponent("Désabonnement")}`;
+
   return envoyer(payload, {
     to: d.email,
     subject: p.objet,
     text: texte,
-    html: gabaritClairEmail({
+    html: gabaritVitrineEmail({
       titre: v ? v.titre : "Prenez la direction",
-      soustitre: v
-        ? `${echapper(v.accroche)}${p.rentree ? ` — rentrée le ${echapper(p.rentree.split(" — ")[0] ?? "")}.` : "."}`
-        : "Des parcours exécutifs en classe virtuelle, avec un certificat vérifiable en ligne.",
-      corpsHtml: corpsHtml + pied,
-      boutonTexte: v ? "Retenir ma place" : "Voir le catalogue",
-      boutonLien: v ? `${SITE}/inscription?formation=${v.slug}` : `${SITE}/formations`,
+      /*
+        ⚠️ Le pré-en-tête est ce que la boîte de réception montre sous l'objet.
+        Il porte les faits, pas une formule : c'est la seule phrase qu'on lit
+        avant de décider d'ouvrir.
+      */
+      preEntete: [
+        v ? `${v.heures} h en direct` : "",
+        v?.cadence ?? "",
+        "100 % en ligne",
+        p.rentree ? `Rentrée le ${p.rentree.split(" — ")[0]}` : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      /*
+        ⚠️ Le quantième reste. Un premier jet retirait le premier mot pour
+        alléger, et « 3 octobre 2026 » devenait « octobre 2026 » — vu à
+        l'écran : la pastille annonçait un mois là où elle doit annoncer un
+        jour, sur la seule date que le lecteur retiendra.
+      */
+      ...(p.rentree ? { badge: `Rentrée ${p.rentree.split(" — ")[0] ?? ""}` } : {}),
+      imageEnTete: {
+        src: `${IMG}/hero-catalogue.jpg`,
+        alt: "Le catalogue exécutif CLIXA posé sur une table de conseil, face à une baie vitrée au crépuscule",
+        hauteur: 280,
+      },
+      corpsHtml,
     }),
     headers: {
       "List-Unsubscribe": `<${desabonnement}>`,

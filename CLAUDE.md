@@ -3904,6 +3904,48 @@ professional fihom des photo o rakez liya 3la DAF bl khossos »).
   cadres vides — et c'est le seul de nos messages qu'on ne peut pas rattraper.
 - `verifier-presentation.ts` passe de 33 à **60 contrôles**.
 
+⚠️ **Et le dessin du gabarit reçu est monté dans le code** (`gabaritVitrineEmail`,
+23 septembre 2026, quatrième jet : « rekkeb dak dessin f template dyal l
+code »). La forme est celle que la direction a fait composer ailleurs — encre,
+filet doré, cartouche à gauche et pastille de rentrée à droite, image en tête,
+cartes, double bouton. Ce qui change est que **plus rien n'y est écrit à la
+main**.
+
+| ce qu'on lit | d'où ça vient |
+|---|---|
+| le titre, la durée | le programme |
+| les trois arguments numérotés | `objectifs`, découpé en phrases |
+| « Pour les… » | `publicVise` |
+| les deux cartes | `debouches` |
+| les séances | `modules` |
+| ce qu'on emporte | `livrables` |
+| l'horaire | la **cadence de la session de ce parcours** |
+| les trois formules | le barème |
+
+- ⚠️ **`objectifs` est la seule prose du catalogue écrite en registre
+  d'argumentaire** — « Piloter le cash et le BFR avec une logique de trésorerie
+  à 13 semaines » — et c'est pour cela qu'elle sert ici plutôt qu'une rédaction
+  parallèle, qui vieillirait le jour où la fiche change.
+- ⚠️ **Le découpage se fait sur le point suivi d'une majuscule**, jamais sur le
+  point seul : le catalogue porte « PMBOK v8 » et « 4h. », et un découpage naïf
+  rendait des fragments commençant au milieu d'une phrase.
+- ⚠️ **Le gabarit sombre du tunnel n'a pas bougé.** Les seize messages qui
+  suivent un geste gardent `gabaritHtmlEmail` : une image d'ambiance et une
+  pastille n'ont de sens que pour qui ne nous connaît pas encore.
+- **Les conditionnels `mso` et les `@media` sont repris du fichier d'origine.**
+  Outlook rend le HTML avec le moteur de Word ; Gmail retire la balise
+  `<style>`. Les règles étroites **améliorent** l'affichage, elles ne le portent
+  pas — la mise en page tient par des tableaux et des pourcentages.
+- ⚠️ **Deux défauts vus à l'écran, pas au type.** Le badge retirait le premier
+  mot de la date pour alléger : « 3 octobre 2026 » devenait « octobre 2026 »,
+  et la pastille annonçait un mois là où elle doit annoncer un jour. Et un
+  `.toLowerCase()` posé sur `publicVise` rendait « responsables financiers et
+  **raf** » — l'acronyme détruit, sur la ligne qui dit au lecteur que le message
+  s'adresse à lui. On ne baisse que la première lettre.
+- ⚠️ **Le pré-en-tête porte les faits**, pas une formule : c'est la seule phrase
+  que la boîte de réception montre sous l'objet, donc la seule qu'on lit avant
+  de décider d'ouvrir. Laissé vide, le client y met le premier texte trouvé.
+
 ⚠️ **Et un gabarit composé ailleurs a été repris — sa structure, pas ses
 faits** (23 septembre 2026, troisième jet : « khedm bhado o ziid 3lihom dakxi
 dyalk »). La direction a transmis un courriel DAF écrit par un autre outil.

@@ -384,6 +384,12 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
                     "DAF en prise de poste",
                     "Dirigeants structurant la fonction finance",
                   ],
+                  objectifs:
+                    "Piloter le cash et le BFR avec une logique de trésorerie à 13 semaines. Construire un budget et un forecast driver-based réellement actionnables. Produire un reporting CODIR clair, synthétique et orienté décision. Renforcer le contrôle interne et la qualité du closing.",
+                  debouches: [
+                    "Piloter cash, budget et reporting avec plus de maîtrise",
+                    "Structurer un management pack utile à la direction",
+                  ],
                   competences: [
                     "rôle DAF et organisation de la fonction finance",
                     "contrôle interne, anti-fraude et séparation des tâches",

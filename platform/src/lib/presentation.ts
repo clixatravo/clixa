@@ -59,6 +59,8 @@ export interface FaitsDePresentation {
     | "publicVise"
     | "competences"
     | "livrables"
+    | "objectifs"
+    | "debouches"
   >[];
   /**
    * La cadence de la session du parcours mis en avant — « 8 samedis ·
@@ -115,6 +117,20 @@ export interface ParcoursEnAvant {
   competences: string[];
   /** « 8 samedis · 9h00–13h00 », telle que la session la porte. */
   cadence?: string;
+  /**
+   * Les objectifs, découpés en phrases — trois au plus.
+   *
+   * ⚠️ **C'est la seule prose du catalogue écrite dans le registre d'un
+   * argumentaire**, et c'est pour cela qu'elle sert ici plutôt qu'une
+   * rédaction parallèle : « Piloter le cash et le BFR avec une logique de
+   * trésorerie à 13 semaines », « Produire un reporting CODIR clair,
+   * synthétique et orienté décision ». Une seconde version écrite à la main
+   * vieillirait le jour où la fiche change — et ce message existe pour amener
+   * quelqu'un sur cette fiche.
+   */
+  objectifs: string[];
+  /** Ce que le participant sait faire après — deux au plus, pour les cartes. */
+  debouches: string[];
 }
 
 export interface Presentation {
@@ -132,6 +148,20 @@ export interface Presentation {
 }
 
 const JOUR = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeZone: "UTC" });
+
+/**
+ * Découper un paragraphe d'objectifs en phrases.
+ *
+ * ⚠️ On coupe sur « . » **suivi d'une majuscule**, pas sur le point seul : le
+ * catalogue porte « PMBOK v8 », « 4h. » et des nombres à décimale, et un
+ * découpage naïf rendait des fragments commençant au milieu d'une phrase.
+ */
+function decouperEnPhrases(texte: string): string[] {
+  return texte
+    .split(/\.\s+(?=[A-ZÀ-Þ])/)
+    .map((p) => p.trim().replace(/\.$/, ""))
+    .filter((p) => p.length > 12);
+}
 
 /**
  * Composer la présentation.
@@ -209,6 +239,18 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
           c'est exactement ce que ce fichier existe pour éviter.
         */
         competences: (vedette.competences ?? []).slice(0, 3),
+        /*
+          ⚠️ **Le découpage se fait sur le point suivi d'une majuscule**, et non
+          sur le seul point : « 13 semaines. Construire » se coupe, « PMBOK v8 »
+          ou « 4h. » ne se coupent pas. Un découpage naïf rendait des fragments
+          d'une ligne et demie qui commençaient au milieu d'une phrase.
+
+          ⚠️ Et l'on garde **trois au plus** : le dessin en prévoit trois, et
+          le DAF en porte cinq. Ce qui est coupé ne se voit pas — il n'y a rien
+          à dire de « et deux autres objectifs » dans un argumentaire.
+        */
+        objectifs: decouperEnPhrases(vedette.objectifs ?? "").slice(0, 3),
+        debouches: (vedette.debouches ?? []).slice(0, 2),
         ...(f.cadenceEnAvant ? { cadence: f.cadenceEnAvant } : {}),
       }
     : undefined;
