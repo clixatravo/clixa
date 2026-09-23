@@ -3945,6 +3945,15 @@ main**.
 - ⚠️ **Le pré-en-tête porte les faits**, pas une formule : c'est la seule phrase
   que la boîte de réception montre sous l'objet, donc la seule qu'on lit avant
   de décider d'ouvrir. Laissé vide, le client y met le premier texte trouvé.
+- ⚠️ **« Et aussi » n'est pas un titre.** Les débouchés tenaient d'abord dans
+  deux cartes côte à côte ; la seconde s'intitulait ainsi faute de mieux, et
+  les deux textes se retrouvaient coupés dans des cadres étroits. Le catalogue
+  en porte six, tous écrits dans le bon registre : ils vivent désormais en bloc
+  — « À la sortie, vous saurez », quatre lignes cochées. Vu à l'écran.
+- ⚠️ **Le numéro de séance prend l'or, l'intitulé reste ivoire.** Huit lignes
+  de même valeur se lisent comme un pavé ; c'est le repère « S1 … S8 » qui
+  permet d'y entrer, et il disparaissait dans la masse. Découpé sur le tiret
+  cadratin, jamais sur le premier espace.
 
 ⚠️ **Et un gabarit composé ailleurs a été repris — sa structure, pas ses
 faits** (23 septembre 2026, troisième jet : « khedm bhado o ziid 3lihom dakxi

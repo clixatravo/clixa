@@ -129,7 +129,15 @@ export interface ParcoursEnAvant {
    * quelqu'un sur cette fiche.
    */
   objectifs: string[];
-  /** Ce que le participant sait faire après — deux au plus, pour les cartes. */
+  /**
+   * Ce que le participant sait faire après.
+   *
+   * ⚠️ **Quatre au plus, et en bloc — pas en cartes.** Un premier jet en
+   * prenait deux et les posait dans deux cartes côte à côte : la seconde
+   * s'intitulait « Et aussi », ce qui n'est pas un titre, et les deux textes
+   * se retrouvaient coupés dans des cadres étroits. Le catalogue en porte six,
+   * tous écrits dans le bon registre — ils valent mieux qu'un cadre.
+   */
   debouches: string[];
 }
 
@@ -250,7 +258,7 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
           à dire de « et deux autres objectifs » dans un argumentaire.
         */
         objectifs: decouperEnPhrases(vedette.objectifs ?? "").slice(0, 3),
-        debouches: (vedette.debouches ?? []).slice(0, 2),
+        debouches: (vedette.debouches ?? []).slice(0, 4),
         ...(f.cadenceEnAvant ? { cadence: f.cadenceEnAvant } : {}),
       }
     : undefined;

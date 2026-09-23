@@ -1955,16 +1955,6 @@ export async function courrielPresentation(
           .join("")
       : "";
 
-  const carte = (titre: string, texte: string) => `
-    <td class="colonne" width="48%" style="vertical-align:top; padding-right:8px;">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0f172a; border:1px solid rgba(243,239,228,0.12); border-radius:10px;">
-        <tr><td style="padding:16px;">
-          <div style="font-size:15px; font-weight:700; color:#ffffff; margin-bottom:6px;">${echapper(titre)}</div>
-          <div style="font-size:12.5px; line-height:1.55; color:#94a3b8;">${echapper(texte)}</div>
-        </td></tr>
-      </table>
-    </td>`;
-
   const etapes = [
     [
       "Vous retenez votre place",
@@ -2054,9 +2044,25 @@ export async function courrielPresentation(
             : ""
         }
         <tr><td style="padding:20px 22px;">
-          <div style="font-size:13.5px; line-height:2; color:#cbd5e1;">
-            ${v.seances.map((x) => echapper(x)).join("<br>")}
-          </div>
+          <!--
+            ⚠️ Le numéro de séance prend l'or, l'intitulé reste ivoire. Huit
+            lignes de même valeur se lisent comme un pavé ; c'est le repère
+            « S1 … S8 » qui permet d'y entrer, et il disparaissait dans la
+            masse. Découpé sur le tiret cadratin, jamais sur le premier
+            espace : « S1 — Mode DAF activé ».
+          -->
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+            ${v.seances
+              .map((x) => {
+                const [num, ...reste] = x.split("—");
+                const intitule = reste.join("—").trim();
+                return `<tr>
+                  <td style="vertical-align:top; width:34px; padding:4px 0; font-family:Georgia,serif; font-size:13px; font-weight:bold; color:#c9a24c;">${echapper(num!.trim())}</td>
+                  <td style="vertical-align:top; padding:4px 0 4px 6px; font-size:13.5px; line-height:1.55; color:#cbd5e1;">${echapper(intitule || x)}</td>
+                </tr>`;
+              })
+              .join("")}
+          </table>
           ${
             v.livrables.length > 0
               ? `<div style="margin-top:18px; padding-top:16px; border-top:1px solid rgba(243,239,228,0.1);">
@@ -2071,11 +2077,22 @@ export async function courrielPresentation(
       }
 
       ${
-        v && v.debouches.length === 2
-          ? `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-              ${carte("Ce que vous saurez faire", v.debouches[0]!)}
-              ${carte("Et aussi", v.debouches[1]!)}
-            </tr></table>`
+        v && v.debouches.length > 0
+          ? `<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#0f172a; border:1px solid rgba(243,239,228,0.12); border-radius:10px;">
+              <tr><td style="padding:20px 22px;">
+                <div style="font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#c9a24c; margin-bottom:10px;">À la sortie, vous saurez</div>
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                  ${v.debouches
+                    .map(
+                      (x) => `<tr>
+                    <td style="vertical-align:top; width:18px; padding:4px 0; color:#2fa37d; font-size:14px; font-weight:bold;">&#10003;</td>
+                    <td style="vertical-align:top; padding:4px 0 4px 8px; font-size:14px; line-height:1.55; color:#cbd5e1;">${echapper(x)}</td>
+                  </tr>`,
+                    )
+                    .join("")}
+                </table>
+              </td></tr>
+            </table>`
           : ""
       }
     </td></tr>

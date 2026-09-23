@@ -389,6 +389,8 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
                   debouches: [
                     "Piloter cash, budget et reporting avec plus de maîtrise",
                     "Structurer un management pack utile à la direction",
+                    "Renforcer contrôle interne et gestion des risques",
+                    "Mieux dialoguer avec banques et financeurs",
                   ],
                   competences: [
                     "rôle DAF et organisation de la fonction finance",
