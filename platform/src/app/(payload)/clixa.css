@@ -4287,12 +4287,36 @@ h3,
    Même famille que « Places à rendre » : un bloc calme sous la grille, sans or
    ni émeraude. L'or est la file de travail du jour, et cette répartition ne
    demande aucun geste — elle sert à décider quelle cohorte ouvrir ensuite. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   D'où viennent les inscrits — la répartition par domaine.
+
+   ⚠️ **Même langue que les deux blocs d'envoi et que les cartes de
+   supervision.** Il portait les neutres de Payload et avait l'air de venir
+   d'ailleurs, posé au milieu de cartes à l'encre et à l'or.
+
+   ⚠️ **L'or porte le classement, pas la proportion.** Le calcul répond à
+   « lequel domine », jamais à « quelle proportion » — la barre est
+   proportionnelle au domaine le plus fourni, jamais au total. La couleur dit
+   la même chose : l'or plein au premier, qui s'éteint en descendant. Donner
+   une teinte propre à chacun des sept domaines aurait demandé de les inventer,
+   et elles ne voudraient rien dire : ce ne sont pas les cinq filières du
+   catalogue, qui ont déjà les leurs.
+   ───────────────────────────────────────────────────────────────────────── */
 .clixa-domaines {
   margin: 1.25rem 0 0;
-  padding: 1rem 1.15rem 1.1rem;
-  border: 1px solid var(--theme-elevation-150);
+  padding: 1.2rem 1.3rem 1.3rem;
+  background: rgba(17, 26, 51, 0.75);
+  border: 1px solid rgba(243, 239, 228, 0.12);
   border-radius: 6px;
-  background: var(--theme-elevation-50);
+  position: relative;
+  overflow: hidden;
+}
+.clixa-domaines::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--clixa-or), rgba(201, 162, 76, 0));
 }
 .clixa-domaines__titre {
   display: flex;
@@ -4300,26 +4324,29 @@ h3,
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.85rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(243, 239, 228, 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--theme-elevation-800);
+  color: var(--clixa-or);
 }
-/* La couverture n'est pas un détail : elle empêche de lire la partie pour le
-   tout. Effacée, mais au-dessus du contraste minimal — la leçon de « Jamais
-   appelé », mesuré à 2,24:1 puis porté à 4,87:1. */
+/* ⚠️ La couverture n'est pas un détail : elle empêche de lire la partie pour
+   le tout. Effacée, mais au-dessus du seuil — la leçon de « Jamais appelé »,
+   mesuré à 2,24:1 puis porté à 4,87:1. */
 .clixa-domaines__couverture {
-  font-weight: 500;
+  font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--theme-elevation-650);
+  color: var(--clixa-ivoire-dim);
 }
 .clixa-domaines__liste {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -4330,33 +4357,43 @@ h3,
      jamais sous la largeur de son contenu et la ligne déborde à 375 px. */
   grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.8rem;
   font-size: 0.85rem;
 }
 .clixa-domaines__nom {
-  color: var(--theme-elevation-800);
+  color: var(--clixa-ivoire);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 .clixa-domaines__nom:hover {
-  color: var(--theme-elevation-1000);
+  color: var(--clixa-or-clair);
   text-decoration: underline;
 }
 .clixa-domaines__barre {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--theme-elevation-150);
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(8, 12, 24, 0.7);
+  border: 1px solid rgba(243, 239, 228, 0.07);
   overflow: hidden;
 }
 .clixa-domaines__part {
   display: block;
   height: 100%;
-  border-radius: 3px;
-  background: var(--theme-elevation-500);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--clixa-or), var(--clixa-or-clair));
+}
+/* Le premier porte une lueur — c'est lui qu'on vient lire. */
+.clixa-domaines__part--tete {
+  box-shadow: 0 0 10px -2px rgba(201, 162, 76, 0.55);
 }
 .clixa-domaines__nombre {
+  font-family: var(--font-serif);
+  font-size: 1rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  color: var(--theme-elevation-800);
+  font-weight: 700;
+  color: var(--clixa-ivoire);
+  min-width: 1.4rem;
+  text-align: right;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

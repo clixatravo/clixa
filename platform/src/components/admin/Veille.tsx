@@ -1270,7 +1270,19 @@ export async function Veille() {
             </span>
           </div>
           <ul className="clixa-domaines__liste">
-            {domaines.lignes.map((l) => (
+            {/*
+              ⚠️ **Le rang teinte la barre, et rien d'autre ne le fait.** Le
+              bloc répond à « lequel domine », jamais à « quelle proportion » —
+              c'est écrit dans `repartitionParDomaine`, et la barre est déjà
+              proportionnelle au plus fourni. Donner une couleur propre à
+              chaque domaine ferait sept teintes qu'il faudrait inventer, et
+              qui ne voudraient rien dire : ce ne sont pas les cinq filières du
+              catalogue, qui ont les leurs.
+
+              L'or plein va donc au premier, et s'éteint en descendant. La
+              couleur porte le classement, ce que le bloc sert à lire.
+            */}
+            {domaines.lignes.map((l, rang) => (
               <li key={l.valeur} className="clixa-domaines__ligne">
                 <Link
                   href={
@@ -1282,8 +1294,16 @@ export async function Veille() {
                 </Link>
                 <span className="clixa-domaines__barre" aria-hidden="true">
                   <span
-                    className="clixa-domaines__part"
-                    style={{ width: `${Math.max(l.barre, 4)}%` }}
+                    className={`clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
+                    style={{
+                      width: `${Math.max(l.barre, 4)}%`,
+                      /*
+                        ⚠️ Un plancher à 0,3 : sans lui, le septième domaine
+                        sortirait presque invisible, et « peu » se lirait
+                        « aucun » — alors qu'il y a bien quelqu'un derrière.
+                      */
+                      opacity: Math.max(1 - rang * 0.16, 0.3),
+                    }}
                   />
                 </span>
                 <span className="clixa-domaines__nombre">{l.nombre}</span>

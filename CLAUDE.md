@@ -4172,6 +4172,17 @@ pas.
 - **Mesuré à l'écran, sur le bloc isolé avec sa vraie CSS et ses vraies
   polices** : 375 px et pleine largeur, aucun débordement, l'avertissement
   passe sous le bouton et l'adresse la plus longue se replie.
+- ⚠️ **Et « D'où viennent les inscrits » a suivi** (le même jour, sur capture
+  d'écran : « hada hta howa 9ado b des color »). Il était resté aux neutres de
+  Payload — des barres grises au milieu de cartes à l'encre et à l'or.
+  **L'or y porte le classement** : plein au premier, il s'éteint en
+  descendant (`opacity: 1 − rang × 0,16`, plancher à 0,3 — sans lui le
+  septième sortirait invisible, et « peu » se lirait « aucun »). Les effectifs
+  passent en Fraunces, et le premier porte une lueur.
+  ⚠️ **Pas de teinte propre à chaque domaine** : il aurait fallu en inventer
+  sept, et elles ne voudraient rien dire — ce ne sont pas les cinq filières du
+  catalogue, qui ont déjà les leurs. La couleur dit ce que le calcul dit :
+  « lequel domine », jamais « quelle proportion ».
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,
