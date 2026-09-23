@@ -309,7 +309,25 @@ export function gabaritHtmlEmail({
  */
 async function envoyer(
   payload: Payload,
-  message: { to: string; subject: string; text: string; html?: string },
+  message: {
+    to: string;
+    subject: string;
+    text: string;
+    html?: string;
+    /**
+     * En-têtes supplémentaires, passés tels quels à l'expéditeur.
+     *
+     * ⚠️ Un seul usage aujourd'hui, et il n'est pas décoratif :
+     * `List-Unsubscribe` sur le message de présentation. C'est un message
+     * commercial adressé à des gens qui ne nous connaissent pas ; sans moyen
+     * de se désabonner, celui que cela agace n'a qu'un bouton sous la main —
+     * « signaler comme indésirable ». Quelques signalements suffisent à faire
+     * tomber la réputation de `envoi.clixa.africa`, et avec elle la
+     * confirmation d'inscription, le contrat et le certificat. Gmail et Yahoo
+     * l'attendent de tout expéditeur en volume depuis 2024, comme DMARC.
+     */
+    headers?: Record<string, string>;
+  },
 ): Promise<boolean> {
   try {
     // `replyTo` sur tous les messages : l'expéditeur ne sait pas recevoir.
@@ -1693,5 +1711,202 @@ export async function courrielDemarrageCohorte(
       boutonLien: d.urlDossier,
       badgeRef: d.reference,
     }),
+  });
+}
+
+/**
+ * Le message de présentation de l'institut, envoyé à qui l'équipe choisit.
+ *
+ * ── ⚠️ Ce message ne suit aucun geste, et c'est ce qui le rend différent ────
+ * Les seize autres partent parce que quelqu'un a fait quelque chose : il s'est
+ * inscrit, il a signé, il a versé. Celui-ci part parce que **nous** avons
+ * décidé d'écrire à quelqu'un qui ne nous connaît peut-être pas. Trois choses
+ * en découlent, et aucune n'est facultative :
+ *
+ * - **il porte `List-Unsubscribe`.** Celui que le message agace n'a sinon
+ *   qu'un bouton sous la main, « indésirable », et quelques signalements
+ *   emportent la réputation de `envoi.clixa.africa` — donc la confirmation
+ *   d'inscription, le contrat et le certificat. Tout le tunnel, pour un
+ *   message de prospection ;
+ * - **il le dit aussi en toutes lettres**, dans le pied du corps : un en-tête
+ *   que seul le client de messagerie lit ne sert à rien à qui ne voit pas le
+ *   bouton que son client en tire ;
+ * - **il n'invente rien.** Son contenu vient de `composerLaPresentation`, qui
+ *   lit le catalogue et le barème. Voir `lib/presentation.ts` pour la liste de
+ *   ce qu'il refuse de promettre.
+ *
+ * ⚠️ **Le destinataire n'est pas forcément dans la base**, et le message ne
+ * suppose donc aucune référence de dossier, aucun parcours choisi, aucun
+ * prénom. Le seul champ obligatoire est l'adresse.
+ */
+export async function courrielPresentation(
+  payload: Payload,
+  d: {
+    email: string;
+    /** Si on le connaît. Sans lui, le message ouvre sans nom plutôt qu'avec un « Bonjour, ». */
+    nom?: string;
+    presentation: import("@/lib/presentation").Presentation;
+  },
+): Promise<boolean> {
+  const p = d.presentation;
+  const prenom = d.nom?.trim().split(/\s+/)[0];
+
+  const famille = (f: (typeof p.familles)[number]) => `
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 16px 0;">
+      <tr><td style="padding-bottom: 7px; font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c;">
+        ${echapper(f.nom)}
+      </td></tr>
+      ${f.parcours
+        .map(
+          (c) => `<tr><td style="padding: 5px 0; border-bottom: 1px solid rgba(243,239,228,0.06);">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
+            <td style="font-size: 14.5px; color: #f1f5f9;">${echapper(c.titre)}</td>
+            <td align="right" style="font-size: 12.5px; color: #94a3b8; white-space: nowrap; padding-left: 12px;">${c.heures} h</td>
+          </tr></table>
+        </td></tr>`,
+        )
+        .join("")}
+    </table>`;
+
+  const puces = (lignes: string[]) =>
+    lignes
+      .map(
+        (l) =>
+          `<tr><td style="padding: 5px 0 5px 0; font-size: 14.5px; line-height: 1.6; color: #e2e8f0;">
+             <span style="color:#c9a24c; padding-right:8px;">&bull;</span>${echapper(l)}
+           </td></tr>`,
+      )
+      .join("");
+
+  const corpsHtml = `
+    ${prenom ? `<p style="margin: 0 0 18px 0;">Bonjour ${echapper(prenom)},</p>` : ""}
+
+    <p style="margin: 0 0 26px 0; font-size: 15.5px; line-height: 1.65;">
+      ${echapper(p.accroche)}
+    </p>
+
+    <!-- Les parcours, groupés par filière -->
+    <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; margin: 0 0 14px 0; padding-bottom: 8px; border-bottom: 1px solid rgba(201,162,76,0.25);">
+      Nos ${p.combien} parcours
+    </div>
+    ${p.familles.map(famille).join("")}
+
+    <!-- Comment cela se passe -->
+    <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; margin: 26px 0 10px 0; padding-bottom: 8px; border-bottom: 1px solid rgba(201,162,76,0.25);">
+      Comment cela se passe
+    </div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">${puces(p.deroule)}</table>
+
+    <!-- Le certificat : la seule propriété qu'un tiers peut contrôler lui-même -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-left: 3px solid #c9a24c; background-color: rgba(201,162,76,0.06); border-radius: 0 6px 6px 0; margin: 26px 0 0 0;">
+      <tr><td style="padding: 16px 18px;">
+        <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c; margin-bottom: 10px;">
+          Ce que vous repartez avec
+        </div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">${puces(p.certificat)}</table>
+      </td></tr>
+    </table>
+
+    <!-- Le barème, en entier -->
+    <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; margin: 26px 0 10px 0; padding-bottom: 8px; border-bottom: 1px solid rgba(201,162,76,0.25);">
+      Tarifs — les mêmes pour tous les parcours
+    </div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 8px; padding: 6px 18px 10px;">
+      ${p.formules
+        .map(
+          (f) => `<tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid rgba(243,239,228,0.07); font-size: 14px; color: #cbd5e1;">${echapper(f.libelle)}</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid rgba(243,239,228,0.07); font-size: 14px; color: #ffffff; font-weight: bold; white-space: nowrap;">${echapper(f.total)}</td>
+        <td align="right" style="padding: 9px 0 9px 14px; border-bottom: 1px solid rgba(243,239,228,0.07); font-size: 12.5px; color: #94a3b8; white-space: nowrap;">${echapper(f.detail)}</td>
+      </tr>`,
+        )
+        .join("")}
+    </table>
+    <p style="margin: 10px 0 0 0; font-size: 12.5px; line-height: 1.6; color: #94a3b8;">
+      Payer en plusieurs fois coûte un peu plus cher, et nous préférons l'écrire ici
+      plutôt que vous le laisser découvrir au moment de régler.
+    </p>
+
+    ${
+      p.rentree
+        ? `<p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #e2e8f0;">
+             <strong style="color:#ffffff;">Prochaine rentrée :</strong>
+             <span style="color:#e9cd84;">${echapper(p.rentree)}</span>
+           </p>`
+        : ""
+    }
+  `;
+
+  /*
+    ⚠️ **Le désabonnement se voit, il ne se devine pas.** L'en-tête
+    `List-Unsubscribe` fait apparaître un bouton chez Gmail et Outlook ; ceux
+    qui lisent ailleurs n'en voient rien. Une ligne en clair vaut mieux qu'un
+    en-tête seul — et elle coûte quatre lignes de HTML.
+  */
+  const desabonnement = `mailto:${REPONDRE_A}?subject=${encodeURIComponent("Désabonnement")}`;
+  const pied = `
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 28px 0 0 0; border-top: 1px dashed rgba(243,239,228,0.12);">
+      <tr><td style="padding-top: 14px; font-size: 12px; line-height: 1.6; color: #94a3b8;">
+        Vous recevez ce message parce que nous pensons que nos parcours peuvent vous
+        intéresser. Si ce n'est pas le cas,
+        <a href="${desabonnement}" style="color:#e9cd84;">dites-le nous en un clic</a>
+        et nous ne vous écrirons plus.
+      </td></tr>
+    </table>`;
+
+  const texte = [
+    prenom ? `Bonjour ${prenom},` : "",
+    "",
+    p.accroche,
+    "",
+    `NOS ${p.combien} PARCOURS`,
+    ...p.familles.flatMap((f) => [
+      "",
+      `  ${f.nom.toUpperCase()}`,
+      ...f.parcours.map((c) => `    · ${c.titre} — ${c.heures} h`),
+    ]),
+    "",
+    "COMMENT CELA SE PASSE",
+    ...p.deroule.map((l) => `  · ${l}`),
+    "",
+    "CE QUE VOUS REPARTEZ AVEC",
+    ...p.certificat.map((l) => `  · ${l}`),
+    "",
+    "TARIFS — les mêmes pour tous les parcours",
+    ...p.formules.map((f) => `  ${f.libelle} : ${f.total} (${f.detail})`),
+    "  Payer en plusieurs fois coûte un peu plus cher ; nous préférons l'écrire.",
+    "",
+    p.rentree ? `Prochaine rentrée : ${p.rentree}` : "",
+    "",
+    `Le catalogue complet : ${SITE}/formations`,
+    "",
+    `Une question ? WhatsApp ${RESEAUX_CLIXA.whatsapp.numeroAffiche} — ${RESEAUX_CLIXA.email.adresse}`,
+    "",
+    `Pour ne plus recevoir nos messages, répondez « Désabonnement » à ${REPONDRE_A}.`,
+  ]
+    .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
+    .join("\n");
+
+  return envoyer(payload, {
+    to: d.email,
+    subject: p.objet,
+    text: texte,
+    html: gabaritHtmlEmail({
+      titre: `${p.combien} parcours pour prendre une direction`,
+      soustitre: "Classe virtuelle · séances en direct · certificat vérifiable",
+      corpsHtml: corpsHtml + pied,
+      boutonTexte: "Voir le catalogue complet",
+      boutonLien: `${SITE}/formations`,
+    }),
+    headers: {
+      "List-Unsubscribe": `<${desabonnement}>`,
+      /*
+        ⚠️ Sans `List-Unsubscribe-Post`, Gmail n'affiche pas toujours le bouton
+        de désabonnement en un clic : il se contente du lien `mailto`, que
+        beaucoup ne verront pas. L'en-tête déclare que l'expéditeur accepte le
+        désabonnement sans confirmation, ce qui est bien notre intention.
+      */
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 }

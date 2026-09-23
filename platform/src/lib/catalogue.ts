@@ -111,6 +111,74 @@ const chargerCatalogue = cache(
   ),
 );
 
+/**
+ * Le catalogue et le barème, **sans passer par le cache de Next**.
+ *
+ * ── ⚠️ Pourquoi cette porte existe ──────────────────────────────────────────
+ * `chargerCatalogue` et `getTarifs` sont enveloppés dans `unstable_cache`, qui
+ * **exige le contexte de requête de Next**. Hors de ce contexte — un script,
+ * une garde, `payload run` — l'appel ne rend pas une valeur périmée : il
+ * **lève**, sur « Invariant: incrementalCache missing ».
+ *
+ * Trouvé en écrivant la garde de la présentation : la route qui compose le
+ * message marchait en production, et ne pouvait s'éprouver nulle part. Pour un
+ * envoi de masse, « ça marche probablement » n'est pas un verdict — c'est le
+ * genre de route qu'on ne peut pas rattraper après coup.
+ *
+ * Ces deux lectures ne sont donc pas mises en cache, et c'est sans conséquence :
+ * elles servent une poignée de fois par mois, depuis /admin, quand les versions
+ * cachées servent chaque affichage du catalogue public. **Ne pas les employer
+ * dans une page** — elles interrogeraient la base à chaque visite, ce
+ * qu'`INT-02` existe pour éviter.
+ *
+ * La conversion, elle, reste la même (`versProgramme`, `versTarifs`…) : deux
+ * façons de lire le catalogue finiraient par en donner deux versions.
+ */
+export async function catalogueSansCache(): Promise<{
+  specialisations: Specialisation[];
+  programmes: Programme[];
+  sessions: Session[];
+}> {
+  const payload = await payloadClient();
+  const [specs, progs, sess] = await Promise.all([
+    payload.find({
+      collection: "specialisations",
+      limit: 100,
+      locale: "fr",
+      depth: 0,
+      overrideAccess: false,
+    }),
+    payload.find({
+      collection: "programmes",
+      limit: 200,
+      locale: "fr",
+      depth: 1,
+      overrideAccess: false,
+    }),
+    payload.find({
+      collection: "sessions",
+      limit: 500,
+      locale: "fr",
+      depth: 1,
+      sort: "debut",
+      overrideAccess: false,
+    }),
+  ]);
+  return {
+    specialisations: specs.docs.map(versSpecialisation),
+    programmes: progs.docs.map(versProgramme),
+    sessions: sess.docs.map(versSession),
+  };
+}
+
+/** Le barème, sans cache. Même raison que `catalogueSansCache`. */
+export async function tarifsSansCache(): Promise<Tarifs> {
+  const payload = await payloadClient();
+  return versTarifs(
+    await payload.findGlobal({ slug: "tarifs", locale: "fr", depth: 0, overrideAccess: false }),
+  );
+}
+
 /* ────────────────────────────  LECTURES  ──────────────────────────── */
 
 export async function getSpecialisations(): Promise<Specialisation[]> {

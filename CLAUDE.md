@@ -72,6 +72,8 @@ npx payload run scripts/verifier-extraits.ts      # un brouillon ne se partage p
 npx payload run scripts/verifier-vitrine.ts       # la séance filmée qui n'est pas encore relue
 npx payload run scripts/verifier-demarrage.ts     # l'annonce de démarrage ne réclame
                                                   # d'argent qu'à qui peut en verser
+npx payload run scripts/verifier-presentation.ts  # la présentation ne promet que ce que
+                                                  # le catalogue tient
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -3769,6 +3771,89 @@ n'est pas au code de retirer la première.
 et cent deux n'ont pas signé. Le message dira à chacun quoi faire ; il ne dira
 pas pourquoi personne ne l'a fait jusqu'ici. C'est une question de tunnel, pas
 de courriel.
+
+⚠️ **Le message de présentation, envoyé à qui l'équipe choisit**
+(`lib/presentation.ts`, `courrielPresentation`, `api/admin/presenter`, demandé
+par la direction le 23 septembre 2026 : « un msg fiih un présentation dyal les
+formations dyalna o les certif li kan9admo […] hna n thakmo fiih lemn mabrina
+nsseftoh »).
+
+C'est le seul message qui s'adresse à des gens **qui n'ont pas de dossier**.
+Les dix-sept autres partent parce que quelqu'un a fait quelque chose ; celui-ci
+part parce qu'on a collé une adresse. Trois conséquences, et aucune n'est
+facultative.
+
+- ⚠️ **Il porte `List-Unsubscribe` et `List-Unsubscribe-Post`, et le dit aussi
+  en clair.** Celui que le message agace n'a sinon qu'un bouton sous la main —
+  « indésirable » — et quelques signalements emportent la réputation de
+  `envoi.clixa.africa`, donc la confirmation d'inscription, le contrat et le
+  certificat. Tout le tunnel, pour un message de prospection. Gmail et Yahoo
+  l'attendent de tout expéditeur en volume depuis 2024, comme DMARC. Un en-tête
+  que seul le client de messagerie lit ne suffit pas : le pied du corps porte la
+  même offre, en une phrase.
+- ⚠️ **Rien n'y est écrit en dur.** Il porte les douze parcours, leurs durées,
+  les trois formules et la date de rentrée : cinq choses que /admin peut changer
+  n'importe quel matin. Écrit à la main, il annoncerait un prix que la fiche
+  dément — **sur le message même qui sert à faire venir quelqu'un sur cette
+  fiche**. `composerLaPresentation` lit le catalogue et le barème, comme
+  `lib/faq.ts`.
+- ⚠️ **Et il ne promet rien que la maison ne tienne** : pas de taux de réussite,
+  pas de replay, pas de campus hors d'Agadir, pas de rareté inventée, et surtout
+  **aucune certification que nous délivrerions nous-mêmes**. Sur les douze
+  parcours, un seul porte une certification tierce — le PMP®, passé auprès du
+  PMI. Le message le dit en toutes lettres : « nous vous y préparons, nous ne le
+  délivrons pas ».
+
+⚠️ **La garde a laissé passer un taux de réussite, et c'est l'essai qui l'a
+montré.** Son premier motif cherchait « taux de réussite » et « N % de
+réussite » ; remis à l'essai avec « 92 % de nos participants décrochent une
+promotion dans l'année », il est **resté vert**. Il gardait la formulation que
+j'avais imaginée, pas la classe de promesse. Rien dans ce message n'a de raison
+légitime de porter un pourcentage — les prix sont en euros, les durées en
+heures — donc tout « % » y est refusé. C'est la leçon du filtre du champ
+« Pays », dans les mêmes termes : **une garde écrite sur une supposition vaut
+moins qu'une garde mesurée**. `verifier-presentation.ts` compte trente-trois
+contrôles, dans les deux sens, **prouvés en remettant deux défauts : deux
+rouges**.
+
+⚠️ **Et `getTarifs` ne s'appelle pas depuis un script** (`catalogueSansCache`,
+`tarifsSansCache`, le même jour). Les lectures du catalogue passent par
+`unstable_cache`, qui **exige le contexte de requête de Next** : hors de ce
+contexte, l'appel ne rend pas une valeur périmée, il **lève** sur « Invariant:
+incrementalCache missing ». La route marchait donc en production et ne pouvait
+s'éprouver nulle part — pour une route qui envoie soixante courriels, « ça
+marche probablement » n'est pas un verdict. Deux lectures non cachées ont été
+ajoutées à côté des autres, avec la même conversion : elles servent une poignée
+de fois par mois depuis /admin. ⚠️ **Ne pas les employer dans une page** — elles
+interrogeraient la base à chaque visite, ce qu'`INT-02` existe pour éviter.
+
+- ⚠️ **Un ×100 de trop aurait annoncé 42 300 €.** Le global du CMS porte les
+  montants en euros, le domaine en **centimes** (`totalCentimes`,
+  `echeancesCentimes`). Pris au réflexe, le barème sortait multiplié par cent —
+  sur le message qui sert à faire venir des clients. Attrapé par le compilateur,
+  pas par la relecture.
+- **Le collage d'adresses pardonne le désordre** (`lireLesAdresses`) : virgules,
+  points-virgules, retours à la ligne, « Nom <adresse> », guillemets. Ce champ
+  reçoit ce qu'on copie d'un tableur ou d'un fil WhatsApp ; refuser un collage
+  pour un point-virgule ferait ressaisir quarante lignes à la main, c'est-à-dire
+  qu'on ne s'en servirait pas. Les doublons d'un même envoi sont écartés — la
+  faute de copier-coller la plus fréquente, et deux fois le même message le même
+  jour est ce qui fait cliquer sur « indésirable ».
+- ⚠️ **L'écran montre les adresses lues, pas leur nombre.** Un collage de
+  travers — la colonne d'à côté dans un tableur — donne des adresses
+  parfaitement formées qui ne sont pas celles qu'on croit. « 38 destinataires »
+  ne le dirait pas ; la liste, si.
+- ⚠️ **Ce que le code ne fait pas, écrit pour qu'on le sache** : il ne garde
+  **aucune trace** de qui a déjà reçu la présentation. Ces adresses n'ont pas de
+  dossier où la poser, et ouvrir une collection pour cela n'a pas été demandé.
+  Deux envois à trois semaines d'écart repartiront donc aux mêmes personnes si
+  l'on recolle la même liste : c'est à l'équipe de tenir la sienne. C'est la
+  différence avec l'annonce de démarrage, qui porte `annonceDemarrageLe`.
+- ⚠️ **Et à qui on l'envoie est une décision de la direction, pas du code.** La
+  route ne peut vérifier qu'une chose : qu'une adresse a la forme d'une adresse.
+  Elle ne sait pas si la personne a demandé à recevoir quoi que ce soit. Une
+  liste achetée ou ramassée se paierait en signalements, et le premier prix en
+  serait le tunnel d'inscription.
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,

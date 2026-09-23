@@ -41,6 +41,7 @@ process.env.EMAIL_EQUIPE ??= "equipe@clixa.africa";
 
 const c = await import("../src/lib/courriel.js");
 const { annonceDuDemarrage } = await import("../src/lib/demarrage.js");
+const { composerLaPresentation } = await import("../src/lib/presentation.js");
 
 /*
   De quoi fabriquer les quatre états de l'annonce de démarrage, plus bas.
@@ -318,6 +319,86 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
         annonce: annonceDuDemarrage(faits as never),
       }),
   })),
+
+  /*
+    ⚠️ **Le catalogue de l'aperçu est celui de la production, recopié ici.**
+    Un jeu d'essai à trois parcours aurait montré un message deux fois plus
+    court que le vrai, et c'est la longueur qui décide si celui-ci se lit
+    jusqu'au bout — c'est le plus long des dix-sept. Les douze titres, leurs
+    durées et les cinq filières sont donc ceux du 23 septembre 2026.
+  */
+  {
+    nom: "21-presentation-de-l-institut",
+    produire: () =>
+      c.courrielPresentation(faux, {
+        email: inscription.apprenantEmail,
+        nom: inscription.apprenantNom,
+        presentation: composerLaPresentation({
+          specialisations: [
+            { slug: "finance-controle", nom: "Finance & Contrôle" },
+            { slug: "management-projet", nom: "Management & Projet" },
+            { slug: "industrie-operations", nom: "Industrie & Opérations" },
+            { slug: "commercial-marketing", nom: "Commercial & Marketing" },
+            { slug: "capital-humain", nom: "Capital humain" },
+          ] as never,
+          programmes: [
+            ["Directeur Administratif et Financier", 32, "finance-controle"],
+            ["Directeur Contrôle de Gestion", 32, "finance-controle"],
+            ["Directeur Audit Interne", 32, "finance-controle"],
+            ["Directeur de Projets", 32, "management-projet"],
+            ["Préparation à la certification PMP®", 35, "management-projet"],
+            ["Directeur de Production", 32, "industrie-operations"],
+            ["Directeur de Maintenance", 32, "industrie-operations"],
+            ["Directeur Industriel", 32, "industrie-operations"],
+            ["Directeur QHSE", 32, "industrie-operations"],
+            ["Directeur Commercial", 32, "commercial-marketing"],
+            ["Directeur Marketing", 32, "commercial-marketing"],
+            ["Directeur des Ressources Humaines", 32, "capital-humain"],
+          ].map(([titre, h, spec]) => ({
+            slug: String(titre)
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-"),
+            titre: String(titre),
+            dureeHeures: Number(h),
+            specialisation: spec,
+            ...(String(titre).includes("PMP")
+              ? { certification: "PMP® — Project Management Institute" }
+              : {}),
+          })) as never,
+          tarifs: {
+            prixComptantCentimes: 42_300,
+            devise: "EUR",
+            moyensPaiement: [],
+            plans: [
+              {
+                code: "comptant",
+                libelle: "Paiement comptant (1 tranche)",
+                totalCentimes: 42_300,
+                echeancesCentimes: [42_300],
+                conditions: "",
+              },
+              {
+                code: "deux",
+                libelle: "2 tranches",
+                totalCentimes: 44_800,
+                echeancesCentimes: [22_400, 22_400],
+                conditions: "",
+              },
+              {
+                code: "trois",
+                libelle: "3 tranches",
+                totalCentimes: 47_000,
+                echeancesCentimes: [17_000, 15_000, 15_000],
+                conditions: "",
+              },
+            ],
+          } as never,
+          prochaineRentree: new Date("2026-10-03T09:00:00.000Z"),
+          finDeCohorte: new Date("2026-11-21T13:00:00.000Z"),
+          site: "https://www.clixa.africa",
+        }),
+      }),
+  },
 ];
 
 /*

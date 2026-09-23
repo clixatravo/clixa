@@ -16,6 +16,7 @@ import {
 import { repartitionParDomaine } from "@/lib/profil";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
 import { AnnonceDemarrage } from "@/components/admin/AnnonceDemarrage";
+import { PresenterInstitut } from "@/components/admin/PresenterInstitut";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -1300,6 +1301,13 @@ export async function Veille() {
         avant qu'on ait regardé à qui — voir `AnnonceDemarrage`.
       */}
       <AnnonceDemarrage />
+
+      {/*
+        La présentation, à côté de l'annonce : les deux écrivent à des gens,
+        mais pas aux mêmes. L'annonce s'adresse à qui a un dossier ; celle-ci à
+        qui n'en a pas encore.
+      */}
+      <PresenterInstitut />
 
       <div className="clixa-raccourcis">
         <span className="clixa-raccourcis__titre">ACCÈS DIRECTS :</span>

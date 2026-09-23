@@ -4429,3 +4429,38 @@ h3,
   line-height: 1.5;
   color: var(--theme-error-600);
 }
+
+/* La liste collée, et les adresses relues avant l'envoi. */
+.clixa-annonce__zone {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 0.85rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  background: var(--theme-input-bg, var(--theme-elevation-0));
+  color: var(--theme-elevation-900);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+/* ⚠️ Plafonnée et défilante : une liste de soixante adresses repousserait
+   sinon le bouton d'envoi hors de l'écran — et c'est le bouton qu'on vient
+   chercher après avoir relu. */
+.clixa-annonce__adresses {
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.7rem;
+  max-height: 11rem;
+  overflow-y: auto;
+  list-style: none;
+  display: grid;
+  gap: 0.15rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  background: var(--theme-elevation-0);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--theme-elevation-750);
+  overflow-wrap: anywhere;
+}
