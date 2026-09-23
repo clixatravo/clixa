@@ -3871,6 +3871,19 @@ interrogeraient la base à chaque visite, ce qu'`INT-02` existe pour éviter.
   `echeancesCentimes`). Pris au réflexe, le barème sortait multiplié par cent —
   sur le message qui sert à faire venir des clients. Attrapé par le compilateur,
   pas par la relecture.
+- ⚠️ **Et ce lecteur ne triait pas** (trouvé le 23 septembre 2026, en
+  vérifiant la production **après** déploiement). La lecture cachée trie par
+  `id` ; `catalogueSansCache`, écrit pour contourner le cache, n'avait aucun
+  `sort` — Postgres rendait donc les lignes dans l'ordre qui l'arrangeait, et
+  le courriel sortait ses cinq filières, et les parcours dans chacune, **dans
+  un ordre qui pouvait changer d'un envoi à l'autre**. Deux personnes
+  recevaient le même message avec le catalogue mélangé.
+
+  C'est le piège noté depuis l'origine — « trier explicitement, sinon l'ordre
+  du catalogue change à chaque ajout » — revenu par la porte d'un second
+  lecteur. **Il ne s'est vu qu'en comparant la sortie réelle de la production
+  au jeu d'essai** : ni le type, ni le build, ni aucune garde ne regardaient
+  l'ordre. Une garde compare désormais deux lectures successives.
 - **Le collage d'adresses pardonne le désordre** (`lireLesAdresses`) : virgules,
   points-virgules, retours à la ligne, « Nom <adresse> », guillemets. Ce champ
   reçoit ce qu'on copie d'un tableur ou d'un fil WhatsApp ; refuser un collage
