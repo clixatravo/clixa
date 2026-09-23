@@ -4156,9 +4156,22 @@ pas.
 - **Les deux blocs partagent une seule famille de styles** (`.clixa-envoi`) :
   ils font la même chose — choisir, relire, envoyer — et deux dessins voisins
   qui ne se ressemblent pas se lisent comme deux outils différents.
-  ⚠️ **La liste cochée se distingue par son trait, pas par un fond doré** : de
-  l'or sur quatre lignes cochées noierait le bouton armé, seul endroit du bloc
-  où l'or doit vouloir dire quelque chose.
+- ⚠️ **Et ils parlent la langue de la maison, pas celle de Payload** (repris le
+  23 septembre 2026 : « 9ad lihom a designe li yetmacha m3a site »). Le premier
+  jet les habillait des neutres de l'outil (`--theme-elevation-*`) : ils
+  fonctionnaient, et ils **avaient l'air de venir d'ailleurs**, posés au milieu
+  de cartes à l'encre et à l'or. Ils reprennent le dessin des cartes de
+  supervision, que l'équipe voit tous les matins — encre translucide, filet
+  d'ivoire à 12 %, filet doré en tête, l'or au survol, et les effectifs en
+  Fraunces.
+- ⚠️ **L'or ne teinte que du texte et des filets, jamais un fond ni une
+  pastille.** C'est la règle posée pour le nom dans la colonne « Relances ».
+  La liste cochée se distingue par son **filet doré et une lueur** ; le seul or
+  plein est le bouton **armé**, au moment précis où le clic suivant fait partir
+  de vrais courriels. De l'or sur quatre lignes cochées l'aurait noyé.
+- **Mesuré à l'écran, sur le bloc isolé avec sa vraie CSS et ses vraies
+  polices** : 375 px et pleine largeur, aucun débordement, l'avertissement
+  passe sous le bouton et l'adresse la plus longue se replie.
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,
