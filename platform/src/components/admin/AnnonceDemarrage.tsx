@@ -3,28 +3,26 @@
 import { useState } from "react";
 
 /**
- * Envoyer l'annonce de démarrage, par lots, depuis le tableau de bord.
+ * Annoncer le démarrage — à des listes choisies, jamais à tout le monde.
  *
- * ── ⚠️ Deux temps, et ce n'est pas de la politesse ─────────────────────────
- * Les quatre boutons de la fiche d'un dossier envoient **un** courriel à
- * **une** personne. Celui-ci en envoie quarante d'un coup, et un courriel
- * parti ne se rattrape pas. Le geste est donc en trois mouvements :
+ * ── ⚠️ Pourquoi des listes, et non un envoi à tous ─────────────────────────
+ * Décision de la direction, le 23 septembre 2026 : « maymchex l msg 3and nass
+ * kamlin li dayriin inscription […] brina hna nsstahdfo nass li barin ».
  *
- *  1. **regarder** — la route rend, sans rien envoyer, combien de dossiers
- *     attendent et ce que chacun lira ;
- *  2. **armer** — le bouton change de couleur et d'intitulé ;
- *  3. **envoyer** — le lot part, et l'écran dit ce qui est parti.
+ * Le premier jet envoyait à tout le monde par lots. Sur cent vingt-six
+ * dossiers c'est cent vingt-six messages, pour un plafond Resend de cent par
+ * jour **partagé avec le tunnel** — trois jours de quota dépensés d'un coup,
+ * dont l'essentiel à des dossiers dont on sait déjà qu'ils ne bougeront pas.
  *
- * Le premier temps n'est pas décoratif : sur cent seize dossiers, dix
- * seulement s'entendent réclamer un versement. Qui n'a jamais vu la
- * répartition croira envoyer cent seize relances de paiement.
+ * ── ⚠️ Trois temps, et le premier n'est pas de la politesse ────────────────
+ * **Regarder** montre les listes et leurs effectifs ; **cocher** choisit ;
+ * **armer** puis envoyer. Qui n'a jamais vu la répartition croira écrire cent
+ * vingt-six relances de paiement — alors que dix seulement peuvent régler.
  */
-type Clef = string;
-
 interface Apercu {
   reference: string;
   nom: string;
-  clef: Clef;
+  clef: string;
   objet: string;
 }
 
@@ -32,6 +30,7 @@ interface Reponse {
   essai: boolean;
   lot: number;
   apercu?: Apercu[];
+  parListe?: Record<string, number>;
   envoyes?: number;
   partis?: string[];
   manques: string[];
@@ -40,16 +39,31 @@ interface Reponse {
   erreur?: string;
 }
 
-/** Ce que chaque état veut dire, en clair — jamais la clef brute à l'écran. */
-const EN_CLAIR: Record<string, string> = {
-  "a-demander": "n'a pas encore demandé son contrat",
-  "a-signer": "doit signer son contrat",
-  "chez-nous": "a signé — c'est à nous d'envoyer de quoi régler",
-  "a-regler": "doit effectuer son versement",
-  "en-verification": "a annoncé un transfert, nous le vérifions",
-  "echeance-suivante": "a une échéance suivante",
-  "en-regle": "est à jour",
-};
+/**
+ * Ce que chaque liste veut dire, en clair — jamais la clef brute à l'écran.
+ *
+ * ⚠️ L'ordre est celui du tunnel : on lit du plus loin au plus près de
+ * l'argent. Et « chez nous » porte son intitulé à la première personne parce
+ * que c'est **nous** qui devons agir : le mettre au même rang que les autres
+ * ferait croire qu'on attend quelque chose du participant.
+ */
+const LISTES: { clef: string; libelle: string; note?: string }[] = [
+  { clef: "a-demander", libelle: "N'ont pas encore demandé leur contrat" },
+  { clef: "a-signer", libelle: "Ont demandé leur contrat, ne l'ont pas signé" },
+  {
+    clef: "chez-nous",
+    libelle: "Ont signé — c'est à nous d'envoyer de quoi régler",
+    note: "Le message ne leur demande rien.",
+  },
+  {
+    clef: "a-regler",
+    libelle: "Ont reçu de quoi régler, n'ont rien versé",
+    note: "Les seuls à qui le message parle d'argent.",
+  },
+  { clef: "echeance-suivante", libelle: "Ont versé, il reste une échéance" },
+  { clef: "en-verification", libelle: "Ont annoncé un transfert, nous le vérifions" },
+  { clef: "en-regle", libelle: "Sont à jour" },
+];
 
 type Etat =
   | { quoi: "repos" }
@@ -60,6 +74,7 @@ type Etat =
 
 export function AnnonceDemarrage() {
   const [etat, setEtat] = useState<Etat>({ quoi: "repos" });
+  const [choisies, setChoisies] = useState<string[]>([]);
 
   const appeler = async (corps: Record<string, unknown>): Promise<Reponse | null> => {
     try {
@@ -71,136 +86,175 @@ export function AnnonceDemarrage() {
       });
       const rep = (await r.json()) as Reponse;
       if (!r.ok) {
-        /*
-          ⚠️ On montre ce que dit la route, mot pour mot. « Une erreur est
-          survenue » ferait recliquer sans rien apprendre — et recliquer, ici,
-          c'est peut-être envoyer quarante courriels.
-        */
         setEtat({ quoi: "erreur", dit: rep.erreur ?? `Refus (${r.status}).` });
         return null;
       }
       return rep;
     } catch {
-      setEtat({ quoi: "erreur", dit: "Le serveur n'a pas répondu. Rien n'a été envoyé." });
+      setEtat({ quoi: "erreur", dit: "Le serveur n’a pas répondu. Rien n’a été envoyé." });
       return null;
     }
   };
 
   const regarder = async () => {
     setEtat({ quoi: "occupe" });
-    const rep = await appeler({ essai: true, lot: 60 });
+    const rep = await appeler({ essai: true });
     if (rep) setEtat({ quoi: "vu", reponse: rep, arme: false });
   };
 
   const envoyer = async () => {
     setEtat({ quoi: "occupe" });
-    const rep = await appeler({});
+    const rep = await appeler({ clefs: choisies });
     if (rep) setEtat({ quoi: "parti", reponse: rep });
   };
 
-  if (etat.quoi === "repos" || etat.quoi === "erreur") {
-    return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Annonce de démarrage</div>
-        <p className="clixa-annonce__texte">
-          Prévenir les inscrits que leur parcours commence, et dire à chacun ce qu’il lui reste à
-          faire. Rien ne part avant que vous ayez regardé.
-        </p>
-        <button
-          type="button"
-          className="btn btn--size-small btn--style-secondary"
-          onClick={() => void regarder()}
-        >
-          Voir à qui l’annonce partirait
-        </button>
-        {etat.quoi === "erreur" && <p className="clixa-annonce__refus">{etat.dit}</p>}
-      </div>
-    );
-  }
-
   if (etat.quoi === "occupe") {
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Annonce de démarrage</div>
-        <p className="clixa-annonce__texte">En cours…</p>
-      </div>
+      <section className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Annonce de démarrage</span>
+        </header>
+        <p className="clixa-envoi__texte">En cours…</p>
+      </section>
     );
   }
 
   if (etat.quoi === "parti") {
     const r = etat.reponse;
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Annonce de démarrage</div>
-        <p className="clixa-annonce__bilan">
-          <strong>{r.envoyes ?? 0}</strong> message(s) parti(s).
-          {r.restants > 0
-            ? ` Il en reste ${r.restants} — relancez l'envoi demain, pour ne pas épuiser le quota du jour.`
-            : " Tout le monde a été prévenu."}
+      <section className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Annonce de démarrage</span>
+        </header>
+        <p className="clixa-envoi__bilan">
+          <strong>{r.envoyes ?? 0}</strong> message(s) parti(s). Il reste{" "}
+          <strong>{r.restants}</strong> dossier(s) sans annonce, toutes listes confondues.
         </p>
-        {r.manques.length > 0 && (
-          <p className="clixa-annonce__refus">
+        {(r.manques?.length ?? 0) > 0 && (
+          <p className="clixa-envoi__refus">
             {r.manques.length} envoi(s) manqué(s) : {r.manques.join(", ")}. Ils n’ont pas de trace
-            et repartiront au prochain lot.
+            et repartiront au prochain envoi.
           </p>
         )}
-        {r.restants > 0 && (
-          <button
-            type="button"
-            className="btn btn--size-small btn--style-secondary"
-            onClick={() => void regarder()}
-          >
-            Revoir ce qu’il reste
-          </button>
-        )}
-      </div>
+        <button
+          type="button"
+          className="btn btn--size-small btn--style-secondary"
+          onClick={() => {
+            setChoisies([]);
+            void regarder();
+          }}
+        >
+          Revoir les listes
+        </button>
+      </section>
     );
   }
 
-  // etat.quoi === "vu"
-  const r = etat.reponse;
-  const parClef = new Map<string, number>();
-  for (const a of r.apercu ?? []) parClef.set(a.clef, (parClef.get(a.clef) ?? 0) + 1);
+  if (etat.quoi === "vu") {
+    const r = etat.reponse;
+    const parListe = r.parListe ?? {};
+    const presentes = LISTES.filter((l) => (parListe[l.clef] ?? 0) > 0);
+    const total = choisies.reduce((n, c) => n + (parListe[c] ?? 0), 0);
+    const partiront = Math.min(total, r.lot);
 
-  if (r.restants === 0) {
+    if (presentes.length === 0) {
+      return (
+        <section className="clixa-envoi">
+          <header className="clixa-envoi__tete">
+            <span className="clixa-envoi__titre">Annonce de démarrage</span>
+          </header>
+          <p className="clixa-envoi__bilan">Tout le monde a déjà été prévenu.</p>
+        </section>
+      );
+    }
+
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Annonce de démarrage</div>
-        <p className="clixa-annonce__bilan">Tout le monde a déjà été prévenu.</p>
-      </div>
+      <section className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Annonce de démarrage</span>
+          <span className="clixa-envoi__compte">{r.restants} sans annonce</span>
+        </header>
+
+        <p className="clixa-envoi__texte">
+          Cochez les listes à prévenir. Le message dit à chacun ce qui le concerne — et ne parle
+          d’argent qu’à ceux qui peuvent régler.
+        </p>
+
+        <ul className="clixa-envoi__listes">
+          {presentes.map((l) => {
+            const n = parListe[l.clef] ?? 0;
+            const coche = choisies.includes(l.clef);
+            return (
+              <li key={l.clef}>
+                <label className={`clixa-envoi__liste${coche ? "clixa-envoi__liste--coche" : ""}`}>
+                  <input
+                    type="checkbox"
+                    checked={coche}
+                    onChange={() =>
+                      setChoisies((c) =>
+                        c.includes(l.clef) ? c.filter((x) => x !== l.clef) : [...c, l.clef],
+                      )
+                    }
+                  />
+                  <span className="clixa-envoi__nombre">{n}</span>
+                  <span className="clixa-envoi__libelle">
+                    {l.libelle}
+                    {l.note && <em className="clixa-envoi__note">{l.note}</em>}
+                  </span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="clixa-envoi__ligne">
+          <button
+            type="button"
+            className={`btn btn--size-small ${etat.arme ? "btn--style-primary" : "btn--style-secondary"}`}
+            disabled={choisies.length === 0}
+            onClick={() =>
+              etat.arme ? void envoyer() : setEtat({ quoi: "vu", reponse: r, arme: true })
+            }
+          >
+            {etat.arme
+              ? `Confirmer — ${partiront} message(s)`
+              : choisies.length === 0
+                ? "Cochez une liste"
+                : `Envoyer à ${partiront} personne(s)`}
+          </button>
+          {total > r.lot && !etat.arme && (
+            <span className="clixa-envoi__avis">
+              {total} sélectionné(s), {r.lot} par envoi — le reste demain, pour ne pas épuiser le
+              quota du jour.
+            </span>
+          )}
+          {etat.arme && (
+            <span className="clixa-envoi__avis clixa-envoi__avis--fort">
+              Des courriels partiront chez de vraies personnes. C’est irréversible.
+            </span>
+          )}
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="clixa-annonce">
-      <div className="clixa-annonce__tete">Annonce de démarrage</div>
-      <p className="clixa-annonce__texte">
-        <strong>{r.restants}</strong> dossier(s) n’ont pas encore reçu l’annonce. Voici ce que les{" "}
-        {r.apercu?.length ?? 0} premiers liraient :
+    <section className="clixa-envoi">
+      <header className="clixa-envoi__tete">
+        <span className="clixa-envoi__titre">Annonce de démarrage</span>
+      </header>
+      <p className="clixa-envoi__texte">
+        Prévenir des inscrits que leur parcours commence, et dire à chacun ce qu’il lui reste à
+        faire. Vous choisissez les listes ; rien ne part avant.
       </p>
-      <ul className="clixa-annonce__liste">
-        {[...parClef.entries()].map(([clef, n]) => (
-          <li key={clef}>
-            <span className="clixa-annonce__nombre">{n}</span> {EN_CLAIR[clef] ?? clef}
-          </li>
-        ))}
-      </ul>
-      <div className="clixa-annonce__ligne">
-        <button
-          type="button"
-          className={`btn btn--size-small ${etat.arme ? "btn--style-primary" : "btn--style-secondary"}`}
-          onClick={() =>
-            etat.arme ? void envoyer() : setEtat({ quoi: "vu", reponse: r, arme: true })
-          }
-        >
-          {etat.arme ? "Confirmer l'envoi" : `Envoyer le prochain lot`}
-        </button>
-        {etat.arme && (
-          <span className="clixa-annonce__avis">
-            Des courriels partiront chez de vraies personnes. C’est irréversible.
-          </span>
-        )}
-      </div>
-    </div>
+      <button
+        type="button"
+        className="btn btn--size-small btn--style-secondary"
+        onClick={() => void regarder()}
+      >
+        Voir les listes
+      </button>
+      {etat.quoi === "erreur" && <p className="clixa-envoi__refus">{etat.dit}</p>}
+    </section>
   );
 }

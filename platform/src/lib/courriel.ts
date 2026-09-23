@@ -1,4 +1,5 @@
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
+import { DEVISE_CLIXA } from "@/lib/marque";
 import type { Payload } from "payload";
 
 /**
@@ -181,7 +182,7 @@ export function gabaritHtmlEmail({
                             CLIXA<span style="color: #c9a24c;">.</span>
                           </div>
                           <div style="font-size: 10px; font-family: 'SF Mono', Menlo, Consolas, monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c; margin-top: 2px;">
-                            Executive Education · Afrique
+${DEVISE_CLIXA}
                           </div>
                         </td>
                       </tr>
@@ -399,7 +400,7 @@ export function gabaritVitrineEmail({
                     CLIXA<span style="color:#c9a24c;">.</span>
                   </div>
                   <div style="font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#c9a24c; font-weight:700; margin-top:3px;">
-                    Executive Education &middot; Afrique
+${DEVISE_CLIXA}
                   </div>
                 </td>
               </tr></table>

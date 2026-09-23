@@ -65,7 +65,7 @@ export async function POST(requete: Request): Promise<Response> {
     return NextResponse.json({ erreur: "Réservé à l'équipe." }, { status: 401 });
   }
 
-  let corps: { lot?: unknown; essai?: unknown } = {};
+  let corps: { lot?: unknown; essai?: unknown; clefs?: unknown } = {};
   try {
     corps = (await requete.json()) as typeof corps;
   } catch {
@@ -85,6 +85,33 @@ export async function POST(requete: Request): Promise<Response> {
   */
   const essai = corps.essai === true;
 
+  /*
+    ── ⚠️ On n'écrit qu'aux listes choisies ──────────────────────────────────
+    Décision de la direction, le 23 septembre 2026 : « maymchex l msg 3and nass
+    kamlin li dayriin inscription […] brina hna nsstahdfo nass li barin ».
+
+    Le premier jet envoyait à tout le monde, par lots, jusqu'à épuisement. Sur
+    cent vingt-six dossiers c'est **cent vingt-six messages** — et le plafond
+    Resend est de cent par jour, partagé avec le tunnel. Trois jours de quota
+    dépensés d'un coup, dont l'essentiel à des dossiers dont on sait déjà qu'ils
+    ne bougeront pas.
+
+    ⚠️ **Aucune clef donnée ne vaut « toutes »**, et c'est délibéré : un corps
+    de requête vide, une faute de frappe dans le nom du champ, et l'on
+    retomberait dans l'envoi de masse sans que rien ne le dise. La route refuse
+    plutôt que de deviner.
+  */
+  const clefs = Array.isArray(corps.clefs)
+    ? corps.clefs.filter((x): x is string => typeof x === "string")
+    : [];
+
+  if (!essai && clefs.length === 0) {
+    return NextResponse.json(
+      { erreur: "Choisissez au moins une liste avant d'envoyer." },
+      { status: 400 },
+    );
+  }
+
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa";
 
   /*
@@ -93,9 +120,15 @@ export async function POST(requete: Request): Promise<Response> {
     « Votre parcours 17 commence le… ». Le journal compte deux occurrences de
     cette faute, dont une qui a coûté une demi-journée.
   */
+  /*
+    ⚠️ **En essai on balaie tout, à l'envoi on s'arrête au lot.** Compter les
+    listes suppose de connaître l'état de chaque dossier, et l'état ne se
+    déduit pas d'un `where` — il se calcule. Cinq cents au plus, comme les
+    compteurs du tableau de bord ; au-delà, le décompte mentirait sans le dire.
+  */
   const { docs } = await payload.find({
     collection: "inscriptions",
-    limit: lot,
+    limit: essai ? 500 : lot * 4,
     depth: 2,
     overrideAccess: true,
     sort: "createdAt",
@@ -170,6 +203,22 @@ export async function POST(requete: Request): Promise<Response> {
       continue;
     }
 
+    /*
+      ⚠️ **Le dossier qui n'est pas dans une liste choisie est laissé
+      intact** — pas de trace, pas de courriel. Il reparaîtra au comptage
+      suivant, et l'équipe pourra le prendre un autre jour. C'est ce qui
+      permet d'écrire aux dix qui peuvent régler sans toucher aux cent seize
+      autres.
+    */
+    if (!clefs.includes(annonce.clef)) continue;
+
+    /*
+      ⚠️ Et l'on s'arrête au lot demandé. La lecture en ramène davantage —
+      il faut bien parcourir pour trouver ceux de la liste — mais le nombre
+      de **messages** reste borné : c'est lui qui consomme le quota.
+    */
+    if (partis.length + manques.length >= lot) break;
+
     const ok = await courrielDemarrageCohorte(payload, {
       reference,
       apprenantNom: String(d.apprenantNom ?? ""),
@@ -216,10 +265,18 @@ export async function POST(requete: Request): Promise<Response> {
     },
   });
 
+  /*
+    ⚠️ **Le décompte par liste, et non un total.** « 126 restants » ne dit pas
+    à qui l'on écrirait ; c'est le nombre par état qui permet de choisir, et
+    c'est tout l'objet de cet écran.
+  */
+  const parListe: Record<string, number> = {};
+  for (const a of apercu) parListe[a.clef] = (parListe[a.clef] ?? 0) + 1;
+
   return NextResponse.json({
     essai,
     lot,
-    ...(essai ? { apercu } : { envoyes: partis.length, partis }),
+    ...(essai ? { apercu, parListe } : { envoyes: partis.length, partis, clefs }),
     manques,
     ignores,
     /*

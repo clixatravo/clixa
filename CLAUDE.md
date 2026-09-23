@@ -4105,6 +4105,61 @@ clairs.
   code juste ; la première, il attendait « 3 déclarés sur 6 » sur une donnée
   d'essai qui en portait quatre.
 
+⚠️ **Ce que CLIXA veut dire est écrit une fois** (`lib/marque.ts`, dicté par
+la direction le 23 septembre 2026 : « CLIXA : Centre of Leadership, Innovation
+and eXcellence in Africa »). C'était déjà à deux endroits qui ne disaient pas
+la même chose : le certificat imprimait la devise, les courriels portaient
+« Executive Education · Afrique », et **l'assistant du site ne la connaissait
+pas du tout** — un visiteur qui demandait ce que le sigle signifie n'obtenait
+rien.
+
+- ⚠️ **« of » ou « de » — signalé, pas tranché.** La direction a dicté
+  « Centre **of** Leadership, Innovation **and** eXcellence in Africa » ; le
+  certificat imprime « Centre **de** Leadership, Innovation **&** eXcellence in
+  Africa ». C'est la forme dictée qui sert aux courriels et à l'assistant ; **le
+  certificat n'a pas été touché** — c'est un document qui circule, qu'un
+  employeur ou une banque peut recevoir, et son libellé relève de la direction,
+  pas d'un alignement fait au passage. Les deux doivent finir identiques.
+- ⚠️ **La devise n'est pas la ligne du cartouche.** `BASELINE_COURTE` reste
+  pour les endroits étroits : à neuf pixels, cinquante-cinq caractères se
+  replient sur cinq lignes. Mesuré à 375 px — ça tient, sans déborder, mais
+  c'est lourd ; la devise vit là où elle a la place d'être lue.
+- **L'assistant peut la donner sans qu'elle figure au catalogue** : c'est la
+  seule exception à la règle « réponds uniquement à partir du catalogue », et
+  elle est écrite comme telle dans sa consigne.
+
+⚠️ **Et l'annonce de démarrage n'écrit plus à tout le monde** (décision de la
+direction, le même jour : « maymchex l msg 3and nass kamlin li dayriin
+inscription […] brina hna nsstahdfo nass li barin »).
+
+Le premier jet envoyait à tous, par lots, jusqu'à épuisement. Sur cent
+vingt-six dossiers c'est **cent vingt-six messages**, pour un plafond Resend de
+cent par jour **partagé avec le tunnel** : trois jours de quota dépensés d'un
+coup, dont l'essentiel à des dossiers dont on sait déjà qu'ils ne bougeront
+pas.
+
+- **L'écran montre les listes et leurs effectifs**, et l'on coche. Les libellés
+  disent ce que le message fera : « Les seuls à qui le message parle d'argent »
+  sur les dix qui peuvent régler, « Le message ne leur demande rien » sur les
+  quatre qui attendent *nous*.
+- ⚠️ **Aucune clef ne vaut « toutes ».** Un corps de requête vide — ou une
+  faute de frappe dans le nom du champ — ferait retomber dans l'envoi de masse
+  sans que rien ne le dise. La route **refuse** et dit quoi faire.
+- ⚠️ **Un dossier hors des listes choisies n'est pas touché** : ni courriel, ni
+  trace. Il reparaît au comptage suivant. C'est ce qui permet d'écrire aux dix
+  qui peuvent régler sans rien coûter aux cent seize autres.
+- **Prouvé en retirant le filtrage et la garde : quatre rouges.**
+- ⚠️ **Le décompte par liste se mesure une fois qu'un dossier existe.** Posé
+  avant la fixture, il tournait sur une base que le ménage des épreuves vient
+  de vider et rendait « {} » — trivialement vide. C'est la leçon de
+  `verifier-veille.ts`, dont le premier jet se félicitait de trois « 0 dossier ».
+- **Les deux blocs partagent une seule famille de styles** (`.clixa-envoi`) :
+  ils font la même chose — choisir, relire, envoyer — et deux dessins voisins
+  qui ne se ressemblent pas se lisent comme deux outils différents.
+  ⚠️ **La liste cochée se distingue par son trait, pas par un fond doré** : de
+  l'or sur quatre lignes cochées noierait le bouton armé, seul endroit du bloc
+  où l'or doit vouloir dire quelque chose.
+
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,
 bilan des relances, et **demande de rappel**.

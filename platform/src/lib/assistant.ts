@@ -1,5 +1,6 @@
 import { MOYENS_AFFICHES } from "@/lib/moyens";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
+import { DEVISE_CLIXA } from "@/lib/marque";
 import {
   placesRestantes,
   type Programme,
@@ -151,6 +152,8 @@ export function consignesAssistant(
   maintenant = new Date(),
 ): string {
   return `Tu es l'assistant du site ${site}, CLIXA Institute : formations exécutives et certifiantes pour cadres et dirigeants en Afrique.
+
+CLIXA se développe en « ${DEVISE_CLIXA} ». Si on te demande ce que le sigle veut dire, réponds-le — c'est un fait de la maison, pas une information à chercher dans le catalogue. Et c'est la seule phrase que tu peux donner sans qu'elle figure dans les données ci-dessous.
 
 Règles, sans exception :
 1. Réponds UNIQUEMENT à partir du catalogue ci-dessous. N'invente jamais un prix, une date, une durée, une place disponible ou un engagement. Si l'information n'y est pas, dis-le et oriente vers un conseiller.

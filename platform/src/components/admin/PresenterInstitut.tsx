@@ -72,9 +72,11 @@ export function PresenterInstitut() {
 
   if (etat.quoi === "occupe") {
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Présenter l’institut</div>
-        <p className="clixa-annonce__texte">En cours…</p>
+      <div className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Présenter l’institut</span>
+        </header>
+        <p className="clixa-envoi__texte">En cours…</p>
       </div>
     );
   }
@@ -82,13 +84,15 @@ export function PresenterInstitut() {
   if (etat.quoi === "parti") {
     const r = etat.reponse;
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Présenter l’institut</div>
-        <p className="clixa-annonce__bilan">
+      <div className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Présenter l’institut</span>
+        </header>
+        <p className="clixa-envoi__bilan">
           <strong>{r.envoyes ?? 0}</strong> présentation(s) envoyée(s).
         </p>
         {(r.manques?.length ?? 0) > 0 && (
-          <p className="clixa-annonce__refus">
+          <p className="clixa-envoi__refus">
             {r.manques!.length} envoi(s) manqué(s) : {r.manques!.join(", ")}.
           </p>
         )}
@@ -109,22 +113,24 @@ export function PresenterInstitut() {
   if (etat.quoi === "vu") {
     const r = etat.reponse;
     return (
-      <div className="clixa-annonce">
-        <div className="clixa-annonce__tete">Présenter l’institut</div>
-        <p className="clixa-annonce__texte">
+      <div className="clixa-envoi">
+        <header className="clixa-envoi__tete">
+          <span className="clixa-envoi__titre">Présenter l’institut</span>
+        </header>
+        <p className="clixa-envoi__texte">
           Objet : <strong>{r.objet}</strong>
           {r.rentree ? ` · rentrée annoncée : ${r.rentree}` : ""}
         </p>
-        <p className="clixa-annonce__texte">
+        <p className="clixa-envoi__texte">
           <strong>{r.destinataires?.length ?? 0}</strong> adresse(s) lue(s)
           {(r.enTrop ?? 0) > 0 ? ` — ${r.enTrop} au-delà du lot, à envoyer ensuite` : ""} :
         </p>
-        <ul className="clixa-annonce__adresses">
+        <ul className="clixa-envoi__adresses">
           {(r.destinataires ?? []).map((a) => (
             <li key={a}>{a}</li>
           ))}
         </ul>
-        <div className="clixa-annonce__ligne">
+        <div className="clixa-envoi__ligne">
           <button
             type="button"
             className={`btn btn--size-small ${etat.arme ? "btn--style-primary" : "btn--style-secondary"}`}
@@ -143,7 +149,7 @@ export function PresenterInstitut() {
           </button>
         </div>
         {etat.arme && (
-          <p className="clixa-annonce__avis">
+          <p className="clixa-envoi__avis">
             Des courriels partiront chez de vraies personnes. C’est irréversible.
           </p>
         )}
@@ -152,21 +158,23 @@ export function PresenterInstitut() {
   }
 
   return (
-    <div className="clixa-annonce">
-      <div className="clixa-annonce__tete">Présenter l’institut</div>
-      <p className="clixa-annonce__texte">
+    <div className="clixa-envoi">
+      <header className="clixa-envoi__tete">
+        <span className="clixa-envoi__titre">Présenter l’institut</span>
+      </header>
+      <p className="clixa-envoi__texte">
         Les douze parcours, le déroulé, le certificat et les tarifs — composés depuis le catalogue,
         jamais recopiés. Collez les adresses : virgules, points-virgules ou une par ligne, avec ou
         sans nom devant.
       </p>
       <textarea
-        className="clixa-annonce__zone"
+        className="clixa-envoi__zone"
         rows={5}
         value={liste}
         placeholder={"aicha@exemple.ma\nKouamé N'Guessan <kouame@exemple.ci>\nfatou@exemple.sn"}
         onChange={(e) => setListe(e.target.value)}
       />
-      <div className="clixa-annonce__ligne">
+      <div className="clixa-envoi__ligne">
         <button
           type="button"
           className="btn btn--size-small btn--style-secondary"
@@ -176,7 +184,7 @@ export function PresenterInstitut() {
           Relire la liste avant d’envoyer
         </button>
       </div>
-      {etat.quoi === "erreur" && <p className="clixa-annonce__refus">{etat.dit}</p>}
+      {etat.quoi === "erreur" && <p className="clixa-envoi__refus">{etat.dit}</p>}
     </div>
   );
 }

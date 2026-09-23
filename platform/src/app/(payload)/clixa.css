@@ -4360,95 +4360,133 @@ h3,
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   L'annonce de démarrage, au tableau de bord.
+   Les deux blocs d'envoi du tableau de bord — l'annonce de démarrage et la
+   présentation de l'institut.
+
+   ⚠️ **Une seule famille de styles pour les deux.** Ils font la même chose —
+   choisir des destinataires, relire, envoyer — et deux dessins voisins qui ne
+   se ressemblent pas se lisent comme deux outils différents. C'est la leçon
+   des deux tables de noms de gestes qui avaient divergé.
 
    ⚠️ **Ni or ni émeraude au repos.** L'or veut dire « à faire aujourd'hui »
-   partout ailleurs dans cet écran ; ce bloc reste là tant que tout le monde
-   n'a pas été prévenu, et l'y peindre en or le laisserait crier pendant trois
-   jours. Il ne prend l'or qu'**armé** — au moment précis où le clic suivant
-   fait partir quarante courriels — par `btn--style-primary`, qui porte déjà
-   cette couleur et son contraste mesuré.
+   partout ailleurs dans cet écran, et ces blocs restent affichés des jours.
+   L'or n'arrive qu'**armé** — au moment précis où le clic suivant fait partir
+   de vrais courriels — par `btn--style-primary`, qui le porte déjà avec son
+   contraste mesuré.
    ───────────────────────────────────────────────────────────────────────── */
-.clixa-annonce {
+.clixa-envoi {
   margin: 1.25rem 0 0;
-  padding: 1rem 1.15rem 1.1rem;
+  padding: 1.1rem 1.25rem 1.2rem;
   border: 1px solid var(--theme-elevation-150);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--theme-elevation-50);
 }
-.clixa-annonce__tete {
-  margin-bottom: 0.6rem;
-  font-size: 0.78rem;
+.clixa-envoi__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--theme-elevation-100);
+}
+.clixa-envoi__titre {
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--theme-elevation-800);
 }
-.clixa-annonce__texte,
-.clixa-annonce__bilan {
-  margin: 0 0 0.85rem;
+.clixa-envoi__compte {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-elevation-650);
+}
+.clixa-envoi__texte,
+.clixa-envoi__bilan {
+  margin: 0 0 0.9rem;
   font-size: 0.86rem;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--theme-elevation-750);
 }
-.clixa-annonce__bilan strong {
+.clixa-envoi__bilan strong {
   color: var(--theme-elevation-900);
 }
-.clixa-annonce__liste {
+
+/* Les listes à cocher. */
+.clixa-envoi__listes {
   margin: 0 0 1rem;
   padding: 0;
   list-style: none;
   display: grid;
   gap: 0.3rem;
-  font-size: 0.85rem;
-  color: var(--theme-elevation-750);
 }
-.clixa-annonce__nombre {
-  display: inline-block;
-  min-width: 2.1rem;
+.clixa-envoi__liste {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+.clixa-envoi__liste:hover {
+  border-color: var(--theme-elevation-250);
+}
+/* ⚠️ La liste cochée se distingue par son **trait**, pas par un fond teinté :
+   un fond doré sur quatre lignes cochées noierait le bouton armé, qui est le
+   seul endroit de ce bloc où l'or doit vouloir dire quelque chose. */
+.clixa-envoi__liste--coche {
+  border-color: var(--theme-elevation-400);
+  background: var(--theme-elevation-100);
+}
+.clixa-envoi__liste input {
+  margin: 0.15rem 0 0;
+  flex: none;
+}
+.clixa-envoi__nombre {
+  flex: none;
+  min-width: 2.2rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  font-size: 0.92rem;
   color: var(--theme-elevation-900);
 }
-/* La rangée se replie : à 375 px, bouton et avertissement ne tiennent pas côte
-   à côte, et l'avertissement est ce qu'il ne faut pas pousser hors de l'écran. */
-.clixa-annonce__ligne {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.7rem;
-}
-.clixa-annonce__avis {
-  font-size: 0.8rem;
+.clixa-envoi__libelle {
+  font-size: 0.85rem;
   line-height: 1.45;
+  color: var(--theme-elevation-800);
+}
+/* La note dit ce que le message fera — elle n'est pas un commentaire décoratif. */
+.clixa-envoi__note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  font-style: normal;
   color: var(--theme-elevation-650);
 }
-.clixa-annonce__refus {
-  margin: 0.7rem 0 0;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--theme-error-600);
-}
 
-/* La liste collée, et les adresses relues avant l'envoi. */
-.clixa-annonce__zone {
+/* La zone de collage des adresses, pour la présentation. */
+.clixa-envoi__zone {
   width: 100%;
   box-sizing: border-box;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.9rem;
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--theme-elevation-150);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--theme-input-bg, var(--theme-elevation-0));
   color: var(--theme-elevation-900);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.82rem;
   line-height: 1.5;
   resize: vertical;
 }
-/* ⚠️ Plafonnée et défilante : une liste de soixante adresses repousserait
-   sinon le bouton d'envoi hors de l'écran — et c'est le bouton qu'on vient
-   chercher après avoir relu. */
-.clixa-annonce__adresses {
+/* ⚠️ Plafonnée et défilante : soixante adresses repousseraient sinon le bouton
+   d'envoi hors de l'écran — et c'est lui qu'on vient chercher après avoir relu. */
+.clixa-envoi__adresses {
   margin: 0 0 1rem;
   padding: 0.55rem 0.7rem;
   max-height: 11rem;
@@ -4456,11 +4494,35 @@ h3,
   list-style: none;
   display: grid;
   gap: 0.15rem;
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 4px;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 5px;
   background: var(--theme-elevation-0);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--theme-elevation-750);
   overflow-wrap: anywhere;
+}
+
+/* La rangée se replie : à 375 px, bouton et avertissement ne tiennent pas côte
+   à côte — et l'avertissement est ce qu'il ne faut pas pousser hors de l'écran. */
+.clixa-envoi__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+}
+.clixa-envoi__avis {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--theme-elevation-650);
+}
+.clixa-envoi__avis--fort {
+  color: var(--theme-elevation-800);
+  font-weight: 500;
+}
+.clixa-envoi__refus {
+  margin: 0.7rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--theme-error-600);
 }

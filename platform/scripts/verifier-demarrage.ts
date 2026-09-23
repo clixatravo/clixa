@@ -259,6 +259,22 @@ try {
   };
   dire("un lot démesuré est ramené au plafond", enorme.lot <= 60, `lot=${enorme.lot}`);
 
+  /*
+    ── ⚠️ On n'écrit qu'aux listes choisies ──────────────────────────────────
+    Décision de la direction, le 23 septembre 2026. Sans cette garde, un corps
+    de requête vide — ou une faute de frappe dans le nom du champ — ferait
+    repartir l'envoi à tout le monde : cent vingt-six messages pour un plafond
+    de cent par jour, partagé avec le tunnel.
+  */
+  const sansListe = await appeler(cookieEquipe, { lot: 60 });
+  dire("sans liste choisie, l'envoi est refusé", sansListe.status === 400);
+  dire(
+    "et le refus dit quoi faire",
+    /choisissez au moins une liste/i.test(
+      ((await sansListe.json()) as { erreur?: string }).erreur ?? "",
+    ),
+  );
+
   console.log("\n── 5. L'envoi pour de vrai : la trace, et la panne ──");
 
   /*
@@ -298,6 +314,25 @@ try {
     aSupprimer.push({ collection: "inscriptions", id: dossier.id });
 
     /*
+      ⚠️ **Le décompte par liste se mesure une fois qu'un dossier existe.**
+      Posé plus haut, il tournait sur une base que le ménage des épreuves
+      vient de vider et rendait « {} » — trivialement vide, donc trivialement
+      vert si on l'avait écrit dans l'autre sens. C'est la leçon de
+      `verifier-veille.ts`, dont le premier jet se félicitait de trois
+      « 0 dossier ».
+    */
+    const listes = (await (await appeler(cookieEquipe, { essai: true })).json()) as {
+      parListe?: Record<string, number>;
+    };
+    dire(
+      "l'essai rend le décompte par liste, pas un total",
+      (listes.parListe?.["a-demander"] ?? 0) >= 1,
+      Object.entries(listes.parListe ?? {})
+        .map(([k, n]) => `${k}:${n}`)
+        .join(" ") || "vide",
+    );
+
+    /*
       ⚠️ **La panne d'abord.** On remplace `payload.sendEmail` — et non
       `payload.email` : sans adaptateur, Payload ne délègue pas, et un
       remplacement posé sur l'adaptateur mesurerait le chemin nominal en
@@ -309,7 +344,9 @@ try {
       throw new Error("panne d'expédition, pour l'épreuve");
     }) as typeof payload.sendEmail;
 
-    const enPanne = (await (await appeler(cookieEquipe, { lot: 60 })).json()) as {
+    const enPanne = (await (
+      await appeler(cookieEquipe, { lot: 60, clefs: ["a-demander"] })
+    ).json()) as {
       envoyes: number;
       manques: string[];
     };
@@ -321,6 +358,25 @@ try {
       depth: 0,
       overrideAccess: true,
     });
+    /*
+      ⚠️ **Une liste qui ne contient pas ce dossier ne lui écrit pas.** C'est
+      ce qui permet d'écrire aux dix qui peuvent régler sans toucher aux cent
+      seize autres — et sans leur poser de trace, donc sans les perdre.
+    */
+    const horsListe = (await (
+      await appeler(cookieEquipe, { lot: 60, clefs: ["a-regler"] })
+    ).json()) as { partis: string[] };
+    const intact = await payload.findByID({
+      collection: "inscriptions",
+      id: dossier.id,
+      depth: 0,
+      overrideAccess: true,
+    });
+    dire(
+      "un dossier hors des listes choisies n'est pas touché",
+      !horsListe.partis.includes(String(dossier.reference)) && !intact.annonceDemarrageLe,
+    );
+
     dire(
       "envoi manqué : rien n'est noté",
       !apresPanne.annonceDemarrageLe,
@@ -329,7 +385,9 @@ try {
     dire("et l'envoi manqué est nommé", enPanne.manques.includes(String(dossier.reference)));
 
     // Puis l'envoi qui aboutit.
-    const abouti = (await (await appeler(cookieEquipe, { lot: 60 })).json()) as {
+    const abouti = (await (
+      await appeler(cookieEquipe, { lot: 60, clefs: ["a-demander"] })
+    ).json()) as {
       envoyes: number;
       partis: string[];
     };
@@ -348,7 +406,9 @@ try {
       signale, ce qui coûte la réputation de `envoi.clixa.africa`, donc tout le
       tunnel.
     */
-    const second = (await (await appeler(cookieEquipe, { lot: 60 })).json()) as {
+    const second = (await (
+      await appeler(cookieEquipe, { lot: 60, clefs: ["a-demander"] })
+    ).json()) as {
       partis: string[];
     };
     dire("un second lot ne lui réécrit pas", !second.partis.includes(String(dossier.reference)));
