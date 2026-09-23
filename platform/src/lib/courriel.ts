@@ -239,15 +239,33 @@ export function gabaritHtmlEmail({
           <tr>
             <td style="background-color: #0b1122; border-top: 1px solid rgba(243, 239, 228, 0.1); padding: 28px 32px;">
               <div style="font-size: 11px; font-family: 'SF Mono', Menlo, monospace; color: #c9a24c; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; margin-bottom: 12px;">
-                ✦ Direction des Admissions & Relations Entreprises
+                Direction des Admissions
               </div>
               
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 18px;">
                 <tr>
                   <td style="font-size: 13px; color: #cbd5e1; line-height: 1.8;">
-                    <div><strong>💬 WhatsApp Admissions :</strong> <a href="${RESEAUX_CLIXA.whatsapp.url}" style="color: #2fa37d; text-decoration: none; font-weight: bold;">${RESEAUX_CLIXA.whatsapp.numeroAffiche}</a></div>
-                    <div><strong>✉️ Courriel Officiel :</strong> <a href="${RESEAUX_CLIXA.email.url}" style="color: #e9cd84; text-decoration: none;">${RESEAUX_CLIXA.email.adresse}</a></div>
-                    <div><strong>🌐 Portail Officiel :</strong> <a href="https://www.clixa.africa" style="color: #e9cd84; text-decoration: none;">https://www.clixa.africa</a></div>
+                    <!--
+                      ⚠️ Pas d'emoji, depuis le 23 septembre 2026. Le pied en portait
+                      trois — 💬 ✉️ 🌐 — plus une étoile au-dessus. Trois raisons, et
+                      la dernière est celle qui a tranché :
+
+                      - **ils ne se rendent pas pareil d'un client à l'autre** : en
+                        couleur chez Gmail, en noir et blanc chez Outlook, en carré
+                        vide là où la police manque — et un carré vide dans le pied
+                        d'un message qui réclame un virement se lit comme un message
+                        mal formé, c'est-à-dire suspect ;
+                      - **ils survivent mal au texte brut**, que les filtres lisent ;
+                      - **la direction a demandé le ton de Namecheap ou de Vercel**
+                        (23 septembre 2026), et ni l'un ni l'autre n'en emploie. Une
+                        institution qui délivre des certificats se signe en toutes
+                        lettres.
+
+                      L'information n'a pas bougé : c'est la décoration qui part.
+                    -->
+                    <div style="padding: 3px 0;"><span style="display: inline-block; min-width: 92px; color: #94a3b8;">WhatsApp</span> <a href="${RESEAUX_CLIXA.whatsapp.url}" style="color: #2fa37d; text-decoration: none; font-weight: bold;">${RESEAUX_CLIXA.whatsapp.numeroAffiche}</a></div>
+                    <div style="padding: 3px 0;"><span style="display: inline-block; min-width: 92px; color: #94a3b8;">Courriel</span> <a href="${RESEAUX_CLIXA.email.url}" style="color: #e9cd84; text-decoration: none;">${RESEAUX_CLIXA.email.adresse}</a></div>
+                    <div style="padding: 3px 0;"><span style="display: inline-block; min-width: 92px; color: #94a3b8;">Site</span> <a href="https://www.clixa.africa" style="color: #e9cd84; text-decoration: none;">www.clixa.africa</a></div>
                   </td>
                 </tr>
               </table>
@@ -1506,6 +1524,174 @@ export async function courrielMainPassee(
       corpsHtml,
       boutonTexte: "Lire la conversation",
       boutonLien: lien,
+    }),
+  });
+}
+
+/**
+ * L'annonce du démarrage de la cohorte, adressée à chaque inscrit.
+ *
+ * ── Ce que ce message est, et ce qu'il n'est pas ────────────────────────────
+ * Demandé par la direction le 23 septembre 2026 : prévenir les inscrits que la
+ * session démarre, réclamer le règlement à qui doit régler, et la signature à
+ * qui n'a pas signé. C'est **un** message, pas trois : tout le monde apprend la
+ * même nouvelle — le parcours commence le samedi 3 octobre — et chacun lit
+ * ensuite ce qui le concerne, lui.
+ *
+ * ⚠️ **Le bloc « où en est votre dossier » vient d'`annonceDuDemarrage`**, pas
+ * d'un `if` écrit ici. Sur cent seize dossiers de production, dix seulement
+ * peuvent régler quelque chose aujourd'hui ; écrire la règle dans le gabarit
+ * l'aurait rendue invérifiable, et un envoi de masse est précisément ce qu'on
+ * ne peut pas rattraper. Voir `lib/demarrage.ts` pour le décompte et la règle.
+ *
+ * ── Le dessin ──────────────────────────────────────────────────────────────
+ * Le corps suit la forme que la direction a demandée — celle des messages de
+ * Namecheap ou de Vercel : une nouvelle en haut, un encadré de faits au
+ * milieu, un seul bouton. Trois choix tiennent à la messagerie, pas au goût :
+ *
+ * - **des tableaux, pas des `div` en flex.** Outlook rend le HTML avec le
+ *   moteur de Word : `flex` et `grid` y sont ignorés, et la mise en page
+ *   s'effondre en une colonne de texte nu.
+ * - **des styles en ligne.** Gmail retire la balise `<style>` d'un message.
+ * - **aucune image.** Les clients les bloquent par défaut ; un message dont
+ *   l'information vit dans une image arrive vide. Le cartouche de l'en-tête
+ *   est donc dessiné en HTML, comme dans les quinze autres gabarits.
+ */
+export async function courrielDemarrageCohorte(
+  payload: Payload,
+  d: {
+    reference: string;
+    apprenantNom: string;
+    apprenantEmail: string;
+    programmeTitre: string;
+    /** « 8 samedis · 9h00–13h00 » — la cadence fait foi, elle n'est pas recalculée. */
+    cadence?: string;
+    debut: string;
+    fin?: string;
+    urlDossier: string;
+    annonce: import("@/lib/demarrage").AnnonceDemarrage;
+  },
+): Promise<boolean> {
+  const debutLong = JOUR.format(new Date(d.debut));
+  const finLong = d.fin ? JOUR.format(new Date(d.fin)) : undefined;
+
+  /*
+    ⚠️ Le prénom seul, et seulement s'il en reste quelque chose. « Bonjour
+    M. » sur un nom d'un seul mot serait pire que « Bonjour ». On coupe sur le
+    premier espace et l'on se rabat sur le nom entier.
+  */
+  const prenom = d.apprenantNom.trim().split(/\s+/)[0] || d.apprenantNom.trim();
+
+  const ligne = (cle: string, valeur: string) => `
+    <tr>
+      <td style="padding: 9px 0; border-bottom: 1px solid rgba(243,239,228,0.07); color: #94a3b8; font-size: 13px; vertical-align: top; width: 132px;">${cle}</td>
+      <td style="padding: 9px 0; border-bottom: 1px solid rgba(243,239,228,0.07); color: #f1f5f9; font-size: 14px; vertical-align: top;">${valeur}</td>
+    </tr>`;
+
+  const corpsHtml = `
+    <p style="margin: 0 0 18px 0;">Bonjour ${echapper(prenom)},</p>
+
+    <p style="margin: 0 0 24px 0;">
+      Votre parcours <strong style="color: #ffffff;">${echapper(d.programmeTitre)}</strong>
+      démarre le <strong style="color: #e9cd84;">${echapper(debutLong)}</strong>.
+      Voici où en est votre dossier, et ce qu'il reste à faire avant la première séance.
+    </p>
+
+    <!-- Encadré des faits : ce que le participant vérifiera sur le site -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border: 1px solid rgba(201,162,76,0.18); border-radius: 8px; padding: 18px 20px; margin: 0 0 26px 0;">
+      <tr><td>
+        <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c; margin-bottom: 10px;">Votre inscription</div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          ${ligne("Parcours", `<strong style="color:#ffffff;">${echapper(d.programmeTitre)}</strong>`)}
+          ${ligne("Première séance", echapper(debutLong))}
+          ${finLong ? ligne("Dernière séance", echapper(finLong)) : ""}
+          ${d.cadence ? ligne("Rythme", echapper(d.cadence) + " (UTC)") : ""}
+          ${ligne("Format", "Classe virtuelle, en direct avec un formateur")}
+          ${ligne("Référence", `<span style="font-family:'SF Mono',Menlo,monospace; color:#e9cd84; letter-spacing:0.04em; white-space:nowrap;">${echapper(d.reference)}</span>`)}
+        </table>
+      </td></tr>
+    </table>
+
+    <!-- Où en est le dossier : la seule partie qui change d'un destinataire à l'autre -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-left: 3px solid #c9a24c; background-color: rgba(201,162,76,0.06); border-radius: 0 6px 6px 0; margin: 0 0 8px 0;">
+      <tr><td style="padding: 16px 18px;">
+        <div style="font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a24c; margin-bottom: 8px;">Où en est votre dossier</div>
+        <div style="color: #ffffff; font-size: 15px; font-weight: bold; line-height: 1.5; margin-bottom: ${d.annonce.geste ? "8px" : "0"};">
+          ${echapper(d.annonce.situation)}
+        </div>
+        ${
+          d.annonce.geste
+            ? `<div style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">${echapper(d.annonce.geste)}</div>`
+            : `<div style="color: #94a3b8; font-size: 14px; line-height: 1.6;">Rien à faire de votre côté pour l'instant — nous revenons vers vous.</div>`
+        }
+      </td></tr>
+    </table>
+  `;
+
+  /*
+    ⚠️ **La mise en garde contre l'hameçonnage ne s'écrit qu'à qui peut
+    payer.** C'est le seul moment où de l'argent change de mains, et la date
+    d'envoi affichée sur le dossier est la seule vérification qu'on offre au
+    participant. L'écrire à quelqu'un qui n'a rien à régler ajouterait une
+    inquiétude sans lui donner de geste — et diluerait l'avertissement le jour
+    où il compte vraiment.
+  */
+  const garde = d.annonce.peutRegler
+    ? `
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 26px 0 0 0; border-top: 1px dashed rgba(243,239,228,0.12);">
+      <tr><td style="padding-top: 16px; font-size: 12.5px; line-height: 1.6; color: #94a3b8;">
+        <strong style="color:#cbd5e1;">Une précaution.</strong> Les coordonnées de règlement ne figurent
+        jamais sur notre site : elles vous ont été envoyées par courriel, et la date de cet envoi
+        s'affiche sur votre dossier. Un message qui ne correspond à aucune date affichée ne vient
+        pas de nous — écrivez-nous avant d'y donner suite.
+      </td></tr>
+    </table>`
+    : "";
+
+  const texte = [
+    `Bonjour ${prenom},`,
+    "",
+    `Votre parcours ${d.programmeTitre} démarre le ${debutLong}.`,
+    "",
+    "VOTRE INSCRIPTION",
+    `  Parcours       : ${d.programmeTitre}`,
+    `  Première séance: ${debutLong}`,
+    finLong ? `  Dernière séance: ${finLong}` : "",
+    d.cadence ? `  Rythme         : ${d.cadence} (UTC)` : "",
+    `  Format         : classe virtuelle, en direct avec un formateur`,
+    `  Référence      : ${d.reference}`,
+    "",
+    "OÙ EN EST VOTRE DOSSIER",
+    `  ${d.annonce.situation}`,
+    d.annonce.geste ? `  ${d.annonce.geste}` : "  Rien à faire de votre côté pour l'instant.",
+    "",
+    `${d.annonce.bouton} : ${d.urlDossier}`,
+    "",
+    d.annonce.peutRegler
+      ? "Une précaution : les coordonnées de règlement ne figurent jamais sur notre site. Elles vous ont été envoyées par courriel, et la date de cet envoi s'affiche sur votre dossier. Un message qui ne correspond à aucune date affichée ne vient pas de nous."
+      : "",
+    "",
+    `Une question ? WhatsApp ${RESEAUX_CLIXA.whatsapp.numeroAffiche} — ${RESEAUX_CLIXA.email.adresse}`,
+  ]
+    .filter((l) => l !== "")
+    .join("\n");
+
+  return envoyer(payload, {
+    to: d.apprenantEmail,
+    /*
+      ⚠️ L'objet nomme le parcours, jamais la seule date. « Votre parcours
+      commence samedi » dans une boîte qui porte déjà quatre de nos messages ne
+      dit pas lequel des douze, et se lit comme une relance de plus.
+    */
+    subject: `${d.programmeTitre} — première séance le ${debutLong}`,
+    text: texte,
+    html: gabaritHtmlEmail({
+      titre: `Votre parcours commence le ${debutLong}`,
+      soustitre: `Huit séances en direct${finLong ? `, jusqu'au ${finLong}` : ""}.`,
+      corpsHtml: corpsHtml + garde,
+      boutonTexte: d.annonce.bouton,
+      boutonLien: d.urlDossier,
+      badgeRef: d.reference,
     }),
   });
 }

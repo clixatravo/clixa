@@ -70,6 +70,8 @@ npx payload run scripts/verifier-faq.ts           # ce que la FAQ affirme suit c
 npx payload run scripts/verifier-video.ts         # ce qu'on accepte d'encadrer
 npx payload run scripts/verifier-extraits.ts      # un brouillon ne se partage pas
 npx payload run scripts/verifier-vitrine.ts       # la séance filmée qui n'est pas encore relue
+npx payload run scripts/verifier-demarrage.ts     # l'annonce de démarrage ne réclame
+                                                  # d'argent qu'à qui peut en verser
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -3672,6 +3674,101 @@ répond que sur une liste fermée.
   qu'un `required` n'était plus rempli.
 - **`inscriptions.apprenant_profession` et `apprenant_experience`** : la base
   passe avant le code, poussées sur `dev` puis sur la production.
+
+⚠️ **L'annonce de démarrage, le seul message qui parte à tout le monde**
+(`lib/demarrage.ts`, `courrielDemarrageCohorte`, `api/admin/annoncer-demarrage`,
+demandé par la direction le 23 septembre 2026 : « nkhabrohom b session atbda
+beli khasshom i khalsso o nass li massinaatx t sseniw », et « ikoon m disigne
+mzyan b brand dyalna » — du niveau des messages de Namecheap ou de Vercel).
+
+Les quinze autres gabarits suivent un geste : quelqu'un signe, quelqu'un verse,
+et le message part à lui seul. Celui-ci ne suit rien — il est décidé un matin,
+pour les cent seize inscrits à la fois. Une phrase fausse s'y multiplie par cent
+seize avant que personne n'ait pu la relire.
+
+**Mesuré sur la production avant d'écrire une ligne**, le 23 septembre 2026 :
+
+| n | où en est le dossier | ce qu'il s'entend dire |
+|---|---|---|
+| 44 | pré-inscription seule | « demandez votre contrat » |
+| 58 | contrat demandé, pas signé | « signez votre contrat » |
+| 4 | **signé, coordonnées pas parties** | « rien à faire — nous revenons vers vous » |
+| 10 | coordonnées envoyées, rien versé | « versez 170 € avant le 3 octobre » |
+
+⚠️ **« Payez » ne vaut que pour dix d'entre eux**, et c'est tout l'objet de ce
+travail. Les cent six autres n'ont **aucun moyen de régler** : les coordonnées
+ne figurent nulle part sur le site, elles partent par courriel après la
+signature. Le message unique qu'on aurait écrit en une heure aurait réclamé de
+l'argent à cent six personnes qui ne peuvent pas en verser — le défaut qui a
+coûté un vrai prospect le 5 septembre 2026, commis cette fois à l'échelle d'une
+campagne. Et quatre d'entre eux attendent **nous** : leur écrire « il faut
+payer » leur ferait porter notre propre retard.
+
+- **La règle vit dans `lib/demarrage.ts`, pure**, et non dans le gabarit : une
+  règle écrite dans du HTML ne s'éprouve qu'en envoyant. `verifier-demarrage.ts`
+  compte **vingt-neuf contrôles**, dont la confrontation de chaque état avec
+  `prochaineEtape` — les deux répondent à la même question, l'une dans un
+  courriel et l'autre sur la page que le destinataire ouvre juste après.
+  **Prouvé en neutralisant la branche « la balle est chez nous » : trois rouges**,
+  dont la divergence avec la page.
+- ⚠️ **La garde lit le texte, pas seulement le drapeau.** `peutRegler` ne
+  commande que l'encadré sur l'hameçonnage ; c'est `geste` que la personne lit.
+  Une phrase qui parlerait d'argent sous un drapeau à `false` serait passée
+  inaperçue.
+- ⚠️ **Une route, pas un script, parce que `RESEND_API_KEY` ne vit qu'en
+  production** — et il ne faut pas qu'elle en sorte : le jour où elle est
+  arrivée dans `.env.local`, chaque série d'épreuves s'est mise à envoyer de
+  vrais messages à des adresses en `@epreuve.invalid`.
+- ⚠️ **Par lots de quarante, et le chiffre se calcule.** Cent quinze adresses
+  pour un plafond Resend de cent par jour, partagé avec le tunnel — qui, lui, ne
+  peut pas attendre : qui signe ce matin doit être confirmé ce matin. Trois
+  appels couvrent tout le monde en trois jours. Le lot est **borné à soixante** :
+  un `lot: 5000` posté à la main viderait le quota en une requête et ferait
+  tomber confirmation, contrat et certificat pour la journée, **sans qu'aucune
+  erreur ne le dise**.
+- ⚠️ **`annonceDemarrageLe` n'est écrite qu'après un envoi réussi**, comme
+  `placeRappeleeLe`. C'est elle qui empêche le second envoi — et un message
+  identique reçu deux fois se signale, ce qui coûte la réputation de
+  `envoi.clixa.africa`, donc tout le tunnel et pas seulement ce message.
+  **Prouvé en écrivant la trace quoi qu'il arrive : trois rouges.** Le chemin
+  d'écriture est éprouvé pour de bon — panne d'expédition simulée sur
+  `payload.sendEmail` (jamais `payload.email`, qui ne délègue pas sans
+  adaptateur), trace absente, dossier nommé dans les manqués, puis repris.
+- **Le bouton est à deux temps** (`AnnonceDemarrage.tsx`, au tableau de bord) :
+  regarder, armer, envoyer. Le premier temps n'est pas de la politesse — qui
+  n'a jamais vu la répartition croira envoyer cent seize relances de paiement.
+  ⚠️ **Ni or ni émeraude au repos** : le bloc reste affiché trois jours, et l'or
+  y crierait « à faire aujourd'hui » tout du long. Il ne le prend qu'**armé**,
+  au moment où le clic suivant fait partir quarante courriels.
+- **Quatre aperçus, pas un** (`apercu-courriel.ts` en rend seize → vingt). Un
+  seul aurait montré un quart du gabarit et laissé relire, rassuré, un message
+  dont les trois autres versions n'ont jamais été regardées — la faute déjà
+  commise sur le certificat sans code.
+- **`inscriptions.annonce_demarrage_le`** : la base passe avant le code, poussée
+  sur `dev` puis sur la production après comparaison des deux schémas dans les
+  deux sens — un seul écart, celui-là.
+
+⚠️ **Et le pied de page des seize gabarits a perdu ses emojis** (le même jour).
+Il portait 💬 ✉️ 🌐 et une étoile. Trois raisons, la dernière ayant tranché :
+ils ne se rendent pas pareil d'un client à l'autre — et un carré vide dans le
+pied d'un message qui réclame un virement se lit comme un message mal formé,
+c'est-à-dire suspect ; ils survivent mal au texte brut que lisent les filtres ;
+et ni Namecheap ni Vercel n'en emploient. L'information n'a pas bougé, c'est la
+décoration qui part.
+
+⚠️ **Deux choses restent à trancher par la direction, et ce courriel les porte
+chez cent seize personnes.** Le pied affirme « Institut Panafricain de Formation
+Continue & Certifications Exécutives » — la mention dont l'équivalent a été
+retiré du site le 5 septembre 2026 faute de pouvoir l'étayer, signalée deux fois
+dans ce journal et toujours en place. Et « Présence : Agadir · Classe virtuelle ·
+Abidjan et Dakar prochainement », qui suit bien la décision du 6 septembre. Ce
+n'est pas au code de retirer la première.
+
+⚠️ **Ce que l'envoi ne réglera pas, et qu'il faut avoir en tête** : au
+23 septembre 2026, **aucun des cent seize dossiers n'a versé le moindre euro**,
+et cent deux n'ont pas signé. Le message dira à chacun quoi faire ; il ne dira
+pas pourquoi personne ne l'a fait jusqu'ici. C'est une question de tunnel, pas
+de courriel.
 
 **Les cinq notifications internes vont toutes à `EMAIL_EQUIPE`**, le groupe Zoho
 que relève toute l'équipe : contrat demandé, contrat signé, transfert annoncé,

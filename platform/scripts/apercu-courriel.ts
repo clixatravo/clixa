@@ -40,6 +40,19 @@ import { join } from "node:path";
 process.env.EMAIL_EQUIPE ??= "equipe@clixa.africa";
 
 const c = await import("../src/lib/courriel.js");
+const { annonceDuDemarrage } = await import("../src/lib/demarrage.js");
+
+/*
+  De quoi fabriquer les quatre états de l'annonce de démarrage, plus bas.
+  ⚠️ Les échéances sont **dues** : un échéancier vide ferait rendre « tout est
+  réglé » à `annonceDuDemarrage`, et les quatre aperçus montreraient le même
+  message — celui qu'aucun des cent seize dossiers de production ne porte.
+*/
+const HIER = new Date(Date.now() - 86_400_000).toISOString();
+const ECHEANCES_DUES = [
+  { montantCentimes: 17_000, dateLimite: "2026-10-03T00:00:00.000Z", statut: "attendu" as const },
+  { montantCentimes: 15_000, dateLimite: "2026-10-24T00:00:00.000Z", statut: "attendu" as const },
+];
 
 /** Ce que le faux expéditeur recueille, à la place de Resend. */
 interface Message {
@@ -247,6 +260,64 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
         "CLX-BGXC8G5U · Kouamé N'Guessan — 170 € · échéance dans 3 jours",
       ]),
   },
+
+  /*
+    ── L'annonce du démarrage, dans ses quatre états réels ───────────────────
+    ⚠️ **Quatre aperçus, pas un.** Ce message ne dit pas la même chose à tout
+    le monde : c'est toute sa raison d'être, et sur cent seize dossiers de
+    production, dix seulement s'entendent réclamer de l'argent. Un seul aperçu
+    aurait montré un quart du gabarit et laissé relire, rassuré, un message
+    dont les trois autres versions n'ont jamais été regardées — la faute
+    exacte que ce script existe pour empêcher, déjà commise une fois sur le
+    certificat sans code.
+
+    Les quatre correspondent au décompte du 23 septembre 2026 : 44 à demander,
+    58 à signer, 4 chez nous, 10 à régler.
+  */
+  ...(
+    [
+      ["17-demarrage-a-demander", { statut: "demandee", echeances: ECHEANCES_DUES }],
+      [
+        "18-demarrage-a-signer",
+        { statut: "demandee", contratDemandeLe: HIER, echeances: ECHEANCES_DUES },
+      ],
+      [
+        "19-demarrage-chez-nous",
+        {
+          statut: "demandee",
+          contratDemandeLe: HIER,
+          contratSigneLe: HIER,
+          contratVerifieLe: HIER,
+          echeances: ECHEANCES_DUES,
+        },
+      ],
+      [
+        "20-demarrage-a-regler",
+        {
+          statut: "demandee",
+          contratDemandeLe: HIER,
+          contratSigneLe: HIER,
+          contratVerifieLe: HIER,
+          coordonneesEnvoyeesLe: HIER,
+          echeances: ECHEANCES_DUES,
+        },
+      ],
+    ] as const
+  ).map(([nom, faits]) => ({
+    nom,
+    produire: () =>
+      c.courrielDemarrageCohorte(faux, {
+        reference: REFERENCE,
+        apprenantNom: inscription.apprenantNom,
+        apprenantEmail: inscription.apprenantEmail,
+        programmeTitre: "Directeur Administratif et Financier",
+        cadence: "8 samedis · 9h00–13h00",
+        debut: "2026-10-03T09:00:00.000Z",
+        fin: "2026-11-21T13:00:00.000Z",
+        urlDossier: inscription.urlDossier,
+        annonce: annonceDuDemarrage(faits as never),
+      }),
+  })),
 ];
 
 /*

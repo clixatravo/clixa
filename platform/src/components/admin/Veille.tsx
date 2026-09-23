@@ -15,6 +15,7 @@ import {
 } from "@/lib/delai";
 import { repartitionParDomaine } from "@/lib/profil";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
+import { AnnonceDemarrage } from "@/components/admin/AnnonceDemarrage";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -1292,6 +1293,14 @@ export async function Veille() {
       )}
 
       {/* ── Raccourcis Rapides de Navigation ── */}
+      {/*
+        ── L'annonce de démarrage ────────────────────────────────────────────
+        Posée ici, entre ce qui attend et les accès directs : c'est une action,
+        pas un raccourci. Elle ne s'affiche pas toute seule et n'envoie rien
+        avant qu'on ait regardé à qui — voir `AnnonceDemarrage`.
+      */}
+      <AnnonceDemarrage />
+
       <div className="clixa-raccourcis">
         <span className="clixa-raccourcis__titre">ACCÈS DIRECTS :</span>
         <div className="clixa-raccourcis__pills">

@@ -1004,6 +1004,47 @@ export const Inscriptions: CollectionConfig = {
             },
             {
               /*
+                ── ⚠️ Le jour où l'annonce de démarrage est partie ─────────────
+                Demandée par la direction le 23 septembre 2026, à dix jours de
+                la première séance : un message à chacun des cent seize inscrits
+                pour dire que le parcours commence, et ce qu'il reste à faire.
+
+                **Cette trace est ce qui empêche l'envoi de partir deux fois.**
+                Elle compte double ici, pour deux raisons qui n'existaient pour
+                aucun autre message :
+
+                - **c'est un envoi de masse**, et le plafond de Resend est de
+                  cent messages par jour pour cent quinze adresses : il part
+                  donc par lots, sur deux jours au moins. Sans trace, le second
+                  lot réécrirait au premier ;
+                - **un message identique reçu deux fois se signale**, et un
+                  signalement sur cent seize envois suffit à faire tomber la
+                  réputation de `envoi.clixa.africa` — donc le courriel de
+                  confirmation, celui du contrat, celui du certificat. Tout le
+                  tunnel, pas seulement celui-ci.
+
+                ⚠️ Écrite **après** un envoi réussi seulement, comme
+                `placeRappeleeLe` et `dernierRappelAvantTerme`. Un quota épuisé
+                ne doit pas faire croire que la personne a été prévenue : le lot
+                du lendemain la reprend.
+
+                ⚠️ Readonly : la vider fait repartir l'annonce à cette personne.
+                C'est le geste qu'on veut quand la cohorte suivante ouvrira, et
+                celui qu'on ne veut surtout pas par mégarde.
+              */
+              name: "annonceDemarrageLe",
+              type: "date",
+              label: "Annonce de démarrage envoyée le",
+              index: true,
+              admin: {
+                width: "50%",
+                readOnly: true,
+                description: "Posée par l'envoi. Vide = l'annonce ne lui est pas encore partie.",
+                date: { pickerAppearance: "dayOnly", displayFormat: "dd/MM/yyyy" },
+              },
+            },
+            {
+              /*
                 ── ⚠️ Le plus petit rappel déjà envoyé avant le terme ──────────
                 La tâche de 8 h prévient à quatre, trois puis deux jours de la
                 fin (`SEUILS_DE_RAPPEL`). Sans cette trace, elle renverrait le
