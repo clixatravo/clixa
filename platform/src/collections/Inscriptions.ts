@@ -690,7 +690,7 @@ export const Inscriptions: CollectionConfig = {
           pas de poste : la même écriture passe sans, et lève avec —
 
               ValidationError: Le champ suivant n’est pas valide :
-              Le participant > Poste actuel
+              Le participant > Fonction actuelle
 
           C'est `placeRappeleeLe` que l'essai posait : exactement ce que la
           tâche de 8 h écrit, et sans quoi une place n'est jamais rendue.
@@ -701,7 +701,7 @@ export const Inscriptions: CollectionConfig = {
             {
               name: "apprenantProfession",
               type: "text",
-              label: "Poste actuel",
+              label: "Fonction actuelle",
               admin: {
                 width: "50%",
                 description:

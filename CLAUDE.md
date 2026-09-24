@@ -2658,6 +2658,47 @@ faux.
   ni de contacter la personne : laissé à l'équipe, comme les numéros de
   téléphone erronés notés plus bas.
 
+⚠️ **« Pourquoi des dossiers passent en annulée tout seuls »** (question de la
+direction, le 24 septembre 2026 : « des clien kaytssejlo o katla3 liya mn be3d
+annuler f dosser dyalhom mafhemtx kifach »). Mesuré sur la production, dans cet
+ordre — et la première explication était fausse :
+
+| | |
+|---|---|
+| Dossiers annulés | **41** |
+| Annulés par une main humaine | **0** |
+| Annulés **moins de 10 s après leur propre création** | **41** |
+| Annulés dont le gagnant n'existe plus en base | **31** |
+| Adresses sans **aucun** dossier vivant | **11** |
+
+- **Ce n'est pas un défaut du site.** Deux portes seulement écrivent
+  « annulee » : `api/admin/rendre-la-place`, qui exige une session d'équipe,
+  et la réconciliation d'`api/inscription`. La seconde ne s'annule **jamais**
+  sans avoir lu en base un dossier commité, non annulé, d'identifiant plus
+  petit — le code est juste, et il protège la place.
+- **La cause des doublons est le formulaire**, natif et sans garde : il poste,
+  la page attend, rien ne bouge, et l'on reclique. Presque tous les annulés ont
+  un frère de la même adresse créé **à la même seconde** ; quelqu'un s'est
+  inscrit **sept fois**. `BoutonEnvoi` referme cette cause depuis le même jour.
+- ⚠️ **Mais ce qui laisse onze personnes sans dossier, c'est la suppression
+  des doublons depuis /admin.** Sur les 41 annulés, **31 n'ont plus de
+  gagnant** : c'est le dossier *vivant* qui a été supprimé, et l'annulé qui est
+  resté. La liste se range du plus récent au plus ancien
+  (`defaultSort: "-createdAt"`), si bien que **le doublon annulé s'affiche
+  au-dessus du vrai dossier** — cocher « celui du dessous » supprime le bon.
+- ⚠️ **Un trou dans les identifiants ne prouve pas une suppression** : la
+  séquence Postgres n'est pas transactionnelle, et chaque interblocage `40P01`
+  en consomme un. Ce qui prouve la suppression ici, c'est le code : un dossier
+  ne s'annule que face à un gagnant **commité** — donc il a existé.
+- ⚠️ **Trois reproductions sur `dev` n'ont rien montré** : à six inscriptions
+  simultanées puis échelonnées de 200 ms, le plus petit identifiant survit
+  toujours. Le cas « zéro survivant » n'est pas reproductible parce qu'il ne
+  vient pas d'une course — il vient d'un geste fait après coup, dans /admin.
+- **`scripts/reparer-les-orphelins.ts`** rend son dossier à qui n'en a plus
+  aucun de vivant (rejouable, `ECRIRE=1`, montre d'abord). Une adresse dont
+  **toutes** les lignes ont été supprimées est hors de portée : le script la
+  nomme, et l'équipe reprend contact.
+
 - **La clef de l'inscription est l'adresse *et* la session**, pas l'adresse
   seule : quelqu'un peut légitimement s'inscrire à deux parcours. Une épreuve
   garde ce cas, avec deux slugs réellement différents — se comparer à

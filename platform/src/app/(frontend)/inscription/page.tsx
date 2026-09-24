@@ -2,6 +2,7 @@ import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
+import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { participantConnecte } from "@/lib/session-apprenant";
 import { placesRestantes } from "@/lib/types";
 import { MOYENS } from "@/lib/moyens";
@@ -35,7 +36,7 @@ interface Props {
 const MESSAGES: Record<string, string> = {
   champs: "Il manque une information. Tous les champs marqués sont nécessaires pour vous rappeler.",
   profil:
-    "Indiquez votre poste actuel, votre domaine et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
+    "Indiquez votre fonction actuelle, votre domaine et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
   session: "Cette session n'existe plus. Choisissez-en une autre ci-dessous.",
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
   indicatif:
@@ -259,17 +260,31 @@ export default async function Inscription({ searchParams }: Props) {
 
                   ⚠️ Elles sont posées **après** les coordonnées, jamais avant.
                   On demande d'abord ce qui identifie, ensuite ce qui qualifie :
-                  un formulaire qui ouvre sur « quel est votre poste ? » se lit
+                  un formulaire qui ouvre sur « quelle est votre fonction ? » se lit
                   comme un tri à l'entrée.
                 */}
+                {/*
+                  ⚠️ **« Fonction », et non « poste »** (demandé par la
+                  direction le 24 septembre 2026 : « a potetr nass mafehmox »).
+                  Deux vrais dossiers du 18 septembre portaient « Mécanicien
+                  automobile » et « Aide soignant » : la question était bien
+                  comprise. D'autres, non — « poste » se lit aussi comme un
+                  lieu de travail ou un numéro de poste téléphonique, et le
+                  champ revenait parfois vide ou de travers.
+
+                  ⚠️ **Le nom du champ ne bouge pas** (`profession`,
+                  `apprenantProfession` en base). Renommer une colonne pour
+                  changer un intitulé, c'est une migration et cent vingt-six
+                  lignes à réécrire, pour un mot à l'écran.
+                */}
                 <Champ
-                  label="Votre poste actuel"
+                  label="Votre fonction actuelle"
                   name="profession"
                   autoComplete="organization-title"
                   placeholder="Comptable, DAF, chef de projet…"
                 />
                 {/*
-                  ⚠️ **Le domaine vient entre le poste et l'ancienneté**, et
+                  ⚠️ **Le domaine vient entre la fonction et l'ancienneté**, et
                   l'ordre porte du sens : ce que vous faites, dans quel domaine,
                   depuis combien de temps. Posé après l'expérience, il se serait
                   lu comme une question de plus ; posé là, il précise celle
@@ -428,12 +443,19 @@ export default async function Inscription({ searchParams }: Props) {
                 </span>
               </label>
 
-              <button
-                type="submit"
-                className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 w-full px-6 py-3.5 text-[0.92rem] font-semibold transition-colors sm:w-auto"
-              >
-                Envoyer ma pré-inscription
-              </button>
+              {/*
+                ⚠️ **Le bouton ne part qu'une fois.** Sur quarante-et-un
+                dossiers annulés en production, presque tous portaient une
+                autre inscription de la même adresse créée à la **même
+                seconde** — un participant en avait sept. Le formulaire est
+                natif : pendant l'aller-retour, rien ne bouge à l'écran, et
+                l'on reclique. Voir `BoutonEnvoi`.
+              */}
+              <BoutonEnvoi
+                libelle="Envoyer ma pré-inscription"
+                pendant="Enregistrement…"
+                className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 w-full px-6 py-3.5 text-[0.92rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              />
 
               <p className="text-ivory-dim mt-4 text-[0.76rem]">
                 Aucun paiement n&apos;est demandé à cette étape.

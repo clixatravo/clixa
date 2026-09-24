@@ -207,7 +207,7 @@ export async function GET(request: Request) {
         { entete: "Où en est le dossier", largeur: 38 },
         { entete: "Statut", largeur: 30 },
         { entete: "Nom", largeur: 26 },
-        { entete: "Poste actuel", largeur: 26 },
+        { entete: "Fonction actuelle", largeur: 26 },
         { entete: "Domaine", largeur: 20 },
         { entete: "Expérience", largeur: 16 },
         { entete: "E-mail", largeur: 30 },

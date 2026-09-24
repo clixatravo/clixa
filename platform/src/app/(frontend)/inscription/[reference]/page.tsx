@@ -2,6 +2,7 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { FilAriane } from "@/components/FilAriane";
+import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { formatPrix } from "@/lib/catalogue";
 import { getDossier, prochaineEtape } from "@/lib/inscriptions";
 import { participantConnecte } from "@/lib/session-apprenant";
@@ -601,12 +602,11 @@ export default async function Dossier({ params, searchParams }: Props) {
                       été signé, et que rien n&apos;a changé depuis.
                     </p>
 
-                    <button
-                      type="submit"
-                      className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 min-h-11 px-6 text-[0.9rem] font-semibold transition-colors"
-                    >
-                      Signer le contrat
-                    </button>
+                    <BoutonEnvoi
+                      libelle="Signer le contrat"
+                      pendant="Signature en cours…"
+                      className="bg-gold text-ink rounded-clixa hover:bg-gold-bright mt-5 min-h-11 px-6 text-[0.9rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    />
                   </form>
                 )}
               </>
@@ -630,12 +630,11 @@ export default async function Dossier({ params, searchParams }: Props) {
                     />
                   </div>
                   <input type="hidden" name="dossier" value={dossier.reference} />
-                  <button
-                    type="submit"
-                    className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-5 text-[0.9rem] font-semibold transition-colors"
-                  >
-                    Demander mon contrat de formation
-                  </button>
+                  <BoutonEnvoi
+                    libelle="Demander mon contrat de formation"
+                    pendant="Envoi de la demande…"
+                    className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-5 text-[0.9rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  />
                 </form>
               </>
             )}
@@ -762,12 +761,11 @@ export default async function Dossier({ params, searchParams }: Props) {
               */}
               <form action="/api/demande-rappel" method="POST">
                 <input type="hidden" name="reference" value={dossier.reference} />
-                <button
-                  type="submit"
-                  className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors"
-                >
-                  Être rappelé par un conseiller
-                </button>
+                <BoutonEnvoi
+                  libelle="Être rappelé par un conseiller"
+                  pendant="Demande enregistrée…"
+                  className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa inline-flex min-h-11 items-center gap-2 border px-4 text-[0.86rem] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                />
               </form>
             </div>
           </div>
@@ -883,12 +881,11 @@ export default async function Dossier({ params, searchParams }: Props) {
                   </p>
                 </div>
 
-                <button
-                  type="submit"
-                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-6 text-[0.9rem] font-semibold transition-colors sm:col-span-2 sm:justify-self-start"
-                >
-                  Annoncer le transfert
-                </button>
+                <BoutonEnvoi
+                  libelle="Annoncer le transfert"
+                  pendant="Enregistrement…"
+                  className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-6 text-[0.9rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2 sm:justify-self-start"
+                />
               </form>
             </div>
           )}
