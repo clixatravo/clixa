@@ -74,6 +74,7 @@ npx payload run scripts/verifier-demarrage.ts     # l'annonce de démarrage ne r
                                                   # d'argent qu'à qui peut en verser
 npx payload run scripts/verifier-presentation.ts  # la présentation ne promet que ce que
                                                   # le catalogue tient
+npx tsx scripts/verifier-versements.ts           # qui a encore combien de tranches
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -2593,6 +2594,41 @@ de joindre la confirmation de sa banque.
   justificatifs est partagé, et le ménage supprime les dossiers en SQL, sans
   crochet — donc sans retirer le fichier. Le dépôt n'a pas changé ;
   `verifier-recus.ts` l'éprouve.
+
+⚠️ **Le tableau de bord dit, pour chacun, combien de tranches il lui reste**
+(`lib/versements.ts`, `components/admin/SuiviVersements.tsx`, demandé par la
+direction le 25 septembre 2026 : « kola chatr rah khass l clien i seft l justif
+dyalo o hna teb9a tal3a lina […] beli hado mazal lhom joj achtor, hado mazal
+lihom chatr »). La vignette « Paiements » disait combien de versements
+attendaient ; rien ne disait qui en était où.
+
+- **Un bloc sous les vignettes** : « À vérifier maintenant » en tête — les
+  versements annoncés, avec ou sans pièce —, puis une colonne par nombre de
+  tranches restantes (« Reste 3 tranches », …, « Reste 1 tranche — dernier
+  versement ») et une colonne « Soldé ». Chaque ligne : le nom, un point par
+  tranche, la prochaine échéance ou le retard.
+- ⚠️ **Seuls les dossiers qui ont reçu de quoi régler y figurent.** Avant
+  `coordonneesEnvoyeesLe`, écrire « reste 3 tranches » rangerait parmi ceux
+  qu'on relance pour payer quelqu'un qui n'a nulle part où envoyer l'argent.
+- ⚠️ **Un versement annoncé n'est jamais « en retard »** : le participant a fait
+  son geste, c'est notre vérification qui attend.
+- **Trois couleurs, chacune déjà apprise** : émeraude réglé, or à vérifier
+  aujourd'hui (texte et filets seulement), rouge en retard.
+- **La notification** : le courriel « [Transfert Annoncé] » porte désormais
+  « tranche 2/3 » à la fin de l'objet — le préfixe ne bouge pas, un filtre Zoho
+  peut s'y appuyer — et dit ce qui restera : « il lui restera 1 tranche », ou
+  « c'est son dernier versement ». `apercu-courriel.ts` en rend deux, dont la
+  carte sans référence.
+- ⚠️ **Le `select` du tableau de bord ramène `apprenantNom` et `reference`** : un
+  champ absent y arrive vide sans erreur, et le bloc aurait écrit « Sans nom »
+  partout.
+- `verifier-versements.ts` : vingt-quatre contrôles, sans base ni réseau,
+  **prouvés en remettant deux défauts** — faire entrer les dossiers sans
+  coordonnées (trois rouges), compter en retard un versement annoncé (un
+  rouge). ⚠️ Son premier jet a accusé un code juste : il attendait « Brahim,
+  Ibrahim » là où l'échéance la plus ancienne passe d'abord.
+- Regardé à l'écran sur cinq dossiers fabriqués : 1280 et 375 px, aucun
+  débordement.
 
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et

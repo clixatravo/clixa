@@ -17,6 +17,8 @@ import { repartitionParDomaine } from "@/lib/profil";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
 import { AnnonceDemarrage } from "@/components/admin/AnnonceDemarrage";
 import { PresenterInstitut } from "@/components/admin/PresenterInstitut";
+import { SuiviVersements } from "@/components/admin/SuiviVersements";
+import { suiviDesVersements, type DossierSuivi, type RecuSuivi } from "@/lib/versements";
 
 /**
  * Cockpit Exécutif en tête du tableau de bord Payload.
@@ -407,12 +409,13 @@ function obtenirFiltresDates() {
     place » s'ouvre. Même raison de lire l'horloge ici et pas au rendu.
   */
   const seuilRetour = new Date(d.getTime() - JOURS_DE_BATTEMENT * 86400000).toISOString();
-  return { aujourdhui, ilYASeptJours, seuilPresse, seuilRetour };
+  /* L'instant lui-même, pour le suivi des versements — même raison. */
+  return { maintenant: d, aujourdhui, ilYASeptJours, seuilPresse, seuilRetour };
 }
 
 export async function Veille() {
   const payload = await getPayload({ config });
-  const { aujourdhui, ilYASeptJours, seuilPresse, seuilRetour } = obtenirFiltresDates();
+  const { maintenant, aujourdhui, ilYASeptJours, seuilPresse, seuilRetour } = obtenirFiltresDates();
 
   // 1. Inscriptions vivantes
   /*
@@ -453,7 +456,28 @@ export async function Veille() {
       coordonneesEnvoyeesLe: true,
       placeRappeleeLe: true,
       echeances: true,
+      /*
+        Le nom et la référence servent au suivi des versements, qui nomme
+        chaque personne (25 septembre 2026). ⚠️ Absents d'ici, ils arriveraient
+        vides sans erreur, et le bloc afficherait « Sans nom » partout.
+      */
+      apprenantNom: true,
+      reference: true,
     },
+  });
+
+  /*
+    ── Les justificatifs, réduits à ce qui les rattache ───────────────────────
+    Le suivi des versements distingue « annoncé avec sa pièce » d'« annoncé sans
+    pièce » : ce n'est pas le même travail de vérification. Deux champs, pas le
+    fichier — le dossier et la tranche.
+  */
+  const promesseRecus = payload.find({
+    collection: "recus",
+    limit: 500,
+    depth: 0,
+    overrideAccess: true,
+    select: { dossier: true, echeance: true },
   });
 
   const promesseSemaine = payload.find({
@@ -635,6 +659,7 @@ export async function Veille() {
     { totalDocs: conversationsAReprendre },
     { docs: programmes },
     { docs: sessions },
+    { docs: docsRecus },
   ] = await Promise.all([
     promesseInscriptions,
     promesseSemaine,
@@ -645,7 +670,14 @@ export async function Veille() {
     promesseConversations,
     promesseProgrammes,
     promesseSessions,
+    promesseRecus,
   ]);
+
+  const versements = suiviDesVersements(
+    inscriptions as unknown as DossierSuivi[],
+    docsRecus as unknown as RecuSuivi[],
+    maintenant,
+  );
 
   /*
     ⚠️ Le calcul vit dans `lib/profil.ts`, pur, et non ici : une répartition
@@ -1185,6 +1217,15 @@ export async function Veille() {
           </div>
         </Link>
       </div>
+
+      {/*
+        ── Le suivi des versements ──────────────────────────────────────────
+        Demandé par la direction le 25 septembre 2026 : qui a encore deux
+        tranches, qui n'en a plus qu'une, qui a fini — et ce qui vient
+        d'arriver et attend d'être vérifié. Sous les vignettes, parce qu'il en
+        est le détail : la vignette « Paiements » dit combien, ce bloc dit qui.
+      */}
+      <SuiviVersements suivi={versements} />
 
       {/*
         ⚠️ **Les noms, et pas seulement le nombre** (demandé par la direction le

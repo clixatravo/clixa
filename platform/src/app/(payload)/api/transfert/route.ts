@@ -231,6 +231,9 @@ export async function POST(request: Request) {
     dossierId: dossier.id,
     avecRecu: recuDepose,
     parCarte: moyen === "carte",
+    rang: index + 1,
+    total: echeances.length,
+    restantesApres: echeances.filter((e) => (e.statut ?? "attendu") !== "regle").length - 1,
     montant: Number(courante.montant ?? 0),
   });
 

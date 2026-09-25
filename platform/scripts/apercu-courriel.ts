@@ -163,6 +163,30 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
         numero: "MTCN 8412 3390 77",
         montant: 170,
         avecRecu: true,
+        rang: 2,
+        total: 3,
+        restantesApres: 1,
+      }),
+  },
+  {
+    /*
+      ⚠️ Le paiement par carte, sans référence, se dit autrement — « a payé par
+      carte », « non communiquée », et sa dernière tranche annonce le solde.
+      Sans cet aperçu, ces trois phrases n'auraient jamais été regardées.
+    */
+    nom: "07b-equipe-paiement-carte",
+    produire: () =>
+      c.courrielTransfert(faux, {
+        ...inscription,
+        dossierId: DOSSIER_ID,
+        moyen: "Carte bancaire",
+        numero: "",
+        montant: 157,
+        avecRecu: true,
+        parCarte: true,
+        rang: 3,
+        total: 3,
+        restantesApres: 0,
       }),
   },
   {

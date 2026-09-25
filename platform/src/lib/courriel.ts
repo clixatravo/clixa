@@ -1,6 +1,7 @@
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import { DEVISE_CLIXA } from "@/lib/marque";
 import type { Payload } from "payload";
+import { phraseDeLaSuite } from "@/lib/versements";
 
 /**
  * BE-16 — Courriels exécutifs & transactionnels CLIXA Institute.
@@ -953,9 +954,21 @@ export async function courrielTransfert(
      * prestataire, par nom et par montant.
      */
     parCarte?: boolean;
+    /**
+     * La tranche annoncée et le rythme — « tranche 2 sur 3 ». Demandé par la
+     * direction le 25 septembre 2026 : savoir, dès la notification, où en est
+     * la personne, sans ouvrir son dossier.
+     */
+    rang?: number;
+    total?: number;
+    /** Les tranches qui resteront une fois celle-ci vérifiée. */
+    restantesApres?: number;
   },
 ): Promise<void> {
   if (!EQUIPE) return;
+
+  const tranche = d.rang && d.total ? `tranche ${d.rang}/${d.total}` : "";
+  const suite = d.restantesApres === undefined ? "" : phraseDeLaSuite(d.restantesApres);
 
   /*
     ⚠️ Un paiement par carte ne se dit pas « transfert », et une référence
@@ -978,6 +991,7 @@ export async function courrielTransfert(
       <tr><td style="color: #94a3b8; width: 140px;">Montant déclaré :</td><td><strong style="color: #e9cd84; font-size: 16px;">${EUROS.format(d.montant)}</strong></td></tr>
       <tr><td style="color: #94a3b8;">Moyen d'envoi :</td><td style="color: #ffffff; font-weight: bold;">${echapper(d.moyen)}</td></tr>
       <tr><td style="color: #94a3b8;">${intituleNumero}</td><td>${numeroHtml}</td></tr>
+      ${tranche ? `<tr><td style="color: #94a3b8;">Tranche :</td><td style="color: #ffffff; font-weight: bold;">${d.rang} sur ${d.total}</td></tr>` : ""}
       <tr><td style="color: #94a3b8;">Dossier Réf. :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
       <tr><td style="color: #94a3b8;">Programme :</td><td style="color: #ffffff;">${d.programmeTitre}</td></tr>
       <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
@@ -987,22 +1001,29 @@ export async function courrielTransfert(
         ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, dans « Où en est ce dossier », au-dessus du bouton « Versement reçu ». Le fichier est privé : il ne se lit que connecté au back-office.</p>`
         : `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 14px; color: #cbd5e1;">${sansPiece}</p>`
     }
+    ${suite ? `<p style="margin: 0 0 16px 0; font-size: 14px; color: #ffffff;">${suite}</p>` : ""}
     <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
   `;
 
   await envoyer(payload, {
     to: EQUIPE,
-    subject: `[Transfert Annoncé] ${d.reference} — ${d.apprenantNom} (${d.moyen})`,
+    /*
+      ⚠️ Le préfixe ne bouge pas : un filtre de la boîte Zoho peut s'y appuyer.
+      La tranche s'ajoute à la fin.
+    */
+    subject: `[Transfert Annoncé] ${d.reference} — ${d.apprenantNom} (${d.moyen})${tranche ? ` · ${tranche}` : ""}`,
     text: [
       `${d.apprenantNom} déclare avoir envoyé ${EUROS.format(d.montant)}.`,
       "",
       `Moyen : ${d.moyen}`,
       `${d.parCarte ? "Référence du paiement" : "Numéro de transfert"} : ${d.numero || "non communiquée"}`,
+      ...(tranche ? [`Tranche : ${d.rang} sur ${d.total}`] : []),
       `Référence du dossier : ${d.reference}`,
       `Parcours : ${d.programmeTitre}`,
       `WhatsApp : ${d.apprenantWhatsapp}`,
       "",
       "L'échéance est passée en « annoncé ».",
+      ...(suite ? [suite] : []),
       d.avecRecu
         ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier, au-dessus du bouton « Versement reçu »."
         : sansPiece,
