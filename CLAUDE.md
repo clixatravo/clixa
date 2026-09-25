@@ -2696,8 +2696,29 @@ ordre — et la première explication était fausse :
   vient pas d'une course — il vient d'un geste fait après coup, dans /admin.
 - **`scripts/reparer-les-orphelins.ts`** rend son dossier à qui n'en a plus
   aucun de vivant (rejouable, `ECRIRE=1`, montre d'abord). Une adresse dont
-  **toutes** les lignes ont été supprimées est hors de portée : le script la
-  nomme, et l'équipe reprend contact.
+  **toutes** les lignes ont été supprimées est hors de portée : le script ne
+  la voit même pas, et l'équipe reprend contact.
+
+⚠️ **Le script n'a jamais servi : les onze étaient déjà supprimés quand on l'a
+lancé** (25 septembre 2026). Il a rendu « 0 adresse sans dossier vivant » —
+non parce qu'on les avait rendues, mais parce que **38 des 41 annulés** avaient
+été supprimés depuis /admin entre-temps, lignes des onze comprises. Aucune
+écriture ne les avait repassés à « demandée » ; aucune session n'avait gardé
+leurs adresses. Hors de portée, sauf à relire les confirmations envoyées dans
+le tableau de bord de Resend.
+
+- ⚠️ **Un « rien à réparer » se vérifie.** Il dit aussi bien « réparé » que
+  « disparu ». Compter les annulés avant et après est ce qui a tranché.
+- ⚠️ **La suppression a continué après, et sur des dossiers vivants** : 126
+  dossiers vivants le 23, 116 le 25. Trois personnes qui avaient demandé un
+  rappel **depuis la page de leur dossier**, les 23 et 24 au soir, n'ont plus
+  de dossier — leur demande reste « nouvelle » au tableau de bord, sans lien.
+  Une demande de rappel sans `dossier` postérieure au 18 septembre est la
+  trace d'un dossier supprimé.
+- **La suppression reste un geste manuel de la direction**, décision du
+  25 septembre 2026 : « khali supression manual lina ». On ne la retire pas, on
+  ne la double pas d'une corbeille. Seule la direction peut supprimer
+  (`delete: reserveA()`), et aucun journal ne dit qui l'a fait.
 
 - **La clef de l'inscription est l'adresse *et* la session**, pas l'adresse
   seule : quelqu'un peut légitimement s'inscrire à deux parcours. Une épreuve
