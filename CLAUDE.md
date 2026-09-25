@@ -25,7 +25,25 @@ pkill -f "next dev" && rm -rf .next && npm run build
 
 ```bash
 cd platform && npm run verify        # types + lint + formatage
+cd platform && npm run gardes        # les gardes sans base, en quelques secondes
+cd platform && npm run gardes:tout   # toutes les gardes, contre dev (~35 min)
 ```
+
+⚠️ **Les gardes tournent enfin toutes seules** (25 septembre 2026). Jusque-là,
+aucune des quarante-cinq ne tournait en CI : une modification pouvait défaire
+une correction du journal sans que rien ne passe au rouge, tant que personne
+ne pensait à relancer la bonne. Les gardes **sans base** — celles qui n'ouvrent
+pas Payload — passent désormais à chaque push, dans le job `verify`. Elles sont
+trouvées en lisant les fichiers, pas tenues dans une liste : une garde ajoutée
+rejoint la série d'elle-même (`scripts/lancer-les-gardes.mjs`). Prouvé en
+remettant un défaut dans `lib/versements.ts` : la série sort en 1 et nomme la
+garde tombée.
+
+⚠️ **Les gardes avec base ne tournent pas en CI**, exprès : une minute de
+démarrage chacune contre Neon, des dépôts dans des magasins partagés avec la
+production, et deux qui ne supportent pas un `next dev` sur la même base.
+`npm run gardes:tout` les lance en série ; à faire après un changement qui
+touche au modèle ou au tunnel.
 
 Cinq suites vérifient le back-office de bout en bout, via l'API locale de
 Payload (aucun mot de passe requis). Elles créent puis suppriment leurs données :

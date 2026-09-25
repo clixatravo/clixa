@@ -21,7 +21,9 @@
     "epreuves:voir": "playwright test --ui",
     "recette": "node scripts/recette.mjs",
     "atelier": "storybook dev -p 6006",
-    "atelier:construire": "storybook build"
+    "atelier:construire": "storybook build",
+    "gardes": "node scripts/lancer-les-gardes.mjs",
+    "gardes:tout": "node scripts/lancer-les-gardes.mjs --tout"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.88.0",

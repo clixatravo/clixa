@@ -45,6 +45,12 @@ jobs:
       - name: Vérifier le formatage
         run: npm run format:check
 
+      # Les gardes sans base : ce que le journal a corrigé ne revient pas en
+      # silence. Elles tournaient seulement quand quelqu'un pensait à les
+      # lancer ; une garde ajoutée rejoint la série d'elle-même.
+      - name: Gardes (sans base)
+        run: npm run gardes
+
       - name: Build
         # Le build interroge la base pour pré-générer les pages. Quand un champ
         # vient d'être ajouté au modèle mais que le schéma n'a pas encore été
