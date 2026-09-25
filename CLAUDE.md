@@ -2516,6 +2516,21 @@ d'endroit pour vérifier le reçu ». C'était exact.
   pièce puis remonter cocher — l'aller-retour que ce bloc existe pour épargner.
   Il est maintenant le dernier champ du bloc « Le règlement », juste sous le
   tableau des échéances. Le courriel « Transfert annoncé » dit où le trouver.
+- ⚠️ **Et surtout dans le fil des étapes, au-dessus de « Versement reçu »**
+  (le même jour — le premier déplacement n'était pas ce que la direction
+  demandait). C'est là qu'on vérifie le contrat, qu'on passe le participant au
+  paiement, puis qu'on confirme l'argent : la pièce doit se lire à côté du
+  bouton qu'elle décide. L'étape 4 montre les pièces de l'échéance en cours ;
+  le bloc sous les échéances garde la liste entière.
+  - **Une seule lecture pour les deux** (`useJustificatifs`) : deux requêtes
+    finiraient par ne pas filtrer pareil, et l'une dirait « aucun
+    justificatif » au-dessus de l'autre qui en montre un.
+  - **Une pièce sans échéance précisée s'affiche aussi** à l'étape 4 : la
+    cacher ferait confirmer un versement sans avoir vu la seule pièce jointe.
+  - **Le fil ne dit plus « transfert » pour une carte** : « il annonce un
+    paiement par carte », « Paiement vérifié — versement reçu ». Vu à l'écran,
+    sur un dossier carte : le fil affichait « Transfert vérifié » au-dessus
+    d'une confirmation de carte.
 - ⚠️ **`verifier-recus.ts` éprouve désormais ce chemin-là aussi**, par la route
   HTTP avec un vrai cookie d'équipe — c'est là que vit la garde d'accès, et
   l'API locale la contournerait avec `overrideAccess`. Avec son témoin : un

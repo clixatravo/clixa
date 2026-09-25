@@ -25,7 +25,7 @@ import { useDocumentInfo } from "@payloadcms/ui";
  * lien va droit à `api/recu/[id]`, qui vérifie la session d'équipe et relaie le
  * fichier depuis le magasin privé.
  */
-interface Recu {
+export interface Recu {
   id: number | string;
   nomOriginal?: string | null;
   typeFichier?: string | null;
@@ -34,16 +34,27 @@ interface Recu {
   createdAt?: string | null;
 }
 
-const POIDS = (o?: number | null) =>
+export const POIDS = (o?: number | null) =>
   typeof o === "number" ? `${Math.max(1, Math.round(o / 1024))} Ko` : "";
 
-const JOUR = (v?: string | null) =>
+export const JOUR = (v?: string | null) =>
   v
     ? new Date(v).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
     : "";
 
-export function Justificatifs() {
-  const { id } = useDocumentInfo();
+/**
+ * La lecture des justificatifs d'un dossier, pour les deux endroits qui les
+ * montrent : ce bloc, sous les échéances, et l'étape « Versement reçu » du fil
+ * en tête de fiche.
+ *
+ * ⚠️ Une seule lecture pour les deux. Deux requêtes écrites chacune de son côté
+ * finiraient par ne pas filtrer pareil — et l'une dirait « aucun justificatif »
+ * au-dessus de l'autre qui en montre un.
+ */
+export function useJustificatifs(id: number | string | undefined): {
+  recus: Recu[] | undefined;
+  enPanne: boolean;
+} {
   const [recus, setRecus] = React.useState<Recu[] | undefined>(undefined);
   const [enPanne, setEnPanne] = React.useState(false);
 
@@ -66,6 +77,13 @@ export function Justificatifs() {
       vivant = false;
     };
   }, [id]);
+
+  return { recus, enPanne };
+}
+
+export function Justificatifs() {
+  const { id } = useDocumentInfo();
+  const { recus, enPanne } = useJustificatifs(id);
 
   if (!id) return null;
 

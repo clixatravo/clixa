@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { dernierSuivi, type Echange, type NatureEchange } from "@/lib/suivi";
 import { libelleDuCompte, nomDeLAuteur } from "@/lib/equipe";
 import { JOURS_DE_BATTEMENT } from "@/lib/places";
+import { JOUR as JOUR_LONG, POIDS, useJustificatifs, type Recu } from "./Justificatifs";
 
 /**
  * Les trois temps du dossier, dans l'ordre, sur une seule ligne.
@@ -313,12 +314,74 @@ function BoutonAgir({
   );
 }
 
+/**
+ * Les justificatifs de l'échéance qu'on s'apprête à confirmer, juste au-dessus
+ * du bouton « Versement reçu ».
+ *
+ * ⚠️ **C'est ici qu'on décide, donc c'est ici qu'il faut voir la pièce**
+ * (demandé par la direction le 25 septembre 2026). Le lien vivait en bas de la
+ * fiche, loin du fil des étapes : on vérifiait le contrat, on passait le
+ * participant au paiement, puis il fallait descendre chercher sa confirmation
+ * avant de remonter cliquer. Le bloc du bas reste — il liste toutes les pièces
+ * du dossier ; celui-ci ne montre que celles de l'échéance en cours.
+ *
+ * ⚠️ Une pièce sans échéance précisée s'affiche aussi : la cacher parce qu'elle
+ * n'a pas de numéro ferait confirmer un versement sans avoir vu la seule pièce
+ * jointe.
+ */
+function PiecesDeLEcheance({
+  recus,
+  enPanne,
+  rang,
+}: {
+  recus: Recu[] | undefined;
+  enPanne: boolean;
+  rang: number;
+}) {
+  const discret = { color: "var(--theme-elevation-500)", fontSize: "0.8rem", margin: "0 0 10px" };
+
+  if (enPanne) {
+    return (
+      <p className="clixa-justificatifs__panne" style={{ margin: "0 0 10px" }}>
+        Impossible de lire les justificatifs. Rechargez la fiche avant de confirmer le versement.
+      </p>
+    );
+  }
+  if (recus === undefined) return <p style={discret}>Lecture des justificatifs…</p>;
+
+  const pieces = recus.filter((r) => !r.echeance || Number(r.echeance) === rang);
+  if (pieces.length === 0) {
+    return <p style={discret}>Aucun justificatif joint pour cette échéance.</p>;
+  }
+
+  return (
+    <ul className="clixa-justificatifs__liste" style={{ margin: "0 0 12px" }}>
+      {pieces.map((r) => (
+        <li key={r.id} className="clixa-justificatifs__ligne">
+          <a
+            className="btn btn--style-secondary btn--size-small clixa-justificatifs__lien"
+            href={`/api/recu/${r.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ouvrir le justificatif ↗
+          </a>
+          <span className="clixa-justificatifs__detail">
+            {[r.nomOriginal, POIDS(r.taille), JOUR_LONG(r.createdAt)].filter(Boolean).join(" · ")}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function EtapesContrat() {
   const { id } = useDocumentInfo();
   const { submit } = useForm();
   const signe = useField<string>({ path: "contratSigneLe" });
   const verifie = useField<string>({ path: "contratVerifieLe" });
   const envoye = useField<string>({ path: "coordonneesEnvoyeesLe" });
+  const { recus, enPanne } = useJustificatifs(id);
   const reference = useField<string>({ path: "reference" });
   /*
     ⚠️ Lu depuis le formulaire, pas recalculé : c'est cette date que la route
@@ -382,13 +445,23 @@ export function EtapesContrat() {
     échéancier sera vide.
   */
   const lignesDe = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
-  const echeances = lignesDe<{ montant?: number; statut?: string; regleLe?: string | null }>(
-    donnees.echeances,
-  );
+  const echeances = lignesDe<{
+    montant?: number;
+    statut?: string;
+    regleLe?: string | null;
+    moyen?: string | null;
+  }>(donnees.echeances);
   const echanges = lignesDe<Echange>(donnees.echanges);
   const rangDue = echeances.findIndex((e) => e?.statut !== "regle");
   const due = rangDue >= 0 ? echeances[rangDue] : undefined;
   const annonce = due?.statut === "annonce";
+  /*
+    ⚠️ Un paiement par carte ne se dit pas « transfert ». Le participant qui a
+    payé par lien bancaire l'annonce depuis son dossier depuis le 25 septembre
+    2026 ; le fil disait encore « il annonce un transfert » au-dessus de sa
+    confirmation de carte.
+  */
+  const annonceCarte = annonce && due?.moyen === "carte";
   const toutRegle = echeances.length > 0 && rangDue < 0;
 
   if (!id) return null;
@@ -622,7 +695,9 @@ export function EtapesContrat() {
               toutRegle
                 ? "Sa place est acquise, et son attestation devient officielle"
                 : annonce
-                  ? "Il annonce un transfert : à vérifier sur le compte, puis à confirmer"
+                  ? annonceCarte
+                    ? "Il annonce un paiement par carte : à vérifier sur le compte, puis à confirmer"
+                    : "Il annonce un transfert : à vérifier sur le compte, puis à confirmer"
                   : aEnvoye
                     ? "À cliquer quand l'argent est sur le compte"
                     : undefined
@@ -699,6 +774,7 @@ export function EtapesContrat() {
 
           {aEnvoye && !toutRegle && (
             <>
+              <PiecesDeLEcheance recus={recus} enPanne={enPanne} rang={rangDue + 1} />
               <button
                 type="button"
                 className="btn btn--style-primary btn--size-small"
@@ -706,7 +782,9 @@ export function EtapesContrat() {
                 onClick={encaisser}
               >
                 {annonce
-                  ? "Transfert vérifié — versement reçu"
+                  ? annonceCarte
+                    ? "Paiement vérifié — versement reçu"
+                    : "Transfert vérifié — versement reçu"
                   : due
                     ? `Versement de ${due.montant ?? 0} € reçu`
                     : "Versement reçu"}
