@@ -127,14 +127,17 @@ export interface Session {
    * autre à Casablanca ne lisent pas la même heure.
    */
   fuseau?: string;
+  /** Session clôturée / complète (marketing ou jauge atteinte). */
+  complete?: boolean;
 }
 
 export function placesRestantes(s: Session): number {
+  if (s.complete) return 0;
   return Math.max(0, s.capacite - s.placesReservees);
 }
 
 export function estComplete(s: Session): boolean {
-  return placesRestantes(s) === 0;
+  return Boolean(s.complete) || placesRestantes(s) === 0;
 }
 
 /* ────────────────────────────  COMMERCE  ──────────────────────────── */

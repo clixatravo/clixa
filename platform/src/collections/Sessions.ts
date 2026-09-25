@@ -32,7 +32,7 @@ export const Sessions: CollectionConfig = {
       « Remplissage » dit ce qui bouge, et c'est depuis cet écran qu'on décide
       d'ouvrir une seconde cohorte.
     */
-    defaultColumns: ["reference", "programme", "mode", "debut", "remplissage"],
+    defaultColumns: ["reference", "programme", "mode", "debut", "complete", "remplissage"],
     group: "Catalogue",
     description: "Les dates ouvertes à la réservation. Une ligne par ville et par période.",
   },
@@ -417,6 +417,21 @@ export const Sessions: CollectionConfig = {
       admin: {
         description:
           "Laisser vide dans le cas normal. Rempli, « Places au total » suit les inscriptions pour laisser toujours ce nombre de places libres : la cohorte ne se ferme plus et la fiche annonce ce nombre. Les places annoncées existent réellement — le compteur reste stable parce qu'on ouvre, pas parce qu'on l'arrête. Saisir « Places au total » à la main pendant que cette case est remplie ne tient pas : la prochaine inscription le recalcule.",
+      },
+    },
+
+    /**
+     * Session clôturée / complète (effet marketing de rareté ou cohorte remplie).
+     * Règle l'affichage sur « Complet » et ferme les inscriptions au public.
+     */
+    {
+      name: "complete",
+      type: "checkbox",
+      label: "Session complète (fermer les inscriptions)",
+      defaultValue: false,
+      admin: {
+        description:
+          "Cocher pour marquer la session comme complète. Affiche le badge Complet sur le site et oriente les visiteurs vers la liste d'attente.",
       },
     },
 

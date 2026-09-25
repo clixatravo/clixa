@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Présentation E-mail Exécutif DAF — CLIXA Institute</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Custom Scrollbar for mockups */
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #070b16;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c9a24c;
+      border-radius: 4px;
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #f3efe4 20%, #c9a24c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#050811] text-[#f3efe4] font-sans antialiased min-h-screen p-4 md:p-8">
+
+  <!-- Header Présentation -->
+  <header class="max-w-6xl mx-auto mb-8 border-b border-[#c9a24c]/30 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c9a24c]/10 border border-[#c9a24c]/40 text-[#e9cd84] text-xs font-mono font-bold uppercase tracking-wider mb-2">
+        ✦ CLIXA EXECUTIVE MARKETING · 2026
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+        Modèle d'E-mail Exécutif : <span class="gold-gradient-text">Directeur Financier (DAF)</span>
+      </h1>
+      <p class="text-sm text-slate-400 mt-1">
+        Conçu d'après l'architecture visuelle premium (Puces rondes, cartes modulaires, tarification claire et 3 étapes d'admission).
+      </p>
+    </div>
+
+    <!-- Actions Rapides -->
+    <div class="flex items-center gap-3">
+      <button onclick="copierCodeHtml()" class="inline-flex items-center gap-2 bg-[#c9a24c] hover:bg-[#b8913d] text-[#070b16] font-bold text-sm px-4 py-2.5 rounded-lg shadow-lg shadow-[#c9a24c]/20 transition-all cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+        Copier le HTML
+      </button>
+      <a href="email_daf_clixa.html" download class="inline-flex items-center gap-2 bg-[#111a33] hover:bg-[#182447] border border-[#c9a24c]/40 text-[#e9cd84] font-semibold text-sm px-4 py-2.5 rounded-lg transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Télécharger .html
+      </a>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-[#2fa37d] text-white px-5 py-3 rounded-lg shadow-2xl font-semibold text-sm flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span>Code HTML copié dans le presse-papiers !</span>
+  </div>
+
+  <!-- Barre de sélection des Vues -->
+  <div class="max-w-6xl mx-auto mb-6 flex items-center justify-between bg-[#0a0f1d] p-2 rounded-xl border border-slate-800">
+    <div class="flex items-center gap-2">
+      <button id="btn-mobile" onclick="changerVue('mobile')" class="px-4 py-2 rounded-lg text-sm font-bold bg-[#c9a24c] text-[#070b16] transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+        Vue Mobile (iPhone)
+      </button>
+      <button id="btn-desktop" onclick="changerVue('desktop')" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        Vue Ordinateur (600px)
+      </button>
+      <button id="btn-copywriting" onclick="changerVue('copywriting')" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        Objets d'E-mail &amp; Variante Texte
+      </button>
+    </div>
+    <div class="text-xs text-slate-500 font-mono hidden md:block">
+      Rendu fidèle 100% responsive
+    </div>
+  </div>
+
+  <!-- Contenu Principal -->
+  <main class="max-w-6xl mx-auto">
+    
+    <!-- 1. VUE MOBILE (IPHONE MOCKUP) -->
+    <div id="vue-mobile" class="flex flex-col items-center justify-center py-4">
+      <div class="relative w-[385px] h-[780px] bg-[#1a1f2c] rounded-[48px] p-3 shadow-[0_25px_60px_rgba(0,0,0,0.9)] border-4 border-[#2d3748]">
+        <!-- Dynamic Island / Speaker -->
+        <div class="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-full z-20 flex items-center justify-center">
+          <div class="w-3 h-3 rounded-full bg-[#111] mr-3"></div>
+          <div class="w-2 h-2 rounded-full bg-[#0a2540]"></div>
+        </div>
+        <!-- Status Bar -->
+        <div class="w-full pt-3 px-6 pb-2 flex justify-between items-center text-[11px] font-semibold text-white/80 z-10">
+          <span>14:30</span>
+          <div class="flex items-center gap-1.5">
+            <span>5G</span>
+            <div class="w-5 h-2.5 border border-white/60 rounded-sm p-0.5"><div class="h-full bg-emerald-400 rounded-2xs w-3/4"></div></div>
+          </div>
+        </div>
+        <!-- Screen Content (Iframe) -->
+        <div class="w-full h-[695px] bg-[#070b16] rounded-[36px] overflow-hidden custom-scroll relative">
+          <iframe id="iframe-mobile" src="email_daf_preview.html" class="w-full h-full border-0"></iframe>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mt-4 text-center">
+        💡 L'e-mail s'adapte automatiquement sur smartphone : boutons larges pleine largeur, cartes empilées et typographie agrandie pour un confort de lecture optimal.
+      </p>
+    </div>
+
+    <!-- 2. VUE DESKTOP -->
+    <div id="vue-desktop" class="hidden py-4">
+      <div class="max-w-[700px] mx-auto bg-[#0a0f1d] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+        <!-- Client Mail Header Bar -->
+        <div class="bg-[#111728] px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+            <span class="text-xs text-slate-400 font-mono ml-3">Boîte de réception · Message Exécutif</span>
+          </div>
+          <div class="text-xs text-slate-400 font-mono">
+            Expéditeur : CLIXA Admissions &lt;contact@clixa.africa&gt;
+          </div>
+        </div>
+        <!-- Email Body Frame -->
+        <div class="p-6 bg-[#070b16] overflow-x-auto flex justify-center">
+          <iframe id="iframe-desktop" src="email_daf_preview.html" class="w-[620px] h-[850px] border-0 rounded-xl shadow-lg"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. OBJETS D'EMAILS & TEXTE BRUT B2B -->
+    <div id="vue-copywriting" class="hidden py-4 space-y-8">
+      
+      <!-- Objets recommandés -->
+      <div class="bg-[#0b1122] border border-[#c9a24c]/30 rounded-xl p-6">
+        <h3 class="text-lg font-bold text-[#e9cd84] mb-3 flex items-center gap-2">
+          🎯 Objets d'E-mail à Fort Taux d'Ouverture (+38% à 45%)
+        </h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Testez ces formulations selon votre audience (B2B direct, anciens prospects ou candidatures spontanées).
+        </p>
+        <div class="space-y-3">
+          <div class="p-3.5 bg-[#070b16] border border-slate-800 rounded-lg flex items-center justify-between">
+            <span class="text-sm font-medium text-slate-200">
+              <strong class="text-[#c9a24c]">[Convocation]</strong> Votre passage au poste de Directeur Administratif &amp; Financier — Promotion 2026
+            </span>
+            <button onclick="copierTexte('[Convocation] Votre passage au poste de Directeur Administratif & Financier — Promotion 2026')" class="text-xs font-bold text-[#c9a24c] hover:underline cursor-pointer">Copier</button>
+          </div>
+          <div class="p-3.5 bg-[#070b16] border border-slate-800 rounded-lg flex items-center justify-between">
+            <span class="text-sm font-medium text-slate-200">
+              Pourquoi 85% des nominations de DAF se jouent sur la posture CODIR ?
+            </span>
+            <button onclick="copierTexte('Pourquoi 85% des nominations de DAF se jouent sur la posture CODIR ?')" class="text-xs font-bold text-[#c9a24c] hover:underline cursor-pointer">Copier</button>
+          </div>
+          <div class="p-3.5 bg-[#070b16] border border-slate-800 rounded-lg flex items-center justify-between">
+            <span class="text-sm font-medium text-slate-200">
+              Trésorerie 13 semaines, négociation bancaire et posture DAF : Votre invitation CLIXA
+            </span>
+            <button onclick="copierTexte('Trésorerie 13 semaines, négociation bancaire et posture DAF : Votre invitation CLIXA')" class="text-xs font-bold text-[#c9a24c] hover:underline cursor-pointer">Copier</button>
+          </div>
+          <div class="p-3.5 bg-[#070b16] border border-slate-800 rounded-lg flex items-center justify-between">
+            <span class="text-sm font-medium text-slate-200">
+              32 heures pour franchir le cap de DAF : Brochure officielle &amp; calendrier
+            </span>
+            <button onclick="copierTexte('32 heures pour franchir le cap de DAF : Brochure officielle & calendrier')" class="text-xs font-bold text-[#c9a24c] hover:underline cursor-pointer">Copier</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Version Texte Brut B2B -->
+      <div class="bg-[#0b1122] border border-slate-800 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            ✉️ Variante E-mail Texte Brut (Prospection Personnalisée 1-to-1)
+          </h3>
+          <button onclick="copierTexte(document.getElementById('raw-text').innerText)" class="text-xs font-bold text-[#c9a24c] hover:underline cursor-pointer">Copier le Texte</button>
+        </div>
+        <p class="text-xs text-slate-400 mb-4">
+          Parfait pour envoyer depuis votre messagerie personnelle (Gmail, Outlook) ou en message direct LinkedIn à un Directeur Général ou Responsable Financier.
+        </p>
+        <pre id="raw-text" class="bg-[#070b16] p-5 rounded-lg border border-slate-800 text-xs text-slate-300 font-mono leading-relaxed whitespace-pre-wrap">Bonjour [Prénom],
+
+Si vous pilotez aujourd'hui les finances ou la comptabilité de votre entreprise, vous savez que la frontière entre un bon Responsable Financier et un DAF d'envergure réside dans trois compétences clés :
+
+1. La capacité à modéliser le cash à 13 semaines pour anticiper les tensions de liquidité.
+2. L'autorité dans la négociation bancaire et le respect des ratios (DSCR, covenants).
+3. La posture stratégique au Comité de Direction pour éclairer les arbitrages du Directeur Général.
+
+CLIXA Institute ouvre les inscriptions pour sa promotion exécutive « Directeur Administratif et Financier (DAF) » :
+- 32 heures interactives en direct (8 séances intensives du soir, 100% en ligne).
+- 5 livrables opérationnels inclus : Template de trésorerie 13 semaines, Budget driver-based, Management Pack CODIR.
+- Tarifs officiels : 423 € comptant ou facilités en 3 mensualités (170 € puis 2x 150 €).
+
+La promotion est volontairement limitée à 20 participants pour préserver la qualité des échanges.
+
+Consultez le programme détaillé ou téléchargez le syllabus officiel ici :
+https://www.clixa.africa/programmes/directeur-administratif-et-financier
+
+Seriez-vous disponible pour un échange rapide de 10 minutes cette semaine ?
+
+Bien cordialement,
+
+Direction des Admissions & Relations Entreprises
+CLIXA Institute — Executive Education
+WhatsApp : +212 6 60 00 00 00
+Courriel : contact@clixa.africa</pre>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function changerVue(vue) {
+      document.getElementById('vue-mobile').classList.add('hidden');
+      document.getElementById('vue-desktop').classList.add('hidden');
+      document.getElementById('vue-copywriting').classList.add('hidden');
+
+      ['btn-mobile', 'btn-desktop', 'btn-copywriting'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.remove('bg-[#c9a24c]', 'text-[#070b16]');
+        btn.classList.add('text-slate-400');
+      });
+
+      document.getElementById('vue-' + vue).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-' + vue);
+      activeBtn.classList.remove('text-slate-400');
+      activeBtn.classList.add('bg-[#c9a24c]', 'text-[#070b16]');
+    }
+
+    async function copierCodeHtml() {
+      try {
+        const response = await fetch('email_daf_clixa.html');
+        const text = await response.text();
+        await navigator.clipboard.writeText(text);
+        afficherToast("Code HTML complet copié dans le presse-papiers !");
+      } catch (e) {
+        afficherToast("Erreur lors de la copie.");
+      }
+    }
+
+    async function copierTexte(texte) {
+      await navigator.clipboard.writeText(texte);
+      afficherToast("Copié dans le presse-papiers !");
+    }
+
+    function afficherToast(message) {
+      const toast = document.getElementById('toast');
+      toast.querySelector('span').innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

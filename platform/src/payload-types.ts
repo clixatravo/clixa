@@ -361,6 +361,10 @@ export interface Session {
    */
   placesLibresTenues?: number | null;
   /**
+   * Cocher pour marquer la session comme complète. Affiche le badge Complet sur le site et oriente les visiteurs vers la liste d'attente.
+   */
+  complete?: boolean | null;
+  /**
    * En unité entière — saisir 1250 pour 1 250 €. La conversion en centimes se fait côté application.
    */
   prix: number;
@@ -1296,6 +1300,7 @@ export interface SessionsSelect<T extends boolean = true> {
   capacite?: T;
   placesReservees?: T;
   placesLibresTenues?: T;
+  complete?: T;
   prix?: T;
   devise?: T;
   updatedAt?: T;

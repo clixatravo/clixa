@@ -129,6 +129,7 @@ export function versSession(d: SessionPayload): Session {
     prixCentimes: Math.round((d.prix ?? 0) * 100),
     devise: d.devise,
     ...(d.fuseau ? { fuseau: d.fuseau } : {}),
+    complete: Boolean(d.complete),
   };
 }
 

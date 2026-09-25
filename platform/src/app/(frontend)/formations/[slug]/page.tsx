@@ -323,22 +323,25 @@ export default async function FicheFormation({ params }: Props) {
                 })}
               </div>
 
-              {prochaine && (
-                <div className="border-line/60 bg-ink/40 rounded-clixa mb-6 border p-4">
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="mono-label text-gold text-[0.58rem] tracking-[0.14em]">
-                      Prochaine rentrée
-                    </span>
-                    <PlacesBadge restantes={placesRestantes(prochaine)} />
+              {(() => {
+                const sessionAffichee = prochaine ?? sessions[0];
+                return sessionAffichee ? (
+                  <div className="border-line/60 bg-ink/40 rounded-clixa mb-6 border p-4">
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <span className="mono-label text-gold text-[0.58rem] tracking-[0.14em]">
+                        Prochaine rentrée
+                      </span>
+                      <PlacesBadge restantes={placesRestantes(sessionAffichee)} />
+                    </div>
+                    <div className="text-ivory text-[0.95rem] font-semibold">
+                      {formatPeriode(sessionAffichee.debut, sessionAffichee.fin)}
+                    </div>
+                    <div className="text-ivory-dim mt-1 font-mono text-[0.76rem]">
+                      {lieuSession(sessionAffichee)}
+                    </div>
                   </div>
-                  <div className="text-ivory text-[0.95rem] font-semibold">
-                    {formatPeriode(prochaine.debut, prochaine.fin)}
-                  </div>
-                  <div className="text-ivory-dim mt-1 font-mono text-[0.76rem]">
-                    {lieuSession(prochaine)}
-                  </div>
-                </div>
-              )}
+                ) : null;
+              })()}
 
               <div className="mb-6 flex flex-col gap-3">
                 {/*

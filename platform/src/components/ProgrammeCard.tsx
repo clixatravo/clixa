@@ -6,6 +6,7 @@ import {
   formatDateCourte,
   formatPrix,
   getProchaineSession,
+  getSessions,
   getSpecialisation,
   getTarifs,
   libelleMode,
@@ -26,7 +27,9 @@ import {
  */
 export async function ProgrammeCard({ programme }: { programme: Programme }) {
   const spec = await getSpecialisation(programme.specialisation);
+  const sessions = await getSessions(programme.slug);
   const prochaine = await getProchaineSession(programme.slug);
+  const sessionAffichee = prochaine ?? sessions[0];
   const modes = await modalites(programme.slug);
 
   /*
@@ -37,7 +40,7 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
   */
   const tarifs = await getTarifs();
   const prix = prixAffiche(tarifs);
-  const restantes = prochaine ? placesRestantes(prochaine) : undefined;
+  const restantes = sessionAffichee ? placesRestantes(sessionAffichee) : undefined;
 
   return (
     <Link
@@ -104,10 +107,10 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
           </div>
 
           <div className="flex flex-col items-end gap-1.5 text-right">
-            {prochaine ? (
+            {sessionAffichee ? (
               <>
                 <strong className="text-ivory text-[0.8rem] font-medium">
-                  {formatDateCourte(prochaine.debut)}
+                  {formatDateCourte(sessionAffichee.debut)}
                 </strong>
                 {restantes !== undefined && <PlacesBadge restantes={restantes} />}
               </>

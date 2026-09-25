@@ -192,9 +192,10 @@ export async function POST(request: Request) {
     : docs[0];
   if (!session) echec("session");
 
-  // La session peut s'être remplie pendant que le formulaire était ouvert.
+  // La session peut s'être remplie ou clôturée pendant que le formulaire était ouvert.
+  const estCloturee = Boolean(session?.complete);
   const restantes = (session!.capacite ?? 0) - (session!.placesReservees ?? 0);
-  if (restantes <= 0) echec("complet");
+  if (estCloturee || restantes <= 0) echec("complet");
 
   const tarifs = await payload.findGlobal({ slug: "tarifs", locale: "fr", overrideAccess: true });
   const barème = (tarifs.plans ?? []).find((p) => p.code === plan);
