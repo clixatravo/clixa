@@ -107,6 +107,38 @@ const nextConfig: NextConfig = {
   */
   experimental: { inlineCss: true },
   redirects: redirections,
+  /*
+    ── Deux en-têtes de durcissement, sur toutes les pages ────────────────────
+    Trouvés par un audit des portes le 25 septembre 2026 : aucune protection
+    anti-cadrage ni anti-sniff n'était servie.
+
+    ⚠️ `X-Frame-Options: SAMEORIGIN` ferme le clickjacking. Sans lui, une page
+    tierce plaçait `/inscription/[reference]` — la page où le contrat se signe —
+    ou `/admin` dans une `<iframe>` invisible, et piégeait un clic sur « Signer »
+    ou sur une action d'équipe. Il ne touche pas les vidéos YouTube/Vimeo/
+    Instagram de `/temoignages` : là c'est **nous** qui encadrons les autres, ce
+    que cet en-tête ne régit pas. Il ne concerne que le cadrage de *nos* pages
+    par un tiers.
+
+    ⚠️ `X-Content-Type-Options: nosniff` empêche le navigateur de deviner le
+    type d'un fichier servi : un dépôt public interprété comme du HTML
+    s'exécuterait avec l'origine du site. Les dépôts sont déjà bornés aux trois
+    formats matriciels (le SVG est refusé), mais l'en-tête ferme la classe
+    entière plutôt qu'un cas.
+
+    Posés ici, et non dans `vercel.json` : le fichier de la plateforme ne
+    s'applique pas en développement, et une garde qu'on ne peut pas éprouver
+    localement se découvre absente en production — la leçon des redirections.
+  */
+  headers: async () => [
+    {
+      source: "/:chemin*",
+      headers: [
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+      ],
+    },
+  ],
 };
 
 export default withPayload(nextConfig);
