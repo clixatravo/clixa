@@ -2510,21 +2510,22 @@ d'endroit pour vérifier le reçu ». C'était exact.
   exiger la pièce ferait perdre le numéro de transfert, qui est ce qui permet de
   retrouver l'argent.
 - **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne.
-- ⚠️ **Il se lit à côté de « Vérifié le », pas six blocs plus bas** (demandé
-  par la direction le 25 septembre 2026). Il était posé après les notes
-  internes : pour marquer une échéance réglée, il fallait descendre voir la
-  pièce puis remonter cocher — l'aller-retour que ce bloc existe pour épargner.
-  Il est maintenant le dernier champ du bloc « Le règlement », juste sous le
-  tableau des échéances. Le courriel « Transfert annoncé » dit où le trouver.
-- ⚠️ **Et surtout dans le fil des étapes, au-dessus de « Versement reçu »**
-  (le même jour — le premier déplacement n'était pas ce que la direction
-  demandait). C'est là qu'on vérifie le contrat, qu'on passe le participant au
-  paiement, puis qu'on confirme l'argent : la pièce doit se lire à côté du
-  bouton qu'elle décide. L'étape 4 montre les pièces de l'échéance en cours ;
-  le bloc sous les échéances garde la liste entière.
-  - **Une seule lecture pour les deux** (`useJustificatifs`) : deux requêtes
-    finiraient par ne pas filtrer pareil, et l'une dirait « aucun
-    justificatif » au-dessus de l'autre qui en montre un.
+- ⚠️ **Il se lit dans le fil des étapes, au-dessus de « Versement reçu », et
+  nulle part ailleurs** (demandé par la direction le 25 septembre 2026). C'est
+  là qu'on vérifie le contrat, qu'on passe le participant au paiement, puis
+  qu'on confirme l'argent : la pièce doit se lire à côté du bouton qu'elle
+  décide. Il était posé après les notes internes, six blocs plus bas — il
+  fallait descendre voir la pièce puis remonter cliquer.
+  - ⚠️ **Deux faux départs le même jour.** Le premier l'a monté sous les
+    échéances, ce que la direction ne demandait pas ; le second l'a ajouté au
+    fil **en gardant** le bloc du bas, « pour la liste entière » — et la
+    direction a vu deux boutons « Ouvrir le justificatif » sur la même fiche :
+    « rah b9at m3aweda ». Le bloc du bas est retiré (champ et composant, et
+    `importMap.js` régénéré) ; celui du fil liste **toutes** les pièces avec
+    leur échéance, et reste affiché une fois tout réglé.
+  - **La lecture vit dans `useJustificatifs`** (`Justificatifs.tsx`, qui ne
+    porte plus de composant) : c'est elle qui distingue « aucune pièce » de
+    « je n'ai pas pu regarder ».
   - **Une pièce sans échéance précisée s'affiche aussi** à l'étape 4 : la
     cacher ferait confirmer un versement sans avoir vu la seule pièce jointe.
   - **Le fil ne dit plus « transfert » pour une carte** : « il annonce un

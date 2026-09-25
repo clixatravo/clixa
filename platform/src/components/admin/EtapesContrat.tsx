@@ -315,28 +315,34 @@ function BoutonAgir({
 }
 
 /**
- * Les justificatifs de l'échéance qu'on s'apprête à confirmer, juste au-dessus
- * du bouton « Versement reçu ».
+ * Les justificatifs du dossier, dans le fil des étapes — le seul endroit de la
+ * fiche où ils paraissent.
  *
  * ⚠️ **C'est ici qu'on décide, donc c'est ici qu'il faut voir la pièce**
  * (demandé par la direction le 25 septembre 2026). Le lien vivait en bas de la
- * fiche, loin du fil des étapes : on vérifiait le contrat, on passait le
- * participant au paiement, puis il fallait descendre chercher sa confirmation
- * avant de remonter cliquer. Le bloc du bas reste — il liste toutes les pièces
- * du dossier ; celui-ci ne montre que celles de l'échéance en cours.
+ * fiche, loin du fil : on vérifiait le contrat, on passait le participant au
+ * paiement, puis il fallait descendre chercher sa confirmation avant de
+ * remonter cliquer.
+ *
+ * ⚠️ **Et il n'y en a plus qu'un.** Le bloc du bas a d'abord été gardé pour la
+ * liste entière ; la direction l'a lu comme un doublon, et c'en était un — deux
+ * boutons « Ouvrir le justificatif » sur la même fiche. Celui-ci liste donc
+ * **toutes** les pièces, avec leur échéance : les versements déjà confirmés
+ * gardent la leur, et le bloc reste là une fois tout réglé.
  *
  * ⚠️ Une pièce sans échéance précisée s'affiche aussi : la cacher parce qu'elle
  * n'a pas de numéro ferait confirmer un versement sans avoir vu la seule pièce
  * jointe.
  */
-function PiecesDeLEcheance({
+function PiecesDuDossier({
   recus,
   enPanne,
   rang,
 }: {
   recus: Recu[] | undefined;
   enPanne: boolean;
-  rang: number;
+  /** L'échéance qu'on s'apprête à confirmer, s'il y en a une. */
+  rang?: number;
 }) {
   const discret = { color: "var(--theme-elevation-500)", fontSize: "0.8rem", margin: "0 0 10px" };
 
@@ -349,29 +355,39 @@ function PiecesDeLEcheance({
   }
   if (recus === undefined) return <p style={discret}>Lecture des justificatifs…</p>;
 
-  const pieces = recus.filter((r) => !r.echeance || Number(r.echeance) === rang);
-  if (pieces.length === 0) {
-    return <p style={discret}>Aucun justificatif joint pour cette échéance.</p>;
-  }
+  const pourLEcheance =
+    rang === undefined || recus.some((r) => !r.echeance || Number(r.echeance) === rang);
 
   return (
-    <ul className="clixa-justificatifs__liste" style={{ margin: "0 0 12px" }}>
-      {pieces.map((r) => (
-        <li key={r.id} className="clixa-justificatifs__ligne">
-          <a
-            className="btn btn--style-secondary btn--size-small clixa-justificatifs__lien"
-            href={`/api/recu/${r.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ouvrir le justificatif ↗
-          </a>
-          <span className="clixa-justificatifs__detail">
-            {[r.nomOriginal, POIDS(r.taille), JOUR_LONG(r.createdAt)].filter(Boolean).join(" · ")}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <>
+      {recus.length > 0 && (
+        <ul className="clixa-justificatifs__liste" style={{ margin: "0 0 12px" }}>
+          {recus.map((r) => (
+            <li key={r.id} className="clixa-justificatifs__ligne">
+              <a
+                className="btn btn--style-secondary btn--size-small clixa-justificatifs__lien"
+                href={`/api/recu/${r.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ouvrir le justificatif ↗
+              </a>
+              <span className="clixa-justificatifs__quoi">
+                {r.echeance ? `Échéance ${r.echeance}` : "Échéance non précisée"}
+              </span>
+              <span className="clixa-justificatifs__detail">
+                {[r.nomOriginal, POIDS(r.taille), JOUR_LONG(r.createdAt)]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!pourLEcheance && (
+        <p style={discret}>Aucun justificatif joint pour l&apos;échéance {rang}.</p>
+      )}
+    </>
   );
 }
 
@@ -774,7 +790,7 @@ export function EtapesContrat() {
 
           {aEnvoye && !toutRegle && (
             <>
-              <PiecesDeLEcheance recus={recus} enPanne={enPanne} rang={rangDue + 1} />
+              <PiecesDuDossier recus={recus} enPanne={enPanne} rang={rangDue + 1} />
               <button
                 type="button"
                 className="btn btn--style-primary btn--size-small"
@@ -805,9 +821,12 @@ export function EtapesContrat() {
           )}
 
           {toutRegle && (
-            <p style={{ color: "var(--theme-elevation-500)", margin: 0, fontSize: "0.85rem" }}>
-              Tout est réglé — il ne reste que la date de démarrage.
-            </p>
+            <>
+              <PiecesDuDossier recus={recus} enPanne={enPanne} />
+              <p style={{ color: "var(--theme-elevation-500)", margin: 0, fontSize: "0.85rem" }}>
+                Tout est réglé — il ne reste que la date de démarrage.
+              </p>
+            </>
           )}
         </div>
 

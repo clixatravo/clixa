@@ -984,7 +984,7 @@ export async function courrielTransfert(
     </table>
     ${
       d.avecRecu
-        ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, section « Justificatifs de versement », juste sous les échéances. Le fichier est privé : il ne se lit que connecté au back-office.</p>`
+        ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, dans « Où en est ce dossier », au-dessus du bouton « Versement reçu ». Le fichier est privé : il ne se lit que connecté au back-office.</p>`
         : `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 14px; color: #cbd5e1;">${sansPiece}</p>`
     }
     <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
@@ -1004,7 +1004,7 @@ export async function courrielTransfert(
       "",
       "L'échéance est passée en « annoncé ».",
       d.avecRecu
-        ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier, sous les échéances."
+        ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier, au-dessus du bouton « Versement reçu »."
         : sansPiece,
     ].join("\n"),
     html: gabaritHtmlEmail({

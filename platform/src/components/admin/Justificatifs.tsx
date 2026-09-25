@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useDocumentInfo } from "@payloadcms/ui";
 
 /**
  * Les justificatifs de versement, depuis le dossier.
@@ -43,13 +42,11 @@ export const JOUR = (v?: string | null) =>
     : "";
 
 /**
- * La lecture des justificatifs d'un dossier, pour les deux endroits qui les
- * montrent : ce bloc, sous les échéances, et l'étape « Versement reçu » du fil
- * en tête de fiche.
- *
- * ⚠️ Une seule lecture pour les deux. Deux requêtes écrites chacune de son côté
- * finiraient par ne pas filtrer pareil — et l'une dirait « aucun justificatif »
- * au-dessus de l'autre qui en montre un.
+ * La lecture des justificatifs d'un dossier, pour le fil des étapes
+ * (`EtapesContrat.tsx`), seul endroit de la fiche qui les montre depuis le
+ * 25 septembre 2026. Le bloc qui vivait sous les échéances a été retiré : deux
+ * boutons « Ouvrir le justificatif » sur la même fiche se lisaient comme un
+ * doublon, et c'en était un.
  */
 export function useJustificatifs(id: number | string | undefined): {
   recus: Recu[] | undefined;
@@ -79,56 +76,4 @@ export function useJustificatifs(id: number | string | undefined): {
   }, [id]);
 
   return { recus, enPanne };
-}
-
-export function Justificatifs() {
-  const { id } = useDocumentInfo();
-  const { recus, enPanne } = useJustificatifs(id);
-
-  if (!id) return null;
-
-  return (
-    <div className="field-type clixa-justificatifs">
-      <span className="clixa-justificatifs__titre">Justificatifs de versement</span>
-
-      {enPanne && (
-        <p className="clixa-justificatifs__panne">
-          Impossible de lire les justificatifs pour l&apos;instant. Rechargez la fiche avant de
-          marquer une échéance réglée.
-        </p>
-      )}
-
-      {!enPanne && recus === undefined && <p className="clixa-justificatifs__vide">Lecture…</p>}
-
-      {!enPanne && recus?.length === 0 && (
-        <p className="clixa-justificatifs__vide">
-          Aucun justificatif joint. Le dépôt est facultatif : beaucoup annoncent depuis un
-          téléphone, le reçu encore dans la poche.
-        </p>
-      )}
-
-      {!enPanne && recus && recus.length > 0 && (
-        <ul className="clixa-justificatifs__liste">
-          {recus.map((r) => (
-            <li key={r.id} className="clixa-justificatifs__ligne">
-              <a
-                className="btn btn--style-secondary btn--size-small clixa-justificatifs__lien"
-                href={`/api/recu/${r.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Ouvrir le justificatif ↗
-              </a>
-              <span className="clixa-justificatifs__quoi">
-                {r.echeance ? `Échéance ${r.echeance}` : "Échéance non précisée"}
-              </span>
-              <span className="clixa-justificatifs__detail">
-                {[r.nomOriginal, POIDS(r.taille), JOUR(r.createdAt)].filter(Boolean).join(" · ")}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
 }
