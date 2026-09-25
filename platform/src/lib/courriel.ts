@@ -946,24 +946,46 @@ export async function courrielTransfert(
     dossierId?: number | string;
     /** Vrai si le participant a joint un justificatif. */
     avecRecu?: boolean;
+    /**
+     * Vrai pour un paiement par carte. La référence y est facultative : la
+     * page de paiement n'en affiche pas toujours une que le participant saurait
+     * recopier, et le paiement se retrouve dans le tableau de bord du
+     * prestataire, par nom et par montant.
+     */
+    parCarte?: boolean;
   },
 ): Promise<void> {
   if (!EQUIPE) return;
 
+  /*
+    ⚠️ Un paiement par carte ne se dit pas « transfert », et une référence
+    absente ne s'affiche pas en case vide : une case vide se lit comme un champ
+    perdu en route, et l'on irait chercher un défaut là où le participant n'avait
+    rien à recopier.
+  */
+  const geste = d.parCarte ? "déclare avoir payé par carte" : "déclare avoir émis son transfert";
+  const intituleNumero = d.parCarte ? "Référence du paiement :" : "Code / N° Transfert :";
+  const numeroHtml = d.numero
+    ? `<code style="background-color: #080c18; padding: 2px 8px; border-radius: 4px; color: #2fa37d; font-weight: bold; font-family: monospace;">${echapper(d.numero)}</code>`
+    : `<span style="color: #94a3b8;">non communiquée</span>`;
+  const sansPiece = d.numero
+    ? "Aucun justificatif joint — le numéro seul a été transmis. C'est admis : beaucoup annoncent depuis un téléphone, le reçu encore dans la poche."
+    : "Ni justificatif ni référence. Retrouver le paiement dans le tableau de bord du prestataire, par nom et par montant.";
+
   const corpsHtml = `
-    <p>Le participant <strong>${echapper(d.apprenantNom)}</strong> déclare avoir émis son transfert :</p>
+    <p>Le participant <strong>${echapper(d.apprenantNom)}</strong> ${geste} :</p>
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
       <tr><td style="color: #94a3b8; width: 140px;">Montant déclaré :</td><td><strong style="color: #e9cd84; font-size: 16px;">${EUROS.format(d.montant)}</strong></td></tr>
       <tr><td style="color: #94a3b8;">Moyen d'envoi :</td><td style="color: #ffffff; font-weight: bold;">${echapper(d.moyen)}</td></tr>
-      <tr><td style="color: #94a3b8;">Code / N° Transfert :</td><td><code style="background-color: #080c18; padding: 2px 8px; border-radius: 4px; color: #2fa37d; font-weight: bold; font-family: monospace;">${echapper(d.numero)}</code></td></tr>
+      <tr><td style="color: #94a3b8;">${intituleNumero}</td><td>${numeroHtml}</td></tr>
       <tr><td style="color: #94a3b8;">Dossier Réf. :</td><td style="color: #e9cd84; font-family: monospace;">${d.reference}</td></tr>
       <tr><td style="color: #94a3b8;">Programme :</td><td style="color: #ffffff;">${d.programmeTitre}</td></tr>
       <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.apprenantWhatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; text-decoration: none;">${echapper(d.apprenantWhatsapp)} ↗</a></td></tr>
     </table>
     ${
       d.avecRecu
-        ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, section « Reçus de versement ». Le fichier est privé : il ne se lit que connecté au back-office.</p>`
-        : `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 14px; color: #cbd5e1;">Aucun justificatif joint — le numéro seul a été transmis. C'est admis : beaucoup annoncent depuis un téléphone, le reçu encore dans la poche.</p>`
+        ? `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #0d2119; border-left: 3px solid #2fa37d; font-size: 15px; color: #ffffff;"><strong>Un justificatif est joint.</strong> Il s'ouvre depuis la fiche du dossier, section « Justificatifs de versement », juste sous les échéances. Le fichier est privé : il ne se lit que connecté au back-office.</p>`
+        : `<p style="margin: 0 0 16px 0; padding: 14px 16px; background-color: #1a1408; border-left: 3px solid #e9cd84; font-size: 14px; color: #cbd5e1;">${sansPiece}</p>`
     }
     <p style="color: #94a3b8; font-size: 13px;">Action requise : Vérifier la réception des fonds et valider l'échéance dans le back-office.</p>
   `;
@@ -975,15 +997,15 @@ export async function courrielTransfert(
       `${d.apprenantNom} déclare avoir envoyé ${EUROS.format(d.montant)}.`,
       "",
       `Moyen : ${d.moyen}`,
-      `Numéro de transfert : ${d.numero}`,
+      `${d.parCarte ? "Référence du paiement" : "Numéro de transfert"} : ${d.numero || "non communiquée"}`,
       `Référence du dossier : ${d.reference}`,
       `Parcours : ${d.programmeTitre}`,
       `WhatsApp : ${d.apprenantWhatsapp}`,
       "",
       "L'échéance est passée en « annoncé ».",
       d.avecRecu
-        ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier."
-        : "Aucun justificatif joint — le numéro seul a été transmis.",
+        ? "Un justificatif est joint : il s'ouvre depuis la fiche du dossier, sous les échéances."
+        : sansPiece,
     ].join("\n"),
     html: gabaritHtmlEmail({
       titre: "Nouveau Transfert Annoncé",

@@ -312,6 +312,67 @@ test.describe("Annoncer un transfert", () => {
     ).toBe(0);
   });
 
+  /*
+    ⚠️ **Qui paie par carte n'a pas de numéro de transfert** (demandé par la
+    direction le 25 septembre 2026). Il recevait un lien de paiement, payait,
+    puis trouvait ici un formulaire qui exigeait un MTCN : aucun moyen de nous
+    dire qu'il avait payé. Le formulaire suit maintenant le moyen choisi à
+    l'inscription, et la route n'exige plus le numéro pour la carte.
+
+    ⚠️ Sans pièce jointe, exprès : le magasin des justificatifs est partagé, et
+    le ménage de fin de série supprime les dossiers en SQL — sans crochet, donc
+    sans retirer le fichier. Le dépôt lui-même n'a pas changé ; il est éprouvé
+    par `verifier-recus.ts`.
+  */
+  test("qui paie par carte confirme sans numéro de transfert", async ({ page }) => {
+    const reference = await retenirUnePlace(page, "P1");
+    sqlUneValeur(
+      `UPDATE inscriptions SET moyen_souhaite = 'carte' WHERE reference = '${reference}';`,
+    );
+    envoyerLesCoordonnees(reference);
+    await page.reload();
+
+    const formulaire = page.locator('form[action="/api/transfert"]');
+    await expect(formulaire, "le formulaire paraît pour la carte aussi").toBeVisible();
+    await expect(page.getByText("Paiement effectué ?")).toBeVisible();
+    await expect(
+      page.locator('select[name="moyen"]'),
+      "présélectionné sur ce qu'il a choisi à l'inscription",
+    ).toHaveValue("carte");
+    await expect(
+      page.locator('input[name="numero"]'),
+      "la référence n'est pas exigée pour une carte",
+    ).not.toHaveAttribute("required");
+
+    await page.click('form[action="/api/transfert"] button[type="submit"]');
+    await page.waitForURL(/annonce=ok/);
+    await expect(page.getByRole("status")).toContainText("C'est noté");
+
+    expect(
+      compterEnBase(
+        "inscriptions_echeances",
+        `_parent_id = (SELECT id FROM inscriptions WHERE reference = '${reference}') AND statut = 'annonce' AND moyen = 'carte'`,
+      ),
+      "l'échéance passe en vérification, par carte",
+    ).toBe(1);
+  });
+
+  /*
+    Le témoin : la règle ne s'est relâchée que pour la carte. Sans lui, une route
+    qui n'exigerait plus aucun numéro passerait au vert sur l'épreuve d'au-dessus
+    — et un transfert annoncé sans MTCN ne se retrouve pas au guichet.
+  */
+  test("un transfert sans numéro reste refusé", async ({ page, request }) => {
+    const reference = await retenirUnePlace(page, "P1");
+    envoyerLesCoordonnees(reference);
+
+    const r = await request.post("/api/transfert", {
+      form: { dossier: reference, moyen: "western-union", numero: "" },
+      maxRedirects: 0,
+    });
+    expect(r.headers()["location"], "le numéro reste exigé").toContain("annonce=champs");
+  });
+
   test("une référence inventée n'écrit rien et renvoie à l'accueil", async ({ request }) => {
     const r = await request.post("/api/transfert", {
       form: { dossier: "CLX-ZZZZZ", moyen: "ria", numero: "1" },

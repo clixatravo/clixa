@@ -32,8 +32,8 @@ interface Props {
 
 /** Ce que dit la page au retour d'une annonce de transfert. */
 const RETOUR_ANNONCE: Record<string, string> = {
-  ok: "C'est noté. Nous vérifions le transfert et vous confirmons votre place — comptez un jour ouvré.",
-  champs: "Il manque le moyen d'envoi ou le numéro de transfert.",
+  ok: "C'est noté. Nous vérifions votre versement et vous confirmons votre place — comptez un jour ouvré.",
+  champs: "Il manque le moyen de paiement, ou le numéro de transfert.",
   rien: "Aucune échéance n'attend d'annonce en ce moment.",
   /*
     ⚠️ Le message dit ce qui manque **de notre côté**, pas ce qu'il aurait mal
@@ -156,6 +156,17 @@ export default async function Dossier({ params, searchParams }: Props) {
     dossier.statut !== "terminee" &&
     enCours?.statut === "attendu" &&
     Boolean(dossier.coordonneesEnvoyeesLe);
+
+  /*
+    ⚠️ **Qui paie par carte n'a pas de numéro de transfert** (demandé par la
+    direction le 25 septembre 2026). Il reçoit un lien de paiement, paie, puis
+    trouvait ici un formulaire de transfert qui exigeait un MTCN qu'il n'a pas —
+    et aucune place pour la confirmation de sa banque. Le formulaire suit donc
+    le moyen qu'il a choisi : la carte met le justificatif en avant et rend la
+    référence facultative. La route applique la même règle, et c'est elle qui
+    fait foi.
+  */
+  const parCarte = dossier.moyenSouhaite === "carte";
 
   /*
     Un parcours suivi n'a plus de « prochaine échéance » à régler ni de
@@ -389,14 +400,16 @@ export default async function Dossier({ params, searchParams }: Props) {
                 </li>
                 <li>
                   <strong className="text-ivory">{dossier.contratSigneLe ? "2." : "3."}</strong>{" "}
-                  Nous indiquer le numéro de transfert{" "}
-                  {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — il arrive
-                  rattaché à votre dossier, sans que vous ayez à citer sa référence.
+                  {parCarte
+                    ? "Nous envoyer la confirmation de votre paiement par carte"
+                    : "Nous indiquer le numéro de transfert"}{" "}
+                  {aAnnoncer ? "dans le formulaire ci-dessous" : "depuis cette page"} — elle arrive
+                  rattachée à votre dossier, sans que vous ayez à citer sa référence.
                 </li>
                 <li>
                   <strong className="text-ivory">{dossier.contratSigneLe ? "3." : "4."}</strong>{" "}
-                  Nous vérifions le transfert et confirmons votre place — vous recevez alors le lien
-                  de connexion.
+                  Nous vérifions {parCarte ? "le paiement" : "le transfert"} et confirmons votre
+                  place — vous recevez alors le lien de connexion.
                 </li>
               </ol>
             )}
@@ -784,12 +797,28 @@ export default async function Dossier({ params, searchParams }: Props) {
           */}
           {aAnnoncer && (
             <div className="border-line bg-panel mt-9 border p-6 sm:p-8">
-              <span className="mono-label text-gold mb-3 block">Transfert envoyé ?</span>
-              <h2 className="font-display mb-2 text-[1.1rem]">Indiquez-nous son numéro</h2>
-              <p className="text-ivory-dim mb-6 text-[0.88rem]">
-                Western Union et MoneyGram l&apos;appellent MTCN, Ria le numéro de commande. Il
-                figure sur le reçu remis à l&apos;envoi.
-              </p>
+              {parCarte ? (
+                <>
+                  <span className="mono-label text-gold mb-3 block">Paiement effectué ?</span>
+                  <h2 className="font-display mb-2 text-[1.1rem]">
+                    Envoyez-nous la confirmation de votre paiement
+                  </h2>
+                  <p className="text-ivory-dim mb-6 text-[0.88rem]">
+                    Après le paiement par carte, la page de paiement ou votre banque affiche une
+                    confirmation, souvent doublée d&apos;un courriel. Une capture d&apos;écran ou le
+                    PDF suffit.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <span className="mono-label text-gold mb-3 block">Transfert envoyé ?</span>
+                  <h2 className="font-display mb-2 text-[1.1rem]">Indiquez-nous son numéro</h2>
+                  <p className="text-ivory-dim mb-6 text-[0.88rem]">
+                    Western Union et MoneyGram l&apos;appellent MTCN, Ria le numéro de commande. Il
+                    figure sur le reçu remis à l&apos;envoi.
+                  </p>
+                </>
+              )}
 
               {/*
                 `multipart/form-data` : sans cet encodage, le navigateur
@@ -819,15 +848,27 @@ export default async function Dossier({ params, searchParams }: Props) {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="moyen" className="mono-label text-ivory-dim text-[0.7rem]">
-                    Moyen d&apos;envoi
+                    Moyen de paiement
                   </label>
+                  {/*
+                    Présélectionné sur ce qu'il a choisi à l'inscription : le
+                    choix existe déjà, le lui redemander ferait croire qu'il
+                    s'est trompé de case.
+                  */}
                   <select
                     id="moyen"
                     name="moyen"
                     required
-                    defaultValue="western-union"
+                    defaultValue={
+                      parCarte
+                        ? "carte"
+                        : dossier.moyenSouhaite === "virement"
+                          ? "virement"
+                          : "western-union"
+                    }
                     className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   >
+                    <option value="carte">Carte bancaire</option>
                     <option value="western-union">Western Union</option>
                     <option value="ria">Ria</option>
                     <option value="moneygram">MoneyGram</option>
@@ -837,15 +878,21 @@ export default async function Dossier({ params, searchParams }: Props) {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="numero" className="mono-label text-ivory-dim text-[0.7rem]">
-                    Numéro de transfert
+                    {parCarte ? (
+                      <>
+                        Référence du paiement <span className="normal-case">(facultatif)</span>
+                      </>
+                    ) : (
+                      "Numéro de transfert"
+                    )}
                   </label>
                   <input
                     id="numero"
                     name="numero"
                     type="text"
-                    required
+                    required={!parCarte}
                     maxLength={40}
-                    inputMode="numeric"
+                    inputMode={parCarte ? "text" : "numeric"}
                     autoComplete="off"
                     className="border-line bg-ink rounded-clixa text-ivory focus:border-gold min-h-11 w-full min-w-0 border px-3.5 text-[0.95rem]"
                   />
@@ -860,7 +907,15 @@ export default async function Dossier({ params, searchParams }: Props) {
                 */}
                 <div className="flex flex-col gap-2 sm:col-span-2">
                   <label htmlFor="recu" className="mono-label text-ivory-dim text-[0.7rem]">
-                    Photo du reçu <span className="normal-case">(facultatif)</span>
+                    {parCarte ? (
+                      <>
+                        Confirmation du paiement <span className="normal-case">(recommandé)</span>
+                      </>
+                    ) : (
+                      <>
+                        Photo du reçu <span className="normal-case">(facultatif)</span>
+                      </>
+                    )}
                   </label>
                   <input
                     id="recu"
@@ -876,13 +931,15 @@ export default async function Dossier({ params, searchParams }: Props) {
                     on ne lui remontre pas le fichier, il l'a chez lui.
                   */}
                   <p className="text-ivory-dim/70 text-[0.78rem] leading-relaxed">
-                    Une photo du reçu du guichet, ou le PDF de votre banque. 5 Mo au plus. Il
-                    n&apos;est lisible que par notre équipe.
+                    {parCarte
+                      ? "Une capture de la page de confirmation, ou le courriel de votre banque en PDF."
+                      : "Une photo du reçu du guichet, ou le PDF de votre banque."}{" "}
+                    5 Mo au plus. Il n&apos;est lisible que par notre équipe.
                   </p>
                 </div>
 
                 <BoutonEnvoi
-                  libelle="Annoncer le transfert"
+                  libelle={parCarte ? "Envoyer la confirmation" : "Annoncer le transfert"}
                   pendant="Enregistrement…"
                   className="bg-gold text-ink rounded-clixa hover:bg-gold-bright min-h-11 px-6 text-[0.9rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2 sm:justify-self-start"
                 />

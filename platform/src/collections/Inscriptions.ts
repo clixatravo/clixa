@@ -1288,6 +1288,32 @@ export const Inscriptions: CollectionConfig = {
             },
           ],
         },
+        {
+          /*
+            ── ⚠️ Le justificatif se regarde depuis le dossier ──────────────────
+            Le participant joint la photo de son reçu en annonçant son versement,
+            et le fichier arrivait bien en base. Mais rien ici n'y menait : il
+            fallait quitter la fiche, ouvrir « Reçus de versement », retrouver la
+            bonne ligne, l'ouvrir, puis cliquer. En essayant le parcours de bout
+            en bout le 9 septembre 2026, la direction a conclu qu'il n'y avait
+            « pas d'endroit pour vérifier le reçu ».
+
+            ⚠️ **Et il se lit à côté de la vérification, pas six blocs plus bas**
+            (demandé par la direction le 25 septembre 2026). Il était posé après
+            les notes internes : pour marquer une échéance réglée, il fallait
+            descendre voir la pièce puis remonter cocher. C'est l'aller-retour
+            que ce bloc existe pour épargner. Il suit maintenant le tableau des
+            échéances, dans le même bloc que « Vérifié le ».
+
+            ⚠️ Un champ `ui` ne porte aucune colonne : rien à pousser en base.
+          */
+          name: "justificatifs",
+          type: "ui",
+          label: "Justificatifs de versement",
+          admin: {
+            components: { Field: "@/components/admin/Justificatifs#Justificatifs" },
+          },
+        },
       ],
     },
     {
@@ -1295,29 +1321,6 @@ export const Inscriptions: CollectionConfig = {
       type: "textarea",
       label: "Notes internes",
       admin: { description: "Jamais montré au participant." },
-    },
-    {
-      /*
-        ── ⚠️ Le justificatif se regarde depuis le dossier ────────────────────
-        Le participant joint la photo de son reçu en annonçant son transfert, et
-        le fichier arrivait bien en base. Mais rien ici n'y menait : il fallait
-        quitter la fiche, ouvrir « Reçus de versement », retrouver la bonne
-        ligne, l'ouvrir, puis cliquer. En essayant le parcours de bout en bout
-        le 9 septembre 2026, la direction a conclu qu'il n'y avait « pas
-        d'endroit pour vérifier le reçu ».
-
-        C'est le même défaut que les quatre boutons du fil des étapes corrigent
-        ailleurs — et il tombe au pire endroit, puisque c'est de cette pièce que
-        dépend le seul geste qui compte : marquer l'échéance réglée.
-
-        ⚠️ Un champ `ui` ne porte aucune colonne : rien à pousser en base.
-      */
-      name: "justificatifs",
-      type: "ui",
-      label: "Justificatifs de versement",
-      admin: {
-        components: { Field: "@/components/admin/Justificatifs#Justificatifs" },
-      },
     },
     {
       /*

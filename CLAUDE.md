@@ -2510,6 +2510,12 @@ d'endroit pour vérifier le reçu ». C'était exact.
   exiger la pièce ferait perdre le numéro de transfert, qui est ce qui permet de
   retrouver l'argent.
 - **Aucun changement de schéma** : un champ `ui` ne porte pas de colonne.
+- ⚠️ **Il se lit à côté de « Vérifié le », pas six blocs plus bas** (demandé
+  par la direction le 25 septembre 2026). Il était posé après les notes
+  internes : pour marquer une échéance réglée, il fallait descendre voir la
+  pièce puis remonter cocher — l'aller-retour que ce bloc existe pour épargner.
+  Il est maintenant le dernier champ du bloc « Le règlement », juste sous le
+  tableau des échéances. Le courriel « Transfert annoncé » dit où le trouver.
 - ⚠️ **`verifier-recus.ts` éprouve désormais ce chemin-là aussi**, par la route
   HTTP avec un vrai cookie d'équipe — c'est là que vit la garde d'accès, et
   l'API locale la contournerait avec `overrideAccess`. Avec son témoin : un
@@ -2544,6 +2550,33 @@ formulaire, lui, était resté.
 - ⚠️ **Deux épreuves passaient parce que le défaut existait.** Elles
   annonçaient sur un dossier tout neuf ; elles posent maintenant d'abord
   `coordonneesEnvoyeesLe`, comme l'équipe le fait depuis /admin.
+
+⚠️ **Qui paie par carte confirme son paiement, et joint sa confirmation**
+(demandé par la direction le 25 septembre 2026). Le participant qui avait choisi
+la carte recevait un lien de paiement, payait — puis trouvait sur son dossier un
+formulaire de **transfert**, qui exigeait un MTCN qu'il n'a pas, et ne proposait
+pas « Carte bancaire ». Il n'avait aucun moyen de nous dire qu'il avait payé, ni
+de joindre la confirmation de sa banque.
+
+- **Le formulaire suit `moyenSouhaite`.** Pour la carte : « Paiement effectué ? »,
+  le moyen présélectionné sur la carte, la référence **facultative**, la
+  confirmation « recommandée ». Pour les autres, rien ne change.
+- ⚠️ **La route applique la même règle, et c'est elle qui fait foi** :
+  `carte` rejoint les moyens annonçables, et le numéro n'est exigé que hors
+  carte. Un paiement par carte se retrouve dans le tableau de bord du
+  prestataire, par nom et par montant ; la page de paiement n'affiche pas
+  toujours une référence qu'on saurait recopier.
+- ⚠️ **Le témoin fait la garde** : un transfert sans numéro reste refusé. Sans
+  lui, une route qui n'exigerait plus aucun numéro passerait au vert sur
+  l'épreuve de la carte — et un transfert sans MTCN ne se retrouve pas au
+  guichet.
+- **Le courriel de l'équipe ne dit plus « transfert » pour une carte**, et une
+  référence absente s'écrit « non communiquée » plutôt qu'en case vide — qui se
+  lirait comme un champ perdu en route.
+- ⚠️ **L'épreuve ne joint pas de fichier, exprès** : le magasin des
+  justificatifs est partagé, et le ménage supprime les dossiers en SQL, sans
+  crochet — donc sans retirer le fichier. Le dépôt n'a pas changé ;
+  `verifier-recus.ts` l'éprouve.
 
 **Le participant annonce son transfert depuis sa fiche de dossier** (`BE-20`,
 `api/transfert`). L'état « Annoncé par le participant » existait au modèle et

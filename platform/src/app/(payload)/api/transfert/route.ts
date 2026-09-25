@@ -40,8 +40,16 @@ const LEURRE = "site_web";
   Les moyens qu'un participant peut annoncer. « Espèces » existe dans le
   modèle mais n'est pas ici : on ne remet pas d'espèces à distance, et l'équipe
   seule peut le constater depuis le back-office.
+
+  ⚠️ **« Carte bancaire » manquait, et le trou était réel** (demandé par la
+  direction le 25 septembre 2026). Le participant qui avait choisi la carte
+  recevait un lien de paiement, payait — puis ne trouvait sur son dossier
+  qu'un formulaire de transfert, qui exigeait un MTCN qu'il n'a pas. Il n'avait
+  aucun moyen de nous dire qu'il avait payé, ni de joindre la confirmation de
+  sa banque.
 */
 const MOYENS = {
+  carte: "Carte bancaire",
   "western-union": "Western Union",
   ria: "Ria",
   moneygram: "MoneyGram",
@@ -83,7 +91,18 @@ export async function POST(request: Request) {
 
   const moyen = texte("moyen");
   const numero = texte("numero");
-  if (!estMoyen(moyen) || !numero) redirect(`${retour}?annonce=champs` as Route);
+  if (!estMoyen(moyen)) redirect(`${retour}?annonce=champs` as Route);
+
+  /*
+    ⚠️ **Le numéro n'est exigé que pour un transfert ou un virement.** C'est lui
+    qui permet de retrouver l'argent au guichet ou sur le relevé. Un paiement
+    par carte, lui, se retrouve dans le tableau de bord du prestataire, par nom
+    et par montant ; la page de paiement n'affiche pas toujours une référence
+    que le participant saurait recopier. Exiger ce champ l'aurait bloqué devant
+    un formulaire qu'il ne peut pas remplir — le défaut même que ce changement
+    ferme. Décision de la direction, le 25 septembre 2026.
+  */
+  if (!numero && moyen !== "carte") redirect(`${retour}?annonce=champs` as Route);
 
   // Un numéro de transfert tient en quelques caractères. Le borner évite qu'un
   // champ libre serve à écrire un roman dans le back-office.
@@ -211,6 +230,7 @@ export async function POST(request: Request) {
     numero,
     dossierId: dossier.id,
     avecRecu: recuDepose,
+    parCarte: moyen === "carte",
     montant: Number(courante.montant ?? 0),
   });
 
