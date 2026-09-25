@@ -28,6 +28,7 @@ import { Pages } from "@/collections/Pages";
 import { Medias } from "@/collections/Medias";
 import { Recus } from "@/collections/Recus";
 import { DemandesRappel } from "@/collections/DemandesRappel";
+import { brancherLesColonnes } from "@/lib/colonnes-serveur";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -60,6 +61,14 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 */
 const ORIGINE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+/*
+  ⚠️ **La configuration passe par `brancherLesColonnes` une fois assainie**
+  (25 septembre 2026). Une colonne ajoutée à une collection doit paraître chez
+  tout le monde — y compris chez qui a touché au menu « Colonnes », ou revient
+  d'un favori pris avant l'ajout. La collection des préférences n'existe qu'une
+  fois la configuration assainie : c'est donc là qu'on l'atteint. Voir
+  `lib/colonnes.ts`.
+*/
 export default buildConfig({
   serverURL: ORIGINE,
   /*
@@ -95,6 +104,12 @@ export default buildConfig({
         Ce bandeau le dit — et se tait quand il n'y a rien.
       */
       beforeDashboard: ["@/components/admin/Veille#Veille"],
+      /*
+        Réécrit l'adresse d'une liste qui ramène des colonnes d'avant. C'est la
+        moitié que les crochets des préférences ne peuvent pas faire : Payload
+        affiche les colonnes de l'adresse avant celles du compte.
+      */
+      providers: ["@/components/admin/ColonnesAJour#ColonnesAJour"],
     },
   },
 
@@ -321,4 +336,4 @@ export default buildConfig({
         }),
       ]
     : [],
-});
+}).then(brancherLesColonnes);

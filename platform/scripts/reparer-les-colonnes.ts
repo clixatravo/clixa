@@ -34,6 +34,15 @@
  * /admin applique — et c'est précisément une divergence entre deux comptes qui
  * a produit ce défaut.
  */
+/*
+  ⚠️ **Ce script n'est plus nécessaire depuis le 25 septembre 2026**, et il est
+  gardé pour relire l'état des préférences. `lib/colonnes-serveur.ts` complète
+  désormais toute préférence de liste à la lecture et à l'écriture, et
+  `components/admin/ColonnesAJour.tsx` complète l'adresse : une colonne ajoutée
+  paraît chez tout le monde sans qu'on lance quoi que ce soit. Sans `ECRIRE=1`,
+  il ne fait que montrer — et il montrera « rien ne manque », puisque la
+  lecture passe par les crochets.
+*/
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { sql } from "drizzle-orm";
@@ -65,8 +74,7 @@ let aReparer = 0;
 
 for (const pref of docs) {
   const valeur = (pref as { value?: unknown }).value as
-    | { columns?: Colonne[]; [k: string]: unknown }
-    | undefined;
+    { columns?: Colonne[]; [k: string]: unknown } | undefined;
   /*
     ⚠️ **`user` doit repartir avec la mise à jour.** Il est obligatoire sur cette
     collection, et une écriture partielle ne le conserve pas : Payload refuse en

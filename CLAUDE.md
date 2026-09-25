@@ -75,6 +75,7 @@ npx payload run scripts/verifier-demarrage.ts     # l'annonce de démarrage ne r
 npx payload run scripts/verifier-presentation.ts  # la présentation ne promet que ce que
                                                   # le catalogue tient
 npx tsx scripts/verifier-versements.ts           # qui a encore combien de tranches
+npx payload run scripts/verifier-colonnes.ts      # une colonne ajoutée paraît chez tout le monde
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
 ```
@@ -1418,10 +1419,50 @@ la colonne « qui mène ce dossier », demandée par la direction le 12 septembr
   l'ordre de la collection, tri et pagination inchangés.**
 - **Le compte doit recharger /admin** : la préférence est lue au chargement.
 
-⚠️ **Cela se reproduira à chaque colonne ajoutée**, pour tout compte ayant
-ouvert ce menu une fois. Le script est fait pour être relancé : il compare la
-collection à chaque préférence figée et ne touche que ce qui manque — « rien de
-figé, il suit la collection » pour les trois autres comptes.
+⚠️ **Et la réparation n'a pas tenu : le 25 septembre, les quatre colonnes
+avaient de nouveau disparu** du compte `administration` — « madam hajar
+kaymechi liha l colone dyal fonction ». La préférence portait **exactement**
+la liste d'avant la réparation : trente-sept colonnes, triée par « statut »,
+dix lignes par page.
+
+**La cause ne se voyait pas en base.** Payload porte les colonnes **dans
+l'adresse** de la liste (`?columns=["reference",…]`), les préfère à celles du
+compte pour l'affichage, et les **réenregistre** au compte à chaque visite
+(`upsertPreferences`). Un favori, un onglet resté ouvert ou une page de
+l'historique pris avant l'ajout d'une colonne la cachent donc à chaque fois — et
+effacent la réparation. Relancer le script après chaque colonne n'aurait jamais
+suffi.
+
+**Corrigé à la source, en trois endroits qui lisent la même règle**
+(`lib/colonnes.ts`) : une colonne que la collection déclare dans
+`defaultColumns` et qui est **absente** d'une liste figée est ajoutée, visible,
+derrière son voisin de gauche. Une colonne **décochée** reste décochée.
+
+- **À la lecture d'une préférence** (`afterRead`, `lib/colonnes-serveur.ts`) :
+  le compte voit les nouvelles colonnes sans que rien soit écrit.
+- **À son écriture** (`beforeChange`) : une liste d'avant ne peut plus retirer
+  une colonne en s'enregistrant.
+- **À l'adresse** (`components/admin/ColonnesAJour.tsx`, fournisseur du
+  back-office) : une adresse d'avant est réécrite sans ajouter d'étape à
+  l'historique. C'est la moitié que les crochets ne peuvent pas faire, puisque
+  l'affichage préfère l'adresse.
+
+- ⚠️ **`payload-preferences` ne se déclare pas** : Payload l'ajoute lui-même,
+  après les greffons, en assainissant la configuration. Les crochets sont donc
+  posés sur la configuration assainie — `buildConfig({…}).then(brancherLesColonnes)`.
+  Si une version de Payload renommait la collection, la fonction ne trouverait
+  rien : on perdrait la réparation, jamais le back-office.
+- ⚠️ **Le champ `user` d'une préférence ne se donne pas** : un crochet de Payload
+  l'écrase avec `req.user`, et sans utilisateur l'écriture est refusée en
+  « Le champ suivant n'est pas valide : User ». C'est le vrai sens du refus que
+  `reparer-les-colonnes.ts` avait contourné en SQL.
+- `verifier-colonnes.ts` : quinze contrôles, dont six **contre la base**, sur un
+  compte d'épreuve dont la préférence d'avant est posée en SQL. **Prouvé en
+  retirant le branchement : trois rouges.** Et l'adresse a été éprouvée dans un
+  vrai navigateur, avec la liste exacte du compte de l'administration : les
+  quatre colonnes reparaissent, le tri « statut » et les dix lignes restent.
+- **Plus rien à lancer** quand on ajoute une colonne. `reparer-les-colonnes.ts`
+  reste pour relire l'état des préférences.
 
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
 depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
