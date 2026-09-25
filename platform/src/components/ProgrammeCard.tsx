@@ -41,16 +41,25 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
   const tarifs = await getTarifs();
   const prix = prixAffiche(tarifs);
   const restantes = sessionAffichee ? placesRestantes(sessionAffichee) : undefined;
+  const estComplete = sessionAffichee
+    ? Boolean(sessionAffichee.complete) || restantes === 0
+    : false;
 
   return (
     <Link
       href={`/formations/${programme.slug}`}
-      className="executive-card group relative flex flex-col justify-between gap-4 p-6 sm:min-h-[280px]"
+      className={`executive-card group relative flex flex-col justify-between gap-4 p-6 sm:min-h-[280px] ${
+        estComplete ? "border-rose-500/20 hover:border-rose-500/40" : ""
+      }`}
     >
-      {/* Filet or raffiné au survol avec lueur */}
+      {/* Filet or ou rose raffiné au survol avec lueur */}
       <span
         aria-hidden="true"
-        className="from-gold via-gold-bright to-gold absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r shadow-[0_0_8px_rgba(201,162,76,0.6)] transition-transform duration-300 group-hover:scale-x-100"
+        className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${
+          estComplete
+            ? "bg-gradient-to-r from-rose-500 via-rose-400 to-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+            : "from-gold via-gold-bright to-gold bg-gradient-to-r shadow-[0_0_8px_rgba(201,162,76,0.6)]"
+        }`}
       />
 
       <div className="flex flex-col gap-2.5">
@@ -58,11 +67,18 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
           <span className="text-gold font-mono text-[0.62rem] tracking-[0.14em] uppercase">
             {spec?.nom}
           </span>
-          {programme.certification && (
-            <span className="border-gold/30 bg-gold/10 text-gold-bright rounded-clixa border px-2 py-0.5 font-mono text-[0.58rem] font-semibold tracking-wider">
-              {programme.certification}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {estComplete && (
+              <span className="rounded-clixa border border-rose-500/50 bg-rose-950/70 px-2 py-0.5 font-mono text-[0.58rem] font-bold tracking-wider text-rose-300 uppercase shadow-[0_0_10px_rgba(244,63,94,0.3)]">
+                Complet
+              </span>
+            )}
+            {programme.certification && !estComplete && (
+              <span className="border-gold/30 bg-gold/10 text-gold-bright rounded-clixa border px-2 py-0.5 font-mono text-[0.58rem] font-semibold tracking-wider">
+                {programme.certification}
+              </span>
+            )}
+          </div>
         </div>
 
         <h3 className="font-display text-ivory group-hover:text-gold-bright text-[1.14rem] leading-snug font-semibold transition-colors">
@@ -102,7 +118,11 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
               {prix > 0 ? formatPrix(prix) : "Sur devis"}
             </div>
             <span className="text-ivory-dim/70 mt-1 block text-[0.66rem]">
-              Paiement 1x, 2x ou 3x
+              {estComplete ? (
+                <span className="font-medium text-rose-300/90">Liste d&apos;attente ouverte</span>
+              ) : (
+                "Paiement 1x, 2x ou 3x"
+              )}
             </span>
           </div>
 
@@ -112,7 +132,7 @@ export async function ProgrammeCard({ programme }: { programme: Programme }) {
                 <strong className="text-ivory text-[0.8rem] font-medium">
                   {formatDateCourte(sessionAffichee.debut)}
                 </strong>
-                {restantes !== undefined && <PlacesBadge restantes={restantes} />}
+                <PlacesBadge restantes={estComplete ? 0 : (restantes ?? 0)} />
               </>
             ) : (
               <span className="text-ivory-dim text-[0.74rem]">Prochaine session à venir</span>

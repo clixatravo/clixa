@@ -9,7 +9,7 @@ const tons: Record<Ton, string> = {
   tension:
     "text-gold-bright border-gold/50 bg-gold/15 shadow-[0_0_12px_-2px_rgba(201,162,76,0.25)]",
   complet:
-    "text-rose-300 border-rose-500/40 bg-rose-950/40 font-semibold shadow-[0_0_12px_-2px_rgba(244,63,94,0.2)]",
+    "text-rose-200 border-rose-500/50 bg-rose-950/70 font-semibold shadow-[0_0_12px_rgba(244,63,94,0.25)]",
   certification:
     "text-ink bg-gradient-to-r from-gold-bright to-gold border-gold font-bold shadow-[0_2px_10px_-2px_rgba(201,162,76,0.35)]",
   neutre: "text-ivory-dim border-line-strong bg-panel/40",
@@ -17,6 +17,7 @@ const tons: Record<Ton, string> = {
 
 export function Badge({ ton = "neutre", children }: { ton?: Ton; children: ReactNode }) {
   const isLive = ton === "disponible" || ton === "tension";
+  const isComplet = ton === "complet";
 
   return (
     <span
@@ -27,6 +28,12 @@ export function Badge({ ton = "neutre", children }: { ton?: Ton; children: React
           className={`size-1.5 rounded-full ${
             ton === "disponible" ? "bg-emerald-bright pulse-live" : "bg-gold-bright pulse-live"
           }`}
+          aria-hidden="true"
+        />
+      )}
+      {isComplet && (
+        <span
+          className="size-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]"
           aria-hidden="true"
         />
       )}
