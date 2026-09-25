@@ -68,9 +68,11 @@ const PISTES: PisteVideo[] = [
       {
         /*
           ⚠️ Le titre promettait un « Réseau Pan-Africain » et une « communauté
-          active de décideurs » — rien sur le site ne l'étaye, et la mention
-          « Institut Panafricain » est justement notée comme à trancher par la
-          direction. Il ne promet plus que ce que le parcours délivre vraiment.
+          active de décideurs » — rien sur le site ne l'étaye. Il ne promet
+          plus que ce que le parcours délivre vraiment. (« Institut
+          Panafricain », dans le pied des courriels, est un intitulé que la
+          direction a choisi de garder le 25 septembre 2026 — ce n'est pas une
+          promesse de réseau.)
 
           ⚠️ Et il annonce la vérification depuis le 15 septembre 2026. Le
           13 septembre, « code unique de vérification » avait dû être retiré du

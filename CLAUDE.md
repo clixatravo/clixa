@@ -3208,8 +3208,8 @@ seize, et pose un sommaire (`apercus/index.html`).
 - ⚠️ **Le pied de page dit encore « Institut Panafricain »**, dont l'équivalent
   a été retiré du site faute de pouvoir l'étayer. « Présence : Agadir · Classe
   virtuelle · Abidjan et Dakar prochainement » a bien suivi la décision du
-  6 septembre ; celle-là ne l'a pas suivie. C'est une mention à trancher par la
-  direction, pas au code de la retirer.
+  6 septembre ; celle-là ne l'a pas suivie. ✅ **Tranché le 25 septembre
+  2026 : la direction la garde.** Ne plus la signaler.
 
 ⚠️ **`admin.hidden` n'est pas un contrôle d'accès** (`Tarifs`, depuis le 1er
 septembre 2026). Les coordonnées du bénéficiaire — nom, ville, pays, consignes
@@ -3565,9 +3565,9 @@ les deux formes dans un fichier jetable.
   reste de l'autre — depuis qu'elle compte huit symboles. Une référence à
   moitié lisible se recopie de travers.
 
-⚠️ Deux mentions restent à trancher par la direction : « Présence
-panafricaine : Agadir · Abidjan · Dakar », et « Institut Panafricain », dont
-l'équivalent a été retiré du site faute de pouvoir l'étayer.
+✅ Les deux mentions sont tranchées : « Présence : Agadir · Classe virtuelle ·
+Abidjan et Dakar prochainement » depuis le 6 septembre, et « Institut
+Panafricain », **gardé** par la direction le 25 septembre 2026.
 
 
 ⚠️ **La demande de rappel ne s'obtient plus sans s'inscrire** (décision de la
@@ -3865,7 +3865,8 @@ Continue & Certifications Exécutives » — la mention dont l'équivalent a ét
 retiré du site le 5 septembre 2026 faute de pouvoir l'étayer, signalée deux fois
 dans ce journal et toujours en place. Et « Présence : Agadir · Classe virtuelle ·
 Abidjan et Dakar prochainement », qui suit bien la décision du 6 septembre. Ce
-n'est pas au code de retirer la première.
+n'est pas au code de retirer la première. ✅ **Tranché le 25 septembre 2026 :
+la direction garde « Institut Panafricain ».**
 
 ⚠️ **Ce que l'envoi ne réglera pas, et qu'il faut avoir en tête** : au
 23 septembre 2026, **aucun des cent seize dossiers n'a versé le moindre euro**,
@@ -4175,13 +4176,14 @@ la même chose : le certificat imprimait la devise, les courriels portaient
 pas du tout** — un visiteur qui demandait ce que le sigle signifie n'obtenait
 rien.
 
-- ⚠️ **« of » ou « de » — signalé, pas tranché.** La direction a dicté
-  « Centre **of** Leadership, Innovation **and** eXcellence in Africa » ; le
-  certificat imprime « Centre **de** Leadership, Innovation **&** eXcellence in
-  Africa ». C'est la forme dictée qui sert aux courriels et à l'assistant ; **le
-  certificat n'a pas été touché** — c'est un document qui circule, qu'un
-  employeur ou une banque peut recevoir, et son libellé relève de la direction,
-  pas d'un alignement fait au passage. Les deux doivent finir identiques.
+- ✅ **« Centre de Leadership, Innovation & eXcellence in Africa », partout**
+  (tranché par la direction le 25 septembre 2026). Trois formes circulaient :
+  « Center of … & … » sur le site (`societe.ts`), « Centre of … and … » dans
+  les courriels et l'assistant, « Centre de … & … » sur le certificat. C'est
+  **celle du certificat** qui l'emporte — le document qui circule le plus loin.
+  `DEVISE_CLIXA` est désormais la seule source : site, courriels, assistant
+  **et** certificat la lisent ; `SOCIETE`/`DEVISE` a disparu de `societe.ts`.
+  ⚠️ L'esperluette part échappée dans le HTML des courriels.
 - ⚠️ **La devise n'est pas la ligne du cartouche.** `BASELINE_COURTE` reste
   pour les endroits étroits : à neuf pixels, cinquante-cinq caractères se
   replient sur cinq lignes. Mesuré à 375 px — ça tient, sans déborder, mais

@@ -3,7 +3,7 @@ import type { Route } from "next";
 import { getPages } from "@/lib/pages";
 import { ReseauxSociaux } from "@/components/ReseauxSociaux";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
-import { DEVISE } from "@/lib/societe";
+import { DEVISE_CLIXA } from "@/lib/marque";
 
 /**
  * Les pages légales se lisent dans le CMS, elles ne sont pas écrites ici.
@@ -69,7 +69,7 @@ export async function SiteFooter() {
               </span>
             </Link>
             <p className="text-ivory-dim/80 mt-4 text-[0.86rem] leading-relaxed">
-              {DEVISE}. Accompagner les dirigeants et certifier les compétences clés.
+              {DEVISE_CLIXA}. Accompagner les dirigeants et certifier les compétences clés.
             </p>
             <a
               href={RESEAUX_CLIXA.email.url}

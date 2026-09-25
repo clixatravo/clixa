@@ -13,20 +13,23 @@
  * paiement affichés, et sur les intitulés de gestes : deux copies d'un même
  * fait finissent par diverger, et l'on ne s'en aperçoit que chez le client.
  *
- * ── ⚠️ « of » ou « de » — une divergence signalée, pas tranchée ────────────
- * La direction a dicté le 23 septembre 2026 : « CLIXA : Centre **of**
- * Leadership, Innovation **and** eXcellence in Africa ». Le certificat, lui,
- * imprime « Centre **de** Leadership, Innovation **&** eXcellence in Africa ».
+ * ── Une forme, tranchée par la direction le 25 septembre 2026 ─────────────
+ * Trois formes circulaient : « Center of … & … » sur le site, « Centre of …
+ * and … » dans les courriels et l'assistant (dictée le 23 septembre), et
+ * « Centre de … & … » sur le certificat. La direction a retenu **celle du
+ * certificat** — le document qui circule le plus loin, et qu'on ne retouche
+ * pas au passage. Tout le reste la lit ici, certificat compris.
  *
- * C'est la forme dictée qui est retenue ici, pour les courriels et
- * l'assistant. **Le certificat n'a pas été touché** : c'est un document qui
- * circule, qu'un employeur ou une banque peut recevoir, et dont le libellé
- * relève de la direction — pas d'un alignement fait au passage. Les deux
- * doivent finir identiques ; c'est à elle de dire laquelle gagne.
+ * ⚠️ **Le X majuscule n'est pas une coquetterie** : CLIXA se lit dans la
+ * phrase — **C**entre de **L**eadership, **I**nnovation & e**X**cellence in
+ * **A**frica. Écrite « Excellence », elle n'explique plus le nom.
+ *
+ * ⚠️ L'esperluette se sert échappée dans le HTML des courriels
+ * (`echapper(DEVISE_CLIXA)`), jamais brute.
  */
 
 /** Le sigle, développé. Ce que les lettres veulent dire. */
-export const DEVISE_CLIXA = "Centre of Leadership, Innovation and eXcellence in Africa";
+export const DEVISE_CLIXA = "Centre de Leadership, Innovation & eXcellence in Africa";
 
 /**
  * La ligne courte du cartouche, sous le nom.

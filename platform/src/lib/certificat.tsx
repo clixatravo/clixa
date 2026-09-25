@@ -8,6 +8,7 @@ import React from "react";
 /* eslint-disable jsx-a11y/alt-text */
 import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import { CACHET_CLIXA, LOGO_CLIXA, LOGO_SKILLAFRIQUE, SIGNATURE_DIRECTEUR } from "@/lib/cachet";
+import { DEVISE_CLIXA } from "@/lib/marque";
 import { SOCIETE } from "@/lib/societe";
 import type { Dossier } from "@/lib/inscriptions";
 
@@ -308,7 +309,7 @@ export function CertificatPDF({
             <View style={s.coteEntete}>
               <Image style={s.logo} src={LOGO_CLIXA} />
               <Text style={s.accroche}>
-                Centre de Leadership,{"\n"}Innovation &amp; eXcellence in Africa
+                {DEVISE_CLIXA.replace("Leadership, ", "Leadership,\n")}
               </Text>
             </View>
 
