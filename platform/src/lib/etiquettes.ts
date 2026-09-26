@@ -45,4 +45,4 @@ export const ETIQUETTE_EXTRAITS = "extraits";
  * jusqu'au prochain passage par /admin. Une heure est le délai au bout duquel
  * le site se remet d'aplomb tout seul, sans rien attendre de personne.
  */
-export const PEREMPTION = 3600;
+export const PEREMPTION = 60;

@@ -31,8 +31,8 @@ import {
  */
 const EN_VEDETTE = [
   "directeur-administratif-et-financier",
-  "preparation-a-la-certification-pmp",
-  "directeur-de-projets",
+  "directeur-des-ressources-humaines",
+  "directeur-commercial",
 ];
 
 const NOMBRE_EN_VEDETTE = 3;

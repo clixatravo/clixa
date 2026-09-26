@@ -17,10 +17,10 @@ import config from "@payload-config";
 
 const SLUGS_COMPLETS = [
   "directeur-des-ressources-humaines",
-  "directeur-marketing",
-  "directeur-audit-interne",
-  "directeur-industriel",
   "directeur-commercial",
+  "directeur-industriel",
+  "directeur-de-production",
+  "directeur-de-maintenance",
 ];
 
 const payload = await getPayload({ config });
