@@ -3928,6 +3928,16 @@ logo dyalhom m3a smeyat »). Six choix, dans cet ordre.
 - `verifier-provenance.ts` : dix-sept contrôles sans base, **prouvés en versant
   une valeur inventée dans « Autre » : trois rouges.**
 - **`inscriptions.apprenant_provenance`** : la base passe avant le code.
+  Poussée sur `dev`, puis sur la production **après comparaison des deux
+  schémas** — un seul écart, celui-là, et plus aucun après ; 127 dossiers
+  intacts.
+- **En ligne le 26 septembre 2026** : `ae506f9` (la question, la colonne, le
+  bloc du tableau de bord), puis `1263abd` (les logos dans la liste). Les deux
+  fois, `/api/version` a rendu le bon commit et la recette est sortie en 0. La
+  page publique a été relue en ligne : les six choix y sont.
+- ⚠️ **Aucune pré-inscription d'essai n'a été envoyée en production** : elle
+  aurait créé un faux dossier, compté au tableau de bord. L'envoi est éprouvé
+  sur `dev`, par la route et par Playwright (98 vertes).
 
 - **Le poste est un texte libre**, l'**expérience une tranche** — moins de 2 ans,
   2 à 5, 5 à 10, plus de 10. Trois raisons de ne pas prendre un nombre : trente
@@ -5692,3 +5702,16 @@ Raciné sur `~/Desktop/clixa`, avec `.gitignore` à la racine et un second dans
 Le danger décrit ici auparavant — dépôt raciné sur `~`, un `git add -A`
 embarquant `.ssh/` — n'existe plus. Les hooks de pré-commit (`SOC-04`) peuvent
 donc être installés.
+
+⚠️ **Un arbre de travail neuf (`.claude/worktrees/…`) n'a ni `node_modules`
+ni `.env.local`** — ni l'un ni l'autre n'est suivi. `npx tsx` y marche quand
+même, par le cache de `npx`, ce qui fait croire que tout est en place ; puis
+`payload generate:types` tombe sans message clair. Avant le premier contrôle :
+`npm ci` dans `platform/`, et copier `.env.local` (et `.env.prod` pour toucher à
+la production) depuis `~/Desktop/clixa/platform/`. Les deux copies restent
+ignorées par git — le vérifier avec `git check-ignore`.
+
+⚠️ **Depuis un arbre de travail, `git push origin HEAD:main` peut être refusé
+par le garde-fou de la session**, même avec l'accord de la direction. Ne pas le
+contourner : donner la commande, la laisser lancer depuis le terminal, puis
+suivre le déploiement. C'est ce qui s'est fait le 26 septembre 2026.
