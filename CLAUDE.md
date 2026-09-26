@@ -4620,6 +4620,38 @@ compte s'ouvre par Google (« Last used »), et la réinitialisation par
 `contact@envoi.clixa.africa` ne peut pas aboutir : ce sous-domaine ne reçoit
 pas de courrier. Noter ici quel compte porte le domaine dès qu'on le sait.
 
+**En ligne le 26 septembre 2026** (`031ade8`), dans cet ordre :
+
+1. Le webhook créé dans Resend, et sa clef posée par la direction dans
+   `RESEND_WEBHOOK_SECRET` — Secret, Production seulement. Vérifié par
+   `vercel env ls production` : le **nom** paraît, jamais la valeur.
+2. Les tables `courriels` et `courriels_evenements` (et
+   `payload_locked_documents_rels.courriels_id`, que Payload ajoute seul)
+   poussées sur `dev`, puis sur la production **après comparaison des deux
+   schémas** — l'écart était exactement ces colonnes, et plus aucun après ;
+   127 dossiers intacts.
+3. Le code. `/api/version` a rendu `031ade8`, la recette est sortie en 0, et un
+   appel non signé reçoit **401 et non plus 503** — la preuve que la clef est
+   lue. 98 épreuves Playwright vertes avant l'envoi.
+
+- ⚠️ **Rien n'est encore prouvé de bout en bout** au moment d'écrire : aucune
+  ligne en base, les deux seuls appels reçus étaient les contrôles eux-mêmes.
+  La preuve est un vrai courriel — une présentation envoyée à sa propre
+  adresse — qui doit passer à « Remis ». Un **401 venu de Resend** dans les
+  journaux voudrait dire que la clef collée dans Vercel n'est pas celle du
+  webhook.
+- **Les 73 courriels de la présentation du 26 septembre n'y figurent pas** :
+  ils sont partis avant le suivi. Seuls les cinq « retardés » y paraîtront, si
+  Resend rend son verdict après la mise en ligne.
+- ⚠️ **Sur téléphone, « État » vient juste après le destinataire.** Placé après
+  l'objet, il sortait de l'écran à 375 px — vu à la capture.
+- ⚠️ **Les variables de Vercel ont changé de place** : Settings →
+  **Environments** → Production → Environment Variables. Il n'y a plus d'entrée
+  « Environment Variables » dans le menu.
+- ⚠️ **`vercel env ls` échoue depuis un arbre de travail** (« codebase isn't
+  linked ») : `.vercel/` n'est pas suivi. Le lancer depuis
+  `~/Desktop/clixa/platform`.
+
 ⚠️ **Le sous-domaine d'envoi ne sait pas recevoir, et c'est voulu** —
 `envoi.clixa.africa` n'a ni MX ni A. Sans `replyTo`, la réponse du participant
 partait donc vers `contact@envoi.clixa.africa` et **rebondissait** : elle lui
