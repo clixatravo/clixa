@@ -5,6 +5,7 @@ import type { CollectionConfig, PayloadRequest } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { pasDansLeFutur, paysValide } from "@/collections/champs";
 import { OPTIONS_DOMAINE, OPTIONS_EXPERIENCE } from "@/lib/profil";
+import { OPTIONS_PROVENANCE } from "@/lib/provenance";
 import {
   courrielCertificatDisponible,
   courrielContratVerifie,
@@ -208,6 +209,11 @@ export const Inscriptions: CollectionConfig = {
       "apprenantProfession",
       "apprenantDomaine",
       "apprenantExperience",
+      /*
+        Par où la personne nous a connus (26 septembre 2026). À côté du profil,
+        parce que c'est la même lecture : qui est-ce, et d'où vient-il.
+      */
+      "apprenantProvenance",
       "apprenantEmail",
       "apprenantWhatsapp",
       "session",
@@ -731,6 +737,22 @@ export const Inscriptions: CollectionConfig = {
           admin: {
             description:
               "Ce que la personne a déclaré au formulaire. C'est le champ sur lequel on peut filtrer et compter — le poste, en texte libre, ne s'additionne pas.",
+          },
+        },
+        {
+          /*
+            Par où l'on nous a connus (26 septembre 2026, `lib/provenance.ts`).
+            ⚠️ Pas `required` ici, pour la raison écrite plus haut : les dossiers
+            d'avant ne le portent pas, et un champ obligatoire ferait échouer
+            toute écriture qui ne le touche pas. C'est la route qui l'exige.
+          */
+          name: "apprenantProvenance",
+          type: "select",
+          label: "Nous a connus par",
+          options: OPTIONS_PROVENANCE,
+          admin: {
+            description:
+              "Ce que la personne a répondu au formulaire. Vide sur les dossiers déposés avant le 26 septembre 2026, où la question n'existait pas.",
           },
         },
       ],

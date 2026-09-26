@@ -6,6 +6,7 @@ import path from "node:path";
 import { OCCUPE_UNE_PLACE_SQL } from "../src/lib/places";
 import { PAYS_OFFERTS } from "../src/lib/pays";
 import { DOMAINES, EXPERIENCES } from "../src/lib/profil";
+import { PROVENANCES } from "../src/lib/provenance";
 
 /**
  * Retirer ce que les épreuves ont écrit.
@@ -178,14 +179,18 @@ export async function remplirProfil(
   poste = "Contrôleur de gestion",
   experience = "2-5",
   domaine = "controle-gestion",
+  provenance = "linkedin",
 ): Promise<void> {
   const connue = EXPERIENCES.some((e) => e.valeur === experience);
   expect(connue, `« ${experience} » n'est pas une tranche d'expérience offerte`).toBe(true);
   const connuD = DOMAINES.some((d) => d.valeur === domaine);
   expect(connuD, `« ${domaine} » n'est pas un domaine offert`).toBe(true);
+  const connueP = PROVENANCES.some((p) => p.valeur === provenance);
+  expect(connueP, `« ${provenance} » n'est pas une provenance offerte`).toBe(true);
   await page.fill("input#profession", poste);
   await page.selectOption("select#domaine", domaine);
   await page.selectOption("select#experience", experience);
+  await page.check(`input[name="provenance"][value="${provenance}"]`);
 }
 
 export function adresseBase(): string | undefined {

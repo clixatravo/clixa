@@ -4386,6 +4386,26 @@ h3,
 .clixa-domaines__part--tete {
   box-shadow: 0 0 10px -2px rgba(201, 162, 76, 0.55);
 }
+/* La provenance : le même bloc, un logo devant le nom (26 septembre 2026). */
+.clixa-provenance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.clixa-provenance__logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 5px;
+}
+.clixa-provenance__svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
 .clixa-domaines__nombre {
   font-family: var(--font-serif);
   font-size: 1rem;

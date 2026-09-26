@@ -3884,6 +3884,45 @@ répond que sur une liste fermée.
 - **Au tableau de bord et au classeur**, entre le poste et l'expérience, en
   clair — jamais `controle-gestion`.
 
+⚠️ **Et un quatrième, le 26 septembre 2026 : par où l'on nous a connus**
+(`lib/provenance.ts`, demandé par la direction : « linkedin, facebook,
+instagram, email, entourage, autres — bach n3arfo l clien mnine jay o diir les
+logo dyalhom m3a smeyat »). Six choix, dans cet ordre.
+
+- **Des tuiles avec logo, pas un menu déroulant** : un `<select>` ne montre pas
+  de logo. Ce sont de vrais boutons radio, transparents et étendus sur toute la
+  tuile — clavier, `required` et envoi restent ceux du navigateur, sans une
+  ligne de JavaScript. Aucun choix coché d'avance.
+- ⚠️ **Sous 640 px, le logo passe au-dessus du nom.** Côte à côte sur deux
+  colonnes, il restait une cinquantaine de pixels au texte : « Lin… »,
+  « Ins… ». Vu à la capture, pas au type.
+- **Les tracés des logos vivent dans `lib/logos.ts`**, que `ReseauxSociaux`
+  lit aussi : deux copies d'un même tracé finissent par ne plus dessiner la même
+  marque. Des SVG, pas des images servies par la marque — elles signaleraient
+  la visite.
+- **Mêmes règles que le domaine** : exigée au formulaire **et** par la route
+  (`erreur=provenance`), jamais `required` dans la collection ; une valeur
+  inventée se refuse au lieu d'aller dans « Autre » ; « Autre » n'ouvre pas de
+  champ libre — s'il grossit, c'est à la liste qu'il manque une entrée.
+- ⚠️ **Ce n'est pas le pixel Meta.** Le pixel ne voit que ceux qui acceptent les
+  traceurs, et ni LinkedIn, ni le courriel, ni le bouche-à-oreille. Ici c'est la
+  personne qui répond — ce qu'elle se rappelle.
+- **Colonne « Nous a connus par »** dans la liste et le classeur ; au tableau de
+  bord, **« Comment ils nous ont connus »**, avec les logos, sur le dessin et
+  les règles des domaines (`repartitionSur`, désormais partagée) : rien tant que
+  personne n'a répondu, barre relative à la plus fournie, jamais une part du
+  total — les dossiers d'avant ne portent pas le champ.
+- ⚠️ **Le bloc des domaines s'appelle « Domaines des inscrits »**, plus « D'où
+  viennent les inscrits » : posé au-dessus de la provenance, il se lisait comme
+  la même question.
+- ⚠️ **Et sa première barre ne se dessinait pas.** La classe s'écrivait
+  `` `clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}` ``,
+  sans espace : le premier domaine — celui qu'on vient lire — portait une classe
+  inexistante, donc aucune barre. Rien ne l'attrape, ni type, ni lint.
+- `verifier-provenance.ts` : dix-sept contrôles sans base, **prouvés en versant
+  une valeur inventée dans « Autre » : trois rouges.**
+- **`inscriptions.apprenant_provenance`** : la base passe avant le code.
+
 - **Le poste est un texte libre**, l'**expérience une tranche** — moins de 2 ans,
   2 à 5, 5 à 10, plus de 10. Trois raisons de ne pas prendre un nombre : trente
   lignes de « 3 · 12 · 7 » se trient mais ne se lisent pas ; un champ numérique

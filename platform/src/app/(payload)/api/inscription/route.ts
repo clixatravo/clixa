@@ -10,6 +10,7 @@ import { finDeLaTenue } from "@/lib/places";
 import { aUnIndicatif, paysDeLIndicatif } from "@/lib/indicatifs";
 import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
 import { domaineValide, experienceValide } from "@/lib/profil";
+import { provenanceValide } from "@/lib/provenance";
 import { participantConnecte } from "@/lib/session-apprenant";
 
 /**
@@ -100,6 +101,14 @@ export async function POST(request: Request) {
   const profession = texte("profession");
   const domaine = domaineValide(texte("domaine"));
   const experience = experienceValide(texte("experience"));
+  /*
+    Par où l'on nous a connus (26 septembre 2026). Exigée comme le domaine, et
+    pour la même raison : c'est une question qui se compte, et un dossier sans
+    réponse manquerait à chaque total sans que rien ne le dise. Une valeur hors
+    liste se refuse — la ranger dans « Autre » inventerait une réponse. Voir
+    `lib/provenance.ts`.
+  */
+  const provenance = provenanceValide(texte("provenance"));
 
   const echec = (cause: string) =>
     redirect(
@@ -159,6 +168,7 @@ export async function POST(request: Request) {
 
   /* Les deux nouvelles questions sont exigées, pas seulement proposées. */
   if (profession.length < MINIMUM_LETTRES || !domaine || !experience) echec("profil");
+  if (!provenance) echec("provenance");
 
   /*
     L'adresse sert à envoyer la confirmation et à rattacher le dossier à un
@@ -294,6 +304,7 @@ export async function POST(request: Request) {
             apprenantProfession: profession,
             apprenantDomaine: domaine,
             apprenantExperience: experience,
+            apprenantProvenance: provenance,
             apprenantEmail: email,
             apprenantWhatsapp: whatsapp,
             apprenantPays: pays,

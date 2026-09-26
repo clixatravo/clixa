@@ -14,6 +14,8 @@ import {
   filtreDesPlacesAuTerme,
 } from "@/lib/delai";
 import { repartitionParDomaine } from "@/lib/profil";
+import { ficheProvenance, repartitionParProvenance } from "@/lib/provenance";
+import { LogoSvg } from "@/components/LogoSvg";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
 import { AnnonceDemarrage } from "@/components/admin/AnnonceDemarrage";
 import { PresenterInstitut } from "@/components/admin/PresenterInstitut";
@@ -574,7 +576,11 @@ export async function Veille() {
     limit: 500,
     depth: 0,
     overrideAccess: true,
-    select: { apprenantDomaine: true } as never,
+    /*
+      La provenance (26 septembre 2026) part dans la même requête : mêmes
+      dossiers, même exclusion des annulés, une colonne de plus.
+    */
+    select: { apprenantDomaine: true, apprenantProvenance: true } as never,
   });
 
   // 2. Nouvelles demandes de rappel
@@ -686,11 +692,12 @@ export async function Veille() {
     d'`avancementDuDossier` — et celle des six défauts de la supervision,
     trouvés en relisant parce qu'aucun n'était tombé au rouge.
   */
-  const domaines = repartitionParDomaine(
-    (docsDomaines as unknown as { apprenantDomaine?: string | null }[]).map(
-      (d) => d.apprenantDomaine,
-    ),
-  );
+  const profils = docsDomaines as unknown as {
+    apprenantDomaine?: string | null;
+    apprenantProvenance?: string | null;
+  }[];
+  const domaines = repartitionParDomaine(profils.map((d) => d.apprenantDomaine));
+  const provenances = repartitionParProvenance(profils.map((d) => d.apprenantProvenance));
 
   /*
     ⚠️ Le `select` de la requête est passé en `as never` — Payload rend alors des
@@ -1304,7 +1311,12 @@ export async function Veille() {
       {domaines.declares > 0 && (
         <div className="clixa-domaines">
           <div className="clixa-domaines__titre">
-            <span>D&apos;où viennent les inscrits</span>
+            {/*
+              « D'où viennent les inscrits » jusqu'au 26 septembre 2026 : le
+              titre se lisait comme la question de la provenance, posée le même
+              jour juste en dessous. Il dit maintenant ce qu'il compte.
+            */}
+            <span>Domaines des inscrits</span>
             <span className="clixa-domaines__couverture">
               {domaines.declares} dossier{domaines.declares > 1 ? "s" : ""} sur {domaines.total}
               {domaines.declares > 1 ? " l'ont" : " l'a"} déclaré
@@ -1350,6 +1362,67 @@ export async function Veille() {
                 <span className="clixa-domaines__nombre">{l.nombre}</span>
               </li>
             ))}
+          </ul>
+        </div>
+      )}
+
+      {/*
+        ── Comment ils nous ont connus ──────────────────────────────────────
+        Demandé par la direction le 26 septembre 2026, avec la question du
+        formulaire. Même dessin et mêmes règles que les domaines, juste
+        au-dessus : rien tant que personne n'a répondu, la couverture écrite
+        avant le décompte, la barre relative à la provenance la plus fournie —
+        jamais une part du total, que les dossiers d'avant fausseraient.
+
+        Chaque provenance porte son logo, à la couleur de sa marque : c'est ce
+        qu'on reconnaît avant d'avoir lu. ⚠️ La barre, elle, reste dorée :
+        colorer chaque barre à sa marque ferait lire la couleur comme un
+        classement, et c'est le rang qui porte le classement.
+      */}
+      {provenances.declares > 0 && (
+        <div className="clixa-domaines">
+          <div className="clixa-domaines__titre">
+            <span>Comment ils nous ont connus</span>
+            <span className="clixa-domaines__couverture">
+              {provenances.declares} dossier{provenances.declares > 1 ? "s" : ""} sur{" "}
+              {provenances.total}
+              {provenances.declares > 1 ? " ont" : " a"} répondu
+            </span>
+          </div>
+          <ul className="clixa-domaines__liste">
+            {provenances.lignes.map((l, rang) => {
+              const fiche = ficheProvenance(l.valeur);
+              return (
+                <li key={l.valeur} className="clixa-domaines__ligne">
+                  <Link
+                    href={
+                      `/admin/collections/inscriptions?where[apprenantProvenance][equals]=${l.valeur}` as Route
+                    }
+                    className="clixa-domaines__nom clixa-provenance"
+                  >
+                    {fiche && (
+                      <span
+                        className="clixa-provenance__logo"
+                        style={{ backgroundColor: `${fiche.couleur}2e`, color: fiche.couleur }}
+                      >
+                        <LogoSvg logo={fiche.logo} className="clixa-provenance__svg" />
+                      </span>
+                    )}
+                    {l.libelle}
+                  </Link>
+                  <span className="clixa-domaines__barre" aria-hidden="true">
+                    <span
+                      className={`clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
+                      style={{
+                        width: `${Math.max(l.barre, 4)}%`,
+                        opacity: Math.max(1 - rang * 0.16, 0.3),
+                      }}
+                    />
+                  </span>
+                  <span className="clixa-domaines__nombre">{l.nombre}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

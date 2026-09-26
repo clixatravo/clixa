@@ -10,6 +10,8 @@ import { lienListeAttente } from "@/lib/attente";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import { ChampPays } from "@/components/ChampPays";
 import { DOMAINES, EXPERIENCES } from "@/lib/profil";
+import { PROVENANCES } from "@/lib/provenance";
+import { LogoSvg } from "@/components/LogoSvg";
 import {
   formatPeriode,
   formatPrix,
@@ -37,6 +39,8 @@ const MESSAGES: Record<string, string> = {
   champs: "Il manque une information. Tous les champs marqués sont nécessaires pour vous rappeler.",
   profil:
     "Indiquez votre fonction actuelle, votre domaine et vos années d'expérience. Nous les demandons pour préparer l'appel, pas pour vous départager : le conseiller saura à qui il parle.",
+  provenance:
+    "Dites-nous comment vous avez connu CLIXA Institute — un seul choix suffit. C'est ce qui nous dit où parler de nos formations.",
   session: "Cette session n'existe plus. Choisissez-en une autre ci-dessous.",
   complet: "La dernière place vient d'être prise. Choisissez une autre session, ou écrivez-nous.",
   indicatif:
@@ -421,6 +425,86 @@ export default async function Inscription({ searchParams }: Props) {
                     className="border-line bg-ink rounded-clixa text-ivory focus:border-gold w-full min-w-0 border px-3.5 py-3 text-[0.95rem]"
                   />
                 </div>
+
+                {/*
+                  ── Par où l'on nous a connus ───────────────────────────────
+                  Demandé par la direction le 26 septembre 2026. Voir
+                  `lib/provenance.ts` pour ce que cette question sert à compter.
+
+                  **Des tuiles, pas un menu déroulant** : un `<select>` ne sait
+                  pas montrer un logo, et c'est le logo qu'on reconnaît avant
+                  d'avoir lu — six choix se parcourent d'un coup d'œil, là où un
+                  menu demande de l'ouvrir.
+
+                  ⚠️ **Ce sont de vrais boutons radio**, simplement transparents
+                  et étendus sur toute la tuile. Rien en JavaScript : le clavier
+                  (flèches, espace), `required` et l'envoi du formulaire sont
+                  ceux du navigateur. Et parce que la case couvre la tuile, la
+                  bulle « veuillez choisir une option » s'accroche à une tuile
+                  visible, pas à un pixel caché dans un coin.
+
+                  ⚠️ **Aucun choix n'est coché d'avance** — la leçon du
+                  sélecteur de pays qui s'ouvrait sur « Maroc » : un défaut se
+                  lit comme une réponse, et fausserait le seul chiffre que cette
+                  question existe pour produire.
+
+                  ⚠️ **Posée en dernier**, après ce qui sert au dossier : elle
+                  sert à nous, pas au participant.
+                */}
+                <fieldset className="flex min-w-0 flex-col gap-2.5 sm:col-span-2">
+                  <legend className="mono-label text-ivory-dim mb-2 text-[0.7rem]">
+                    Comment nous avez-vous connus&nbsp;?&nbsp;<span className="text-gold">*</span>
+                  </legend>
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {PROVENANCES.map((p) => (
+                      <label
+                        key={p.valeur}
+                        className="border-line bg-ink rounded-clixa text-ivory has-checked:border-gold has-checked:bg-gold/[0.07] has-focus-visible:ring-gold/60 hover:border-ivory-dim/50 relative flex min-w-0 cursor-pointer flex-col items-center justify-center gap-2 border px-2 py-3.5 text-center text-[0.88rem] transition-colors has-focus-visible:ring-2 sm:flex-row sm:justify-start sm:gap-2.5 sm:py-2.5 sm:pr-8 sm:pl-3 sm:text-left sm:text-[0.9rem]"
+                      >
+                        <input
+                          type="radio"
+                          name="provenance"
+                          value={p.valeur}
+                          required
+                          className="peer absolute inset-0 cursor-pointer opacity-0"
+                        />
+                        {/*
+                          La pastille porte la couleur de la marque en fond
+                          léger et en trait : sur l'encre du site, un logo
+                          LinkedIn à sa couleur exacte tombe sous le seuil de
+                          lisibilité ; teinté sur son propre halo, il se
+                          reconnaît sans forcer.
+                        */}
+                        <span
+                          className="flex size-8 shrink-0 items-center justify-center rounded-[7px]"
+                          style={{ backgroundColor: `${p.couleur}24`, color: p.couleur }}
+                        >
+                          <LogoSvg logo={p.logo} className="size-[18px]" />
+                        </span>
+                        {/*
+                          ⚠️ **Sous 640 px, le logo passe au-dessus du nom.**
+                          Côte à côte sur deux colonnes, la tuile ne laissait
+                          qu'une cinquantaine de pixels au texte : « Lin… »,
+                          « Ins… » — vu à la capture, pas au type. Empilés, les
+                          six noms tiennent en entier.
+                        */}
+                        <span className="max-w-full min-w-0 truncate font-medium">{p.libelle}</span>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2.4}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-gold absolute top-2 right-2 size-4 opacity-0 transition-opacity peer-checked:opacity-100 sm:top-1/2 sm:right-3 sm:-translate-y-1/2"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
               </div>
 
               {/*

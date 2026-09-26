@@ -765,6 +765,10 @@ export interface Inscription {
    */
   apprenantDomaine?:
     ('finance' | 'comptabilite' | 'audit' | 'controle-gestion' | 'tresorerie' | 'direction' | 'autre') | null;
+  /**
+   * Ce que la personne a répondu au formulaire. Vide sur les dossiers déposés avant le 26 septembre 2026, où la question n'existait pas.
+   */
+  apprenantProvenance?: ('linkedin' | 'facebook' | 'instagram' | 'email' | 'entourage' | 'autre') | null;
   payeurType: 'particulier' | 'organisation';
   payeurNom?: string | null;
   payeurEmail?: string | null;
@@ -1609,6 +1613,7 @@ export interface InscriptionsSelect<T extends boolean = true> {
   apprenantProfession?: T;
   apprenantExperience?: T;
   apprenantDomaine?: T;
+  apprenantProvenance?: T;
   payeurType?: T;
   payeurNom?: T;
   payeurEmail?: T;

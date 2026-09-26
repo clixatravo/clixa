@@ -2,6 +2,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { avancementDuDossier } from "@/lib/avancement";
 import { libelleDomaine, libelleExperience } from "@/lib/profil";
+import { libelleProvenance } from "@/lib/provenance";
 import { classeur, type Valeur } from "@/lib/tableur";
 
 /**
@@ -163,6 +164,7 @@ export async function GET(request: Request) {
       String(ins.apprenantProfession ?? ""),
       libelleDomaine(ins.apprenantDomaine),
       libelleExperience(ins.apprenantExperience),
+      libelleProvenance(ins.apprenantProvenance),
       String(ins.apprenantEmail ?? ""),
       String(ins.apprenantWhatsapp ?? ""),
       String(ins.apprenantPays ?? ""),
@@ -210,6 +212,7 @@ export async function GET(request: Request) {
         { entete: "Fonction actuelle", largeur: 26 },
         { entete: "Domaine", largeur: 20 },
         { entete: "Expérience", largeur: 16 },
+        { entete: "Nous a connus par", largeur: 18 },
         { entete: "E-mail", largeur: 30 },
         { entete: "WhatsApp", largeur: 18 },
         { entete: "Pays", largeur: 16 },

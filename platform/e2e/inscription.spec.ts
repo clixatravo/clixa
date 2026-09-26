@@ -44,6 +44,7 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
     moyen: "virement",
     payeur: "particulier",
     consentement: "oui",
+    provenance: "linkedin",
   };
 
   const sansPoste = await request.post("/api/inscription", {
@@ -51,6 +52,7 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
       ...base,
       email: `profil.a.${Date.now()}${MARQUE}`,
       domaine: "controle-gestion",
+      provenance: "linkedin",
       experience: "2-5",
     },
     maxRedirects: 0,
@@ -103,6 +105,7 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
       email: `profil.b.${Date.now()}${MARQUE}`,
       profession: "Contrôleur de gestion",
       domaine: "controle-gestion",
+      provenance: "linkedin",
       experience: "30-ans",
     },
     maxRedirects: 0,
@@ -116,6 +119,69 @@ test("le poste et l'expérience sont exigés par la route, pas seulement par la 
     compterEnBase("inscriptions", `apprenant_nom = 'Épreuve Profil'`),
     "et aucun des deux n'a rien écrit",
   ).toBe(0);
+});
+
+/*
+  Par où l'on nous a connus (26 septembre 2026, `lib/provenance.ts`). Même
+  exigence que le domaine, et pour la même raison : c'est une question qui se
+  compte. ⚠️ Une valeur inventée ne se range pas dans « Autre », elle se refuse
+  — sans quoi le chiffre qui décide de la prochaine campagne compterait des
+  réponses que personne n'a données.
+*/
+test("la provenance est exigée par la route, et une valeur inventée se refuse", async ({
+  request,
+}) => {
+  const base = {
+    formation: PARCOURS,
+    nom: "Épreuve Provenance",
+    whatsapp: "+212600000000",
+    pays: "Maroc",
+    plan: "P1",
+    moyen: "virement",
+    payeur: "particulier",
+    consentement: "oui",
+    profession: "Contrôleur de gestion",
+    domaine: "controle-gestion",
+    experience: "2-5",
+  };
+
+  const sans = await request.post("/api/inscription", {
+    form: { ...base, email: `provenance.a.${Date.now()}${MARQUE}` },
+    maxRedirects: 0,
+  });
+  expect(sans.headers()["location"], "sans provenance, la route refuse").toContain(
+    "erreur=provenance",
+  );
+
+  const inventee = await request.post("/api/inscription", {
+    form: { ...base, email: `provenance.b.${Date.now()}${MARQUE}`, provenance: "tiktok" },
+    maxRedirects: 0,
+  });
+  expect(inventee.headers()["location"], "⚠️ une provenance hors liste se refuse").toContain(
+    "erreur=provenance",
+  );
+
+  expect(
+    compterEnBase("inscriptions", `apprenant_nom = 'Épreuve Provenance'`),
+    "et aucun des deux n'a rien écrit",
+  ).toBe(0);
+
+  /* Le témoin : la même demande, avec une provenance offerte, passe et l'écrit. */
+  const email = `provenance.c.${Date.now()}${MARQUE}`;
+  const valide = await request.post("/api/inscription", {
+    form: { ...base, email, provenance: "entourage" },
+    maxRedirects: 0,
+  });
+  expect(valide.headers()["location"], "avec une provenance offerte, le dossier part").toContain(
+    "/inscription/CLX-",
+  );
+  expect(
+    compterEnBase(
+      "inscriptions",
+      `apprenant_email = '${email}' AND apprenant_provenance = 'entourage'`,
+    ),
+    "et la provenance est bien en base",
+  ).toBe(1);
 });
 
 /** Remplit le formulaire et rend la référence obtenue. */
@@ -498,6 +564,7 @@ test.describe("Un envoi répété", () => {
             profession: "Contrôleur de gestion",
             experience: "2-5",
             domaine: "controle-gestion",
+            provenance: "linkedin",
             pays: "Maroc",
             plan: "P1",
             moyen: "virement",
@@ -712,6 +779,7 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         profession: "Contrôleur de gestion",
         experience: "2-5",
         domaine: "controle-gestion",
+        provenance: "linkedin",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",
@@ -772,6 +840,7 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
         profession: "Contrôleur de gestion",
         experience: "2-5",
         domaine: "controle-gestion",
+        provenance: "linkedin",
         pays: "Maroc",
         plan: "P1",
         moyen: "virement",
@@ -852,7 +921,6 @@ test("une session complète le dit, et n'accepte plus personne", async ({ page, 
       message.toLowerCase(),
       "⚠️ et dire de quoi il s'agit — une place qui se libère, pas un renseignement",
     ).toMatch(/place se lib|date s'ouvre/);
-
   } finally {
     // Chaque session retrouve son décompte, même si l'épreuve a échoué.
     for (const paire of avant.split(",")) {
