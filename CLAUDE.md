@@ -4700,6 +4700,17 @@ destinataires » à la liste entière de cette nature.
   écrivent eux-mêmes survol, mise au point et désactivé.
 - **Regardé à l'écran**, 1280 et 375 px, liste cochée, bouton armé (sans
   envoyer : une seule requête, l'essai), compteurs à zéro et non nuls.
+- **En ligne le 26 septembre 2026 au soir** (`ef669ee`). La colonne
+  `courriels.nature` poussée sur `dev`, puis sur la production **après
+  comparaison des deux schémas** — un seul écart, celui-là, et plus aucun
+  après ; 127 dossiers intacts. `/api/version` a rendu le bon commit, la
+  recette est sortie en 0. Les lignes déjà présentes sont nées « dossier »
+  par la valeur par défaut de la colonne : c'est l'import qui suit qui les a
+  reclassées.
+- **Avant la mise en ligne, Resend écrivait déjà** : deux des cinq
+  « retardées » du matin sont arrivées d'elles-mêmes par le webhook, créées
+  par leur premier événement. La preuve que le suivi vaut aussi pour ce qui
+  est parti avant lui — dès que Resend a du nouveau à dire.
 
 ⚠️ **La présentation du matin est entrée dans le suivi** (le même soir,
 `scripts/importer-export-resend.ts`, rejouable, `ECRIRE=1`). Elle était partie
@@ -4720,6 +4731,13 @@ soit 62 clients remis.
   vient l'état, sans faire croire à un appel de Resend qui n'a pas eu lieu.
 - **Rejoué, il ne fait rien** : « 0 à créer · 0 à mettre à jour · 73 déjà
   justes ».
+- L'import écrit directement en production : aucun déploiement n'est
+  nécessaire pour que les chiffres paraissent. Le script, lui, est parti avec
+  `96badf6`, en ligne le même soir.
+
+**Au 26 septembre 2026 au soir, tout le travail de la journée est en
+production** : la provenance à la pré-inscription et ses logos, le suivi des
+courriels, « Qui l'a reçue », les boutons, les classes réparées — et ce journal.
 
 ⚠️ **Les classes collées, et le formateur qui les recolle.**
 `prettier-plugin-tailwindcss` « nettoie » les classes d'un `className` et
