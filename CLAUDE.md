@@ -4701,6 +4701,26 @@ destinataires » à la liste entière de cette nature.
 - **Regardé à l'écran**, 1280 et 375 px, liste cochée, bouton armé (sans
   envoyer : une seule requête, l'essai), compteurs à zéro et non nuls.
 
+⚠️ **La présentation du matin est entrée dans le suivi** (le même soir,
+`scripts/importer-export-resend.ts`, rejouable, `ECRIRE=1`). Elle était partie
+avant le suivi, et l'encart disait « aucun envoi suivi » sous un envoi que
+toute l'équipe avait en tête. L'export CSV de Resend, rangé sous
+« présentation » : **70 lignes créées, 3 reclassées**, et l'envoi d'essai de
+15 h 32 reclassé à la main. Résultat en production : **68 remis, 5 retardés,
+1 rejeté** — dont cinq copies internes (`ridatey`, `eloizghitimohamedrida`),
+soit 62 clients remis.
+
+- ⚠️ **Entre le passage à blanc et l'écriture, Resend a écrit** : une des cinq
+  « retardées » est arrivée par le webhook, et le décompte est passé de 71 à
+  70 créations. Le script reconnaît une ligne à son identifiant Resend, jamais
+  à l'adresse — c'est ce qui a évité le doublon.
+- **Une ligne existante garde un état plus avancé** que celui de l'export (le
+  rang décide) : l'export est une photographie, l'appel la dernière nouvelle.
+- Chaque ligne importée porte un événement `export.<état>` : la fiche dit d'où
+  vient l'état, sans faire croire à un appel de Resend qui n'a pas eu lieu.
+- **Rejoué, il ne fait rien** : « 0 à créer · 0 à mettre à jour · 73 déjà
+  justes ».
+
 ⚠️ **Les classes collées, et le formateur qui les recolle.**
 `prettier-plugin-tailwindcss` « nettoie » les classes d'un `className` et
 **retire l'espace en tête** d'une chaîne : `` `a${x ? " b" : ""}` `` devient
