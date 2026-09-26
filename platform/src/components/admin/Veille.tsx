@@ -334,6 +334,25 @@ function IconeRecu() {
   );
 }
 
+function IconeEnveloppe() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3.5 6.5l8.5 6.5 8.5-6.5" />
+    </svg>
+  );
+}
+
 function IconeLivre() {
   return (
     <svg
@@ -1457,6 +1476,16 @@ export async function Veille() {
           <Link href="/admin/collections/recus" className="clixa-raccourcis__pill">
             <IconeRecu />
             <span>Reçus &amp; Transferts</span>
+          </Link>
+          {/*
+            Les courriels envoyés (26 septembre 2026). La page n'était
+            accessible que par le menu, replié par défaut : la direction l'a
+            cherchée sur ce tableau de bord le jour même de sa mise en ligne,
+            et ne l'a pas trouvée.
+          */}
+          <Link href="/admin/collections/courriels" className="clixa-raccourcis__pill">
+            <IconeEnveloppe />
+            <span>Courriels envoyés</span>
           </Link>
           <Link href="/admin/collections/programmes" className="clixa-raccourcis__pill">
             <IconeLivre />
