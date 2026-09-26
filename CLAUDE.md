@@ -1482,6 +1482,37 @@ derrière son voisin de gauche. Une colonne **décochée** reste décochée.
 - **Plus rien à lancer** quand on ajoute une colonne. `reparer-les-colonnes.ts`
   reste pour relire l'état des préférences.
 
+⚠️ **Contrôlé le 26 septembre 2026, le jour où « Nous a connus par » est
+arrivée** (demandé par la direction : « 3andak ikono les colone l 9dam khessro 3and
+chi had f face admin »). Mesuré en production, compte par compte, **en
+comparant la base et ce que /admin affiche** :
+
+| Compte | En base | À l'écran |
+|---|---|---|
+| `clixatravo@gmail.com`, `it@` | aucune liste figée | 15/15 |
+| `administration@` | figée, 37 entrées — 5 colonnes absentes | 15/15, complétées à la lecture |
+| `moukhtari@` | figée, « Référence » décochée | 14/15 |
+
+- ⚠️ **`reparer-les-colonnes.ts` ne suffit pas pour ce contrôle.** Il lit par
+  l'API, donc à travers les crochets qui complètent : il répond « rien ne
+  manque » même quand la base a un trou. Pour savoir ce qui est **enregistré**,
+  lire `payload_preferences.value` en SQL ; pour savoir ce qui **s'affiche**,
+  passer par `payload.find`. Les deux lectures ensemble, jamais une seule.
+- ⚠️ **La liste d'`administration` s'est refigée une troisième fois** — la même
+  liste d'avant, avec les cinq colonnes absentes, dont `suiviPar`. C'est
+  l'adresse d'un favori ou d'un onglet ancien, comme le 25 septembre. Les
+  crochets la complètent : rien ne manque à l'écran, et il n'y a rien à faire.
+- **La « Référence » de `moukhtari` a été recochée**, à la demande de la
+  direction (« raje3 lih kolxi hta howa ») : écrite en SQL dans `value`, pour
+  la raison écrite plus haut — `payload.update` refuse cette préférence. Les
+  colonnes manquantes posées derrière leur voisin (`completerLesColonnes`),
+  puis relu par l'API : **15/15**, tri `-createdAt` et 100 lignes par page
+  inchangés.
+- ⚠️ **Une colonne décochée n'est pas un défaut** : c'est le seul cas que les
+  crochets respectent exprès. La remettre est un geste décidé pour un compte,
+  pas une réparation générale. Et une adresse ancienne qui porte
+  `-reference` la redécochera : ouvrir /admin depuis le menu.
+
 ⚠️ **Ce que la tâche fera se lit d'avance** (`scripts/journal-des-relances.ts`,
 depuis le 7 septembre 2026). Il ne fait que lire : il rejoue les règles de
 `lib/places.ts` sur les dossiers réels et imprime, jour par jour, les courriels
