@@ -294,7 +294,7 @@ function BoutonAgir({
   const arme = etat.etat === "arme";
 
   return (
-    <div className={`clixa-agir${arme ? "clixa-agir--arme" : ""}`}>
+    <div className={`clixa-agir ${arme ? "clixa-agir--arme" : ""}`}>
       <div className="clixa-agir__ligne">
         <button
           type="button"

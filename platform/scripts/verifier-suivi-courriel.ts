@@ -10,6 +10,8 @@
  * qui refuserait tout passerait sinon au vert.
  */
 import {
+  GROUPES_ETAT,
+  lienDesCourriels,
   adresseNue,
   statutApres,
   statutDeLEvenement,
@@ -112,6 +114,31 @@ dire(
 dire(
   "pendant une rotation, l'une des deux suffit",
   valide({ signature: `v1,${Buffer.from("faux").toString("base64")} ${bonne}` }),
+);
+
+console.log("\n  Les trois groupes de « Qui l'a reçue »\n");
+
+/*
+  ⚠️ Une partition, exactement. Un état oublié sortirait des trois compteurs
+  sans que le total le montre ; un état compté deux fois gonflerait « remis ».
+*/
+const ranges = Object.values(GROUPES_ETAT).flat() as string[];
+dire(
+  "chaque état est dans un groupe, et un seul",
+  ranges.length === STATUTS_COURRIEL.length &&
+    STATUTS_COURRIEL.every((s) => ranges.filter((r) => r === s.valeur).length === 1),
+  `${ranges.length} rangés pour ${STATUTS_COURRIEL.length} états`,
+);
+dire("« remis » ne compte que les remis", GROUPES_ETAT.remis.join() === "delivre");
+dire(
+  "le lien d'une nature filtre sur elle",
+  lienDesCourriels("presentation") ===
+    "/admin/collections/courriels?where[nature][equals]=presentation",
+);
+dire(
+  "le lien d'un groupe porte tous ses états",
+  lienDesCourriels("demarrage", "perdus").split("where[statut][in]").length - 1 ===
+    GROUPES_ETAT.perdus.length,
 );
 
 console.log("\n  L'adresse\n");

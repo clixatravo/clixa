@@ -14,7 +14,10 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { POST } from "@/app/(payload)/api/webhooks/resend/route";
 import { signerCommeResend } from "@/lib/signature-resend";
-import { noterLEnvoi } from "@/lib/courriels-envoyes";
+import { compterLesEnvois, noterLEnvoi } from "@/lib/courriels-envoyes";
+import { lienDesCourriels } from "@/lib/suivi-courriel";
+import { parse } from "qs-esm";
+import type { Where } from "payload";
 
 const payload = await getPayload({ config });
 let manques = 0;
@@ -201,6 +204,121 @@ try {
   dire(
     "un événement qui ne concerne pas un courriel répond 200, sans rien écrire",
     ignore.statut === 200 && ignore.corps.effet === "ignore",
+  );
+
+  console.log("\n▸ Présentation et annonce, chacune à part\n");
+
+  /*
+    Deux présentations (une remise, une rejetée), une annonce remise, et un
+    courriel de dossier : le témoin qu'aucun lien ne doit ramasser.
+  */
+  const fab = async (id: string, nature: "presentation" | "demarrage" | "dossier") =>
+    noterLEnvoi(payload, { to: adresse, subject: `Épreuve ${nature}`, id, nature });
+  await fab(`${idResend}-p1`, "presentation");
+  await fab(`${idResend}-p2`, "presentation");
+  await fab(`${idResend}-d1`, "demarrage");
+  await fab(`${idResend}-x1`, "dossier");
+  await appeler(evt("email.delivered", `${idResend}-p1`));
+  await appeler(evt("email.bounced", `${idResend}-p2`));
+  await appeler(evt("email.delivered", `${idResend}-d1`));
+  await appeler(evt("email.delivered", `${idResend}-x1`));
+
+  const natureDe = async (id: string) =>
+    (
+      (
+        await payload.find({
+          collection: "courriels",
+          where: { resendId: { equals: id } },
+          limit: 1,
+          depth: 0,
+          overrideAccess: true,
+        })
+      ).docs[0] as { nature?: string } | undefined
+    )?.nature;
+  dire(
+    "la présentation est notée comme telle",
+    (await natureDe(`${idResend}-p1`)) === "presentation",
+  );
+  dire("l'annonce aussi", (await natureDe(`${idResend}-d1`)) === "demarrage");
+
+  /*
+    ⚠️ Le cas de la course : l'appel de Resend a créé la ligne avant l'envoi,
+    qui ne connaît que « dossier ». L'envoi, arrivé ensuite, pose la nature —
+    sans toucher à l'état écrit par Resend.
+  */
+  const devance = `${idResend}-devance`;
+  await appeler(evt("email.delivered", devance));
+  await fab(devance, "presentation");
+  const lDevance = await payload.find({
+    collection: "courriels",
+    where: { resendId: { equals: devance } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const dDevance = lDevance.docs[0] as { nature?: string; statut?: string } | undefined;
+  dire(
+    "⚠️ un appel arrivé avant l'envoi ne fait pas perdre la nature",
+    dDevance?.nature === "presentation" && dDevance?.statut === "delivre",
+    `${dDevance?.nature} · ${dDevance?.statut}`,
+  );
+
+  /*
+    ⚠️ Les liens de l'encart, tirés pour de vrai : un filtre d'URL faux ne casse
+    rien, Payload rend simplement la liste entière. On le lit comme /admin le
+    lit, restreint à nos adresses d'épreuve.
+  */
+  /*
+    ⚠️ Un opérateur mal orthographié fait lever Payload ici (« cannot be
+    queried »), là où /admin afficherait la liste sans filtre. On l'attrape
+    pour que le contrôle tombe **en le nommant**, au lieu de faire mourir la
+    garde entière sur une pile d'appels.
+  */
+  const parLien = async (url: string): Promise<(string | undefined)[]> => {
+    try {
+      const { where } = parse(url.split("?")[1] ?? "", { depth: 10 }) as { where?: Where };
+      const r = await payload.find({
+        collection: "courriels",
+        where: { and: [where ?? {}, { destinataire: { equals: adresse } }] },
+        limit: 100,
+        depth: 0,
+        overrideAccess: true,
+      });
+      return r.docs.map((d) => (d as { resendId?: string }).resendId);
+    } catch (e) {
+      console.log(`    ↳ ${url} : ${e instanceof Error ? e.message : String(e)}`);
+      return ["filtre illisible"];
+    }
+  };
+  const pres = await parLien(lienDesCourriels("presentation"));
+  dire(
+    "« Voir les destinataires » de la présentation ne montre que la présentation",
+    pres.includes(`${idResend}-p1`) &&
+      pres.includes(`${idResend}-p2`) &&
+      !pres.includes(`${idResend}-d1`) &&
+      !pres.includes(`${idResend}-x1`),
+    `${pres.length} ligne(s)`,
+  );
+  const presPerdus = await parLien(lienDesCourriels("presentation", "perdus"));
+  dire(
+    "« n'arriveront pas » ne ramasse que le rejet",
+    presPerdus.length === 1 && presPerdus[0] === `${idResend}-p2`,
+    presPerdus.join(", "),
+  );
+  const annRemis = await parLien(lienDesCourriels("demarrage", "remis"));
+  dire(
+    "et l'annonce reste à part",
+    annRemis.length === 1 && annRemis[0] === `${idResend}-d1`,
+    annRemis.join(", "),
+  );
+
+  const comptes = await compterLesEnvois(payload);
+  dire(
+    "les compteurs voient les lignes fabriquées",
+    comptes.presentation.remis >= 2 &&
+      comptes.presentation.perdus >= 1 &&
+      comptes.demarrage.remis >= 1,
+    JSON.stringify(comptes),
   );
 
   console.log("\n▸ Personne d'autre n'écrit\n");

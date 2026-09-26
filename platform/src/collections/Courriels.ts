@@ -1,6 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { connecte, reserveA } from "@/access/roles";
-import { OPTIONS_STATUT_COURRIEL } from "@/lib/suivi-courriel";
+import { OPTIONS_NATURE_COURRIEL, OPTIONS_STATUT_COURRIEL } from "@/lib/suivi-courriel";
 
 /**
  * Chaque courriel que le site envoie, et ce que Resend en dit.
@@ -30,7 +30,7 @@ export const Courriels: CollectionConfig = {
       L'état juste après le destinataire : c'est ce qu'on vient lire. Après
       l'objet, il sortait de l'écran d'un téléphone — vu à 375 px.
     */
-    defaultColumns: ["destinataire", "statut", "objet", "envoyeLe", "derniereNouvelleLe"],
+    defaultColumns: ["destinataire", "statut", "nature", "objet", "envoyeLe", "derniereNouvelleLe"],
     description:
       "Chaque courriel parti du site, et ce que Resend en dit : remis, retardé, rejeté, signalé. « Remis » veut dire accepté par le serveur du destinataire — pas lu, et pas forcément hors des indésirables.",
     listSearchableFields: ["destinataire", "objet"],
@@ -69,6 +69,20 @@ export const Courriels: CollectionConfig = {
         readOnly: true,
         components: { Cell: "@/components/admin/EtatCourriel#EtatCourriel" },
       },
+    },
+    {
+      /*
+        Présentation, annonce de démarrage, ou le reste du tunnel. Posée par
+        l'envoi, jamais devinée depuis l'objet. Voir `NATURES_COURRIEL`.
+      */
+      name: "nature",
+      type: "select",
+      label: "Nature",
+      required: true,
+      defaultValue: "dossier",
+      index: true,
+      options: OPTIONS_NATURE_COURRIEL,
+      admin: { readOnly: true },
     },
     {
       name: "detail",

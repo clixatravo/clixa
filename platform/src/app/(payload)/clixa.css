@@ -4659,6 +4659,231 @@ h3,
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   Les boutons des blocs d'envoi (26 septembre 2026 : « t9ad les botton mzyan
+   designe dakxi professional »).
+
+   Les boutons de Payload avaient l'air d'un formulaire de réglages posé dans
+   une carte de la maison : petits, contour blanc, et une marge héritée qui
+   laissait un grand vide au-dessus. Ceux-ci parlent la même langue que le
+   reste du tableau de bord.
+
+   ⚠️ **Hors de la règle « les boutons passent par les variables de Payload »**,
+   et c'est délibéré : elle vaut pour les boutons de l'outil, qu'on habille
+   sans les refaire. Ceux-ci sont à nous, dans des blocs à nous ; leurs états —
+   survol, mise au point, désactivé — sont donc écrits ici, tous.
+
+   Quatre rôles, pas un de plus :
+   - **principal** — or plein, texte encre (8,14:1). Seulement le bouton
+     **armé** : le clic suivant fait partir de vrais courriels ;
+   - **envoi** — contour et texte or : l'action qu'on vient faire, pas encore
+     engagée ;
+   - **secondaire** — encre et ivoire, l'or au survol ;
+   - **discret** — sans cadre : corriger, revenir.
+   ───────────────────────────────────────────────────────────────────────── */
+.clixa-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 1rem;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.clixa-bouton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.clixa-bouton:focus-visible {
+  outline: 2px solid var(--clixa-or-clair);
+  outline-offset: 2px;
+}
+.clixa-bouton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.clixa-bouton__icone {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.clixa-bouton--principal {
+  background: linear-gradient(180deg, var(--clixa-or-clair), var(--clixa-or));
+  border-color: var(--clixa-or);
+  color: #080c18;
+  box-shadow: 0 6px 18px -8px rgba(201, 162, 76, 0.7);
+}
+.clixa-bouton--principal:hover:not(:disabled) {
+  box-shadow: 0 8px 22px -8px rgba(201, 162, 76, 0.85);
+}
+.clixa-bouton--envoi {
+  background: rgba(201, 162, 76, 0.08);
+  border-color: rgba(201, 162, 76, 0.55);
+  color: var(--clixa-or-clair);
+}
+.clixa-bouton--envoi:hover:not(:disabled) {
+  background: rgba(201, 162, 76, 0.16);
+  border-color: var(--clixa-or);
+}
+.clixa-bouton--secondaire {
+  background: rgba(8, 12, 24, 0.55);
+  border-color: rgba(243, 239, 228, 0.22);
+  color: var(--clixa-ivoire);
+}
+.clixa-bouton--secondaire:hover:not(:disabled) {
+  border-color: rgba(201, 162, 76, 0.6);
+  color: var(--clixa-or-clair);
+}
+.clixa-bouton--discret {
+  background: transparent;
+  color: var(--clixa-ivoire-dim);
+  padding-inline: 0.6rem;
+}
+.clixa-bouton--discret:hover:not(:disabled) {
+  color: var(--clixa-ivoire);
+  transform: none;
+}
+/* À 375 px, deux boutons côte à côte ne tiennent plus : ils prennent la ligne. */
+@media (max-width: 480px) {
+  .clixa-envoi__ligne .clixa-bouton {
+    flex: 1 1 100%;
+  }
+}
+
+.clixa-envoi__texte--attente {
+  color: var(--clixa-or-clair);
+}
+/* Les adresses qui ne sont pas parties : l'or dit « il reste quelque chose à
+   faire », pas « erreur » — rien n'a échoué, le lot était plein. */
+.clixa-envoi__alerte {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(201, 162, 76, 0.08);
+  border-left: 2px solid var(--clixa-or);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.83rem;
+  line-height: 1.55;
+  color: var(--clixa-ivoire);
+}
+
+/* ── « Qui l'a reçue » ───────────────────────────────────────────────────── */
+.clixa-suivi-envois {
+  margin: 1.2rem -1.3rem -1.3rem;
+  padding: 0.95rem 1.3rem 1.05rem;
+  background: rgba(8, 12, 24, 0.45);
+  border-top: 1px solid rgba(243, 239, 228, 0.09);
+}
+.clixa-suivi-envois__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+.clixa-suivi-envois__titre {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clixa-ivoire-dim);
+}
+.clixa-suivi-envois__total {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--clixa-ivoire-dim);
+}
+.clixa-suivi-envois__vide {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--clixa-ivoire-dim);
+}
+.clixa-suivi-envois__rangee {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.clixa-suivi-envois__compteurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+/* Un compteur est un lien : il mène aux courriels qu'il compte. */
+.clixa-compteur {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid rgba(243, 239, 228, 0.14);
+  border-radius: 999px;
+  background: rgba(17, 26, 51, 0.8);
+  text-decoration: none;
+  font-size: 0.8rem;
+  color: var(--clixa-ivoire-dim);
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+.clixa-compteur strong {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.clixa-compteur:hover {
+  background: rgba(22, 33, 66, 0.95);
+}
+.clixa-compteur--remis strong {
+  color: var(--clixa-emeraude-clair);
+}
+.clixa-compteur--remis:hover {
+  border-color: rgba(47, 163, 125, 0.55);
+}
+.clixa-compteur--attente strong {
+  color: var(--clixa-or-clair);
+}
+.clixa-compteur--attente:hover {
+  border-color: rgba(201, 162, 76, 0.55);
+}
+.clixa-compteur--perdu strong {
+  color: var(--clixa-rouge);
+}
+.clixa-compteur--perdu:hover {
+  border-color: rgba(224, 82, 82, 0.55);
+}
+/* Éteint, mais présent : un zéro dit qu'on suit, et qu'il n'y a rien. */
+.clixa-compteur--eteint {
+  opacity: 0.55;
+}
+.clixa-compteur--eteint strong {
+  color: var(--clixa-ivoire-dim);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    Le suivi des versements (`SuiviVersements.tsx`, 25 septembre 2026).
 
    Il reprend la langue des blocs voisins — encre translucide, filet d'ivoire à

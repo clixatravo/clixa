@@ -215,6 +215,15 @@ cd platform && npm run epreuves:voir   # la même, avec l'interface
   son calcul, et le journal décrit déjà des pages à onze minutes pour cette
   raison. Lui donner encore plus de temps ne prouverait rien de plus ; la
   reconnaître évite de la chercher dans le code.
+
+  ⚠️ **Une autre signature, le 26 septembre 2026** : « le dossier CLX-… doit
+  être lisible depuis le back-office » — l'API n'a rendu **aucun** dossier
+  juste après sa création par le tunnel. Une fois dans une série complète ;
+  seule aussitôt après, 38 s et vert, puis une série entière verte (98/98).
+  Le rapport a été lu **avant** de relancer : page connectée, tableau de bord
+  affiché, aucune erreur serveur. Non expliqué. Si elle revient, regarder ce
+  que rend la requête (`r.status`) — l'épreuve ne lit que `docs`, et un 403 ou
+  un 500 s'y lisent pareil.
 - ⚠️ **Un échec resté inexpliqué**, le 5 septembre 2026 puis le 6 :
   `contrat.spec` échoue dans une série complète, une fois, et passe seule
   aussitôt après (2/2 en 28 s) ; la série suivante est verte sans qu'on ait
@@ -3951,6 +3960,9 @@ logo dyalhom m3a smeyat »). Six choix, dans cet ordre.
   `` `clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}` ``,
   sans espace : le premier domaine — celui qu'on vient lire — portait une classe
   inexistante, donc aucune barre. Rien ne l'attrape, ni type, ni lint.
+  ⚠️ **Et cette ligne a menti le jour même** : la correction n'est jamais
+  partie. Le formateur l'a défaite avant le commit — voir « les classes
+  collées », plus bas. Réellement corrigée le 26 septembre 2026 au soir.
 - **Le logo paraît aussi dans la colonne de la liste** (`components/admin/Provenance.tsx`,
   demandé le même jour : « zid l logos f colonne dyal /admin »), même dessin
   qu'au tableau de bord. ⚠️ Le tiret dit « question pas posée » — les dossiers
@@ -4651,6 +4663,63 @@ pas de courrier. Noter ici quel compte porte le domaine dès qu'on le sait.
 - ⚠️ **`vercel env ls` échoue depuis un arbre de travail** (« codebase isn't
   linked ») : `.vercel/` n'est pas suivi. Le lancer depuis
   `~/Desktop/clixa/platform`.
+
+⚠️ **« Qui l'a reçue », sous chacun des deux blocs d'envoi** (demandé le même
+soir : « menha n3arfohom bjoj nass li wssalhom Annonce de démarrage o lakhrin o
+kola wehdin dirhom bohdhom bach i b9aw far9iin »). Trois compteurs — remis, en
+cours, n'arriveront pas —, chacun mène à la liste filtrée, et « Voir les
+destinataires » à la liste entière de cette nature.
+
+- **La nature est posée au départ** (`nature` sur `Courriels` :
+  présentation, annonce de démarrage, suivi de dossier), jamais devinée depuis
+  l'objet — celui de la présentation change avec le parcours mis en avant.
+- ⚠️ **L'appel de Resend peut créer la ligne avant l'envoi**, et il ne sait
+  pas ce qu'était le courriel : la ligne naît « dossier ». `noterLEnvoi`,
+  refusé ensuite par l'unicité, pose alors la nature — et rien d'autre, l'état
+  restant celui de Resend. **Prouvé en le retirant : un rouge.**
+- ⚠️ **Les trois groupes sont une partition** des sept états, vérifiée : un
+  état oublié sortirait des trois compteurs sans que le total le montre.
+- ⚠️ **Les liens de l'encart sont tirés pour de vrai** dans
+  `verifier-webhook-resend.ts`, avec un témoin d'une autre nature. Un opérateur
+  mal orthographié (`equal`) fait lever Payload dans un script, quand /admin
+  rendrait la liste sans filtre : la garde l'attrape et **nomme** le contrôle
+  tombé, au lieu de mourir sur une pile d'appels. Prouvé : trois rouges.
+- **Les compteurs se redemandent après un envoi** (`router.refresh()`) :
+  sinon l'encart afficherait les chiffres d'avant, juste sous le bilan qui
+  annonce les nouveaux. Un compte qui échoue rend des zéros, jamais une page
+  tombée — le `catch` est posé à la création de la promesse.
+- **Les adresses au-delà du lot de soixante reviennent à l'écran** après
+  l'envoi de la présentation, avec « Préparer les N suivantes ». Avant, l'écran
+  disait « 60 envoyées » et le bouton suivant vidait la case : les suivantes
+  disparaissaient sans un mot.
+- **Les boutons des deux blocs sont à nous** (`.clixa-bouton`, quatre rôles :
+  principal — or plein, seulement armé ; envoi ; secondaire ; discret). Ceux de
+  Payload avaient l'air d'un formulaire de réglages, avec une marge qui
+  laissait un grand vide. ⚠️ Hors de la règle « les boutons passent par les
+  variables de Payload », qui vaut pour les boutons de l'outil : ceux-ci
+  écrivent eux-mêmes survol, mise au point et désactivé.
+- **Regardé à l'écran**, 1280 et 375 px, liste cochée, bouton armé (sans
+  envoyer : une seule requête, l'essai), compteurs à zéro et non nuls.
+
+⚠️ **Les classes collées, et le formateur qui les recolle.**
+`prettier-plugin-tailwindcss` « nettoie » les classes d'un `className` et
+**retire l'espace en tête** d'une chaîne : `` `a${x ? " b" : ""}` `` devient
+`` `a${x ? "b" : ""}` ``, soit la classe `ab`, qui n'existe pas. L'élément perd
+son dessin au moment précis où son état change. Trouvé **cinq fois** le
+26 septembre 2026 : la liste cochée de l'annonce, la première barre des
+domaines, le bouton armé du fil des étapes (`clixa-agir--arme`, en production
+depuis on ne sait quand), et deux fois dans le code écrit le jour même.
+
+- ⚠️ **La correction disparaît au formatage suivant.** C'est pourquoi la barre
+  des domaines, « corrigée » le matin, est partie en production sans son
+  espace — et pourquoi ce journal l'a dite corrigée.
+- **La forme qui tient** : l'espace hors de la chaîne,
+  `` `a ${x ? "b" : ""}` ``. Le formateur ne touche pas au gabarit.
+- `verifier-classes-collees.ts`, sans base, dans `npm run gardes` : il lit
+  chaque ligne `className` de `src/`. **Prouvé en écrivant la forme « juste »
+  puis en formatant** : le formateur retire l'espace, la garde nomme la ligne.
+  Les pluriels hors de `className` (« formation${n > 1 ? "s" : ""} ») ne sont
+  pas des classes et passent.
 
 ⚠️ **Le sous-domaine d'envoi ne sait pas recevoir, et c'est voulu** —
 `envoi.clixa.africa` n'a ni MX ni A. Sans `replyTo`, la réponse du participant

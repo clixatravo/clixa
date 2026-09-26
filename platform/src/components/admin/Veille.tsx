@@ -16,6 +16,7 @@ import {
 import { repartitionParDomaine } from "@/lib/profil";
 import { ficheProvenance, repartitionParProvenance } from "@/lib/provenance";
 import { LogoSvg } from "@/components/LogoSvg";
+import { compterLesEnvois } from "@/lib/courriels-envoyes";
 import { SupervisionFormations, type FormationResume } from "./SupervisionFormations";
 import { AnnonceDemarrage } from "@/components/admin/AnnonceDemarrage";
 import { PresenterInstitut } from "@/components/admin/PresenterInstitut";
@@ -602,6 +603,22 @@ export async function Veille() {
     select: { apprenantDomaine: true, apprenantProvenance: true } as never,
   });
 
+  /*
+    « Qui l'a reçue » sous les deux blocs d'envoi (26 septembre 2026). Lancé ici
+    avec les autres lectures, attendu plus bas : il ne dépend d'aucune.
+  */
+  /*
+    ⚠️ Un compte qui échoue ne doit pas emporter le tableau de bord : l'encart
+    se tait (zéro partout, « aucun envoi suivi ») plutôt que de faire tomber
+    la page où l'équipe arrive le matin. Le `catch` est posé dès le départ :
+    posé au moment d'attendre, un rejet survenu entre-temps passerait pour
+    non traité.
+  */
+  const promesseEnvois = compterLesEnvois(payload).catch(() => ({
+    presentation: { remis: 0, enCours: 0, perdus: 0 },
+    demarrage: { remis: 0, enCours: 0, perdus: 0 },
+  }));
+
   // 2. Nouvelles demandes de rappel
   const promesseDemandes = payload.find({
     collection: "demandes-rappel",
@@ -711,6 +728,8 @@ export async function Veille() {
     d'`avancementDuDossier` — et celle des six défauts de la supervision,
     trouvés en relisant parce qu'aucun n'était tombé au rouge.
   */
+  const envois = await promesseEnvois;
+
   const profils = docsDomaines as unknown as {
     apprenantDomaine?: string | null;
     apprenantProvenance?: string | null;
@@ -1366,7 +1385,7 @@ export async function Veille() {
                 </Link>
                 <span className="clixa-domaines__barre" aria-hidden="true">
                   <span
-                    className={`clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
+                    className={`clixa-domaines__part ${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
                     style={{
                       width: `${Math.max(l.barre, 4)}%`,
                       /*
@@ -1431,7 +1450,7 @@ export async function Veille() {
                   </Link>
                   <span className="clixa-domaines__barre" aria-hidden="true">
                     <span
-                      className={`clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
+                      className={`clixa-domaines__part ${rang === 0 ? "clixa-domaines__part--tete" : ""}`}
                       style={{
                         width: `${Math.max(l.barre, 4)}%`,
                         opacity: Math.max(1 - rang * 0.16, 0.3),
@@ -1453,14 +1472,14 @@ export async function Veille() {
         pas un raccourci. Elle ne s'affiche pas toute seule et n'envoie rien
         avant qu'on ait regardé à qui — voir `AnnonceDemarrage`.
       */}
-      <AnnonceDemarrage />
+      <AnnonceDemarrage suivi={envois.demarrage} />
 
       {/*
         La présentation, à côté de l'annonce : les deux écrivent à des gens,
         mais pas aux mêmes. L'annonce s'adresse à qui a un dossier ; celle-ci à
         qui n'en a pas encore.
       */}
-      <PresenterInstitut />
+      <PresenterInstitut suivi={envois.presentation} />
 
       <div className="clixa-raccourcis">
         <span className="clixa-raccourcis__titre">ACCÈS DIRECTS :</span>

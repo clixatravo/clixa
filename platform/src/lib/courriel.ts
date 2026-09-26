@@ -3,6 +3,7 @@ import { DEVISE_CLIXA } from "@/lib/marque";
 import type { Payload } from "payload";
 import { phraseDeLaSuite } from "@/lib/versements";
 import { noterLEnvoi } from "@/lib/courriels-envoyes";
+import type { NatureCourriel } from "@/lib/suivi-courriel";
 
 /**
  * BE-16 — Courriels exécutifs & transactionnels CLIXA Institute.
@@ -490,11 +491,20 @@ async function envoyer(
      * l'attendent de tout expéditeur en volume depuis 2024, comme DMARC.
      */
     headers?: Record<string, string>;
+    /**
+     * Pour « Courriels envoyés » : présentation, annonce de démarrage, ou le
+     * reste du tunnel (par défaut). Voir `NATURES_COURRIEL`.
+     *
+     * ⚠️ Retirée avant l'envoi : passée telle quelle à l'expéditeur, elle
+     * partirait comme un champ inconnu dans l'appel à Resend.
+     */
+    nature?: NatureCourriel;
   },
 ): Promise<boolean> {
+  const { nature = "dossier", ...courriel } = message;
   try {
     // `replyTo` sur tous les messages : l'expéditeur ne sait pas recevoir.
-    const resultat = await payload.sendEmail({ replyTo: REPONDRE_A, ...message });
+    const resultat = await payload.sendEmail({ replyTo: REPONDRE_A, ...courriel });
 
     /*
       ── Un envoi réussi laisse une trace, lui aussi ──────────────────────────
@@ -526,6 +536,7 @@ async function envoyer(
     await noterLEnvoi(payload, {
       to: message.to,
       subject: message.subject,
+      nature,
       ...(id ? { id: String(id) } : {}),
     });
     return true;
@@ -534,6 +545,7 @@ async function envoyer(
     await noterLEnvoi(payload, {
       to: message.to,
       subject: message.subject,
+      nature,
       erreur: e instanceof Error ? e.message : String(e),
     });
     return false;
@@ -1942,6 +1954,7 @@ export async function courrielDemarrageCohorte(
     .join("\n");
 
   return envoyer(payload, {
+    nature: "demarrage",
     to: d.apprenantEmail,
     /*
       ⚠️ L'objet nomme le parcours, jamais la seule date. « Votre parcours
@@ -2335,6 +2348,7 @@ export async function courrielPresentation(
   const desabonnement = `mailto:${REPONDRE_A}?subject=${encodeURIComponent("Désabonnement")}`;
 
   return envoyer(payload, {
+    nature: "presentation",
     to: d.email,
     subject: p.objet,
     text: texte,

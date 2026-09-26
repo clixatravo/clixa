@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { SuiviDUneNature } from "@/lib/suivi-courriel";
+import { IconeBouton } from "./IconeBouton";
+import { SuiviDesEnvois } from "./SuiviDesEnvois";
 
 /**
  * Annoncer le démarrage — à des listes choisies, jamais à tout le monde.
@@ -72,9 +76,15 @@ type Etat =
   | { quoi: "parti"; reponse: Reponse }
   | { quoi: "erreur"; dit: string };
 
-export function AnnonceDemarrage() {
+export function AnnonceDemarrage({ suivi }: { suivi?: SuiviDUneNature }) {
   const [etat, setEtat] = useState<Etat>({ quoi: "repos" });
   const [choisies, setChoisies] = useState<string[]>([]);
+  const router = useRouter();
+
+  /* Voir `PresenterInstitut` : les chiffres se redemandent après un envoi. */
+  const suiviEnPied = (
+    <SuiviDesEnvois nature="demarrage" suivi={suivi} titre="Qui a reçu l’annonce" />
+  );
 
   const appeler = async (corps: Record<string, unknown>): Promise<Reponse | null> => {
     try {
@@ -105,7 +115,10 @@ export function AnnonceDemarrage() {
   const envoyer = async () => {
     setEtat({ quoi: "occupe" });
     const rep = await appeler({ clefs: choisies });
-    if (rep) setEtat({ quoi: "parti", reponse: rep });
+    if (rep) {
+      setEtat({ quoi: "parti", reponse: rep });
+      router.refresh();
+    }
   };
 
   if (etat.quoi === "occupe") {
@@ -114,7 +127,8 @@ export function AnnonceDemarrage() {
         <header className="clixa-envoi__tete">
           <span className="clixa-envoi__titre">Annonce de démarrage</span>
         </header>
-        <p className="clixa-envoi__texte">En cours…</p>
+        <p className="clixa-envoi__texte clixa-envoi__texte--attente">En cours…</p>
+        {suiviEnPied}
       </section>
     );
   }
@@ -136,16 +150,20 @@ export function AnnonceDemarrage() {
             et repartiront au prochain envoi.
           </p>
         )}
-        <button
-          type="button"
-          className="btn btn--size-small btn--style-secondary"
-          onClick={() => {
-            setChoisies([]);
-            void regarder();
-          }}
-        >
-          Revoir les listes
-        </button>
+        <div className="clixa-envoi__ligne">
+          <button
+            type="button"
+            className="clixa-bouton clixa-bouton--secondaire"
+            onClick={() => {
+              setChoisies([]);
+              void regarder();
+            }}
+          >
+            <IconeBouton nom="recommencer" />
+            Revoir les listes
+          </button>
+        </div>
+        {suiviEnPied}
       </section>
     );
   }
@@ -164,6 +182,7 @@ export function AnnonceDemarrage() {
             <span className="clixa-envoi__titre">Annonce de démarrage</span>
           </header>
           <p className="clixa-envoi__bilan">Tout le monde a déjà été prévenu.</p>
+          {suiviEnPied}
         </section>
       );
     }
@@ -186,7 +205,15 @@ export function AnnonceDemarrage() {
             const coche = choisies.includes(l.clef);
             return (
               <li key={l.clef}>
-                <label className={`clixa-envoi__liste${coche ? "clixa-envoi__liste--coche" : ""}`}>
+                {/*
+                  ⚠️ L'espace avant « --coche » n'est pas décoratif. Sans lui, la
+                  liste cochée portait une seule classe inexistante,
+                  « clixa-envoi__listeclixa-envoi__liste--coche », et perdait
+                  tout son dessin au moment même où on la choisit — vu à
+                  l'écran le 26 septembre 2026. Le même défaut que la première
+                  barre des domaines, le même jour.
+                */}
+                <label className={`clixa-envoi__liste ${coche ? "clixa-envoi__liste--coche" : ""}`}>
                   <input
                     type="checkbox"
                     checked={coche}
@@ -210,12 +237,13 @@ export function AnnonceDemarrage() {
         <div className="clixa-envoi__ligne">
           <button
             type="button"
-            className={`btn btn--size-small ${etat.arme ? "btn--style-primary" : "btn--style-secondary"}`}
+            className={`clixa-bouton ${etat.arme ? "clixa-bouton--principal" : "clixa-bouton--envoi"}`}
             disabled={choisies.length === 0}
             onClick={() =>
               etat.arme ? void envoyer() : setEtat({ quoi: "vu", reponse: r, arme: true })
             }
           >
+            <IconeBouton nom="envoyer" />
             {etat.arme
               ? `Confirmer — ${partiront} message(s)`
               : choisies.length === 0
@@ -234,6 +262,7 @@ export function AnnonceDemarrage() {
             </span>
           )}
         </div>
+        {suiviEnPied}
       </section>
     );
   }
@@ -247,14 +276,18 @@ export function AnnonceDemarrage() {
         Prévenir des inscrits que leur parcours commence, et dire à chacun ce qu’il lui reste à
         faire. Vous choisissez les listes ; rien ne part avant.
       </p>
-      <button
-        type="button"
-        className="btn btn--size-small btn--style-secondary"
-        onClick={() => void regarder()}
-      >
-        Voir les listes
-      </button>
+      <div className="clixa-envoi__ligne">
+        <button
+          type="button"
+          className="clixa-bouton clixa-bouton--secondaire"
+          onClick={() => void regarder()}
+        >
+          <IconeBouton nom="listes" />
+          Voir les listes
+        </button>
+      </div>
       {etat.quoi === "erreur" && <p className="clixa-envoi__refus">{etat.dit}</p>}
+      {suiviEnPied}
     </section>
   );
 }

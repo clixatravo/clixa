@@ -1055,6 +1055,7 @@ export interface Courriel {
   destinataire: string;
   objet?: string | null;
   statut: 'envoye' | 'differe' | 'delivre' | 'rejete' | 'bloque' | 'echec' | 'plainte';
+  nature: 'presentation' | 'demarrage' | 'dossier';
   /**
    * La raison d'un rejet, telle que le serveur d'en face l'a donnée.
    */
@@ -1750,6 +1751,7 @@ export interface CourrielsSelect<T extends boolean = true> {
   destinataire?: T;
   objet?: T;
   statut?: T;
+  nature?: T;
   detail?: T;
   envoyeLe?: T;
   derniereNouvelleLe?: T;

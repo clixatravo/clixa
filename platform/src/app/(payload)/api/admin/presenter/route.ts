@@ -188,5 +188,14 @@ export async function POST(requete: Request): Promise<Response> {
     partis,
     manques,
     enTrop,
+    /*
+      ⚠️ Les adresses au-delà du lot, et pas seulement leur nombre. Le
+      26 septembre 2026, l'écran d'après l'envoi disait « 60 envoyées » et
+      proposait « Envoyer à une autre liste », qui vidait la case : les
+      suivantes disparaissaient sans que rien ne le dise. Elles reviennent
+      maintenant à l'écran, prêtes à repartir — un autre jour si le quota
+      l'exige.
+    */
+    suite: tous.slice(LOT_MAXIMUM).map((d) => d.email),
   });
 }

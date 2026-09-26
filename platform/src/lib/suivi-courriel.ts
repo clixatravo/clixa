@@ -93,3 +93,68 @@ export function adresseNue(to: string): string {
   const m = to.match(/<([^>]+)>/);
   return (m ? m[1]! : to).trim().toLowerCase();
 }
+
+/**
+ * Ce qu'est un courriel — pour que les envois décidés un matin ne se mêlent
+ * pas au flux du tunnel.
+ *
+ * Demandé par la direction le 26 septembre 2026 : savoir, **séparément**, qui a
+ * reçu la présentation et qui a reçu l'annonce de démarrage (« kola wehdin
+ * dirhom bohdhom bach i b9aw far9iin »). Les deux partent d'un bouton, à des
+ * dizaines de personnes d'un coup ; le reste — confirmation, contrat,
+ * certificat — suit un geste d'une seule personne.
+ *
+ * ⚠️ **La nature est posée au départ, jamais devinée depuis l'objet.** L'objet
+ * de la présentation change avec le parcours mis en avant ; un filtre sur le
+ * texte perdrait les envois du mois suivant sans que rien ne le dise.
+ */
+export const NATURES_COURRIEL = [
+  { valeur: "presentation", libelle: "Présentation de l'institut" },
+  { valeur: "demarrage", libelle: "Annonce de démarrage" },
+  { valeur: "dossier", libelle: "Suivi de dossier" },
+] as const;
+
+export type NatureCourriel = (typeof NATURES_COURRIEL)[number]["valeur"];
+
+export const OPTIONS_NATURE_COURRIEL = NATURES_COURRIEL.map((n) => ({
+  label: n.libelle,
+  value: n.valeur,
+}));
+
+/**
+ * Les états, rangés en trois questions — celles que pose l'équipe devant un
+ * envoi : qui l'a eu, qui attend encore, qui ne l'aura jamais.
+ *
+ * ⚠️ Chaque état est dans **un seul** groupe, et tous y sont. Un état oublié
+ * sortirait des trois compteurs sans que le total le montre ; la garde vérifie
+ * la partition.
+ */
+export const GROUPES_ETAT = {
+  remis: ["delivre"],
+  enCours: ["envoye", "differe"],
+  perdus: ["rejete", "bloque", "echec", "plainte"],
+} as const satisfies Record<string, readonly StatutCourriel[]>;
+
+export type GroupeEtat = keyof typeof GROUPES_ETAT;
+
+export interface SuiviDUneNature {
+  remis: number;
+  enCours: number;
+  perdus: number;
+}
+
+/**
+ * L'adresse de la liste « Courriels envoyés », filtrée sur une nature et, au
+ * besoin, sur un groupe d'états.
+ *
+ * ⚠️ **Un filtre d'URL faux ne casse rien** : Payload rend la liste entière,
+ * sans erreur. `verifier-webhook-resend.ts` tire donc ce filtre pour de vrai,
+ * contre des lignes qu'il fabrique, avec un témoin qu'il ne doit pas ramasser.
+ */
+export function lienDesCourriels(nature: NatureCourriel, groupe?: GroupeEtat): string {
+  const parties = [`where[nature][equals]=${nature}`];
+  if (groupe) {
+    GROUPES_ETAT[groupe].forEach((s, i) => parties.push(`where[statut][in][${i}]=${s}`));
+  }
+  return `/admin/collections/courriels?${parties.join("&")}`;
+}

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { SuiviDUneNature } from "@/lib/suivi-courriel";
+import { IconeBouton } from "./IconeBouton";
+import { SuiviDesEnvois } from "./SuiviDesEnvois";
 
 /**
  * Envoyer la présentation de l'institut à une liste choisie.
@@ -24,6 +28,8 @@ interface Reponse {
   manques?: string[];
   enTrop?: number;
   rentree?: string | null;
+  /** Les adresses au-delà du lot — elles ne sont pas parties. */
+  suite?: string[];
   erreur?: string;
 }
 
@@ -34,9 +40,19 @@ type Etat =
   | { quoi: "parti"; reponse: Reponse }
   | { quoi: "erreur"; dit: string };
 
-export function PresenterInstitut() {
+export function PresenterInstitut({ suivi }: { suivi?: SuiviDUneNature }) {
   const [liste, setListe] = useState("");
   const [etat, setEtat] = useState<Etat>({ quoi: "saisie" });
+  const router = useRouter();
+
+  /*
+    « Qui l'a reçue » est compté par le tableau de bord, côté serveur. Après un
+    envoi, on lui redemande ses chiffres : sans cela l'encart afficherait ceux
+    d'avant, juste sous le bilan qui annonce les nouveaux.
+  */
+  const suiviEnPied = (
+    <SuiviDesEnvois nature="presentation" suivi={suivi} titre="Qui a reçu la présentation" />
+  );
 
   const appeler = async (essai: boolean): Promise<Reponse | null> => {
     try {
@@ -67,7 +83,10 @@ export function PresenterInstitut() {
   const envoyer = async () => {
     setEtat({ quoi: "occupe" });
     const rep = await appeler(false);
-    if (rep) setEtat({ quoi: "parti", reponse: rep });
+    if (rep) {
+      setEtat({ quoi: "parti", reponse: rep });
+      router.refresh();
+    }
   };
 
   if (etat.quoi === "occupe") {
@@ -76,13 +95,15 @@ export function PresenterInstitut() {
         <header className="clixa-envoi__tete">
           <span className="clixa-envoi__titre">Présenter l’institut</span>
         </header>
-        <p className="clixa-envoi__texte">En cours…</p>
+        <p className="clixa-envoi__texte clixa-envoi__texte--attente">En cours…</p>
+        {suiviEnPied}
       </div>
     );
   }
 
   if (etat.quoi === "parti") {
     const r = etat.reponse;
+    const suite = r.suite ?? [];
     return (
       <div className="clixa-envoi">
         <header className="clixa-envoi__tete">
@@ -96,16 +117,40 @@ export function PresenterInstitut() {
             {r.manques!.length} envoi(s) manqué(s) : {r.manques!.join(", ")}.
           </p>
         )}
-        <button
-          type="button"
-          className="btn btn--size-small btn--style-secondary"
-          onClick={() => {
-            setListe("");
-            setEtat({ quoi: "saisie" });
-          }}
-        >
-          Envoyer à une autre liste
-        </button>
+        {suite.length > 0 && (
+          <p className="clixa-envoi__alerte">
+            <strong>{suite.length}</strong> adresse(s) au-delà du lot ne sont <strong>pas</strong>{" "}
+            parties. Elles sont gardées ci-dessous : envoyez-les un autre jour si le quota quotidien
+            de Resend est entamé.
+          </p>
+        )}
+        <div className="clixa-envoi__ligne">
+          {suite.length > 0 && (
+            <button
+              type="button"
+              className="clixa-bouton clixa-bouton--envoi"
+              onClick={() => {
+                setListe(suite.join("\n"));
+                setEtat({ quoi: "saisie" });
+              }}
+            >
+              <IconeBouton nom="suite" />
+              Préparer les {suite.length} suivante(s)
+            </button>
+          )}
+          <button
+            type="button"
+            className="clixa-bouton clixa-bouton--secondaire"
+            onClick={() => {
+              setListe("");
+              setEtat({ quoi: "saisie" });
+            }}
+          >
+            <IconeBouton nom="recommencer" />
+            Envoyer à une autre liste
+          </button>
+        </div>
+        {suiviEnPied}
       </div>
     );
   }
@@ -133,26 +178,31 @@ export function PresenterInstitut() {
         <div className="clixa-envoi__ligne">
           <button
             type="button"
-            className={`btn btn--size-small ${etat.arme ? "btn--style-primary" : "btn--style-secondary"}`}
+            className={`clixa-bouton ${etat.arme ? "clixa-bouton--principal" : "clixa-bouton--envoi"}`}
             onClick={() =>
               etat.arme ? void envoyer() : setEtat({ quoi: "vu", reponse: r, arme: true })
             }
           >
-            {etat.arme ? "Confirmer l’envoi" : "Envoyer la présentation"}
+            <IconeBouton nom="envoyer" />
+            {etat.arme
+              ? `Confirmer — ${r.destinataires?.length ?? 0} envoi(s)`
+              : "Envoyer la présentation"}
           </button>
           <button
             type="button"
-            className="btn btn--size-small btn--style-secondary"
+            className="clixa-bouton clixa-bouton--discret"
             onClick={() => setEtat({ quoi: "saisie" })}
           >
+            <IconeBouton nom="corriger" />
             Corriger la liste
           </button>
         </div>
         {etat.arme && (
-          <p className="clixa-envoi__avis">
+          <p className="clixa-envoi__avis clixa-envoi__avis--fort">
             Des courriels partiront chez de vraies personnes. C’est irréversible.
           </p>
         )}
+        {suiviEnPied}
       </div>
     );
   }
@@ -177,14 +227,16 @@ export function PresenterInstitut() {
       <div className="clixa-envoi__ligne">
         <button
           type="button"
-          className="btn btn--size-small btn--style-secondary"
+          className="clixa-bouton clixa-bouton--secondaire"
           disabled={liste.trim() === ""}
           onClick={() => void regarder()}
         >
+          <IconeBouton nom="relire" />
           Relire la liste avant d’envoyer
         </button>
       </div>
       {etat.quoi === "erreur" && <p className="clixa-envoi__refus">{etat.dit}</p>}
+      {suiviEnPied}
     </div>
   );
 }

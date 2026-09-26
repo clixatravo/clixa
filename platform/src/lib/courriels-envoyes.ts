@@ -4,7 +4,14 @@
 import { randomBytes } from "node:crypto";
 import type { Payload } from "payload";
 import { sql } from "drizzle-orm";
-import { adresseNue, statutApres, statutDeLEvenement } from "./suivi-courriel";
+import {
+  adresseNue,
+  GROUPES_ETAT,
+  statutApres,
+  statutDeLEvenement,
+  type NatureCourriel,
+  type SuiviDUneNature,
+} from "./suivi-courriel";
 
 /**
  * Note un envoi — réussi, avec l'identifiant de Resend ; ou manqué, avec la
@@ -27,7 +34,7 @@ import { adresseNue, statutApres, statutDeLEvenement } from "./suivi-courriel";
  */
 export async function noterLEnvoi(
   payload: Payload,
-  envoi: { to: string; subject: string; id?: string; erreur?: string },
+  envoi: { to: string; subject: string; id?: string; erreur?: string; nature?: NatureCourriel },
 ): Promise<void> {
   const expediteurReel = Boolean(process.env.RESEND_API_KEY);
   if (!envoi.id && !(envoi.erreur && expediteurReel)) return;
@@ -41,6 +48,7 @@ export async function noterLEnvoi(
         destinataire: adresseNue(envoi.to),
         objet: envoi.subject.slice(0, 300),
         statut: envoi.id ? "envoye" : "echec",
+        nature: envoi.nature ?? "dossier",
         ...(envoi.id ? { resendId: envoi.id } : {}),
         envoyeLe: new Date().toISOString(),
         ...(envoi.erreur ? { detail: envoi.erreur.slice(0, 300) } : {}),
@@ -51,6 +59,22 @@ export async function noterLEnvoi(
       Le cas ordinaire ici est l'appel de Resend arrivé le premier : la ligne
       existe déjà. Une ligne de journal suffit, pas une pile d'appels.
     */
+    /*
+      ⚠️ Mais la ligne créée par l'appel ne sait pas ce qu'était le courriel :
+      Resend ne le dit pas. La nature est la seule chose que l'envoi connaît
+      et que l'appel ignore — on la pose, et rien d'autre : l'état, lui, est
+      celui que Resend a écrit.
+    */
+    if (envoi.id && envoi.nature && envoi.nature !== "dossier") {
+      try {
+        await payload.db.drizzle.execute(
+          sql`UPDATE courriels SET nature = ${envoi.nature}::enum_courriels_nature WHERE resend_id = ${envoi.id}`,
+        );
+        return;
+      } catch {
+        /* On retombe sur la ligne de journal ci-dessous. */
+      }
+    }
     payload.logger.warn(
       { to: envoi.to, raison: e instanceof Error ? e.message : String(e) },
       "[courriel] envoi non noté",
@@ -150,6 +174,11 @@ export async function appliquerEvenement(
         destinataire: adresseNue(Array.isArray(to) ? (to[0] ?? "") : (to ?? "")),
         objet: String(evenement.data?.subject ?? "").slice(0, 300),
         statut: nouveau ?? "envoye",
+        /*
+          Resend ne dit pas ce qu'était le courriel. « dossier » par défaut ;
+          `noterLEnvoi`, s'il arrive après, pose la vraie nature.
+        */
+        nature: "dossier",
         resendId: idResend,
         envoyeLe: evenement.data?.created_at ?? le,
         derniereNouvelleLe: le,
@@ -167,4 +196,36 @@ export async function appliquerEvenement(
     const repris = await mettreAJour();
     return repris === "absent" ? "ignore" : repris;
   }
+}
+
+/**
+ * Combien de courriels de chaque nature ont été remis, sont en cours, ou
+ * n'arriveront pas — pour l'encart « Qui l'a reçue » des blocs d'envoi.
+ *
+ * Six comptes, lancés ensemble : aucun ne dépend d'un autre. La nature
+ * « dossier » n'y est pas — personne ne la regarde en bloc.
+ */
+export async function compterLesEnvois(
+  payload: Payload,
+): Promise<Record<"presentation" | "demarrage", SuiviDUneNature>> {
+  const natures = ["presentation", "demarrage"] as const;
+  const groupes = Object.keys(GROUPES_ETAT) as (keyof typeof GROUPES_ETAT)[];
+  const comptes = await Promise.all(
+    natures.flatMap((nature) =>
+      groupes.map(async (groupe) => {
+        const { totalDocs } = await payload.count({
+          collection: "courriels",
+          where: {
+            and: [{ nature: { equals: nature } }, { statut: { in: [...GROUPES_ETAT[groupe]] } }],
+          },
+          overrideAccess: true,
+        });
+        return { nature, groupe, totalDocs };
+      }),
+    ),
+  );
+  const vide = (): SuiviDUneNature => ({ remis: 0, enCours: 0, perdus: 0 });
+  const suivi = { presentation: vide(), demarrage: vide() };
+  for (const c of comptes) suivi[c.nature][c.groupe] = c.totalDocs;
+  return suivi;
 }
