@@ -27,6 +27,7 @@ import { Partenaires } from "@/collections/Partenaires";
 import { Pages } from "@/collections/Pages";
 import { Medias } from "@/collections/Medias";
 import { Recus } from "@/collections/Recus";
+import { Courriels } from "@/collections/Courriels";
 import { DemandesRappel } from "@/collections/DemandesRappel";
 import { brancherLesColonnes } from "@/lib/colonnes-serveur";
 
@@ -134,6 +135,7 @@ export default buildConfig({
     Inscriptions,
     Apprenants,
     Recus,
+    Courriels,
     // Accès
     Utilisateurs,
   ],

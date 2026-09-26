@@ -246,6 +246,23 @@ for (const porte of [
   dire(r.code === 401, `${porte} refuse sans session d'équipe`, `reçu ${r.code}`);
 }
 
+/*
+  Le suivi des courriels (26 septembre 2026) : Resend y écrit « remis » ou
+  « rejeté ». Un appel non signé ne doit rien écrire — 401 avec la clef posée,
+  503 tant qu'elle ne l'est pas. Un 200 voudrait dire que n'importe qui peut
+  décider de ce que l'équipe lira sur la remise d'un courriel.
+*/
+const webhook = await repond("/api/webhooks/resend", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ type: "email.delivered", data: { email_id: "recette" } }),
+});
+dire(
+  [401, 503].includes(webhook.code),
+  "le suivi des courriels refuse un appel non signé",
+  `reçu ${webhook.code}`,
+);
+
 const listeRecus = await repond("/api/recus");
 dire(listeRecus.code === 403, "les justificatifs ne se listent pas", `reçu ${listeRecus.code}`);
 

@@ -4411,6 +4411,37 @@ h3,
 .clixa-provenance__vide {
   color: var(--clixa-ivoire-dim);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   L'état d'un courriel (26 septembre 2026). Voir `EtatCourriel.tsx`.
+   Texte et contour teintés, fond à peine : quarante lignes « Remis » pleines
+   d'émeraude feraient un mur vert où la ligne rouge ne se verrait plus.
+   ───────────────────────────────────────────────────────────────────────── */
+.clixa-etat-courriel {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid rgba(243, 239, 228, 0.18);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--clixa-ivoire-dim);
+}
+.clixa-etat-courriel--remis {
+  color: var(--clixa-emeraude-clair);
+  border-color: rgba(47, 163, 125, 0.45);
+  background: rgba(47, 163, 125, 0.08);
+}
+.clixa-etat-courriel--attente {
+  color: var(--clixa-or);
+  border-color: rgba(201, 162, 76, 0.45);
+}
+.clixa-etat-courriel--perdu {
+  color: var(--clixa-rouge);
+  border-color: rgba(224, 82, 82, 0.5);
+  background: rgba(224, 82, 82, 0.08);
+  font-weight: 600;
+}
 .clixa-domaines__nombre {
   font-family: var(--font-serif);
   font-size: 1rem;

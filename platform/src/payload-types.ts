@@ -85,6 +85,7 @@ export interface Config {
     inscriptions: Inscription;
     apprenants: Apprenant;
     recus: Recus;
+    courriels: Courriel;
     utilisateurs: Utilisateur;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -110,6 +111,7 @@ export interface Config {
     inscriptions: InscriptionsSelect<false> | InscriptionsSelect<true>;
     apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
     recus: RecusSelect<false> | RecusSelect<true>;
+    courriels: CourrielsSelect<false> | CourrielsSelect<true>;
     utilisateurs: UtilisateursSelect<false> | UtilisateursSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1043,6 +1045,38 @@ export interface Recus {
   createdAt: string;
 }
 /**
+ * Chaque courriel parti du site, et ce que Resend en dit : remis, retardé, rejeté, signalé. « Remis » veut dire accepté par le serveur du destinataire — pas lu, et pas forcément hors des indésirables.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courriels".
+ */
+export interface Courriel {
+  id: number;
+  destinataire: string;
+  objet?: string | null;
+  statut: 'envoye' | 'differe' | 'delivre' | 'rejete' | 'bloque' | 'echec' | 'plainte';
+  /**
+   * La raison d'un rejet, telle que le serveur d'en face l'a donnée.
+   */
+  detail?: string | null;
+  envoyeLe?: string | null;
+  derniereNouvelleLe?: string | null;
+  /**
+   * Le même que dans le tableau de bord de Resend — c'est par lui qu'on l'y retrouve.
+   */
+  resendId?: string | null;
+  evenements?:
+    | {
+        type?: string | null;
+        le?: string | null;
+        appel?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1133,6 +1167,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recus';
         value: number | Recus;
+      } | null)
+    | ({
+        relationTo: 'courriels';
+        value: number | Courriel;
       } | null)
     | ({
         relationTo: 'utilisateurs';
@@ -1701,6 +1739,29 @@ export interface RecusSelect<T extends boolean = true> {
   chemin?: T;
   typeFichier?: T;
   taille?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courriels_select".
+ */
+export interface CourrielsSelect<T extends boolean = true> {
+  destinataire?: T;
+  objet?: T;
+  statut?: T;
+  detail?: T;
+  envoyeLe?: T;
+  derniereNouvelleLe?: T;
+  resendId?: T;
+  evenements?:
+    | T
+    | {
+        type?: T;
+        le?: T;
+        appel?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

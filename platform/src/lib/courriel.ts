@@ -2,6 +2,7 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
 import { DEVISE_CLIXA } from "@/lib/marque";
 import type { Payload } from "payload";
 import { phraseDeLaSuite } from "@/lib/versements";
+import { noterLEnvoi } from "@/lib/courriels-envoyes";
 
 /**
  * BE-16 — Courriels exécutifs & transactionnels CLIXA Institute.
@@ -517,9 +518,24 @@ async function envoyer(
       { to: message.to, subject: message.subject, ...(id ? { id: String(id) } : {}) },
       "[courriel] envoyé",
     );
+    /*
+      Et en base, pour que /admin puisse dire ce que Resend en fera — remis,
+      rejeté, retardé. Le journal de Vercel ne garde que les dernières minutes.
+      Voir `lib/suivi-courriel.ts`.
+    */
+    await noterLEnvoi(payload, {
+      to: message.to,
+      subject: message.subject,
+      ...(id ? { id: String(id) } : {}),
+    });
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: message.to }, "[courriel] envoi impossible");
+    await noterLEnvoi(payload, {
+      to: message.to,
+      subject: message.subject,
+      erreur: e instanceof Error ? e.message : String(e),
+    });
     return false;
   }
 }
@@ -925,9 +941,19 @@ export async function envoyerConfirmation(
       { to: destinataire, subject: message.subject, ...(id ? { id: String(id) } : {}) },
       "[courriel] envoyé",
     );
+    await noterLEnvoi(payload, {
+      to: destinataire,
+      subject: message.subject,
+      ...(id ? { id: String(id) } : {}),
+    });
     return true;
   } catch (e) {
     payload.logger.error({ err: e, to: destinataire }, "[confirmation] envoi impossible");
+    await noterLEnvoi(payload, {
+      to: destinataire,
+      subject: message.subject,
+      erreur: e instanceof Error ? e.message : String(e),
+    });
     return false;
   }
 }

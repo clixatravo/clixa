@@ -96,6 +96,7 @@ npx tsx scripts/verifier-versements.ts           # qui a encore combien de tranc
 npx payload run scripts/verifier-colonnes.ts      # une colonne ajoutée paraît chez tout le monde
 npx payload run scripts/verifier-interblocage.ts   # deux inscriptions au même instant
                                                   # et le contrat vérifié
+npx payload run scripts/verifier-webhook-resend.ts # ce que Resend dit, et lui seul
 ```
 
 **La production se contrôle en une commande** (`INT-11`). Les épreuves
@@ -4550,6 +4551,74 @@ Resend** — le fil qui mène à son tableau de bord, où l'on voit si le serveu
 d'en face a accepté, refusé ou mis en attente. ⚠️ Jamais le corps : ces messages
 portent des montants, des références de dossier et des liens de règlement, et un
 journal se consulte à plusieurs.
+
+⚠️ **Le journal de Vercel ne suffisait pas, et il a menti une fois**
+(26 septembre 2026). La présentation est partie ce jour-là à soixante-huit
+prospects, en **quatre** lots — 29, 29, 6 et 8. Le journal n'en montrait qu'un,
+tronqué à huit lignes : il ne garde que les dernières minutes, et coupe les
+longues requêtes. La réponse « un seul envoi » a été donnée sur cette base,
+puis corrigée par l'export de Resend. Et retrouver ce compte Resend a demandé
+de deviner avec quel identifiant Google il avait été ouvert.
+
+**Les courriels se suivent donc depuis /admin** (« Courriels envoyés »,
+`lib/suivi-courriel.ts`, `api/webhooks/resend`, demandé par la direction :
+« 9ad liya l blan dyal resend l dakhel f site bach nb9aw metb3iin n3arfo nass
+li wssalhom email »). Chaque envoi laisse une ligne — destinataire, objet,
+identifiant Resend —, et Resend y écrit ce qu'il advient : remis, retardé,
+rejeté (avec la raison), bloqué, signalé comme indésirable.
+
+- **Deux écritures, et seulement deux.** `noterLEnvoi`, dans `envoyer()` et
+  `envoyerConfirmation()`, au moment du départ ; l'appel signé de Resend
+  ensuite. La collection refuse toute écriture par l'API ou /admin : un état
+  qu'on pourrait retoucher ne dirait plus ce que Resend a constaté.
+- ⚠️ **`noterLEnvoi` ne lève jamais**, et n'écrit rien sans expéditeur réel.
+  Elle est sur le chemin de chaque inscription : une base lente ne doit pas
+  changer un courriel parti en « erreur technique ». Et en développement, sans
+  `RESEND_API_KEY`, noter les messages écrits dans la console remplirait la
+  liste de courriels jamais partis.
+- ⚠️ **L'état ne recule jamais.** Les appels n'arrivent pas dans l'ordre : un
+  « retardé » peut suivre le « remis ». Chaque état a un rang, et ne cède qu'à
+  un rang égal ou supérieur ; « signalé » est au-dessus de tout.
+- ⚠️ **Et c'est un verrou, pas seulement un rang.** Resend envoie « parti » et
+  « remis » presque ensemble : deux appels lisaient la ligne en même temps, et
+  le dernier à écrire gagnait. `payload.update` réécrit d'ailleurs la ligne
+  entière, état compris. La mise à jour est donc en SQL, dans une transaction,
+  `SELECT … FOR UPDATE`. **Prouvé en retirant le verrou : « remis » recouvert
+  8 fois sur 10.**
+- ⚠️ **La signature est vérifiée à la main** (`lib/signature-resend.ts`, à la
+  manière de Svix), corps brut, horodatage à cinq minutes. Sans elle, la route
+  serait un formulaire public qui écrit « remis » sur n'importe quel courriel.
+  Sans `RESEND_WEBHOOK_SECRET`, elle répond **503** — elle ne s'ouvre pas. La
+  recette le vérifie en production.
+- **Un appel rejoué ne compte qu'une fois** (`svix-id`), et un courriel inconnu
+  — parti avant ce suivi — est créé par son premier événement.
+- ⚠️ **La signature a son propre fichier** parce qu'elle importe `node:crypto`,
+  et que la colonne « État » lit `lib/suivi-courriel.ts` dans le navigateur.
+- ⚠️ **« Remis » ne veut dire ni « lu » ni « hors des indésirables »** : le
+  serveur d'en face a accepté le message. La description de la collection le
+  dit, pour qu'on ne le découvre pas en appelant quelqu'un.
+- ⚠️ **Le premier jet de la garde affirmait l'inverse de son titre.** « Un appel
+  à quatre minutes passe » réutilisait la signature de maintenant : le contrôle
+  exigeait un refus, l'obtenait pour la mauvaise raison, et restait vert.
+  Chaque appel est désormais signé pour sa propre heure.
+- `verifier-suivi-courriel.ts` (sans base, 21 contrôles) et
+  `verifier-webhook-resend.ts` (contre `dev`, par la vraie route, 18
+  contrôles). **Prouvés en remettant trois défauts** : un état qui prend le
+  dernier arrivé, une signature sans horodatage, et la ligne sans verrou.
+
+⚠️ **Ce que Resend doit savoir, et qui ne se fait pas depuis le code** : le
+webhook se déclare dans le tableau de bord de Resend (Webhooks → Add endpoint,
+`https://www.clixa.africa/api/webhooks/resend`, événements `email.*`), et sa
+clef `whsec_…` se pose dans `RESEND_WEBHOOK_SECRET` sur Vercel, en
+Production. Tant qu'elle manque, les courriels se notent « Parti » et n'avancent
+pas.
+
+⚠️ **Le tableau de bord de Resend ne s'ouvre pas avec n'importe quel compte.**
+Le 26 septembre 2026, l'équipe `clixatravo` s'est révélée vide — aucun
+domaine, aucun envoi : ce n'est pas elle qui porte `envoi.clixa.africa`. Le
+compte s'ouvre par Google (« Last used »), et la réinitialisation par
+`contact@envoi.clixa.africa` ne peut pas aboutir : ce sous-domaine ne reçoit
+pas de courrier. Noter ici quel compte porte le domaine dès qu'on le sait.
 
 ⚠️ **Le sous-domaine d'envoi ne sait pas recevoir, et c'est voulu** —
 `envoi.clixa.africa` n'a ni MX ni A. Sans `replyTo`, la réponse du participant
