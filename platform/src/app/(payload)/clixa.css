@@ -4406,6 +4406,11 @@ h3,
   width: 0.95rem;
   height: 0.95rem;
 }
+/* Dans la liste : « la question n'a pas été posée », pas « Autre ». Effacé,
+   mais au-dessus du seuil de contraste — la leçon de « Jamais appelé ». */
+.clixa-provenance__vide {
+  color: var(--clixa-ivoire-dim);
+}
 .clixa-domaines__nombre {
   font-family: var(--font-serif);
   font-size: 1rem;

@@ -751,6 +751,8 @@ export const Inscriptions: CollectionConfig = {
           label: "Nous a connus par",
           options: OPTIONS_PROVENANCE,
           admin: {
+            /* Le logo à côté du nom, comme au tableau de bord. */
+            components: { Cell: "@/components/admin/Provenance#Provenance" },
             description:
               "Ce que la personne a répondu au formulaire. Vide sur les dossiers déposés avant le 26 septembre 2026, où la question n'existait pas.",
           },

@@ -4,6 +4,7 @@ import { BoutonWhatsapp as BoutonWhatsapp_20484ec4bac2ac1c08d8fb775fb2efc9 } fro
 import { OuEnEst as OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f } from '@/components/admin/OuEnEst'
 import { Delai as Delai_41074cc51fd1ce0ee1f319f7b052039e } from '@/components/admin/Delai'
 import { Suivi as Suivi_fcc81ccdd1e1890f3a9ce4dbb117afff } from '@/components/admin/Suivi'
+import { Provenance as Provenance_271c5089b279d9e8a83ea420fc939315 } from '@/components/admin/Provenance'
 import { SignatureVue as SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31 } from '@/components/admin/SignatureVue'
 import { EtapesContrat as EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383 } from '@/components/admin/EtapesContrat'
 import { EtiquetteEcheance as EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e } from '@/components/admin/EtiquetteEcheance'
@@ -24,6 +25,7 @@ export const importMap = {
   "@/components/admin/OuEnEst#OuEnEst": OuEnEst_7ac975c3ba9633aaee9d5c9630ce626f,
   "@/components/admin/Delai#Delai": Delai_41074cc51fd1ce0ee1f319f7b052039e,
   "@/components/admin/Suivi#Suivi": Suivi_fcc81ccdd1e1890f3a9ce4dbb117afff,
+  "@/components/admin/Provenance#Provenance": Provenance_271c5089b279d9e8a83ea420fc939315,
   "@/components/admin/SignatureVue#SignatureVue": SignatureVue_98c6a56bcb3d1068840c26dd31f6ac31,
   "@/components/admin/EtapesContrat#EtapesContrat": EtapesContrat_b0472c57310d2d62fcf9195cb6f5e383,
   "@/components/admin/EtiquetteEcheance#EtiquetteEcheance": EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e,

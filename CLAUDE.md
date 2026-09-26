@@ -3919,6 +3919,12 @@ logo dyalhom m3a smeyat »). Six choix, dans cet ordre.
   `` `clixa-domaines__part${rang === 0 ? "clixa-domaines__part--tete" : ""}` ``,
   sans espace : le premier domaine — celui qu'on vient lire — portait une classe
   inexistante, donc aucune barre. Rien ne l'attrape, ni type, ni lint.
+- **Le logo paraît aussi dans la colonne de la liste** (`components/admin/Provenance.tsx`,
+  demandé le même jour : « zid l logos f colonne dyal /admin »), même dessin
+  qu'au tableau de bord. ⚠️ Le tiret dit « question pas posée » — les dossiers
+  d'avant —, jamais « Autre ». `importMap.js` régénéré **et commité**. Regardé
+  à l'écran, sur deux dossiers d'épreuve retirés ensuite : 1440 et 375 px,
+  aucune erreur.
 - `verifier-provenance.ts` : dix-sept contrôles sans base, **prouvés en versant
   une valeur inventée dans « Autre » : trois rouges.**
 - **`inscriptions.apprenant_provenance`** : la base passe avant le code.
