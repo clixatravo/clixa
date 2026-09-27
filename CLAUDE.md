@@ -5610,14 +5610,22 @@ devoir partir deux semaines à Madrid.
 - ⚠️ **« Selon la formule retenue, CLIXA peut prendre en charge » reste mot
   pour mot.** Hébergement, restauration et transferts ne sont pas inclus
   d'office ; les annoncer ainsi ferait découvrir l'écart au devis.
-- ⚠️ **L'affiche n'est pas reprise telle quelle**, et pour quatre raisons :
-  elle porte **`www.clixa.com` et `contact@clixa.com`**, qui ne sont pas nos
-  adresses ; un **QR code** dont on ne sait pas où il mène ; des **photos de
-  villes** dont rien ne dit qu'elles sont les nôtres ; et un **suivi virtuel à
-  30 jours** que le texte de la direction ne promet pas. Les destinations sont
-  donc écrites, pas illustrées, et les coordonnées viennent de
-  `lib/reseaux.ts`. **À ne pas diffuser en l'état** : quiconque écrit à
-  l'adresse de l'affiche n'arrive pas chez nous.
+- **L'affiche est reprise en entier, sauf trois choses** (demandé le même
+  soir : « matenssa hta haja ») : le bandeau des quatre atouts, la phrase
+  « Des équipes plus performantes… », le **public de chaque programme** (DAF,
+  RAF, CFO… ; DG, managers… ; etc.) et sa **couleur**, l'**approche en quatre
+  temps** — dont le **suivi virtuel à 30 jours** et le **plan d'action à
+  90 jours** —, les compléments des destinations (« Grands groupes »,
+  « Leadership retreat »), le séminaire intra-entreprise et son bouton.
+  ⚠️ Le suivi et le plan à 90 jours sont des **promesses de la direction**,
+  portées par son affiche ; le premier jet les avait écartés faute de figurer
+  dans le texte. Si l'un change, c'est la table `approche` qu'on corrige.
+- ⚠️ **Ce qui n'est pas repris** : **`www.clixa.com` et `contact@clixa.com`**,
+  qui ne sont pas nos adresses ; le **QR code**, dont on ne sait pas où il
+  mène ; les **photos de villes et de personnes**, dont rien ne dit qu'elles
+  sont les nôtres. Les destinations sont écrites, pas illustrées, et les
+  coordonnées viennent de `lib/reseaux.ts`. **L'affiche n'est pas à diffuser
+  en l'état** : quiconque écrit à son adresse n'arrive pas chez nous.
 - **Deux vraies photos** (`public/images/entreprises/`), **composées en tête
   de page** : le formateur en grand, cadre doré décalé derrière, et l'atelier
   en médaillon (demandé le même jour : « 9ad designe dyal les photo bzoj o 9ad

@@ -20,15 +20,18 @@ import { RESEAUX_CLIXA } from "@/lib/reseaux";
  * dans son ordre : la promesse, le déroulé des deux semaines, les programmes,
  * ce que CLIXA organise, les cinq destinations, le séminaire privatisé.
  *
- * ── ⚠️ Ce que la page ne reprend pas de l'affiche transmise ────────────────
+ * ── L'affiche, reprise en entier sauf quatre choses ─────────────────────────
+ * Demandé le même jour : « matenssa hta haja ». Tout ce que porte l'affiche de
+ * la direction est ici — les quatre atouts, le public de chaque programme,
+ * l'approche en quatre temps avec son suivi à 30 jours et son plan d'action à
+ * 90 jours, les compléments des destinations, le séminaire intra-entreprise.
+ * Sauf :
  * - **`www.clixa.com` et `contact@clixa.com`** : ce n'est pas notre domaine.
  *   Les coordonnées viennent de `lib/reseaux.ts`, comme partout.
  * - **Le QR code** : on ne sait pas où il mène.
- * - **Les photos de villes** : rien ne dit qu'elles sont des nôtres. Les
- *   destinations sont écrites, pas illustrées ; les deux seules photos sont
- *   celles d'une vraie séance, transmises pour cette page.
- * - **« Session virtuelle 30 jours après »** : l'affiche la promet, le texte
- *   de la direction non. Une promesse de suivi se tient ou ne s'écrit pas.
+ * - **Les photos de villes et de personnes** : rien ne dit qu'elles sont des
+ *   nôtres. Les destinations sont écrites, pas illustrées ; les deux seules
+ *   photos sont celles d'une vraie séance, transmises pour cette page.
  *
  * ⚠️ **« Selon la formule retenue, CLIXA peut prendre en charge »** — la
  * nuance est dans le texte d'origine et elle reste. Hébergement, restauration
@@ -54,6 +57,62 @@ const ingredients = [
   "Networking",
   "Expérience culturelle",
   "Plan d'action",
+];
+
+/** Les quatre atouts du bandeau de l'affiche. */
+const atouts = [
+  {
+    titre: "Formations pratiques et opérationnelles",
+    trace:
+      "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1 M17 11a2.5 2.5 0 1 0 0-5 M21 20v-1a4 4 0 0 0-3-3.9",
+  },
+  {
+    titre: "Immersion professionnelle et visites d'entreprises",
+    trace: "M4 21V5l7-2v18 M11 21h9V9l-9-3 M7 8h1 M7 12h1 M7 16h1 M14 11h2 M14 15h2",
+  },
+  {
+    titre: "Réseautage international",
+    trace:
+      "M12 5a2 2 0 1 0 0-.01 M5 18a2 2 0 1 0 0-.01 M19 18a2 2 0 1 0 0-.01 M12 7v5 M12 12l-5.5 4.5 M12 12l5.5 4.5",
+  },
+  {
+    titre: "Plans d'action concrets, pour un impact durable dans votre entreprise",
+    trace: "M4 20h16 M6 16v-3 M10 16V9 M14 16v-5 M18 16V5 M16 7l2-2 2 2",
+  },
+];
+
+/**
+ * L'approche, en quatre temps — ceux de l'affiche, mot pour mot.
+ *
+ * ⚠️ Le suivi à 30 jours et le plan d'action à 90 jours sont des promesses de
+ * la direction, portées par son affiche. Elles figurent ici parce qu'elle a
+ * demandé de ne rien oublier ; le jour où l'un des deux change, c'est cette
+ * table qu'on corrige.
+ */
+const approche = [
+  {
+    titre: "Learn",
+    texte: "Expertise de haut niveau, cas pratiques, outils et simulations.",
+    trace: "M2 9l10-5 10 5-10 5-10-5z M6 11v5c3 2 9 2 12 0v-5 M22 9v6",
+  },
+  {
+    titre: "Experience",
+    texte: "Immersion professionnelle, visites d'entreprises, networking et expérience culturelle.",
+    trace:
+      "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M3 12h18 M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9 M12 3c-2.5 2.5-3.5 5.5-3.5 9s1 6.5 3.5 9",
+  },
+  {
+    titre: "Transform",
+    texte: "Des livrables concrets et un plan d'action à 90 jours.",
+    trace:
+      "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10 M12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2",
+  },
+  {
+    titre: "Follow-up",
+    texte: "Une session virtuelle 30 jours après le séminaire.",
+    trace:
+      "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1 M17 11a2.5 2.5 0 1 0 0-5 M21 20v-1a4 4 0 0 0-3-3.9",
+  },
 ];
 
 const semaines = [
@@ -85,9 +144,16 @@ const semaines = [
   },
 ];
 
+/*
+  Les couleurs sont celles de l'affiche : chaque programme a la sienne, et
+  c'est à elle qu'on le reconnaît d'une page à l'autre. Le public visé
+  (« pour ») vient aussi de l'affiche — le texte ne donnait que les thèmes.
+*/
 const programmes = [
   {
     titre: "Finance & Performance",
+    pour: "DAF, RAF, contrôle de gestion, CFO, managers financiers",
+    couleur: "#1f5fae",
     sujets: [
       "Finance",
       "Contrôle de gestion",
@@ -99,6 +165,8 @@ const programmes = [
   },
   {
     titre: "Leadership & Management",
+    pour: "DG, managers, hauts potentiels",
+    couleur: "#c9a24c",
     sujets: [
       "Leadership",
       "Management",
@@ -111,11 +179,15 @@ const programmes = [
   },
   {
     titre: "Project Management",
+    pour: "Chefs de projets, PMO, équipes projets",
+    couleur: "#1f9d63",
     sujets: ["Gestion de projet", "Agile", "PMO", "Risques", "Gouvernance", "Leadership projet"],
     trace: "M4 6h7 M4 12h11 M4 18h5 M15 6l2 2 4-4 M19 18l2 2 M17 16h.01",
   },
   {
     titre: "Procurement & Supply Chain",
+    pour: "Achats, logistique, opérations",
+    couleur: "#e0712f",
     sujets: [
       "Achats",
       "Supply Chain",
@@ -128,6 +200,8 @@ const programmes = [
   },
   {
     titre: "Sales & Business Development",
+    pour: "Directeurs commerciaux, KAM, responsables marchés",
+    couleur: "#7b4fb3",
     sujets: [
       "Stratégie commerciale",
       "Négociation",
@@ -138,6 +212,8 @@ const programmes = [
   },
   {
     titre: "AI & Digital Transformation",
+    pour: "Managers, équipes de transformation",
+    couleur: "#1a9ea3",
     sujets: [
       "Intelligence artificielle",
       "Digitalisation",
@@ -176,7 +252,7 @@ const destinations = [
   {
     ville: "Paris",
     pays: "France",
-    themes: ["Finance", "Leadership", "Stratégie", "Transformation"],
+    themes: ["Finance", "Leadership", "Stratégie", "Transformation", "Grands groupes"],
   },
   {
     ville: "Casablanca",
@@ -186,7 +262,13 @@ const destinations = [
   {
     ville: "Las Palmas",
     pays: "Espagne · Canaries",
-    themes: ["Logistique", "Ports", "Commerce Afrique-Europe", "Executive Development"],
+    themes: [
+      "Logistique",
+      "Ports",
+      "Commerce Afrique-Europe",
+      "Executive Development",
+      "Leadership retreat",
+    ],
   },
 ];
 
@@ -351,6 +433,31 @@ export default function Entreprises() {
         </div>
       </section>
 
+      {/* ── Les quatre atouts (bandeau de l'affiche) ─────────────────────── */}
+      <section className="border-line bg-panel/40 border-b px-6 py-10 sm:px-8">
+        <div className="mx-auto max-w-[1180px]">
+          <p className="font-display text-ivory mb-8 max-w-[40ch] text-[clamp(1.2rem,2.2vw,1.55rem)] leading-snug font-semibold">
+            Des équipes plus performantes pour des entreprises africaines{" "}
+            <span className="gold-gradient-text">plus ambitieuses.</span>
+          </p>
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
+            {atouts.map((a, i) => (
+              <li
+                key={a.titre}
+                className={`flex items-start gap-4 lg:px-6 ${i > 0 ? "lg:border-line lg:border-l" : "lg:pl-0"}`}
+              >
+                <span className="border-gold/40 bg-gold/10 text-gold-bright inline-flex size-12 shrink-0 items-center justify-center rounded-full border">
+                  <Pictogramme trace={a.trace} className="size-[22px]" />
+                </span>
+                <span className="text-ivory pt-1 text-[0.88rem] leading-snug font-semibold tracking-[0.02em] uppercase">
+                  {a.titre}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ── Pour qui : les deux offres ──────────────────────────────────── */}
       <section className="border-line border-b px-6 py-6 sm:px-8">
         <p className="text-ivory-dim mx-auto max-w-[1180px] text-[0.9rem] leading-relaxed">
@@ -426,28 +533,102 @@ export default function Entreprises() {
         </div>
       </section>
 
+      {/* ── L'approche en quatre temps (affiche) ─────────────────────────── */}
+      <section className="border-line relative overflow-hidden border-b px-6 py-16 sm:px-8">
+        <div className="ambient-glow-top" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-[1180px]">
+          <div className="mb-10">
+            <span className="mono-label text-gold mb-3 block">
+              Des expériences qui transforment vos équipes
+            </span>
+            <h2 className="text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
+              Notre approche : Learn <span className="text-gold">→</span> Experience{" "}
+              <span className="text-gold">→</span> Transform
+            </h2>
+          </div>
+
+          {/*
+            Quatre temps reliés par un filet doré sur grand écran : c'est une
+            suite, et le filet la montre sans rien écrire de plus. Sous 1024 px
+            les étapes s'empilent et le filet disparaît — vertical, il se
+            lirait comme une bordure.
+          */}
+          <ol className="relative grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+            <span
+              className="via-gold/40 absolute top-8 right-[12%] left-[12%] hidden h-px bg-gradient-to-r from-transparent to-transparent lg:block"
+              aria-hidden="true"
+            />
+            {approche.map((a, i) => (
+              <li key={a.titre} className="relative text-center">
+                <span className="border-gold/50 bg-ink text-gold-bright relative z-10 mx-auto mb-5 inline-flex size-16 items-center justify-center rounded-full border shadow-[0_0_28px_-8px_rgba(201,162,76,0.55)]">
+                  <Pictogramme trace={a.trace} className="size-7" />
+                </span>
+                <span className="text-gold/70 mb-1 block font-mono text-[0.62rem] tracking-[0.16em] uppercase">
+                  Étape {i + 1}
+                </span>
+                <h3 className="font-display text-ivory mb-2 text-[1.2rem] font-semibold uppercase">
+                  {a.titre}
+                </h3>
+                <p className="text-ivory-dim/90 mx-auto max-w-[26ch] text-[0.9rem] leading-relaxed">
+                  {a.texte}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* ── Les programmes ──────────────────────────────────────────────── */}
       <section className="border-line border-b px-6 py-16 sm:px-8">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-10">
-            <span className="mono-label text-gold mb-3 block">Nos programmes</span>
-            <h2 className="text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
+            <span className="mono-label text-gold mb-3 block">Nos programmes phares</span>
+            <h2 className="mb-3 text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
               Des programmes adaptés aux enjeux de votre organisation.
             </h2>
+            <p className="text-ivory-dim/90 text-[0.98rem]">
+              Des séminaires conçus autour de vos enjeux stratégiques.
+            </p>
           </div>
 
           <div className="carte-grid sm:grid-cols-2 lg:grid-cols-3">
             {programmes.map((p) => (
-              <article key={p.titre} className="executive-card rounded-clixa p-7">
-                <span className="border-gold/35 bg-gold/10 text-gold-bright mb-5 inline-flex size-11 items-center justify-center rounded-full border">
-                  <Pictogramme trace={p.trace} />
-                </span>
-                <h3 className="font-display text-ivory mb-3 text-[1.15rem] font-semibold">
-                  {p.titre}
-                </h3>
-                <p className="text-ivory-dim/85 text-[0.88rem] leading-relaxed">
-                  {p.sujets.join(" · ")}
+              <article
+                key={p.titre}
+                className="executive-card rounded-clixa relative flex flex-col overflow-hidden p-7"
+              >
+                <div
+                  className="absolute inset-x-0 top-0 h-[3px]"
+                  style={{ background: `linear-gradient(90deg, ${p.couleur}, transparent)` }}
+                  aria-hidden="true"
+                />
+                <div className="mb-5 flex items-center gap-4">
+                  <span
+                    className="inline-flex size-14 shrink-0 items-center justify-center rounded-full text-white shadow-[0_10px_24px_-10px_rgba(0,0,0,0.9)]"
+                    style={{ backgroundColor: p.couleur }}
+                  >
+                    <Pictogramme trace={p.trace} className="size-7" />
+                  </span>
+                  <h3 className="font-display text-ivory text-[1.15rem] leading-tight font-semibold">
+                    {p.titre}
+                  </h3>
+                </div>
+                <p className="text-ivory-dim mb-4 text-[0.86rem] leading-relaxed">
+                  <span className="text-gold-bright font-mono text-[0.66rem] tracking-[0.14em] uppercase">
+                    Pour
+                  </span>{" "}
+                  {p.pour}
                 </p>
+                <ul className="border-line/60 mt-auto flex flex-wrap gap-1.5 border-t pt-4">
+                  {p.sujets.map((t) => (
+                    <li
+                      key={t}
+                      className="border-line text-ivory/90 rounded-full border px-2.5 py-0.5 text-[0.75rem]"
+                    >
+                      {t}
+                    </li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>
@@ -496,9 +677,13 @@ export default function Entreprises() {
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-10">
             <span className="mono-label text-gold mb-3 block">5 destinations</span>
-            <h2 className="text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
+            <h2 className="mb-3 text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
               Cinq destinations. Cinq écosystèmes.
             </h2>
+            <p className="text-ivory-dim/90 max-w-[62ch] text-[0.98rem] leading-relaxed">
+              Des villes choisies pour leur écosystème économique, leur accessibilité et leurs
+              opportunités de networking.
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -537,13 +722,16 @@ export default function Entreprises() {
       <section className="border-line border-b px-6 py-16 sm:px-8">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-10 max-w-[62ch]">
-            <span className="mono-label text-gold mb-3 block">Private Corporate Seminar</span>
+            <span className="mono-label text-gold mb-3 block">
+              Private Corporate Seminar · Séminaire intra-entreprise
+            </span>
             <h2 className="mb-4 text-[clamp(1.6rem,3vw,2.3rem)] font-semibold">
               Votre entreprise. Vos collaborateurs. Vos enjeux.
             </h2>
             <p className="text-ivory-dim/90 text-[0.98rem] leading-relaxed">
               CLIXA peut privatiser un programme pour votre organisation et construire les deux
-              semaines autour de vos priorités.
+              semaines autour de vos priorités. Des programmes 100 % personnalisés pour vos équipes,
+              adaptés à vos objectifs et à votre secteur d&apos;activité.
             </p>
           </div>
 
@@ -557,6 +745,9 @@ export default function Entreprises() {
               </li>
             ))}
           </ol>
+          <div className="mt-8 flex justify-center sm:justify-start">
+            <BoutonSeminaire>Échangeons sur votre prochain séminaire</BoutonSeminaire>
+          </div>
         </div>
       </section>
 
