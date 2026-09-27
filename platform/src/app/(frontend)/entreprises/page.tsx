@@ -289,21 +289,64 @@ export default function Entreprises() {
             </div>
           </div>
 
-          <figure className="relative mx-auto w-full max-w-[380px]">
-            <div className="border-gold/30 rounded-clixa relative overflow-hidden border shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]">
+          {/*
+            ── Les deux photos, composées ──────────────────────────────────
+            Transmises par la direction le 27 septembre 2026 pour cette page.
+            Le formateur en grand, l'atelier en médaillon : l'une dit qui
+            anime, l'autre comment on travaille — deux vraies séances, là où
+            l'affiche d'origine montrait des villes dont rien ne dit qu'elles
+            sont les nôtres.
+
+            ⚠️ Recadrées à la source, pas seulement par `object-position` :
+            le formateur était une capture de téléphone à bandes noires, et
+            l'atelier montrait surtout le parquet — le tableau de scoring
+            occupait un tiers du cadre. Chacune est gardée à sa taille
+            d'origine, jamais agrandie. Les noms de fichiers ont changé avec le
+            recadrage : l'optimiseur d'images de Next — et le cache de Vercel —
+            gardent l'ancienne version sous l'ancien nom, et l'écran montrait
+            encore la salle entière.
+
+            ⚠️ Le médaillon est posé **dans** le cadre, pas en marge négative :
+            à 375 px, un décalage vers la gauche sortirait de l'écran et
+            ferait défiler la page de côté.
+          */}
+          <figure className="relative mx-auto w-full max-w-[460px] pb-16 pl-8 sm:pb-20 sm:pl-14">
+            <div
+              className="border-gold/35 rounded-clixa absolute top-5 right-0 bottom-24 left-12 translate-x-3 border sm:left-20 sm:translate-x-4"
+              aria-hidden="true"
+            />
+            <div className="rounded-clixa relative z-10 overflow-hidden border border-white/10 shadow-[0_30px_70px_-25px_rgba(0,0,0,0.9)]">
               <Image
-                src="/images/entreprises/seminaire-formateur.jpg"
+                src="/images/entreprises/formateur-en-seance.jpg"
                 alt="Un formateur CLIXA anime une séance de séminaire en salle"
                 width={738}
-                height={1313}
+                height={922}
                 priority
-                sizes="(min-width: 1024px) 380px, 90vw"
-                className="aspect-[4/5] w-full object-cover object-[50%_30%]"
+                sizes="(min-width: 1024px) 400px, 85vw"
+                className="aspect-[4/5] w-full object-cover"
               />
+              <div
+                className="from-ink/85 absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t to-transparent"
+                aria-hidden="true"
+              />
+              <span className="bg-ink/75 border-gold/40 text-gold-bright rounded-clixa absolute top-4 left-4 border px-2.5 py-1 font-mono text-[0.6rem] tracking-[0.14em] uppercase backdrop-blur-sm">
+                En séance
+              </span>
             </div>
-            <figcaption className="text-ivory-dim/80 mt-3 text-center font-mono text-[0.68rem] tracking-[0.12em] uppercase">
-              En séance · animation en salle
-            </figcaption>
+
+            <div className="rounded-clixa border-ink ring-gold/40 absolute bottom-0 left-0 z-20 w-[44%] overflow-hidden border-4 shadow-[0_22px_45px_-15px_rgba(0,0,0,0.95)] ring-1">
+              <Image
+                src="/images/entreprises/atelier-tableau-scoring.jpg"
+                alt="Tableau de scoring d'un atelier : trois équipes, leurs tests et leurs scores sur des post-it"
+                width={630}
+                height={840}
+                sizes="(min-width: 1024px) 200px, 40vw"
+                className="aspect-[3/4] w-full object-cover"
+              />
+              <span className="bg-ink/80 text-ivory absolute inset-x-0 bottom-0 px-2.5 py-1.5 font-mono text-[0.56rem] tracking-[0.12em] uppercase backdrop-blur-sm">
+                Atelier · scoring
+              </span>
+            </div>
           </figure>
         </div>
       </section>
@@ -337,9 +380,24 @@ export default function Entreprises() {
             </p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1fr_1fr_0.8fr]">
+          {/*
+            Les deux semaines, côte à côte et reliées : c'est une progression,
+            pas deux options. La photo d'atelier qui occupait une troisième
+            colonne est montée en tête de page, avec celle du formateur — une
+            même photo à deux endroits se lirait comme un remplissage.
+          */}
+          <div className="relative grid gap-6 lg:grid-cols-2 lg:gap-10">
+            <span
+              className="border-gold/50 bg-ink text-gold-bright absolute top-1/2 left-1/2 z-10 hidden size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border shadow-[0_0_24px_-6px_rgba(201,162,76,0.6)] lg:inline-flex"
+              aria-hidden="true"
+            >
+              <Pictogramme trace="M5 12h14 M13 6l6 6-6 6" className="size-5" />
+            </span>
             {semaines.map((s, i) => (
-              <article key={s.numero} className="executive-card rounded-clixa flex flex-col p-7">
+              <article
+                key={s.numero}
+                className="executive-card rounded-clixa flex flex-col p-7 sm:p-8"
+              >
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <span className="border-gold/30 bg-gold/10 text-gold-bright rounded-clixa px-2.5 py-1 font-mono text-[0.64rem] font-bold tracking-[0.12em] uppercase">
                     {s.numero}
@@ -352,7 +410,7 @@ export default function Entreprises() {
                   {s.titre}
                 </h3>
                 <p className="text-ivory-dim/90 mb-5 text-[0.93rem] leading-relaxed">{s.texte}</p>
-                <ul className="border-line/60 mt-auto grid gap-2 border-t pt-5">
+                <ul className="border-line/60 mt-auto grid gap-2 border-t pt-5 sm:grid-cols-2">
                   {s.points.map((p) => (
                     <li key={p} className="text-ivory flex items-start gap-2.5 text-[0.9rem]">
                       <span className="text-emerald-bright mt-[0.1rem]" aria-hidden="true">
@@ -364,50 +422,7 @@ export default function Entreprises() {
                 </ul>
               </article>
             ))}
-
-            <figure className="rounded-clixa border-line relative hidden overflow-hidden border lg:block">
-              <Image
-                src="/images/entreprises/atelier-scoring.jpg"
-                alt="Tableau de scoring d'un atelier : trois équipes, leurs tests et leurs scores sur des post-it"
-                width={1000}
-                height={1333}
-                sizes="(min-width: 1024px) 300px, 0px"
-                className="h-full w-full object-cover object-[50%_40%]"
-              />
-              <figcaption className="from-ink/95 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent p-5 pt-14">
-                <span className="text-gold-bright block font-mono text-[0.64rem] tracking-[0.14em] uppercase">
-                  En atelier
-                </span>
-                <span className="text-ivory text-[0.88rem] leading-snug">
-                  Trois équipes, des tests, un score : on apprend en le faisant.
-                </span>
-              </figcaption>
-            </figure>
           </div>
-
-          {/*
-            Sous 1024 px, la photo d'atelier passe sous les deux semaines, en
-            bandeau : en troisième colonne elle écraserait les cartes, et
-            empilée en portrait elle ferait défiler un écran entier de post-it.
-          */}
-          <figure className="rounded-clixa border-line relative mt-6 overflow-hidden border lg:hidden">
-            <Image
-              src="/images/entreprises/atelier-scoring.jpg"
-              alt="Tableau de scoring d'un atelier : trois équipes, leurs tests et leurs scores sur des post-it"
-              width={1000}
-              height={1333}
-              sizes="100vw"
-              className="aspect-[16/10] w-full object-cover object-[50%_45%]"
-            />
-            <figcaption className="from-ink/95 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent p-4 pt-12">
-              <span className="text-gold-bright block font-mono text-[0.62rem] tracking-[0.14em] uppercase">
-                En atelier
-              </span>
-              <span className="text-ivory text-[0.86rem]">
-                Trois équipes, des tests, un score : on apprend en le faisant.
-              </span>
-            </figcaption>
-          </figure>
         </div>
       </section>
 

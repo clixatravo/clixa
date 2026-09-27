@@ -5618,11 +5618,29 @@ devoir partir deux semaines à Madrid.
   donc écrites, pas illustrées, et les coordonnées viennent de
   `lib/reseaux.ts`. **À ne pas diffuser en l'état** : quiconque écrit à
   l'adresse de l'affiche n'arrive pas chez nous.
-- **Deux vraies photos** (`public/images/entreprises/`) : le formateur en
-  séance — la capture portait des bandes noires, retirées par `sharp.trim`, et
-  gardée à sa largeur d'origine plutôt qu'agrandie — et le tableau de scoring
-  d'un atelier. Leurs légendes disent ce qu'elles montrent, rien de plus :
-  ni lieu, ni date, ni nom.
+- **Deux vraies photos** (`public/images/entreprises/`), **composées en tête
+  de page** : le formateur en grand, cadre doré décalé derrière, et l'atelier
+  en médaillon (demandé le même jour : « 9ad designe dyal les photo bzoj o 9ad
+  dakxi professional ktar »). Leurs légendes disent ce qu'elles montrent,
+  rien de plus : ni lieu, ni date, ni nom.
+  - ⚠️ **Recadrées à la source.** Le formateur était une capture de téléphone
+    à bandes noires (`sharp.trim`, puis 4:5 sur la personne) ; l'atelier
+    montrait surtout le parquet, le tableau de scoring n'occupait qu'un tiers
+    du cadre. Toutes deux gardées à leur taille d'origine, jamais agrandies.
+  - ⚠️ **Et renommées après recadrage** (`formateur-en-seance.jpg`,
+    `atelier-tableau-scoring.jpg`). Sous l'ancien nom, l'optimiseur d'images
+    de Next servait encore la version d'avant — l'écran montrait la salle
+    entière après le recadrage. Vercel met en cache de la même façon : un
+    fichier qu'on retouche change de nom.
+  - ⚠️ **Le médaillon est posé dans le cadre, pas en marge négative** : à
+    375 px, un décalage vers la gauche sortirait de l'écran.
+  - **La mention « 2 semaines · Learn · Experience · Transform » posée sur la
+    grande photo a été retirée** : le médaillon la coupait, et le titre la dit
+    déjà.
+  - **Les deux semaines sont côte à côte, reliées par une flèche** : c'est une
+    progression, pas deux options. La photo d'atelier qui y tenait une
+    troisième colonne est montée en tête — une même photo à deux endroits se
+    lirait comme un remplissage.
 - **Le bouton ouvre WhatsApp, message déjà écrit** (« nous souhaitons
   organiser un séminaire de deux semaines ») : une demande d'entreprise arrive
   ainsi nommée dans la conversation. Le courriel est donné à côté.
