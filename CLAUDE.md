@@ -5593,6 +5593,45 @@ ouvrir une de plus.
   défauts** — un prix écrit en dur, « replays », la liste du CMS, une session
   passée annoncée comme la prochaine : quatre rouges.
 
+⚠️ **/entreprises porte désormais les séminaires internationaux en présentiel**
+(27 septembre 2026, texte « CLIXA Corporate Training » transmis par la
+direction, avec deux photos de séance et une affiche). Précisé le même jour par
+Mounir Mokhtari : CLIXA a **deux offres** — **en ligne pour des personnes**
+(le catalogue : DAF, directeur de production, directeur marketing…) et **en
+présentiel pour des entreprises**. Cette page est la seconde, et elle renvoie à
+la première en tête : sans ce renvoi, un cadre venu pour lui-même croirait
+devoir partir deux semaines à Madrid.
+
+- **Le texte de la direction, dans son ordre** : la promesse, les deux
+  semaines (Learn, puis Experience & Transform), six programmes, ce que CLIXA
+  organise, cinq destinations (Madrid, Barcelone, Paris, Casablanca,
+  Las Palmas), le séminaire privatisé, l'appel. Les trois anciennes formules —
+  inscriptions groupées, session dédiée, académie interne — sont retirées.
+- ⚠️ **« Selon la formule retenue, CLIXA peut prendre en charge » reste mot
+  pour mot.** Hébergement, restauration et transferts ne sont pas inclus
+  d'office ; les annoncer ainsi ferait découvrir l'écart au devis.
+- ⚠️ **L'affiche n'est pas reprise telle quelle**, et pour quatre raisons :
+  elle porte **`www.clixa.com` et `contact@clixa.com`**, qui ne sont pas nos
+  adresses ; un **QR code** dont on ne sait pas où il mène ; des **photos de
+  villes** dont rien ne dit qu'elles sont les nôtres ; et un **suivi virtuel à
+  30 jours** que le texte de la direction ne promet pas. Les destinations sont
+  donc écrites, pas illustrées, et les coordonnées viennent de
+  `lib/reseaux.ts`. **À ne pas diffuser en l'état** : quiconque écrit à
+  l'adresse de l'affiche n'arrive pas chez nous.
+- **Deux vraies photos** (`public/images/entreprises/`) : le formateur en
+  séance — la capture portait des bandes noires, retirées par `sharp.trim`, et
+  gardée à sa largeur d'origine plutôt qu'agrandie — et le tableau de scoring
+  d'un atelier. Leurs légendes disent ce qu'elles montrent, rien de plus :
+  ni lieu, ni date, ni nom.
+- **Le bouton ouvre WhatsApp, message déjà écrit** (« nous souhaitons
+  organiser un séminaire de deux semaines ») : une demande d'entreprise arrive
+  ainsi nommée dans la conversation. Le courriel est donné à côté.
+- Regardé à 1440 et 375 px : aucun débordement, aucune erreur ; `acces.spec`
+  et `mobile.spec` (36 épreuves), qui parcourent la page, sont verts.
+- ⚠️ **La carte « Séminaires & Salle de Conseil » de l'accueil n'a pas
+  suivi** : elle dit encore « en classe virtuelle — et bientôt en présentiel »
+  et mène à `/campus`. À aligner si la direction le veut.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |
