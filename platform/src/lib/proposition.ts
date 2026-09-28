@@ -73,6 +73,14 @@ const PAGES_SANS_PROPOSITION = [
   "/compte",
   "/mentions-legales",
   "/confidentialite",
+  /*
+    ⚠️ La page des séminaires en présentiel pour entreprises (27 septembre
+    2026). La fenêtre propose de retenir sa place dans un parcours en ligne,
+    à titre individuel : c'est l'autre offre. Ouverte là, elle interrompait
+    une entreprise venue pour un séminaire de deux semaines avec « Gardez
+    votre place — aucun compte à créer ». Vu à la capture, sur téléphone.
+  */
+  "/entreprises",
 ];
 
 export function pageAcceptelaProposition(chemin: string): boolean {

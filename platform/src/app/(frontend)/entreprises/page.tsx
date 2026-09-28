@@ -313,7 +313,7 @@ function BoutonSeminaire({ children }: { children: ReactNode }) {
       href={LIEN_SEMINAIRE}
       target="_blank"
       rel="noopener noreferrer"
-      className="shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold rounded-clixa inline-flex min-h-12 items-center justify-center gap-2 border bg-gradient-to-r px-7 py-3.5 text-center text-sm font-bold tracking-[0.08em] uppercase shadow-[0_4px_18px_-4px_rgba(201,162,76,0.3)] transition-all hover:scale-[1.01] hover:shadow-[0_6px_24px_-2px_rgba(201,162,76,0.45)]"
+      className="shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold rounded-clixa inline-flex min-h-12 w-full items-center justify-center gap-2 border bg-gradient-to-r px-6 py-3.5 text-center text-[0.8rem] font-bold tracking-[0.06em] uppercase shadow-[0_4px_18px_-4px_rgba(201,162,76,0.3)] transition-all hover:scale-[1.01] hover:shadow-[0_6px_24px_-2px_rgba(201,162,76,0.45)] sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.08em]"
     >
       {children}
       <Pictogramme trace="M5 12h14 M13 6l6 6-6 6" className="size-4" />
@@ -548,30 +548,39 @@ export default function Entreprises() {
           </div>
 
           {/*
-            Quatre temps reliés par un filet doré sur grand écran : c'est une
-            suite, et le filet la montre sans rien écrire de plus. Sous 1024 px
-            les étapes s'empilent et le filet disparaît — vertical, il se
-            lirait comme une bordure.
+            Quatre temps reliés par un filet doré : horizontal sur grand écran,
+            vertical sur téléphone. C'est une suite, et le filet la montre sans
+            rien écrire de plus.
+
+            ⚠️ Sur téléphone, l'icône passe à gauche du texte. Centrées et
+            empilées, les quatre étapes faisaient défiler un écran et demi pour
+            quatre phrases courtes — vu à la capture à 375 px.
           */}
-          <ol className="relative grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          <ol className="relative grid gap-7 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             <span
               className="via-gold/40 absolute top-8 right-[12%] left-[12%] hidden h-px bg-gradient-to-r from-transparent to-transparent lg:block"
               aria-hidden="true"
             />
+            <span
+              className="from-gold/50 via-gold/25 absolute top-6 bottom-6 left-6 w-px bg-gradient-to-b to-transparent sm:hidden"
+              aria-hidden="true"
+            />
             {approche.map((a, i) => (
-              <li key={a.titre} className="relative text-center">
-                <span className="border-gold/50 bg-ink text-gold-bright relative z-10 mx-auto mb-5 inline-flex size-16 items-center justify-center rounded-full border shadow-[0_0_28px_-8px_rgba(201,162,76,0.55)]">
-                  <Pictogramme trace={a.trace} className="size-7" />
+              <li key={a.titre} className="relative flex items-start gap-5 lg:block lg:text-center">
+                <span className="border-gold/50 bg-ink text-gold-bright relative z-10 inline-flex size-12 shrink-0 items-center justify-center rounded-full border shadow-[0_0_28px_-8px_rgba(201,162,76,0.55)] lg:mx-auto lg:mb-5 lg:size-16">
+                  <Pictogramme trace={a.trace} className="size-6 lg:size-7" />
                 </span>
-                <span className="text-gold/70 mb-1 block font-mono text-[0.62rem] tracking-[0.16em] uppercase">
-                  Étape {i + 1}
-                </span>
-                <h3 className="font-display text-ivory mb-2 text-[1.2rem] font-semibold uppercase">
-                  {a.titre}
-                </h3>
-                <p className="text-ivory-dim/90 mx-auto max-w-[26ch] text-[0.9rem] leading-relaxed">
-                  {a.texte}
-                </p>
+                <div>
+                  <span className="text-gold/70 mb-1 block font-mono text-[0.62rem] tracking-[0.16em] uppercase">
+                    Étape {i + 1}
+                  </span>
+                  <h3 className="font-display text-ivory mb-1.5 text-[1.15rem] font-semibold uppercase lg:mb-2 lg:text-[1.2rem]">
+                    {a.titre}
+                  </h3>
+                  <p className="text-ivory-dim/90 text-[0.9rem] leading-relaxed lg:mx-auto lg:max-w-[26ch]">
+                    {a.texte}
+                  </p>
+                </div>
               </li>
             ))}
           </ol>
@@ -653,11 +662,11 @@ export default function Entreprises() {
             </p>
           </div>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3">
             {prestations.map((p) => (
               <li
                 key={p}
-                className="border-line bg-panel/50 rounded-clixa text-ivory flex items-center gap-3 border px-4 py-3.5 text-[0.92rem]"
+                className="border-line bg-panel/50 rounded-clixa text-ivory flex items-center gap-3 border px-4 py-3 text-[0.9rem] sm:py-3.5 sm:text-[0.92rem]"
               >
                 <span
                   className="border-emerald/40 bg-emerald/10 text-emerald-bright inline-flex size-6 shrink-0 items-center justify-center rounded-full border text-[0.7rem]"
@@ -686,11 +695,26 @@ export default function Entreprises() {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {/*
+            ⚠️ Sur téléphone, les cinq villes glissent du doigt au lieu de
+            s'empiler : empilées, elles tenaient deux écrans. La carte suivante
+            dépasse au bord droit, et c'est ce débord qui dit qu'on peut
+            glisser — une flèche seule ne le dirait pas. Le défilement reste
+            dans le bandeau : la page, elle, ne bouge pas de côté (mesuré, 375 px
+            pour 375 px).
+
+            ⚠️ `scroll-px-6` n'est pas décoratif : l'aimantation du défilement
+            ignore le `padding` du bandeau, et la première carte se collait au
+            bord de l'écran.
+          */}
+          <p className="text-ivory-dim/70 mb-3 font-mono text-[0.62rem] tracking-[0.14em] uppercase sm:hidden">
+            Faites glisser →
+          </p>
+          <div className="-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto scroll-smooth px-6 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5">
             {destinations.map((d) => (
               <article
                 key={d.ville}
-                className="executive-card rounded-clixa relative flex flex-col overflow-hidden p-6"
+                className="executive-card rounded-clixa relative flex w-[78%] shrink-0 snap-start flex-col overflow-hidden p-6 sm:w-auto"
               >
                 <div
                   className="from-gold/70 absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r to-transparent"
@@ -702,7 +726,7 @@ export default function Entreprises() {
                 <h3 className="font-display text-ivory mb-4 text-[1.5rem] font-semibold">
                   {d.ville}
                 </h3>
-                <ul className="mt-auto flex flex-wrap gap-1.5">
+                <ul className="flex flex-wrap gap-1.5 sm:mt-auto">
                   {d.themes.map((t) => (
                     <li
                       key={t}

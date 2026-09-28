@@ -5654,6 +5654,20 @@ devoir partir deux semaines à Madrid.
   ainsi nommée dans la conversation. Le courriel est donné à côté.
 - Regardé à 1440 et 375 px : aucun débordement, aucune erreur ; `acces.spec`
   et `mobile.spec` (36 épreuves), qui parcourent la page, sont verts.
+- **Pensée pour le téléphone** (demandé à la mise en ligne : « matenssax
+  dakxi ikon m9ad fl mobile ») : l'approche en frise verticale, icônes à
+  gauche reliées par un filet ; les cinq destinations en carrousel qu'on fait
+  glisser, la carte suivante dépassant au bord ; les prestations resserrées ;
+  les grands boutons sur toute la largeur. **Environ 1 100 px de moins** à
+  faire défiler. ⚠️ `scroll-px-6` sur le carrousel : l'aimantation du
+  défilement ignore le `padding`, et la première carte se collait au bord.
+- ⚠️ **La fenêtre « Gardez votre place » se tait sur /entreprises**
+  (`PAGES_SANS_PROPOSITION`). Elle propose une pré-inscription individuelle en
+  ligne — l'autre offre — et s'ouvrait sur la page où une entreprise vient
+  pour un séminaire de deux semaines. Vue à la capture, pas au code.
+  `verifier-etapes.ts` garde la page parmi celles où l'on se tait.
+- Vérifié avant l'envoi : 375, 768 et 1440 px sans débordement ni erreur ;
+  `apparitions`, `acces` et `mobile` (43 épreuves), 16 gardes, build.
 - ⚠️ **La carte « Séminaires & Salle de Conseil » de l'accueil n'a pas
   suivi** : elle dit encore « en classe virtuelle — et bientôt en présentiel »
   et mène à `/campus`. À aligner si la direction le veut.

@@ -140,6 +140,7 @@ for (const chemin of [
   "/compte/creer",
   "/mentions-legales",
   "/confidentialite",
+  "/entreprises",
 ]) {
   dire(`silence sur ${chemin}`, !pageAcceptelaProposition(chemin.split("?")[0] as string));
 }
