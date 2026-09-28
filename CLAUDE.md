@@ -5668,6 +5668,12 @@ devoir partir deux semaines à Madrid.
   `verifier-etapes.ts` garde la page parmi celles où l'on se tait.
 - Vérifié avant l'envoi : 375, 768 et 1440 px sans débordement ni erreur ;
   `apparitions`, `acces` et `mobile` (43 épreuves), 16 gardes, build.
+- **En ligne le 28 septembre 2026** (`923ed2c`, quatre commits). Aucun
+  changement de schéma. `/api/version` a rendu le bon commit, la recette est
+  sortie en 0, et **la page servie a été relue** : 200, le nouveau texte y est
+  (« Ouvrez vos équipes sur le monde », « Notre approche », « Follow-up »,
+  Las Palmas), les deux photos répondent 200, et **`clixa.com` n'y figure
+  nulle part**.
 - ⚠️ **La carte « Séminaires & Salle de Conseil » de l'accueil n'a pas
   suivi** : elle dit encore « en classe virtuelle — et bientôt en présentiel »
   et mène à `/campus`. À aligner si la direction le veut.
