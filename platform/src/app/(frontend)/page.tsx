@@ -428,7 +428,7 @@ export default async function Accueil() {
               </div>
             </div>
 
-            {/* Carte 2 : Séminaire Exécutif */}
+            {/* Carte 2 : les séminaires pour entreprises */}
             <div className="group bg-panel/80 hover:border-gold/60 rounded-clixa flex flex-col overflow-hidden border border-white/[0.08] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.7)]">
               <div className="bg-ink relative aspect-[16/10] w-full overflow-hidden">
                 <Image
@@ -448,14 +448,14 @@ export default async function Accueil() {
                 />
                 <div className="absolute top-3 left-3">
                   <span className="border-emerald/40 bg-ink/80 text-emerald-bright rounded-clixa border px-2.5 py-1 font-mono text-[9px] font-medium tracking-wider uppercase backdrop-blur-md">
-                    Masterclasses &amp; Hubs
+                    Pour les entreprises
                   </span>
                 </div>
               </div>
               <div className="flex flex-1 flex-col justify-between p-6">
                 <div>
                   <h3 className="font-display text-ivory group-hover:text-gold-bright text-lg font-semibold transition-colors">
-                    Séminaires &amp; Salle de Conseil
+                    Séminaires internationaux
                   </h3>
                   <p className="text-ivory-dim/85 mt-2 text-xs leading-relaxed">
                     {/*
@@ -470,16 +470,25 @@ export default async function Accueil() {
                     existe se dit au présent, ce qui se prépare se dit comme
                     tel.
                   */}
-                    Des cohortes de cadres et directeurs d&apos;Afrique formés par des praticiens en
-                    exercice, en classe virtuelle — et bientôt en présentiel.
+                    {/*
+                    ⚠️ Et le 28 septembre 2026, la carte a changé de cible. Le
+                    présentiel existe désormais — pour les entreprises, en
+                    séminaires de deux semaines (`/entreprises`) — et « bientôt
+                    en présentiel » aurait contredit la page où mène le lien.
+                    Les parcours individuels, eux, restent en classe virtuelle :
+                    la carte parle des seuls séminaires, sans rien promettre
+                    aux particuliers.
+                  */}
+                    Deux semaines en présentiel pour les équipes des entreprises africaines —
+                    Madrid, Barcelone, Paris, Casablanca, Las Palmas.
                   </p>
                 </div>
                 <div className="mt-5 border-t border-white/[0.06] pt-3 text-right">
                   <Link
-                    href="/campus"
+                    href="/entreprises"
                     className="text-gold-bright hover:text-gold inline-flex items-center gap-1 font-mono text-xs transition-colors"
                   >
-                    <span>Découvrir nos campus</span>
+                    <span>Découvrir les séminaires</span>
                     <span>→</span>
                   </Link>
                 </div>

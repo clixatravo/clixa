@@ -5674,9 +5674,16 @@ devoir partir deux semaines à Madrid.
   (« Ouvrez vos équipes sur le monde », « Notre approche », « Follow-up »,
   Las Palmas), les deux photos répondent 200, et **`clixa.com` n'y figure
   nulle part**.
-- ⚠️ **La carte « Séminaires & Salle de Conseil » de l'accueil n'a pas
-  suivi** : elle dit encore « en classe virtuelle — et bientôt en présentiel »
-  et mène à `/campus`. À aligner si la direction le veut.
+- **La carte de l'accueil mène désormais aux séminaires** (28 septembre 2026,
+  demandé par la direction : « diir la carte tdi l /entreprises »).
+  « Séminaires & Salle de Conseil » est devenue « Séminaires internationaux »,
+  l'étiquette « Pour les entreprises », et le lien « Découvrir les
+  séminaires » mène à `/entreprises` au lieu de `/campus`. ⚠️ **Son texte a
+  suivi, et c'était obligé** : « en classe virtuelle — et bientôt en
+  présentiel » aurait contredit la page où mène le lien, puisque le présentiel
+  existe pour les entreprises. Elle ne parle que des séminaires, et ne promet
+  rien aux particuliers, dont les parcours restent en ligne. Le lien a été
+  suivi pour de vrai, dans un navigateur.
 
 ## Points ouverts
 
