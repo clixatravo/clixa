@@ -5684,6 +5684,10 @@ devoir partir deux semaines à Madrid.
   existe pour les entreprises. Elle ne parle que des séminaires, et ne promet
   rien aux particuliers, dont les parcours restent en ligne. Le lien a été
   suivi pour de vrai, dans un navigateur.
+  **En ligne le 28 septembre 2026** (`1528783`) : `/api/version` a rendu le
+  bon commit, la recette est sortie en 0, et l'accueil servi porte
+  « Séminaires internationaux » et « Découvrir les séminaires », sans plus
+  aucun « bientôt en présentiel ».
 
 ## Points ouverts
 
