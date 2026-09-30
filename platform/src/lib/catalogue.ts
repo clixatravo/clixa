@@ -33,6 +33,7 @@ import type {
 } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
 import { aplatir, rechercher, type DocumentIndexe } from "@/lib/recherche";
+import { separerLesSessions } from "@/lib/cohortes";
 import {
   payloadClient,
   versProgramme,
@@ -216,11 +217,33 @@ export async function getProgrammesParSpecialisation(slug: string): Promise<Prog
   return (await chargerCatalogue()).programmes.filter((p) => p.specialisation === slug);
 }
 
-/** Sessions d'un programme, triées par date de début. */
+/**
+ * Les sessions qu'on peut encore rejoindre ou attendre — jamais une cohorte
+ * clôturée.
+ *
+ * ⚠️ Les cohortes clôturées restent en base : elles attestent qu'un parcours a
+ * eu lieu, et la fiche les montre à part (`getCohortesPrecedentes`). Mais
+ * triées par date, elles passent devant : octobre 2025 serait devenue « la
+ * prochaine rentrée » de l'accueil, de la plaquette, de la FAQ et de
+ * l'assistant. Toutes les lectures publiques passent donc par ce filtre, et une
+ * seule fonction le porte (`separerLesSessions`).
+ */
+function ouvertes(sessions: Session[]): Session[] {
+  return separerLesSessions(sessions).ouvertes;
+}
+
+/** Sessions ouvertes d'un programme, triées par date de début. */
 export async function getSessions(programmeSlug: string): Promise<Session[]> {
-  return (await chargerCatalogue()).sessions
-    .filter((s) => s.programmeSlug === programmeSlug)
-    .sort((a, b) => a.debut.localeCompare(b.debut));
+  return ouvertes(
+    (await chargerCatalogue()).sessions.filter((s) => s.programmeSlug === programmeSlug),
+  );
+}
+
+/** Les cohortes clôturées d'un programme, de la plus récente à la plus ancienne. */
+export async function getCohortesPrecedentes(programmeSlug: string): Promise<Session[]> {
+  return separerLesSessions(
+    (await chargerCatalogue()).sessions.filter((s) => s.programmeSlug === programmeSlug),
+  ).precedentes;
 }
 
 /** Première session encore ouverte à la réservation. */
@@ -230,9 +253,7 @@ export async function getProchaineSession(programmeSlug: string): Promise<Sessio
 
 /** Toutes les sessions à venir, tous programmes confondus. */
 export async function getAgenda(limite = 6): Promise<Session[]> {
-  return [...(await chargerCatalogue()).sessions]
-    .sort((a, b) => a.debut.localeCompare(b.debut))
-    .slice(0, limite);
+  return ouvertes((await chargerCatalogue()).sessions).slice(0, limite);
 }
 
 /** Prix d'entrée d'un programme, toutes modalités confondues. */
@@ -317,7 +338,8 @@ export async function filtrerProgrammes(f: FiltresCatalogue): Promise<Programme[
     if (f.specialisation && p.specialisation !== f.specialisation) return false;
 
     if (f.mode || f.ville) {
-      const ses = sessions.filter((s) => s.programmeSlug === p.slug);
+      // Une cohorte clôturée ne fait pas d'un parcours un parcours « en présentiel ».
+      const ses = ouvertes(sessions).filter((s) => s.programmeSlug === p.slug);
       return ses.some((s) => (!f.mode || s.mode === f.mode) && (!f.ville || s.ville === f.ville));
     }
 
@@ -372,7 +394,13 @@ export async function filtrerProgrammes(f: FiltresCatalogue): Promise<Programme[
 
 export async function villesDisponibles(): Promise<string[]> {
   const { sessions } = await chargerCatalogue();
-  return [...new Set(sessions.map((s) => s.ville).filter((v): v is string => Boolean(v)))].sort();
+  return [
+    ...new Set(
+      ouvertes(sessions)
+        .map((s) => s.ville)
+        .filter((v): v is string => Boolean(v)),
+    ),
+  ].sort();
 }
 
 /**

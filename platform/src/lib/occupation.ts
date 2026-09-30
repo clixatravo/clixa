@@ -28,7 +28,7 @@
 /** Le seuil à partir duquel une cohorte se remplit vite et appelle un geste. */
 export const SEUIL_TENSION = 5;
 
-export type TonOccupation = "complet" | "tension" | "ouvert" | "vide" | "inconnu";
+export type TonOccupation = "complet" | "tension" | "ouvert" | "vide" | "inconnu" | "cloturee";
 
 export interface Occupation {
   /** « 22 / 30 », ce que l'équipe lit d'abord. */
@@ -48,6 +48,8 @@ export interface SessionComptee {
    * Voir `capaciteTenue` dans `lib/places.ts`.
    */
   placesLibresTenues?: number | null;
+  /** Clôturée : les inscriptions sont fermées, quel que soit le décompte. */
+  cloturee?: boolean | null;
 }
 
 /**
@@ -75,6 +77,16 @@ export function occupationDeLaSession(s: SessionComptee): Occupation {
   const reservees = Number.isFinite(prises) ? Math.max(0, prises) : 0;
   const restantes = Math.max(0, capacite - reservees);
   const compte = `${reservees} / ${capacite}`;
+
+  /*
+    ⚠️ Une cohorte clôturée ne dit plus ce qu'il reste. « 8 restantes » sous
+    une cohorte fermée enverrait l'équipe y inscrire quelqu'un ; « Complet »
+    dirait qu'elle s'est remplie, ce qui n'est pas pourquoi elle est close. Le
+    compte reste — c'est ce qu'elle a réuni —, le ton est éteint.
+  */
+  if (s.cloturee) {
+    return { compte, libelle: "Cohorte clôturée", restantes: 0, ton: "cloturee" };
+  }
 
   /*
     ── ⚠️ Une cohorte tenue ouverte ne se lit pas comme les autres ───────────

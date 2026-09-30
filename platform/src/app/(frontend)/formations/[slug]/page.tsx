@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { jsonLdCourse } from "@/lib/seo";
 import { PlanDeCours } from "@/components/PlanDeCours";
 import { SessionsDisponibles } from "@/components/SessionsDisponibles";
+import { CohortesPrecedentes } from "@/components/CohortesPrecedentes";
 import { Temoignages } from "@/components/Temoignages";
 import { TrailerImmersion } from "@/components/TrailerImmersion";
 import { Badge, PlacesBadge } from "@/components/ui/Badge";
@@ -20,6 +21,7 @@ import {
   getProgrammes,
   libelleNiveau,
   getSessions,
+  getCohortesPrecedentes,
   getSpecialisation,
   libelleMode,
   lieuSession,
@@ -60,6 +62,7 @@ export default async function FicheFormation({ params }: Props) {
   const tarifs = await getTarifs();
   const temoignages = await getTemoignagesDe(programme.slug);
   const prochaine = await getProchaineSession(programme.slug);
+  const precedentes = await getCohortesPrecedentes(programme.slug);
 
   /*
     ⚠️ **« Aucune date » et « toutes complètes » ne sont pas la même chose.**
@@ -240,6 +243,28 @@ export default async function FicheFormation({ params }: Props) {
             <Bloc titre="Sessions ouvertes aux inscriptions">
               <SessionsDisponibles sessions={sessions} programmeSlug={programme.slug} />
             </Bloc>
+
+            {/*
+              Les cohortes déjà données, à part et après les sessions ouvertes :
+              elles attestent que le parcours a eu lieu, elles ne se rejoignent
+              pas. Rien ne s'affiche tant qu'aucune n'est clôturée — un cadre
+              vide se lirait comme une page à moitié chargée.
+            */}
+            {precedentes.length > 0 && (
+              <Bloc titre="Cohortes précédentes">
+                {/*
+                  ⚠️ Ni « a déjà eu lieu », ni « terminée » : la cohorte
+                  d'octobre 2026 est clôturée aux inscriptions mais démarre le
+                  3 octobre. « Clôturée » est vrai des deux sortes.
+                */}
+                <p className="mb-4">
+                  {precedentes.length > 1
+                    ? `Ces ${precedentes.length} cohortes sont clôturées et ne prennent plus d'inscription. Pour rejoindre ce parcours, choisissez une session ouverte ci-dessus.`
+                    : "Cette cohorte est clôturée et ne prend plus d'inscription. Pour rejoindre ce parcours, choisissez une session ouverte ci-dessus."}
+                </p>
+                <CohortesPrecedentes sessions={precedentes} />
+              </Bloc>
+            )}
 
             {programme.approche && programme.approche.length > 0 && (
               <Bloc titre="Approche pédagogique">

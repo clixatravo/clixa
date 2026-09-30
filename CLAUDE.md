@@ -5859,9 +5859,8 @@ n'est écrit sans `ECRIRE=1`). Douze sessions, huit séances chacune :
 - ⚠️ **Et une épreuve aussi** : la course d'`inscription.spec` visait la
   session la plus ancienne du parcours, désormais clôturée, et mesurait le
   refus au lieu de la course. Elle vise la première ouverte.
-- ⚠️ **Le tableau de supervision de /admin montre encore octobre** jusqu'au
-  3 octobre : il prend la session à venir la plus remplie. Elle sortira seule
-  quand elle aura commencé.
+- ~~Le tableau de supervision de /admin montre encore octobre~~ — corrigé le
+  même jour, voir « les cohortes précédentes » juste en dessous.
 - ⚠️ **Un script ne rafraîchit pas le cache de données**, même en
   développement : la fiche montrait encore octobre ouverte après l'écriture.
   Redémarrer `next dev` après `rm -rf .next/cache`.
@@ -5872,6 +5871,37 @@ n'est écrit sans `ECRIRE=1`). Douze sessions, huit séances chacune :
   suivante. Lire `test-results/` et le journal du serveur avant de relancer.
 - **Écrit sur `dev` seulement.** Pour la production : pousser la colonne
   `sessions.cloturee`, puis lancer le script, puis le code.
+
+⚠️ **Les cohortes précédentes, montrées sur la fiche et nulle part ailleurs**
+(`lib/cohortes.ts`, `components/CohortesPrecedentes.tsx`, demandé le
+30 septembre 2026). Qui visite une fiche voit, sous les sessions ouvertes, un
+bloc « Cohortes précédentes » : dates, rythme, « Clôturée ». Ni places ni
+bouton.
+
+- ⚠️ **Le filtre est posé dans `lib/catalogue.ts`, pas page par page.** Triées
+  par date, les cohortes clôturées passent devant : octobre 2025 serait devenu
+  la « prochaine rentrée » de l'accueil, de la plaquette, de l'assistant, et le
+  filtre « présentiel » aurait retenu un parcours sur une cohorte passée.
+  `getSessions`, `getAgenda`, `villesDisponibles` et `filtrerProgrammes` ne
+  rendent que les sessions ouvertes ; seule `getCohortesPrecedentes` rend les
+  autres. Une seule fonction tranche (`separerLesSessions`).
+- ⚠️ **Le texte ne dit pas « a déjà eu lieu ».** La cohorte d'octobre 2026 est
+  clôturée aux inscriptions mais démarre le 3 octobre. Le premier jet l'écrivait,
+  et ce n'était vrai que des quatre autres. « Clôturée » est vrai des deux.
+- **La colonne « Remplissage » de /admin dit « Cohorte clôturée »**, en gardant
+  le compte : « 8 restantes » sous une cohorte fermée enverrait l'équipe y
+  inscrire quelqu'un. La supervision du tableau de bord écarte les cohortes
+  clôturées avant de choisir la session de chaque parcours. ⚠️ Non regardée à
+  l'écran : elle demande une session d'équipe.
+- `verifier-cohortes.ts` : dix-huit contrôles sans base, **prouvés en remettant
+  trois défauts** — le partage sans filtre, la colonne sans le cas clôturé,
+  l'agenda sans filtre : sept rouges.
+- ⚠️ **Les cohortes passées ne sont pas encore en base, et ne s'inventent
+  pas.** Quels parcours ont tourné en octobre 2025, février, avril et juin 2026,
+  à quelles dates et à quel rythme : c'est la direction qui le sait.
+  `scripts/cohortes-passees.ts` les enregistre depuis un fichier JSON, clôturées,
+  et **refuse tout le fichier** au moindre parcours inconnu, date à venir ou
+  cadence illisible. Éprouvé à blanc sur `dev`, dans les deux sens.
 
 ## Points ouverts
 

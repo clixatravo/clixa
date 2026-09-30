@@ -3226,9 +3226,10 @@ h3,
   padding: 0.15rem 0.45rem;
 }
 
-/* Le cours normal, et le vide : rien qui tire l'œil. */
+/* Le cours normal, le vide et la cohorte clôturée : rien qui tire l'œil. */
 .clixa-places--vide,
-.clixa-places--inconnu {
+.clixa-places--inconnu,
+.clixa-places--cloturee {
   opacity: 0.45;
 }
 

@@ -700,7 +700,7 @@ export async function Veille() {
     { totalDocs: nouvellesDemandes },
     { totalDocs: conversationsAReprendre },
     { docs: programmes },
-    { docs: sessions },
+    { docs: sessionsLues },
     { docs: docsRecus },
   ] = await Promise.all([
     promesseInscriptions,
@@ -714,6 +714,16 @@ export async function Veille() {
     promesseSessions,
     promesseRecus,
   ]);
+
+  /*
+    ⚠️ Une cohorte clôturée n'est pas « la session du parcours ». Celle
+    d'octobre 2026 a été clôturée avant son premier samedi : sa date est encore
+    à venir, et triée par places prises elle passait devant la cohorte de
+    novembre, qui démarre à zéro. La supervision aurait montré octobre sur
+    chaque carte. Filtré ici plutôt que dans la requête : `not_equals: true`
+    écarterait aussi les lignes où la colonne est vide.
+  */
+  const sessions = sessionsLues.filter((s) => !s.cloturee);
 
   const versements = suiviDesVersements(
     inscriptions as unknown as DossierSuivi[],
