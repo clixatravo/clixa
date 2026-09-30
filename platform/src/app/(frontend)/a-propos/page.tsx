@@ -158,6 +158,25 @@ export default async function APropos() {
           </div>
         </div>
       </section>
+
+      {/*
+        Le recrutement des formateurs, demandé par la direction le 30 septembre
+        2026. « À propos » est la page que lit un praticien qui se demande qui
+        nous sommes avant de proposer ses services.
+      */}
+      <section className="px-8 pb-16">
+        <div className="border-line mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-6 border-t pt-12">
+          <div>
+            <span className="mono-label text-gold mb-2 block">Recrutement</span>
+            <h2 className="text-[clamp(1.3rem,2.4vw,1.8rem)] font-semibold">
+              Vous êtes formateur&nbsp;? N&apos;hésitez pas à nous rejoindre.
+            </h2>
+          </div>
+          <Button href="/devenir-formateur" variante="contour">
+            Devenir formateur
+          </Button>
+        </div>
+      </section>
     </>
   );
 }

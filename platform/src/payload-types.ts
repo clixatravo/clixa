@@ -86,6 +86,7 @@ export interface Config {
     apprenants: Apprenant;
     recus: Recus;
     courriels: Courriel;
+    'candidatures-formateurs': CandidaturesFormateur;
     utilisateurs: Utilisateur;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -112,6 +113,7 @@ export interface Config {
     apprenants: ApprenantsSelect<false> | ApprenantsSelect<true>;
     recus: RecusSelect<false> | RecusSelect<true>;
     courriels: CourrielsSelect<false> | CourrielsSelect<true>;
+    'candidatures-formateurs': CandidaturesFormateursSelect<false> | CandidaturesFormateursSelect<true>;
     utilisateurs: UtilisateursSelect<false> | UtilisateursSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1078,6 +1080,51 @@ export interface Courriel {
   createdAt: string;
 }
 /**
+ * Les candidatures déposées depuis la page « Devenir formateur ». Le CV ne s'ouvre que d'ici.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "candidatures-formateurs".
+ */
+export interface CandidaturesFormateur {
+  id: number;
+  statut: 'nouvelle' | 'contactee' | 'retenue' | 'non-retenue';
+  specialite?:
+    | (
+        | 'finance'
+        | 'audit'
+        | 'controle-gestion'
+        | 'rh'
+        | 'commercial'
+        | 'marketing'
+        | 'production'
+        | 'maintenance'
+        | 'qhse'
+        | 'projet'
+        | 'leadership'
+        | 'digital'
+        | 'achats'
+        | 'autre'
+      )
+    | null;
+  experience?: ('debutant' | 'moins-2' | '2-5' | '5-10' | 'plus-10') | null;
+  nom: string;
+  email: string;
+  whatsapp: string;
+  pays?: string | null;
+  linkedin?: string | null;
+  message?: string | null;
+  /**
+   * Ce qui s'est dit, ce qui est prévu. Le candidat ne voit rien de ce champ.
+   */
+  notes?: string | null;
+  cvNom?: string | null;
+  cvType?: string | null;
+  cvTaille?: number | null;
+  cvChemin?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1172,6 +1219,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'courriels';
         value: number | Courriel;
+      } | null)
+    | ({
+        relationTo: 'candidatures-formateurs';
+        value: number | CandidaturesFormateur;
       } | null)
     | ({
         relationTo: 'utilisateurs';
@@ -1764,6 +1815,28 @@ export interface CourrielsSelect<T extends boolean = true> {
         appel?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "candidatures-formateurs_select".
+ */
+export interface CandidaturesFormateursSelect<T extends boolean = true> {
+  statut?: T;
+  specialite?: T;
+  experience?: T;
+  nom?: T;
+  email?: T;
+  whatsapp?: T;
+  pays?: T;
+  linkedin?: T;
+  message?: T;
+  notes?: T;
+  cvNom?: T;
+  cvType?: T;
+  cvTaille?: T;
+  cvChemin?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1151,6 +1151,76 @@ export async function courrielRappel(
   });
 }
 
+/**
+ * Une candidature de formateur vient d'arriver.
+ *
+ * Au groupe de l'équipe, comme les autres notifications : c'est la boîte que
+ * tout le monde relève. Le message ne porte pas le CV — il vit dans le magasin
+ * privé, et une pièce jointe le ferait circuler dans chaque boîte qui reçoit le
+ * groupe. Le bouton mène à la fiche, d'où il s'ouvre derrière une session.
+ */
+export async function courrielCandidatureFormateur(
+  payload: Payload,
+  d: {
+    id: number | string;
+    nom: string;
+    email: string;
+    whatsapp: string;
+    pays: string;
+    specialite: string;
+    experience: string;
+    linkedin?: string;
+    avecCv: boolean;
+    message: string;
+  },
+): Promise<void> {
+  if (!EQUIPE) return;
+
+  const lien = `https://www.clixa.africa/admin/collections/candidatures-formateurs/${d.id}`;
+  const parcours = [d.avecCv ? "CV joint" : "", d.linkedin ? "profil LinkedIn" : ""]
+    .filter(Boolean)
+    .join(" et ");
+
+  const corpsHtml = `
+    <p>Une nouvelle candidature de formateur a été déposée :</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 150px;">Candidat :</td><td><strong style="color: #ffffff;">${echapper(d.nom)}</strong> (${echapper(d.pays)})</td></tr>
+      <tr><td style="color: #94a3b8;">Domaine :</td><td style="color: #ffffff;">${echapper(d.specialite)}</td></tr>
+      <tr><td style="color: #94a3b8;">Expérience :</td><td style="color: #ffffff;">${echapper(d.experience)}</td></tr>
+      <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.whatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.whatsapp)} ↗</a></td></tr>
+      <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.email)}" style="color: #e9cd84;">${echapper(d.email)}</a></td></tr>
+      <tr><td style="color: #94a3b8;">Parcours :</td><td style="color: #ffffff;">${echapper(parcours)}</td></tr>
+    </table>
+    ${d.message ? `<p style="color: #94a3b8; margin-bottom: 6px;">Son message :</p><p style="margin-top: 0; white-space: pre-line;">${echapper(d.message)}</p>` : ""}
+  `;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `[Candidature formateur] ${d.nom} — ${d.specialite}`,
+    text: [
+      `${d.nom} (${d.pays}) propose de rejoindre CLIXA comme formateur.`,
+      "",
+      `Domaine : ${d.specialite}`,
+      `Expérience de formateur : ${d.experience}`,
+      `Parcours : ${parcours}`,
+      "",
+      `E-mail : ${d.email}`,
+      `WhatsApp : ${d.whatsapp}`,
+      d.message ? `\nSon message :\n${d.message}` : "",
+      "",
+      `La fiche : ${lien}`,
+    ]
+      .filter((l) => l !== "")
+      .join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Candidature formateur",
+      corpsHtml,
+      boutonTexte: "Ouvrir la candidature",
+      boutonLien: lien,
+    }),
+  });
+}
+
 /** Relance d'échéance avec ton cordial et signature institutionnelle. */
 export async function courrielRelance(
   payload: Payload,

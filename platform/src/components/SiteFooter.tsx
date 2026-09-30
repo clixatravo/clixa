@@ -31,6 +31,7 @@ const colonnes = [
     liens: [
       { href: "/a-propos", label: "À propos" },
       { href: "/entreprises", label: "Pour les entreprises" },
+      { href: "/devenir-formateur", label: "Devenir formateur" },
       { href: "/contact", label: "Nous contacter" },
       /*
         ⚠️ Le seul lien du pied de page qui ne s'adresse pas à un visiteur.

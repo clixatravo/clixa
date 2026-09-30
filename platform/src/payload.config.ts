@@ -29,6 +29,7 @@ import { Medias } from "@/collections/Medias";
 import { Recus } from "@/collections/Recus";
 import { Courriels } from "@/collections/Courriels";
 import { DemandesRappel } from "@/collections/DemandesRappel";
+import { CandidaturesFormateurs } from "@/collections/CandidaturesFormateurs";
 import { brancherLesColonnes } from "@/lib/colonnes-serveur";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -136,6 +137,8 @@ export default buildConfig({
     Apprenants,
     Recus,
     Courriels,
+    // Recrutement
+    CandidaturesFormateurs,
     // Accès
     Utilisateurs,
   ],

@@ -11,6 +11,7 @@ import { EtiquetteEcheance as EtiquetteEcheance_a7cf6cda30f6870be6fa9df1bd50a17e
 import { Charge as Charge_397d5531db2d7a9a98f648d65ae95e1b } from '@/components/admin/Charge'
 import { LienRecu as LienRecu_42bc064a96f6788a14f3d48f157c8958 } from '@/components/admin/LienRecu'
 import { EtatCourriel as EtatCourriel_3e25b09efa669989eda36ca6fb5577fd } from '@/components/admin/EtatCourriel'
+import { LienCv as LienCv_52f17cd51eded2adefff2edb95667ef2 } from '@/components/admin/LienCv'
 import { Icone as Icone_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
 import { Logo as Logo_0fbc6ed2e61e66062cb101ebfccddc7b } from '@/components/admin/Marque'
 import { Veille as Veille_fed6ea51dcea101e54fe83518c3d395a } from '@/components/admin/Veille'
@@ -33,6 +34,7 @@ export const importMap = {
   "@/components/admin/Charge#Charge": Charge_397d5531db2d7a9a98f648d65ae95e1b,
   "@/components/admin/LienRecu#LienRecu": LienRecu_42bc064a96f6788a14f3d48f157c8958,
   "@/components/admin/EtatCourriel#EtatCourriel": EtatCourriel_3e25b09efa669989eda36ca6fb5577fd,
+  "@/components/admin/LienCv#LienCv": LienCv_52f17cd51eded2adefff2edb95667ef2,
   "@/components/admin/Marque#Icone": Icone_0fbc6ed2e61e66062cb101ebfccddc7b,
   "@/components/admin/Marque#Logo": Logo_0fbc6ed2e61e66062cb101ebfccddc7b,
   "@/components/admin/Veille#Veille": Veille_fed6ea51dcea101e54fe83518c3d395a,

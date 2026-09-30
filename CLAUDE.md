@@ -5689,6 +5689,58 @@ devoir partir deux semaines à Madrid.
   « Séminaires internationaux » et « Découvrir les séminaires », sans plus
   aucun « bientôt en présentiel ».
 
+⚠️ **Les demandes de la direction se suivent dans un Google Sheet** (depuis le
+30 septembre 2026, « CLIXA — Suivi des demandes de la direction », dans le
+Drive de l'utilisateur, partagé par lui avec le directeur). Chaque demande y
+est découpée en sous-tâches, avec un statut et une date prévue ; le tableau de
+bord calcule l'avancement. La première période court du 30 septembre au
+6 octobre 2026 : recrutement des formateurs, cohorte de novembre, historique
+des cohortes, témoignages.
+
+- ⚠️ **Rien ne s'y écrit sans l'accord de l'utilisateur**, et tout y est en
+  français.
+- ⚠️ **Sa locale est `fr_FR`** : une formule écrite par l'API prend `;` comme
+  séparateur. Avec `,` elle rend `#ERROR!`.
+
+⚠️ **« Devenir formateur »** (`/devenir-formateur`, `api/candidature`,
+collection `candidatures-formateurs`, demandé par la direction le 30 septembre
+2026 : « Vous êtes formateur ? N'hésitez pas à nous rejoindre »). Les
+candidatures arrivaient par WhatsApp, sans trace ni suite. Elles arrivent
+maintenant dans /admin, groupe « Recrutement », une par ligne, avec un statut :
+Nouvelle, Contactée, Retenue, Non retenue.
+
+- **Le CV ou le profil LinkedIn, au moins l'un des deux** (« khalihom bjoj ») :
+  exiger le fichier écarterait qui écrit depuis son téléphone, exiger LinkedIn
+  qui n'y est pas. Une candidature sans aucun des deux ne dit rien du parcours.
+- ⚠️ **Le CV vit dans le magasin privé des justificatifs** (`lib/cv.ts`), et
+  ne se relit que par `api/candidature/[id]/cv`, derrière une session
+  **d'équipe** — même garde qu'`api/recu` : `apprenants` est authentifiée
+  aussi. Un visiteur sans session reçoit 401, vérifié. Le courriel de l'équipe
+  ne le joint pas : il circulerait dans chaque boîte qui reçoit le groupe.
+- **PDF ou Word, 4 Mo au plus**, sous la limite de 4,5 Mo de Vercel. Ni image
+  ni SVG.
+- ⚠️ **Le lien LinkedIn se compare à l'égalité d'hôte**, jamais par
+  `includes()` : `linkedin.com.attaquant.test` le contient sans en être. Les
+  paramètres de suivi sont retirés. Même règle que `lib/video.ts`.
+- **Création fermée dans /admin** : le dépôt passe par la route, qui vérifie
+  tout. L'équipe ne modifie que le statut et ses notes. Un doublon (même
+  adresse, encore « Nouvelle », moins de dix minutes) ne crée pas de seconde
+  ligne.
+- **Le CV quitte le magasin avec sa fiche** (`afterDelete`). Vérifié en listant
+  `candidatures/` après les essais : zéro fichier. ⚠️ Une lecture faite juste
+  après la suppression a rendu une fois le fichier ; trois essais suivants,
+  non. Pour savoir si un CV est parti, lister le magasin.
+- **Rien n'est promis sur la page** : ni rémunération, ni volume d'heures, ni
+  délai de réponse chiffré. Ce sont des décisions de la direction.
+- Liens : pied de page (« L'institut »), bas de « À propos », plan du site.
+- `verifier-candidatures.ts` : 27 contrôles sans base, **prouvés en remettant
+  deux défauts** (`includes()` sur l'hôte, candidature sans CV ni LinkedIn) :
+  deux rouges. Essayé de bout en bout sur `dev` par la vraie route (refus,
+  enregistrement, doublon, CV privé, courriel), données retirées ensuite.
+  Regardé à 375 px : aucun débordement.
+- **La table est sur `dev` seulement.** Avant la mise en ligne : comparer les
+  deux schémas, pousser la table sur la production, puis le code.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |
