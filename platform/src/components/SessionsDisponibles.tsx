@@ -43,6 +43,11 @@ export function SessionsDisponibles({
       {sessions.map((s) => {
         const restantes = placesRestantes(s);
         const complete = restantes === 0;
+        /*
+          Une cohorte clôturée n'est pas « complète » : elle est derrière nous.
+          Ni badge de places, ni liste d'attente — seulement la mention.
+        */
+        const cloturee = Boolean(s.cloturee);
         const seances = seancesHebdomadaires(s.debut, s.fin);
 
         return (
@@ -88,22 +93,30 @@ export function SessionsDisponibles({
                 {libelleMode[s.mode]}
               </div>
 
-              <PlacesBadge restantes={restantes} />
+              {cloturee ? (
+                <span className="border-line-strong text-ivory-dim rounded-clixa border px-3 py-1.5 text-center font-mono text-[0.64rem] tracking-[0.1em] uppercase">
+                  Clôturée
+                </span>
+              ) : (
+                <PlacesBadge restantes={restantes} />
+              )}
 
-              <a
-                href={
-                  complete
-                    ? "/contact"
-                    : `/inscription?formation=${programmeSlug}&debut=${s.debut.slice(0, 10)}`
-                }
-                className={`rounded-clixa border px-5 py-2.5 text-center text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-all ${
-                  complete
-                    ? "border-line-strong text-ivory-dim hover:border-gold"
-                    : "shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold bg-gradient-to-r hover:shadow-[0_0_15px_rgba(201,162,76,0.35)]"
-                }`}
-              >
-                {complete ? "Liste d'attente" : "Me pré-inscrire"}
-              </a>
+              {!cloturee && (
+                <a
+                  href={
+                    complete
+                      ? "/contact"
+                      : `/inscription?formation=${programmeSlug}&debut=${s.debut.slice(0, 10)}`
+                  }
+                  className={`rounded-clixa border px-5 py-2.5 text-center text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-all ${
+                    complete
+                      ? "border-line-strong text-ivory-dim hover:border-gold"
+                      : "shimmer-gold from-gold-bright via-gold to-gold-bright text-ink border-gold bg-gradient-to-r hover:shadow-[0_0_15px_rgba(201,162,76,0.35)]"
+                  }`}
+                >
+                  {complete ? "Liste d'attente" : "Me pré-inscrire"}
+                </a>
+              )}
             </div>
 
             {seances && seances.length > 1 && (

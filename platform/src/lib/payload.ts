@@ -130,6 +130,7 @@ export function versSession(d: SessionPayload): Session {
     devise: d.devise,
     ...(d.fuseau ? { fuseau: d.fuseau } : {}),
     complete: Boolean(d.complete),
+    cloturee: Boolean(d.cloturee),
   };
 }
 

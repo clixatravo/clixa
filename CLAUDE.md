@@ -5830,6 +5830,49 @@ Nouvelle, Contactée, Retenue, Non retenue.
   sans session 401, la collection sans session 403, et le lien paraît dans le
   pied de page, « À propos » et le plan du site.
 
+⚠️ **La cohorte de novembre, et la cohorte d'octobre clôturée** (demandé par la
+direction le 30 septembre 2026, `scripts/cohorte-novembre.ts`, rejouable, rien
+n'est écrit sans `ECRIRE=1`). Douze sessions, huit séances chacune :
+
+| Créneau (UTC) | Début | Parcours |
+|---|---|---|
+| samedi 9h00–13h00 | 31 octobre | DAF, audit interne, contrôle de gestion |
+| samedi 13h00–17h00 | 31 octobre | RH, commercial, marketing |
+| dimanche 13h00–17h00 | 1er novembre | production, maintenance, industriel, QHSE, projets, PMP |
+
+- ⚠️ **« Clôturée » n'est pas « complète »** (`sessions.cloturee`). Complète
+  veut dire « plus de place » et propose une liste d'attente. Clôturée veut
+  dire que la cohorte est derrière nous : la fiche écrit « Clôturée », sans
+  badge de places ni bouton. Le même état servira aux cohortes passées
+  (octobre 2025, février, avril, juin 2026).
+- **Le réglage « places libres à maintenir » est retiré** des sessions
+  d'octobre : laissé en place, il continuerait de faire suivre le plafond de la
+  cohorte DAF.
+- **Un parcours publié sans créneau décidé fait renoncer le script** : le
+  ranger par défaut annoncerait un horaire que personne n'a choisi.
+- ⚠️ **Trois lecteurs prenaient « la première session », donc octobre.**
+  L'inscription sans date choisie, la plaquette PDF (« Prochaine session ») et
+  la FAQ (« Quand commence la prochaine cohorte ? », qui aurait annoncé le
+  3 octobre). Tous trois prennent maintenant la première session ouverte. Un
+  contrôle de `verifier-faq.ts` le garde, prouvé en retirant la correction : un
+  rouge.
+- ⚠️ **Et une épreuve aussi** : la course d'`inscription.spec` visait la
+  session la plus ancienne du parcours, désormais clôturée, et mesurait le
+  refus au lieu de la course. Elle vise la première ouverte.
+- ⚠️ **Le tableau de supervision de /admin montre encore octobre** jusqu'au
+  3 octobre : il prend la session à venir la plus remplie. Elle sortira seule
+  quand elle aura commencé.
+- ⚠️ **Un script ne rafraîchit pas le cache de données**, même en
+  développement : la fiche montrait encore octobre ouverte après l'écriture.
+  Redémarrer `next dev` après `rm -rf .next/cache`.
+- ⚠️ **Une coupure réseau fait tomber des épreuves saines** : le
+  30 septembre, `ENOTFOUND` sur l'hôte de Neon a fait tomber l'accueil (donc
+  l'épreuve du pixel) et le ménage de fin de série. Les dossiers d'épreuve
+  restés en base ont fait tomber l'épreuve de la provenance à la série
+  suivante. Lire `test-results/` et le journal du serveur avant de relancer.
+- **Écrit sur `dev` seulement.** Pour la production : pousser la colonne
+  `sessions.cloturee`, puis lancer le script, puis le code.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |

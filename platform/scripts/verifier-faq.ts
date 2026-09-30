@@ -231,6 +231,25 @@ dire(
     reponse(deuxDates, "rentree").includes("2027"),
 );
 
+/*
+  La cohorte d'octobre 2026 a été clôturée avant son premier samedi, pour
+  faire place à celle de novembre. Sa date est encore à venir ; la FAQ ne doit
+  pas l'annoncer pour autant.
+*/
+const octobreClos = questionsFrequentes({
+  ...base,
+  sessions: [
+    ...base.sessions.map((s) => ({ ...s, cloturee: true })),
+    { mode: "visio", debut: "2026-10-31T09:00:00.000Z", fuseau: "UTC" },
+  ],
+});
+dire(
+  "⚠️ une cohorte clôturée n'est pas annoncée, même si sa date est à venir",
+  !reponse(octobreClos, "rentree").includes("3 octobre") &&
+    reponse(octobreClos, "rentree").includes("31 octobre"),
+  reponse(octobreClos, "rentree"),
+);
+
 const avecPresentiel = questionsFrequentes({
   ...base,
   sessions: [

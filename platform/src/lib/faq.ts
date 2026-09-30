@@ -27,7 +27,7 @@ import type { Session, Tarifs } from "@/lib/types";
 
 export interface EntreeFaq {
   programmes: { titre: string; dureeHeures: number; certification?: string }[];
-  sessions: Pick<Session, "mode" | "debut" | "fuseau" | "ville" | "pays">[];
+  sessions: Pick<Session, "mode" | "debut" | "fuseau" | "ville" | "pays" | "cloturee">[];
   tarifs: Tarifs;
   moyens: readonly string[];
   joursTenue: number;
@@ -80,7 +80,13 @@ export const enLettres = (n: number) => EN_LETTRES[n] ?? String(n);
 
 export function questionsFrequentes(e: EntreeFaq): QuestionFaq[] {
   const maintenant = e.maintenant.toISOString();
-  const aVenir = e.sessions.filter((s) => s.debut > maintenant);
+  /*
+    ⚠️ Une cohorte clôturée n'est pas « à venir », même si sa date l'est : la
+    cohorte d'octobre 2026 a été fermée avant son premier samedi pour faire
+    place à celle de novembre. L'annoncer ici promettrait une rentrée à
+    laquelle on ne peut plus s'inscrire.
+  */
+  const aVenir = e.sessions.filter((s) => s.debut > maintenant && !s.cloturee);
   const questions: QuestionFaq[] = [];
 
   /* ── Le format ─────────────────────────────────────────────────────────── */

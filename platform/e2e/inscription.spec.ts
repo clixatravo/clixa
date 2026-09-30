@@ -548,8 +548,15 @@ test.describe("Un envoi répété", () => {
     const CONCURRENTES = 2;
 
     const debut = sqlUneValeur(
+      /*
+        La première session **ouverte** : depuis que les cohortes passées
+        restent en base, clôturées, la plus ancienne refuse l'inscription et
+        l'épreuve mesurait ce refus au lieu de la course.
+      */
       `SELECT to_char(min(s.debut), 'YYYY-MM-DD') FROM sessions s
-       JOIN programmes p ON p.id = s.programme_id WHERE p.slug = '${PARCOURS}';`,
+       JOIN programmes p ON p.id = s.programme_id
+       WHERE p.slug = '${PARCOURS}' AND NOT coalesce(s.cloturee, false)
+         AND NOT coalesce(s.complete, false);`,
     );
 
     const reponses = await Promise.all(

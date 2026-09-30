@@ -8,7 +8,7 @@ import {
   libelleMode,
   libelleNiveau,
 } from "@/lib/catalogue";
-import type { Programme, Session, Tarifs } from "@/lib/types";
+import { placesRestantes, type Programme, type Session, type Tarifs } from "@/lib/types";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 /**
@@ -120,7 +120,13 @@ function Plaquette({
   sessions: Session[];
   tarifs: Tarifs;
 }) {
-  const prochaine = sessions[0];
+  /*
+    La première session **ouverte**, pas la première tout court : les cohortes
+    clôturées restent en base, et la plaquette annoncerait sinon une rentrée à
+    laquelle on ne peut plus s'inscrire. Faute de session ouverte, elle se tait
+    sur la date plutôt que d'en annoncer une passée.
+  */
+  const prochaine = sessions.find((x) => placesRestantes(x) > 0);
   const seances = p.modules.length;
 
   return (

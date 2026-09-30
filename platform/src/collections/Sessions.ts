@@ -436,6 +436,29 @@ export const Sessions: CollectionConfig = {
     },
 
     /*
+      ── Clôturée n'est pas complète ─────────────────────────────────────────
+      Demandé par la direction le 30 septembre 2026, pour faire place à la
+      cohorte de novembre. « Complète » veut dire qu'il n'y a plus de place et
+      propose une liste d'attente : c'est une cohorte qu'on voudrait rejoindre.
+      « Clôturée » veut dire que la cohorte est derrière nous — commencée, ou
+      terminée. Proposer une liste d'attente pour une cohorte déjà partie
+      n'aurait aucun sens.
+
+      Le même état sert aux cohortes passées (octobre 2025, février, avril,
+      juin 2026) : elles sont clôturées depuis longtemps.
+    */
+    {
+      name: "cloturee",
+      type: "checkbox",
+      label: "Cohorte clôturée",
+      defaultValue: false,
+      admin: {
+        description:
+          "Cocher quand la cohorte est commencée ou terminée : les inscriptions ferment et le site l'affiche « Clôturée », sans liste d'attente.",
+      },
+    },
+
+    /*
       ── ⚠️ Ce qui bouge, à côté de ce qui ne bouge pas ────────────────────
       Les deux nombres ci-dessus ne se lisent qu'ensemble : 22 ne dit rien
       sans 30, et 30 ne dit rien tout seul — c'est pourtant 30 seul que la

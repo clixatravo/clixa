@@ -200,13 +200,20 @@ export async function POST(request: Request) {
     sort: "debut",
     overrideAccess: true,
   });
+  /*
+    Sans date demandée, la première session **encore ouverte**, et non la
+    première tout court : depuis que les cohortes passées restent en base,
+    clôturées, la plus ancienne n'accepte plus personne.
+  */
+  const ouverte = (s: (typeof docs)[number]) =>
+    !s.complete && !s.cloturee && (s.capacite ?? 0) - (s.placesReservees ?? 0) > 0;
   const session = debutRef
     ? docs.find((s) => (s.debut ?? "").slice(0, 10) === debutRef.slice(0, 10))
-    : docs[0];
+    : (docs.find(ouverte) ?? docs[0]);
   if (!session) echec("session");
 
   // La session peut s'être remplie ou clôturée pendant que le formulaire était ouvert.
-  const estCloturee = Boolean(session?.complete);
+  const estCloturee = Boolean(session?.complete) || Boolean(session?.cloturee);
   const restantes = (session!.capacite ?? 0) - (session!.placesReservees ?? 0);
   if (estCloturee || restantes <= 0) echec("complet");
 

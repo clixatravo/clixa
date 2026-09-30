@@ -127,12 +127,14 @@ export interface Session {
    * autre à Casablanca ne lisent pas la même heure.
    */
   fuseau?: string;
-  /** Session clôturée / complète (marketing ou jauge atteinte). */
+  /** Session complète : plus de place, liste d'attente. */
   complete?: boolean;
+  /** Cohorte clôturée : commencée ou terminée, ni inscription ni liste d'attente. */
+  cloturee?: boolean;
 }
 
 export function placesRestantes(s: Session): number {
-  if (s.complete) return 0;
+  if (s.complete || s.cloturee) return 0;
   return Math.max(0, s.capacite - s.placesReservees);
 }
 

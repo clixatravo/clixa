@@ -369,6 +369,10 @@ export interface Session {
    */
   complete?: boolean | null;
   /**
+   * Cocher quand la cohorte est commencée ou terminée : les inscriptions ferment et le site l'affiche « Clôturée », sans liste d'attente.
+   */
+  cloturee?: boolean | null;
+  /**
    * En unité entière — saisir 1250 pour 1 250 €. La conversion en centimes se fait côté application.
    */
   prix: number;
@@ -1395,6 +1399,7 @@ export interface SessionsSelect<T extends boolean = true> {
   placesReservees?: T;
   placesLibresTenues?: T;
   complete?: T;
+  cloturee?: T;
   prix?: T;
   devise?: T;
   updatedAt?: T;
