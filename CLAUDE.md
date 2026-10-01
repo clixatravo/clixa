@@ -5738,8 +5738,15 @@ Nouvelle, Contactée, Retenue, Non retenue.
   deux rouges. Essayé de bout en bout sur `dev` par la vraie route (refus,
   enregistrement, doublon, CV privé, courriel), données retirées ensuite.
   Regardé à 375 px : aucun débordement.
-- **La table est sur `dev` seulement.** Avant la mise en ligne : comparer les
-  deux schémas, pousser la table sur la production, puis le code.
+- **En ligne le 1er octobre 2026** (`e829219`), seul : les commits du
+  dépliant, de la cohorte de novembre et des témoignages n'ont pas suivi. Le
+  commit a été repris à part sur `main`. Les deux schémas comparés avant :
+  rien en production qui manque à `dev` ; la table `candidatures_formateurs`
+  poussée depuis la branche de publication, si bien que les colonnes des
+  tâches 2 et 4 sont restées sur `dev`. 128 dossiers intacts. `/api/version`
+  a rendu le bon commit, la recette est sortie en 0, la page répond 200, le CV
+  sans session 401, la collection sans session 403, et le lien paraît dans le
+  pied de page, « À propos » et le plan du site.
 
 ## Points ouverts
 
