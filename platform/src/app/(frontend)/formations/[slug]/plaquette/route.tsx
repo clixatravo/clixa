@@ -5,6 +5,7 @@ import {
   getProgramme,
   getSessions,
   getTarifs,
+  libelleFuseau,
   libelleMode,
   libelleNiveau,
 } from "@/lib/catalogue";
@@ -147,13 +148,27 @@ function Plaquette({
         <View style={s.section}>
           <Text style={s.intertitre}>EN BREF</Text>
           <Fait cle="Durée" val={`${p.dureeHeures} heures`} />
-          {seances > 0 && <Fait cle="Séances" val={`${seances} séances`} />}
+          {/*
+            ⚠️ Des modules, pas des séances : la ligne disait « 8 séances », juste
+            tant qu'un module tenait un samedi. Depuis la cohorte du soir, un
+            module se donne en deux soirées ; le nombre de soirées est dans la
+            cadence, écrite plus bas avec la session.
+          */}
+          {seances > 0 && <Fait cle="Modules" val={`${seances} modules`} />}
           <Fait cle="Rythme" val={p.rythme} />
           <Fait cle="Niveau" val={libelleNiveau[p.niveau]} />
           <Fait cle="Langue" val={p.langue} />
           {prochaine && <Fait cle="Modalité" val={libelleMode[prochaine.mode]} />}
           {prochaine && (
             <Fait cle="Prochaine session" val={JOUR.format(new Date(prochaine.debut))} />
+          )}
+          {prochaine?.cadence && (
+            <Fait
+              cle="Horaires"
+              val={[prochaine.cadence, prochaine.fuseau && libelleFuseau(prochaine.fuseau)]
+                .filter(Boolean)
+                .join(" · ")}
+            />
           )}
           {p.certification && <Fait cle="Certification" val={p.certification} />}
         </View>

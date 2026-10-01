@@ -183,7 +183,15 @@ export async function catalogueSansCache(): Promise<{
   return {
     specialisations: specs.docs.map(versSpecialisation),
     programmes: progs.docs.map(versProgramme),
-    sessions: sess.docs.map(versSession),
+    /*
+      ⚠️ **Les cohortes clôturées n'en sortent pas.** Le seul lecteur est le
+      courriel de présentation, qui prend la première session pour annoncer
+      la rentrée et la cadence du parcours mis en avant : triée par date, la
+      première était octobre 2026, clôturée — le message aurait annoncé une
+      rentrée le 3 octobre et « 8 samedis » sous une cohorte qui se donne le
+      soir. Même filtre que les lectures cachées.
+    */
+    sessions: ouvertes(sess.docs.map(versSession)),
   };
 }
 

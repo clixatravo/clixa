@@ -29,14 +29,14 @@ const pourquoi = [
   {
     titre: "Des cadres en poste",
     texte:
-      "Vous formez des professionnels qui appliquent dès le lundi ce qu'ils ont vu le samedi : DAF, responsables RH, chefs de projet, directeurs de production.",
+      "Vous formez des professionnels qui appliquent le lendemain ce qu'ils ont vu la veille : DAF, responsables RH, chefs de projet, directeurs de production.",
     trace:
       "M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 20v-2a4 4 0 0 0-3-3.87 M16 2.13a4 4 0 0 1 0 7.75",
   },
   {
-    titre: "La classe virtuelle, le week-end",
+    titre: "La classe virtuelle, en soirée",
     texte:
-      "Nos parcours se donnent en direct, le samedi ou le dimanche. Vous animez depuis chez vous, pour des participants de tout le continent.",
+      "Nos parcours se donnent en direct, deux soirs par semaine, de 19h00 à 21h00 UTC. Vous animez depuis chez vous, pour des participants de tout le continent.",
     trace: "M3 5h18v11H3z M8 21h8 M12 16v5 M10 9l4 2.5-4 2.5z",
   },
   {

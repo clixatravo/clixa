@@ -305,8 +305,17 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
       }
     : undefined;
 
+  /*
+    ⚠️ **L'horaire n'y est pas écrit.** La première ligne disait « huit séances
+    de quatre heures, le samedi » : vrai jusqu'à octobre 2026, faux dès que la
+    cohorte de novembre est passée au soir, deux soirs par semaine. C'est la
+    faute que la garde interdit déjà pour « du soir » — un horaire écrit à la
+    main dans un message que personne ne relit quand le catalogue change. La
+    cadence du parcours mis en avant est lue dans sa session ; pour les autres,
+    la fiche fait foi.
+  */
   const deroule = [
-    "Huit séances de quatre heures, le samedi, en direct avec un formateur.",
+    "En direct avec un formateur, à heure fixe : l'horaire de chaque parcours figure sur sa fiche.",
     "Entièrement en ligne : vous suivez d'où vous êtes, sans déplacement.",
     "Des cas concrets et des outils que vous repartez avec, pas un cours magistral.",
     "Des promotions volontairement réduites, pour que chacun puisse intervenir.",

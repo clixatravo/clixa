@@ -125,7 +125,11 @@ const corps = (nom: string) => {
   const suite = source.indexOf("\nexport ", debut + 1);
   return source.slice(debut, suite < 0 ? undefined : suite);
 };
-for (const nom of ["getSessions", "getAgenda", "villesDisponibles"]) {
+/*
+  `catalogueSansCache` sert le courriel de présentation : sans le filtre, il
+  annonçait la rentrée du 3 octobre — clôturée — et la cadence « 8 samedis ».
+*/
+for (const nom of ["getSessions", "getAgenda", "villesDisponibles", "catalogueSansCache"]) {
   dire(`${nom} passe par le filtre des cohortes clôturées`, /ouvertes\(/.test(corps(nom)));
 }
 dire(

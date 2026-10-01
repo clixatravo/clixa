@@ -5830,9 +5830,71 @@ Nouvelle, Contactée, Retenue, Non retenue.
   sans session 401, la collection sans session 403, et le lien paraît dans le
   pied de page, « À propos » et le plan du site.
 
-⚠️ **La cohorte de novembre, et la cohorte d'octobre clôturée** (demandé par la
-direction le 30 septembre 2026, `scripts/cohorte-novembre.ts`, rejouable, rien
-n'est écrit sans `ECRIRE=1`). Douze sessions, huit séances chacune :
+⚠️ **La cohorte de novembre se donne le soir, et la cohorte d'octobre est
+clôturée** (`scripts/cohorte-novembre.ts`, rejouable, rien n'est écrit sans
+`ECRIRE=1`). Décision de la direction le 1er octobre 2026, après un emploi du
+temps soumis en PDF : **deux soirs par semaine, pendant deux mois**, de
+20h00 à 22h00 heure du Maroc — **19h00–21h00 UTC**, l'heure de toutes les
+fiches (« b tawe9it l 3am kifma kan f sesion l 9dima »). Elle **remplace** la
+cohorte du week-end préparée le 30 septembre, jamais publiée.
+
+| Soirs (19h00–21h00 UTC) | Du … au … | Parcours |
+|---|---|---|
+| lundi et mercredi | 2 nov. → 23 déc. | DAF, audit interne, contrôle de gestion, production, maintenance, industriel |
+| mardi et jeudi | 3 nov. → 24 déc. | commercial, marketing, RH, QHSE, projets, PMP® (+ vendredis 11 et 18 déc.) |
+
+Seize soirées de deux heures, les 32 heures du parcours ; la PMP® en compte
+dix-huit pour ses 35 heures. Six classes chaque soir, le vendredi libre.
+
+- ⚠️ **Le site ne savait dater qu'une séance par semaine.**
+  `seancesHebdomadaires` exige le même jour aux deux bouts ; une session du
+  lundi au mercredi ne rendait rien, et la fiche perdait le « Calendrier des
+  séances » que la FAQ annonce. `seancesDeLaSession` lit les jours dans la
+  cadence (« 16 soirées · lundis et mercredis · 19h00–21h00 ») et se tait
+  dès que le compte ne tombe pas juste — d'où **aucun calendrier pour la
+  PMP®**, dont les deux vendredis ne se déduisent pas. `verifier-seances.ts` :
+  treize contrôles sans base, **prouvés en retirant les deux vérifications de
+  compte : trois rouges**.
+- ⚠️ **« 8 séances » était écrit à quatre endroits, et c'étaient des modules.**
+  L'accueil et « À propos » (« 8 séances par parcours »), la plaquette PDF
+  (« Séances : 8 séances ») comptaient `modules.length` ; vrai tant qu'un
+  module tenait un samedi, faux dès qu'il se donne en deux soirées. Ils disent
+  « modules ». La plaquette gagne une ligne « Horaires » lue dans la cadence.
+- **Le contenu des fiches suit, par le script** : la ligne « Rythme »
+  (« 8 séances live • 4h chacune » → « 16 soirées live • 2h chacune ») et
+  l'accroche sous le titre (« 8 séances live » → « 16 soirées live »,
+  « 8 sessions live » → « 18 soirées live » pour la PMP®). ⚠️ **Seulement mot
+  pour mot** : un texte réécrit par l'équipe est nommé, pas écrasé. Trouvés en
+  cherchant « séance » dans **tous** les champs du catalogue, pas seulement
+  ceux auxquels on pensait — l'accroche l'avait échappé au premier passage.
+- ⚠️ **Le rythme de la PMP® dit encore « Sessions live + replays »**, et le
+  script le signale sans y toucher : rien ne produit de replays (voir la FAQ).
+  C'est à la direction de le réécrire.
+- ⚠️ **Le courriel de présentation annonçait une cohorte clôturée.**
+  `catalogueSansCache`, son seul lecteur, ne filtrait pas les clôturées : la
+  rentrée annoncée était le 3 octobre, la cadence « 8 samedis ». Et
+  `verifier-presentation.ts` exigeait justement « 3 octobre 2026 », écrit en
+  dur — **la garde était verte grâce au défaut**. Elle lit maintenant la
+  première session ouverte **en base**, pas par la fonction qu'elle surveille,
+  et refuse toute date de cohorte clôturée. **Prouvé en retirant le filtre :
+  deux rouges, qui nomment « 3 octobre 2026 ».** Sa ligne « huit séances de
+  quatre heures, le samedi » est retirée : l'horaire vient de la cadence.
+- **La page « Devenir formateur » et « À propos » disaient « le week-end »** :
+  elles disent « en soirée », 19h00–21h00 UTC.
+- ⚠️ **Les sessions du week-end n'existent que sur `dev`**, ouvertes par le
+  premier jet du script. Il les retire, et **renonce** si l'une porte un
+  dossier : supprimer la session d'un inscrit lui retirerait sa place sans
+  qu'il le sache.
+- Les échéances restent à +0, +4 et +6 semaines du début
+  (`SEMAINES_AVANT_SEANCE`) : sur huit semaines, elles tombent aux soirées 1,
+  9 et 13. Rien à changer.
+- **Vérifié sur `dev`**, serveur relancé cache vidé : fiches en 1280 et
+  375 px, calendrier de 16 dates, formulaire PMP sans débordement, FAQ (« lundi
+  2 novembre · mardi 3 novembre »), plaquette regardée. 22 gardes sans base,
+  `verifier-horaires`, `-faq`, `-presentation`, `-catalogue` verts, **100
+  épreuves Playwright vertes**.
+
+L'ancienne répartition, gardée pour mémoire — jamais publiée :
 
 | Créneau (UTC) | Début | Parcours |
 |---|---|---|
@@ -5869,8 +5931,11 @@ n'est écrit sans `ECRIRE=1`). Douze sessions, huit séances chacune :
   l'épreuve du pixel) et le ménage de fin de série. Les dossiers d'épreuve
   restés en base ont fait tomber l'épreuve de la provenance à la série
   suivante. Lire `test-results/` et le journal du serveur avant de relancer.
-- **Écrit sur `dev` seulement.** Pour la production : pousser la colonne
-  `sessions.cloturee`, puis lancer le script, puis le code.
+- **Écrit sur `dev` seulement.** Pour la production, dans cet ordre : pousser
+  la colonne `sessions.cloturee` (après comparaison des deux schémas), lancer
+  le script contre la production, puis pousser le code. ⚠️ Le code seul, sans
+  le script, laisserait octobre ouverte et aucune session du soir ; le script
+  seul, sans la colonne, échouerait à la première clôture.
 
 ⚠️ **Les cohortes précédentes, montrées sur la fiche et nulle part ailleurs**
 (`lib/cohortes.ts`, `components/CohortesPrecedentes.tsx`, demandé le

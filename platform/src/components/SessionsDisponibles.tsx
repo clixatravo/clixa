@@ -6,7 +6,7 @@ import {
   libelleFuseau,
   libelleMode,
   lieuSession,
-  seancesHebdomadaires,
+  seancesDeLaSession,
 } from "@/lib/catalogue";
 import { PlacesBadge } from "@/components/ui/Badge";
 
@@ -48,7 +48,7 @@ export function SessionsDisponibles({
           Ni badge de places, ni liste d'attente — seulement la mention.
         */
         const cloturee = Boolean(s.cloturee);
-        const seances = seancesHebdomadaires(s.debut, s.fin);
+        const seances = seancesDeLaSession(s.debut, s.fin, s.cadence);
 
         return (
           <div key={s.id} className="executive-card rounded-clixa p-5.5 transition-all">

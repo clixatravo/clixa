@@ -128,6 +128,69 @@ export function seancesHebdomadaires(debut: string, fin: string): string[] | und
   return Array.from({ length: semaines + 1 }, (_, i) => new Date(d + i * SEMAINE_MS).toISOString());
 }
 
+const NUMERO_DU_JOUR: Record<string, number> = {
+  dimanche: 0,
+  lundi: 1,
+  mardi: 2,
+  mercredi: 3,
+  jeudi: 4,
+  vendredi: 5,
+  samedi: 6,
+};
+
+/**
+ * Les dates de chaque séance, que la session tienne un soir par semaine ou
+ * plusieurs.
+ *
+ * La cohorte du soir de novembre 2026 se donne deux soirs par semaine
+ * (« 16 soirées · lundis et mercredis · 19h00–21h00 ») : le début est un
+ * lundi, la fin un mercredi, et `seancesHebdomadaires` — qui exige le même
+ * jour aux deux bouts — ne rendait rien. La fiche perdait son calendrier,
+ * celui que la FAQ annonce « sur la fiche de chaque parcours ».
+ *
+ * Les jours se lisent dans la cadence, qui fait foi (le crochet de
+ * `Sessions.ts` y recale déjà les heures). Une cadence qui ne nomme qu'un
+ * jour, ou aucun, garde la règle hebdomadaire.
+ *
+ * ⚠️ **Rien n'est rendu dès que le compte ne tombe pas juste** : les deux
+ * bouts doivent être des jours de séance, et le nombre écrit en tête de la
+ * cadence doit égaler celui des dates. Une session qui ajoute deux vendredis
+ * à ses mardis et jeudis n'a pas de calendrier déductible — mieux vaut ne
+ * rien afficher que d'en inventer un faux.
+ */
+export function seancesDeLaSession(
+  debut: string,
+  fin: string,
+  cadence?: string | null,
+): string[] | undefined {
+  const texte = (cadence ?? "").toLowerCase();
+  const jours = [
+    ...new Set(
+      [...texte.matchAll(/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)s?\b/g)].map(
+        (m) => NUMERO_DU_JOUR[m[1]!]!,
+      ),
+    ),
+  ];
+  if (jours.length < 2) return seancesHebdomadaires(debut, fin);
+
+  const d = new Date(debut).getTime();
+  const f = new Date(fin).getTime();
+  if (Number.isNaN(d) || Number.isNaN(f) || f <= d || f - d > 366 * 86400000) return undefined;
+
+  const dates: string[] = [];
+  for (let t = d; t <= f; t += 86400000) {
+    if (jours.includes(new Date(t).getUTCDay())) dates.push(new Date(t).toISOString());
+  }
+  if (dates.length === 0) return undefined;
+  if (dates[0]!.slice(0, 10) !== debut.slice(0, 10)) return undefined;
+  if (dates.at(-1)!.slice(0, 10) !== new Date(f).toISOString().slice(0, 10)) return undefined;
+
+  const annonce = /^\s*(\d{1,3})\b/.exec(texte);
+  if (annonce && Number(annonce[1]) !== dates.length) return undefined;
+
+  return dates;
+}
+
 /** « 19 sept. » — assez pour une pastille de calendrier. */
 const JOUR_MOIS = new Intl.DateTimeFormat("fr-FR", {
   day: "2-digit",

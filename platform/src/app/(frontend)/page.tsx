@@ -74,10 +74,16 @@ export default async function Accueil() {
     déduits du catalogue : aucun n'est écrit à la main, aucun ne peut donc
     survivre à ce qu'il décrit.
 
-    Le nombre de séances n'est annoncé que si les douze parcours s'accordent —
+    Le nombre de modules n'est annoncé que si les douze parcours s'accordent —
     sinon la phrase serait vraie pour certains et fausse pour d'autres, et c'est
     exactement le genre d'approximation qui a valu au site d'annoncer des
     campus où aucune session n'existe.
+
+    ⚠️ **Ce sont des modules, pas des séances.** Le chiffre compte les modules
+    du plan de cours, et le disait « séances » : juste tant qu'un module tenait
+    un samedi, faux dès la cohorte du soir, où un module se donne en deux
+    soirées — l'accueil aurait annoncé « 8 séances » au-dessus de fiches qui
+    en datent seize.
   */
   const seances = [...new Set(programmes.map((p) => p.modules.length).filter((n) => n > 0))];
   const tarifs = await getTarifs();
@@ -85,7 +91,7 @@ export default async function Accueil() {
 
   const reperes = [
     villes.length > 0 ? `En présentiel et à distance` : "À distance, en classe virtuelle",
-    ...(seances.length === 1 ? [`${seances[0]} séances par parcours`] : []),
+    ...(seances.length === 1 ? [`${seances[0]} modules par parcours`] : []),
     ...(rythmes > 1 ? [`Paiement en 1, 2 ou ${rythmes} fois`] : []),
   ];
 
@@ -177,7 +183,7 @@ export default async function Accueil() {
             <Chiffre valeur={String(total)} legende="parcours au catalogue" />
             <Chiffre valeur={String(specs.length)} legende="filières métier" />
             {seances.length === 1 && (
-              <Chiffre valeur={String(seances[0])} legende="séances par parcours" />
+              <Chiffre valeur={String(seances[0])} legende="modules par parcours" />
             )}
             {prochaineSeance && (
               <Chiffre

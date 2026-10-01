@@ -59,9 +59,11 @@ export default async function APropos() {
     [String(specs.length), "spécialisations métier"],
   ];
 
-  // Un nombre de séances identique partout se dit ; s'il varie, il ne veut rien dire.
+  // Un nombre de modules identique partout se dit ; s'il varie, il ne veut rien dire.
+  // Des modules, pas des séances : un module se donne en deux soirées depuis
+  // la cohorte du soir de novembre 2026.
   const uniqueSeances = seances.length === 1 ? seances[0] : undefined;
-  if (uniqueSeances !== undefined) chiffres.push([String(uniqueSeances), "séances par parcours"]);
+  if (uniqueSeances !== undefined) chiffres.push([String(uniqueSeances), "modules par parcours"]);
 
   if (villes.length > 0) {
     chiffres.push([
@@ -185,7 +187,7 @@ export default async function APropos() {
             </h2>
             <p className="text-ivory-dim/90 mb-6 max-w-[56ch] text-[0.98rem] leading-relaxed">
               Nous cherchons des praticiens qui transmettent ce qu&apos;ils font au quotidien : en
-              classe virtuelle le week-end, et lors de nos séminaires d&apos;entreprise.
+              classe virtuelle en soirée, et lors de nos séminaires d&apos;entreprise.
             </p>
             <ul className="mb-8 flex flex-wrap gap-2" aria-label="Quelques domaines recherchés">
               {DOMAINES_RECHERCHES.map((d) => (

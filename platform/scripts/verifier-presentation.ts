@@ -491,9 +491,51 @@ try {
     prouve que rien d'essentiel n'a migré dans un visuel.
   */
   const nu = html.replace(/<img[^>]*>/g, "");
+  /*
+    ⚠️ **La rentrée attendue se lit dans le catalogue, pas dans ce fichier.**
+    Ce contrôle exigeait « 3 octobre 2026 », écrit en dur, et il est resté vert
+    pour une mauvaise raison : le courriel prenait la première session triée,
+    c'est-à-dire la cohorte d'octobre — clôturée. Il annonçait une rentrée à
+    laquelle on ne pouvait plus s'inscrire, et la garde l'en félicitait. Il
+    compare maintenant à la première session **ouverte**, et vérifie qu'aucune
+    cohorte clôturée n'est annoncée.
+  */
+  // Lue en base, et non par `catalogueSansCache` : la garde ne peut pas tirer
+  // son attente de la fonction qu'elle surveille.
+  const { docs: ouvertesEnBase } = await payload.find({
+    collection: "sessions",
+    where: { cloturee: { not_equals: true } },
+    limit: 1,
+    sort: "debut",
+    depth: 0,
+    overrideAccess: true,
+  });
+  const premiereOuverte = ouvertesEnBase[0]?.debut ? String(ouvertesEnBase[0].debut) : undefined;
+  const JOUR_LONG = new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const rentreeAttendue = premiereOuverte ? JOUR_LONG.format(new Date(premiereOuverte)) : "";
+  const { docs: closes } = await payload.find({
+    collection: "sessions",
+    where: { cloturee: { equals: true } },
+    limit: 200,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const datesCloses = [
+    ...new Set(closes.map((x) => JOUR_LONG.format(new Date(String(x.debut))))),
+  ].filter((d) => d !== rentreeAttendue);
+  dire(
+    "⚠️ aucune cohorte clôturée n'est annoncée comme rentrée",
+    !datesCloses.some((d) => nu.includes(d)),
+    datesCloses.filter((d) => nu.includes(d)).join(", "),
+  );
   for (const [quoi, motif] of [
     ["les montants", /423|470/],
-    ["la rentrée", /3 octobre 2026/],
+    ["la rentrée", new RegExp(rentreeAttendue || "(?!)")],
     ["le désabonnement", /ne vous [ée]crirons plus/i],
     ["le parcours mis en avant", /Directeur Administratif/],
   ] as [string, RegExp][]) {
