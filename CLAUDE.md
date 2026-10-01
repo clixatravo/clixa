@@ -5799,6 +5799,27 @@ Nouvelle, Contactée, Retenue, Non retenue.
   l'atelier en photo — masquée sur téléphone, où elle ajoutait un écran sans
   rien dire de plus. `/devenir-formateur` rejoint `e2e/chemins.ts` :
   l'accessibilité et la mise en page sur téléphone l'éprouvent désormais.
+- ⚠️ **Une candidature réelle n'est arrivée nulle part, le 1er octobre 2026**
+  — ni en base, ni par courriel, ni une ligne au journal. Vercel montrait un
+  `POST /api/candidature` en 303, donc une redirection faite **avant** la base :
+  un refus de validation, ou le champ piège. Rien ne permettait de trancher,
+  et c'était le premier défaut. Dans la même seconde, la base ne répondait pas
+  (« cannot connect to Postgres… connection timeout ») — mais la route n'y
+  était pas encore allée. Deux corrections, sur tous les formulaires publics :
+  - **le piège a changé de nom** (`lib/leurre.ts`, `components/ChampLeurre.tsx`) :
+    `site_web` est un champ que le remplissage automatique sait reconnaître, et
+    une fiche de contact qui porte un site suffit à faire passer une vraie
+    personne pour un robot — « merci » à l'écran, envoi jeté. Un seul nom, un
+    seul composant, une seule fonction pour huit routes, qui écrit une ligne
+    quand le piège se déclenche ;
+  - **chaque refus écrit sa raison** sur l'inscription et la candidature — et
+    sur le témoignage, qui le fait déjà sur `dev` et suivra à sa mise en ligne :
+    « [candidature] refusée : consentement ».
+  Essayé sur `dev` dans un navigateur, comme un visiteur : la candidature
+  arrive ; le piège rempli ne crée rien et laisse sa ligne ; un refus laisse la
+  sienne. `verifier-leurre.ts` : onze contrôles, **trois défauts remis, trois
+  rouges**. 30 épreuves des formulaires vertes. ⚠️ La cause exacte de l'envoi
+  perdu reste inconnue : ces lignes la diront à la prochaine occurrence.
 - **En ligne le 1er octobre 2026** (`e829219`), seul : les commits du
   dépliant, de la cohorte de novembre et des témoignages n'ont pas suivi. Le
   commit a été repris à part sur `main`. Les deux schémas comparés avant :

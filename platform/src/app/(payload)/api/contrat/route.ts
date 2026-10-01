@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { courrielContrat } from "@/lib/courriel";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * Le participant demande son contrat de formation.
@@ -23,8 +24,6 @@ import { courrielContrat } from "@/lib/courriel";
  * La clef reste la référence du dossier, comme pour le consulter.
  */
 
-const LEURRE = "site_web";
-
 export async function POST(request: Request) {
   if (!cadenceOk("contrat", appelant(request), 20, 60_000)) return tropVite(60);
 
@@ -35,7 +34,7 @@ export async function POST(request: Request) {
   const retour = `/inscription/${encodeURIComponent(reference)}`;
 
   if (!/^[A-Z0-9-]{4,24}$/.test(reference)) redirect("/" as Route);
-  if (texte(LEURRE) !== "") redirect(retour as Route);
+  if (leurreRempli(form, "contrat")) redirect(retour as Route);
 
   const payload = await getPayload({ config });
   const { docs } = await payload.find({

@@ -7,6 +7,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { fermerSession, ouvrirSession, participantConnecte } from "@/lib/session-apprenant";
 import { MOT_DE_PASSE_MIN } from "@/lib/mot-de-passe";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * BE-19 — Création, connexion et sortie d'un compte participant.
@@ -19,8 +20,6 @@ import { MOT_DE_PASSE_MIN } from "@/lib/mot-de-passe";
  * pour un mot de passe faux comme pour un compte absent : autrement, n'importe
  * qui pourrait savoir qui s'est inscrit chez CLIXA en essayant des adresses.
  */
-
-const LEURRE = "site_web";
 
 /**
  * Rattache un dossier au compte qui vient d'être créé.
@@ -118,7 +117,7 @@ export async function POST(request: Request) {
     redirect("/" as Route);
   }
 
-  if (texte(LEURRE) !== "") redirect("/compte/connexion" as Route);
+  if (leurreRempli(form, "compte")) redirect("/compte/connexion" as Route);
 
   const email = texte("email").toLowerCase();
   const motDePasse = (form.get("motDePasse") ?? "").toString();

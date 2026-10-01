@@ -6,6 +6,7 @@ import config from "@payload-config";
 import { courrielTransfert } from "@/lib/courriel";
 import { deposerRecu, estTypeAccepte, stockageConfigure, TAILLE_MAX } from "@/lib/recus";
 import type { Inscription } from "@/payload-types";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * BE-20 — Le participant annonce son transfert.
@@ -33,8 +34,6 @@ import type { Inscription } from "@/payload-types";
  * compte ». Annoncer n'ouvre donc rien de plus que lire, et la vérification
  * humaine reste entre l'annonce et la place.
  */
-
-const LEURRE = "site_web";
 
 /*
   Les moyens qu'un participant peut annoncer. « Espèces » existe dans le
@@ -87,7 +86,7 @@ export async function POST(request: Request) {
 
   // Même garde que la lecture : au-delà, c'est du bruit.
   if (!/^[A-Z0-9-]{4,24}$/.test(reference)) redirect("/" as Route);
-  if (texte(LEURRE) !== "") redirect(retour as Route);
+  if (leurreRempli(form, "transfert")) redirect(retour as Route);
 
   const moyen = texte("moyen");
   const numero = texte("numero");

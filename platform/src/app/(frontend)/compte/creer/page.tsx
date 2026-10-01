@@ -7,6 +7,7 @@ import { ChampCompte, FormulaireCompte } from "@/components/FormulaireCompte";
 import { CadreCompte } from "@/components/CadreCompte";
 import { BoutonGoogle } from "@/components/BoutonGoogle";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
@@ -91,16 +92,7 @@ export default async function CreerCompte({
               rien à apprendre à qui essaie des adresses.
             */}
             <form action="/api/confirmation" method="POST" className="mb-8">
-              <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                <label htmlFor="site_web_renvoi">Ne pas remplir</label>
-                <input
-                  id="site_web_renvoi"
-                  name="site_web"
-                  type="text"
-                  tabIndex={-1}
-                  autoComplete="off"
-                />
-              </div>
+              <ChampLeurre id="leurre_renvoi" />
               <label
                 htmlFor="renvoi-email"
                 className="mono-label text-ivory-dim mb-2 block text-[0.7rem]"

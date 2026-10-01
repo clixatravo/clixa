@@ -8,6 +8,7 @@ import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import { ChampPays } from "@/components/ChampPays";
 import { getProgrammes } from "@/lib/catalogue";
 import { EXPERIENCES_FORMATION, MESSAGES_CANDIDATURE, SPECIALITES } from "@/lib/candidatures";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 export const metadata: Metadata = {
   title: "Devenir formateur",
@@ -369,17 +370,7 @@ export default async function DevenirFormateur({ searchParams }: Props) {
                     aria-hidden="true"
                   />
 
-                  {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
-                  <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                    <label htmlFor="site_web">Ne pas remplir</label>
-                    <input
-                      id="site_web"
-                      name="site_web"
-                      type="text"
-                      tabIndex={-1}
-                      autoComplete="off"
-                    />
-                  </div>
+                  <ChampLeurre />
 
                   <Groupe numero="01" titre="Vous">
                     <Champ label="Nom complet" name="nom" autoComplete="name" />

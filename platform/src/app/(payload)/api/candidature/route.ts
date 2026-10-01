@@ -14,6 +14,7 @@ import {
 } from "@/lib/candidatures";
 import { deposerCv, stockageCvConfigure } from "@/lib/cv";
 import { courrielCandidatureFormateur } from "@/lib/courriel";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * Recevoir une candidature de formateur.
@@ -32,7 +33,6 @@ import { courrielCandidatureFormateur } from "@/lib/courriel";
  * l'est — sans écrire une seconde ligne ni envoyer un second courriel.
  */
 
-const LEURRE = "site_web";
 const PAGE = "/devenir-formateur";
 
 export async function POST(request: Request) {
@@ -40,9 +40,18 @@ export async function POST(request: Request) {
 
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
-  const echec = (erreur: string): never => redirect(`${PAGE}?erreur=${erreur}#formulaire` as Route);
+  /*
+    Chaque refus laisse une ligne au journal, avec sa raison et rien d'autre.
+    Sans elle, une candidature refusée et une candidature jamais arrivée se
+    ressemblaient : le 1er octobre 2026, un envoi réel a disparu, et l'on n'a pu
+    dire ni pourquoi ni même s'il avait été refusé. Voir `lib/leurre.ts`.
+  */
+  const echec = (erreur: string): never => {
+    console.warn(`[candidature] refusée : ${erreur}`);
+    redirect(`${PAGE}?erreur=${erreur}#formulaire` as Route);
+  };
 
-  if (texte(LEURRE) !== "") redirect(`${PAGE}?envoye=1` as Route);
+  if (leurreRempli(form, "candidature")) redirect(`${PAGE}?envoye=1` as Route);
 
   const fichier = form.get("cv");
   const aUnCv = fichier instanceof File && fichier.size > 0;

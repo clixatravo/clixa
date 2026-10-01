@@ -12,6 +12,7 @@ import {
   preuve,
   traceValable,
 } from "@/lib/signature";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * Le participant signe son contrat en ligne.
@@ -37,8 +38,6 @@ import {
  * retient la place sans limite.
  */
 
-const LEURRE = "site_web";
-
 export async function POST(request: Request) {
   if (!cadenceOk("signature", appelant(request), 20, 60_000)) return tropVite(60);
 
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
   const retour = `/inscription/${encodeURIComponent(reference)}`;
 
   if (!/^[A-Z0-9-]{4,24}$/.test(reference)) redirect("/" as Route);
-  if (texte(LEURRE) !== "") redirect(retour as Route);
+  if (leurreRempli(form, "signature")) redirect(retour as Route);
 
   const payload = await getPayload({ config });
   const { docs } = await payload.find({

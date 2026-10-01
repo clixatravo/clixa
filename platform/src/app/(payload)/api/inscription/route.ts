@@ -12,6 +12,7 @@ import { MINIMUM_LETTRES, assainirPays } from "@/lib/pays";
 import { domaineValide, experienceValide } from "@/lib/profil";
 import { provenanceValide } from "@/lib/provenance";
 import { participantConnecte } from "@/lib/session-apprenant";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * BE-15 — Réception d'une demande de place.
@@ -25,7 +26,6 @@ import { participantConnecte } from "@/lib/session-apprenant";
  */
 
 /** Champ leurre : invisible pour un humain, rempli par la plupart des robots. */
-const LEURRE = "site_web";
 
 /** Codes du barème. Un formulaire est de la saisie visiteur, pas une valeur sûre. */
 const PLANS = ["P1", "P2", "P3"] as const;
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 
-  if (texte(LEURRE) !== "") {
+  if (leurreRempli(form, "inscription")) {
     redirect("/formations" as Route);
   }
 
@@ -110,10 +110,13 @@ export async function POST(request: Request) {
   */
   const provenance = provenanceValide(texte("provenance"));
 
-  const echec = (cause: string) =>
-    redirect(
+  // Chaque refus laisse sa raison au journal — voir `api/candidature`.
+  const echec = (cause: string) => {
+    console.warn(`[inscription] refusée : ${cause}`);
+    return redirect(
       `/inscription?formation=${encodeURIComponent(formation)}&debut=${encodeURIComponent(debutRef)}&plan=${plan}&erreur=${cause}` as Route,
     );
+  };
 
   if (!formation) redirect("/formations" as Route);
   if (!nom || !email || !whatsapp) echec("champs");

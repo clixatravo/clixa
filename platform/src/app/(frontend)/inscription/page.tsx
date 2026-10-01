@@ -20,6 +20,7 @@ import {
   getTarifs,
   libelleFuseau,
 } from "@/lib/catalogue";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 export const metadata: Metadata = {
   title: "Pré-inscription",
@@ -173,11 +174,7 @@ export default async function Inscription({ searchParams }: Props) {
               method="POST"
               className="border-line bg-panel border p-6 sm:p-8"
             >
-              {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
-              <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                <label htmlFor="site_web">Ne pas remplir</label>
-                <input id="site_web" name="site_web" type="text" tabIndex={-1} autoComplete="off" />
-              </div>
+              <ChampLeurre />
 
               <input type="hidden" name="formation" value={programme.slug} />
 

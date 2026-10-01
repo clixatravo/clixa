@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 /**
  * Le cadre commun aux deux formulaires de compte.
@@ -34,11 +35,7 @@ export function FormulaireCompte({
         method="POST"
         className="border-line bg-panel flex flex-col gap-5 border p-6"
       >
-        {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
-        <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-          <label htmlFor="site_web">Ne pas remplir</label>
-          <input id="site_web" name="site_web" type="text" tabIndex={-1} autoComplete="off" />
-        </div>
+        <ChampLeurre />
 
         <input type="hidden" name="action" value={action} />
         {children}

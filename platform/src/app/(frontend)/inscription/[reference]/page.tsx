@@ -10,6 +10,7 @@ import { departDeLaTenue, finDeLaTenue } from "@/lib/places";
 import { SignatureTracee } from "@/components/SignatureTracee";
 import { SignalerLead } from "@/components/SignalerLead";
 import Link from "next/link";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 export const metadata: Metadata = {
   title: "Votre dossier",
@@ -559,16 +560,7 @@ export default async function Dossier({ params, searchParams }: Props) {
                 */}
                 {!dossier.contratSigneLe && (
                   <form action="/api/signature" method="POST" className="mt-7">
-                    <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                      <label htmlFor="site_web_signature">Ne pas remplir</label>
-                      <input
-                        id="site_web_signature"
-                        name="site_web"
-                        type="text"
-                        tabIndex={-1}
-                        autoComplete="off"
-                      />
-                    </div>
+                    <ChampLeurre id="leurre_signature" />
                     <input type="hidden" name="dossier" value={dossier.reference} />
 
                     <p className="mono-label text-gold mt-7 mb-4 text-[0.7rem]">Signer en ligne</p>
@@ -632,16 +624,7 @@ export default async function Dossier({ params, searchParams }: Props) {
                   signature.
                 </p>
                 <form action="/api/contrat" method="POST">
-                  <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                    <label htmlFor="site_web_contrat">Ne pas remplir</label>
-                    <input
-                      id="site_web_contrat"
-                      name="site_web"
-                      type="text"
-                      tabIndex={-1}
-                      autoComplete="off"
-                    />
-                  </div>
+                  <ChampLeurre id="leurre_contrat" />
                   <input type="hidden" name="dossier" value={dossier.reference} />
                   <BoutonEnvoi
                     libelle="Demander mon contrat de formation"
@@ -832,17 +815,7 @@ export default async function Dossier({ params, searchParams }: Props) {
                 encType="multipart/form-data"
                 className="grid gap-5 sm:grid-cols-2 [&>*]:min-w-0"
               >
-                {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
-                <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                  <label htmlFor="site_web">Ne pas remplir</label>
-                  <input
-                    id="site_web"
-                    name="site_web"
-                    type="text"
-                    tabIndex={-1}
-                    autoComplete="off"
-                  />
-                </div>
+                <ChampLeurre />
 
                 <input type="hidden" name="dossier" value={dossier.reference} />
 

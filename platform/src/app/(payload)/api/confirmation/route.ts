@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { envoyerConfirmation } from "@/lib/courriel";
 import { emailPlausible } from "@/lib/saisie";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * Renvoyer le lien de confirmation.
@@ -24,8 +25,6 @@ import { emailPlausible } from "@/lib/saisie";
  * invaliderait le premier message si les deux finissaient par arriver.
  */
 
-const LEURRE = "site_web";
-
 export async function POST(request: Request) {
   /*
     Plus serré qu'ailleurs : cette route envoie un courriel à chaque appel
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
 
   const retour = "/compte/creer?renvoye=1";
-  if (texte(LEURRE) !== "") redirect(retour as Route);
+  if (leurreRempli(form, "confirmation")) redirect(retour as Route);
 
   const email = texte("email").toLowerCase();
   if (!emailPlausible(email)) redirect("/compte/creer?erreur=champs" as Route);
