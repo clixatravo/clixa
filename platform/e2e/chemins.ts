@@ -14,6 +14,7 @@ export const CHEMINS = [
   "/compte/creer",
   "/contact",
   "/a-propos",
+  "/devenir-formateur",
   "/entreprises",
   "/campus",
   "/blog",

@@ -1,8 +1,19 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { FilAriane } from "@/components/FilAriane";
 import { Button } from "@/components/ui/Button";
 import { getAgenda, getProgrammes, getSpecialisations, libelleMode } from "@/lib/catalogue";
 import { DEVISE_CLIXA } from "@/lib/marque";
+import { SPECIALITES } from "@/lib/candidatures";
+
+/* Quelques domaines, lus dans la liste du formulaire : jamais une seconde liste. */
+const DOMAINES_RECHERCHES = [
+  ...SPECIALITES.filter((s) =>
+    ["finance", "rh", "production", "projet", "leadership"].includes(s.valeur),
+  ).map((s) => s.libelle),
+  "et d\u2019autres",
+];
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -164,17 +175,59 @@ export default async function APropos() {
         2026. « À propos » est la page que lit un praticien qui se demande qui
         nous sommes avant de proposer ses services.
       */}
-      <section className="px-8 pb-16">
-        <div className="border-line mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-6 border-t pt-12">
-          <div>
-            <span className="mono-label text-gold mb-2 block">Recrutement</span>
-            <h2 className="text-[clamp(1.3rem,2.4vw,1.8rem)] font-semibold">
-              Vous êtes formateur&nbsp;? N&apos;hésitez pas à nous rejoindre.
+      <section className="px-6 pb-16 sm:px-8">
+        <div className="glass-panel-gold rounded-clixa relative mx-auto grid max-w-[1180px] gap-8 overflow-hidden p-7 sm:p-10 md:grid-cols-[1.35fr_0.65fr] md:items-center md:gap-12">
+          <div className="min-w-0">
+            <span className="mono-label text-gold mb-3 block">Recrutement des formateurs</span>
+            <h2 className="mb-4 max-w-[22ch] text-[clamp(1.5rem,2.8vw,2.1rem)] leading-tight font-semibold">
+              Vous êtes formateur&nbsp;?{" "}
+              <span className="gold-gradient-text">N&apos;hésitez pas à nous rejoindre.</span>
             </h2>
+            <p className="text-ivory-dim/90 mb-6 max-w-[56ch] text-[0.98rem] leading-relaxed">
+              Nous cherchons des praticiens qui transmettent ce qu&apos;ils font au quotidien : en
+              classe virtuelle le week-end, et lors de nos séminaires d&apos;entreprise.
+            </p>
+            <ul className="mb-8 flex flex-wrap gap-2" aria-label="Quelques domaines recherchés">
+              {DOMAINES_RECHERCHES.map((d) => (
+                <li
+                  key={d}
+                  className="border-line bg-ink/50 text-ivory-dim rounded-full border px-3 py-1 text-[0.8rem]"
+                >
+                  {d}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Button href="/devenir-formateur">Proposer ma candidature</Button>
+              <Link
+                href="/devenir-formateur"
+                className="text-ivory-dim hover:text-ivory hover:border-gold border-ivory-dim border-b py-2 text-sm transition-colors"
+              >
+                Ce que nous recherchons
+              </Link>
+            </div>
           </div>
-          <Button href="/devenir-formateur" variante="contour">
-            Devenir formateur
-          </Button>
+
+          {/*
+            Une vraie séance CLIXA — l'atelier transmis pour /entreprises. La
+            page de recrutement montre le formateur ; celle-ci montre comment
+            on travaille, pour ne pas répéter la même image d'un clic à l'autre.
+            Masquée sur téléphone : posée sous le texte, elle ajoutait un écran
+            entier à faire défiler sans rien dire de plus.
+          */}
+          <figure className="rounded-clixa relative hidden w-full overflow-hidden border border-white/10 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.9)] md:block">
+            <Image
+              src="/images/entreprises/atelier-tableau-scoring.jpg"
+              alt="Tableau de scoring d'un atelier CLIXA : trois équipes, leurs tests et leurs scores"
+              width={630}
+              height={840}
+              sizes="280px"
+              className="aspect-[4/5] w-full object-cover"
+            />
+            <figcaption className="bg-ink/80 text-ivory absolute inset-x-0 bottom-0 px-3 py-2 font-mono text-[0.6rem] tracking-[0.12em] uppercase backdrop-blur-sm">
+              Atelier en séance
+            </figcaption>
+          </figure>
         </div>
       </section>
     </>

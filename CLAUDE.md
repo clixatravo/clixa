@@ -5738,6 +5738,16 @@ Nouvelle, Contactée, Retenue, Non retenue.
   deux rouges. Essayé de bout en bout sur `dev` par la vraie route (refus,
   enregistrement, doublon, CV privé, courriel), données retirées ensuite.
   Regardé à 375 px : aucun débordement.
+- **La page a été redessinée le 1er octobre 2026** (demandé par la direction,
+  web et téléphone, avec le bloc de « À propos ») : la photo du formateur en
+  séance en tête, trois faits dont le nombre de parcours lu dans le catalogue,
+  les domaines recherchés lus dans `SPECIALITES` — jamais une seconde liste —,
+  et un formulaire en quatre temps numérotés à côté d'une colonne qui rappelle
+  ce qui est vrai : l'un des deux suffit, le CV reste privé. Les champs envoyés
+  n'ont pas changé, la route non plus. Dans « À propos », un vrai bloc, avec
+  l'atelier en photo — masquée sur téléphone, où elle ajoutait un écran sans
+  rien dire de plus. `/devenir-formateur` rejoint `e2e/chemins.ts` :
+  l'accessibilité et la mise en page sur téléphone l'éprouvent désormais.
 - **En ligne le 1er octobre 2026** (`e829219`), seul : les commits du
   dépliant, de la cohorte de novembre et des témoignages n'ont pas suivi. Le
   commit a été repris à part sur `main`. Les deux schémas comparés avant :
