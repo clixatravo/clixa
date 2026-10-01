@@ -3709,6 +3709,57 @@ suppression, le chiffrement imposé côté serveur par Neon, les secrets hors du
 dépôt, l'absence de trace d'erreur ou de secret renvoyée au client, et
 `/api/apercu`, qui demande une session.
 
+⚠️ **Un second audit, le 1er octobre 2026, sur une liste de dix-huit points**
+(authentification, autorisation, injections, JWT, mots de passe, cadence, CORS,
+variables d'environnement, données dans les réponses, erreurs, dépôts de
+fichiers, base, journaux). Cinq défauts réels, chacun **reproduit avant d'être
+corrigé** et gardé ensuite :
+
+1. ⚠️ **Un participant réécrivait son adresse par l'API** — et son identifiant
+   Google, « adresse vérifiée », `_verified`. `admin.readOnly` ne fermait que la
+   case de l'écran. Avec l'adresse d'une autre personne sans compte, il suffisait
+   d'attendre : à sa première connexion Google, la route la retrouvait **par
+   adresse**, y rattachait ses dossiers, et le premier connaissait le mot de
+   passe. `figerLesChampsDeConnexion` remet ces champs à leur valeur d'avant
+   sur toute écriture faite par un participant. ⚠️ Le premier jet *retirait*
+   l'adresse de l'écriture : la fiche arrive fusionnée à ce crochet, et plus
+   aucune écriture ne passait la validation, nom compris. C'est le témoin de la
+   garde qui l'a vu.
+2. ⚠️ **« Mot de passe oublié » et la connexion n'avaient aucun frein.** Servies
+   par Payload (`api/[...slug]`), elles échappaient à `cadenceOk`. La première
+   envoie un courriel par appel : une boucle vidait le quota Resend de la
+   journée, et avec lui confirmations, contrats et certificats.
+   `cadenceDesPortesDeCompte` : connexion 20 par 5 min, mot de passe oublié 5 par
+   15 min. ⚠️ Le registre est partagé entre les deux collections : vingt essais
+   ratés sur `/admin` ferment aussi la connexion des participants, depuis la
+   même adresse, pour cinq minutes.
+3. **Payload accepte un mot de passe de trois caractères**, et sa règle ne se
+   règle pas. Seul le formulaire du site en exigeait huit. `beforeOperation`
+   (création, mise à jour **et** `resetPassword`) l'impose désormais aux deux
+   sortes de comptes.
+4. **Le cookie d'équipe n'avait pas `Secure`** : `auth: true` prend les valeurs
+   par défaut de Payload. Posé en production, comme pour les participants.
+5. **`/api/revalider` s'ouvrait avec `?secret=clixa`.** Seul `CRON_SECRET`
+   l'ouvre, en temps constant, et elle répond 503 sans lui.
+
+Et une porte fermée sans être un défaut : **GraphQL**, que rien n'utilise. Il
+refusait bien les données privées, mais publiait la structure entière — 119
+opérations, champs des dossiers compris. `graphQL: { disable: true }`, route
+retirée.
+
+- **Trouvé sain** : chaque route d'équipe exige `collection === "utilisateurs"` ;
+  toute collection privée refuse un anonyme (REST et GraphQL avant fermeture) ;
+  CORS ne répond pas à une origine tierce ; erreurs sans pile ; dépôts limités
+  aux images et vidéos, par session d'équipe ; aucun secret dans le dépôt ;
+  `sslmode=verify-full` ; un secret Payload vide fait refuser le démarrage ;
+  HSTS, `nosniff` et `X-Frame-Options` servis en production.
+- `verifier-audit-securite.ts` (sans base, 15 contrôles, **trois défauts remis :
+  trois rouges**) et `verifier-securite-comptes.ts` (contre `dev`, serveur
+  lancé, 8 contrôles, **le crochet retiré : quatre rouges**).
+- ⚠️ **Reste, et ce n'est pas du code** : le hachage de Payload fait 25 000
+  tours de PBKDF2 — en dessous de ce que l'on conseille aujourd'hui, et pas
+  réglable. Et `x-powered-by` annonce « Next.js, Payload ».
+
 ## Le courriel
 
 **Les gabarits se regardent, ils ne se relisent pas.** Un client de messagerie

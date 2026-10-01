@@ -1,7 +1,8 @@
 import { echapper, gabaritHtmlEmail } from "@/lib/courriel";
-import type { CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import { paysValideFacultatif } from "./champs";
+import { exigerUnMotDePasseSolide } from "@/lib/mot-de-passe";
 
 /**
  * BE-18 — Les comptes des participants.
@@ -24,6 +25,52 @@ import { paysValideFacultatif } from "./champs";
  * programme cette année (décision A). Il montre des dossiers, des échéances et
  * des dates.
  */
+/**
+ * Ce qu'un participant ne réécrit pas lui-même, même sur sa propre fiche.
+ *
+ * ⚠️ **Trouvé en audit le 1er octobre 2026, et éprouvé avant d'être corrigé.**
+ * La règle `update` laisse un participant modifier sa fiche — son nom, son
+ * numéro, son pays. Mais l'API REST acceptait tout le reste avec : son adresse,
+ * son identifiant Google, « adresse vérifiée » et `_verified`. `admin.readOnly`
+ * ne fermait que la case de l'écran.
+ *
+ * L'adresse était la porte qui compte. La connexion Google cherche un compte
+ * **par adresse** quand elle ne le trouve pas par identifiant, l'y rattache, puis
+ * y accroche tous les dossiers de cette adresse (`rattacherParAdresse`).
+ * Quelqu'un ouvrait donc un compte, le réécrivait à l'adresse d'une autre
+ * personne qui n'en avait pas encore, et attendait : à la première connexion
+ * Google de celle-ci, ses dossiers — nom, téléphone, échéancier, référence —
+ * arrivaient dans un compte dont l'autre connaissait le mot de passe.
+ *
+ * Ces champs sont donc retirés de toute écriture faite **par un participant**.
+ * L'équipe les corrige depuis /admin ; les routes du site écrivent sans
+ * utilisateur (`overrideAccess`), et ne sont pas concernées. Le mot de passe,
+ * lui, reste modifiable : changer le sien est un geste légitime.
+ */
+const CHAMPS_DE_CONNEXION = ["email", "googleId", "emailVerifie", "_verified"] as const;
+
+export const figerLesChampsDeConnexion: CollectionBeforeChangeHook = ({
+  req,
+  data,
+  originalDoc,
+  operation,
+}) => {
+  if (operation !== "update" || req.user?.collection !== "apprenants" || !originalDoc) return data;
+  /*
+    ⚠️ On remet la valeur d'avant, on ne retire pas la clef. À ce stade
+    `data` porte la fiche entière, fusionnée : retirer `email` faisait échouer
+    la validation sur toute écriture, nom compris — un participant ne pouvait
+    plus rien corriger. C'est le témoin de la garde qui l'a montré.
+  */
+  const garde: Record<string, unknown> = { ...data };
+  const avant = originalDoc as Record<string, unknown>;
+  for (const champ of CHAMPS_DE_CONNEXION) {
+    if (champ in avant) garde[champ] = avant[champ];
+    else delete garde[champ];
+  }
+  return garde;
+};
+
 export const Apprenants: CollectionConfig = {
   slug: "apprenants",
   labels: { singular: "Participant", plural: "Participants" },
@@ -93,6 +140,10 @@ export const Apprenants: CollectionConfig = {
     group: "Admissions",
     description:
       "Les comptes que les participants créent eux-mêmes. Le personnel les consulte, il ne les crée pas.",
+  },
+  hooks: {
+    beforeOperation: [exigerUnMotDePasseSolide],
+    beforeChange: [figerLesChampsDeConnexion],
   },
   access: {
     /*

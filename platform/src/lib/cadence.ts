@@ -112,3 +112,50 @@ export function tropVite(secondes: number): Response {
     },
   });
 }
+
+/**
+ * Le frein des portes de compte de Payload : connexion, mot de passe oublié,
+ * réinitialisation, confirmation, déblocage, premier compte.
+ *
+ * ⚠️ **Trouvé en audit le 1er octobre 2026 : elles n'avaient aucun frein.**
+ * Les routes du site passent par `cadenceOk` ; celles-ci sont servies par
+ * Payload lui-même (`api/[...slug]`), et personne ne les comptait.
+ *
+ * - **« Mot de passe oublié » envoie un courriel à chaque appel.** Le plafond
+ *   de Resend est de cent par jour, partagé avec le tunnel : une boucle sur
+ *   cette route vidait le quota en une minute, et plus aucune confirmation
+ *   d'inscription, aucun contrat ni certificat ne partait de la journée — sans
+ *   qu'aucune erreur ne le dise.
+ * - **La connexion se bloque par compte** (cinq ou dix essais), pas par
+ *   appelant : on pouvait essayer un mot de passe sur cent adresses à la suite.
+ *
+ * Mêmes limites que le reste de ce fichier : un compte en mémoire, par
+ * instance. Les plafonds sont larges pour une équipe derrière une seule adresse.
+ */
+export interface RegleDeCadence {
+  registre: string;
+  plafond: number;
+  fenetreMs: number;
+}
+
+const PORTES_DE_COMPTE: Record<string, Omit<RegleDeCadence, "registre">> = {
+  login: { plafond: 20, fenetreMs: 5 * 60_000 },
+  "forgot-password": { plafond: 5, fenetreMs: 15 * 60_000 },
+  "reset-password": { plafond: 10, fenetreMs: 15 * 60_000 },
+  verify: { plafond: 10, fenetreMs: 15 * 60_000 },
+  unlock: { plafond: 10, fenetreMs: 15 * 60_000 },
+  "first-register": { plafond: 5, fenetreMs: 15 * 60_000 },
+};
+
+const COLLECTIONS_AUTHENTIFIEES = new Set(["utilisateurs", "apprenants"]);
+
+/** La règle qui s'applique à ce chemin d'API, ou `undefined` s'il n'est pas une porte de compte. */
+export function cadenceDesPortesDeCompte(chemin: string): RegleDeCadence | undefined {
+  const morceaux = chemin.replace(/\/+$/, "").split("/").filter(Boolean);
+  // /api/<collection>/<porte>[/<jeton>]
+  if (morceaux[0] !== "api" || morceaux.length < 3) return undefined;
+  const [, collection, porte] = morceaux;
+  if (!collection || !porte || !COLLECTIONS_AUTHENTIFIEES.has(collection)) return undefined;
+  const regle = PORTES_DE_COMPTE[porte];
+  return regle ? { registre: `compte-${porte}`, ...regle } : undefined;
+}

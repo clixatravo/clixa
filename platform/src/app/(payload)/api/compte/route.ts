@@ -6,6 +6,7 @@ import { envoyerConfirmation } from "@/lib/courriel";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { fermerSession, ouvrirSession, participantConnecte } from "@/lib/session-apprenant";
+import { MOT_DE_PASSE_MIN } from "@/lib/mot-de-passe";
 
 /**
  * BE-19 — Création, connexion et sortie d'un compte participant.
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
     if (!nom || !tientDans(nom, LONGUEURS.nom)) {
       redirect("/compte/creer?erreur=champs" as Route);
     }
-    if (motDePasse.length < 8) redirect("/compte/creer?erreur=court" as Route);
+    if (motDePasse.length < MOT_DE_PASSE_MIN) redirect("/compte/creer?erreur=court" as Route);
 
     try {
       const compte = await payload.create({

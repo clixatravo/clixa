@@ -84,6 +84,15 @@ export default buildConfig({
     l'interroger, c'est ici qu'on l'autorisera, nommément.
   */
   cors: [ORIGINE],
+  /*
+    ⚠️ GraphQL est fermé (audit du 1er octobre 2026). Rien ne s'en sert : le
+    site lit par l'API locale, le back-office par REST. Ouvert par défaut, il
+    publiait à qui le demandait la structure entière des données — 119
+    opérations, noms des champs des dossiers clients compris — et acceptait des
+    requêtes imbriquées sans plafond. Il refusait bien les données privées ;
+    mais une porte inutile reste une porte à garder.
+  */
+  graphQL: { disable: true },
   admin: {
     user: Utilisateurs.slug,
     theme: "dark",

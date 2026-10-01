@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { champRole, comptesEcriture, comptesLecture, reserveA } from "@/access/roles";
+import { exigerUnMotDePasseSolide } from "@/lib/mot-de-passe";
 
 /**
  * BE-07 — Comptes d'administration.
@@ -14,7 +15,29 @@ export const Utilisateurs: CollectionConfig = {
     singular: "Utilisateur",
     plural: "Utilisateurs",
   },
-  auth: true,
+  auth: {
+    /*
+      ⚠️ **Le cookie d'équipe n'avait pas le drapeau `Secure`** (trouvé en audit
+      le 1er octobre 2026). `auth: true` prend les réglages par défaut de
+      Payload, et ceux-ci posent `secure: false`. Le compte des participants
+      l'avait depuis le 30 août ; celui-ci, qui ouvre tous les dossiers, non.
+      Conditionné à la production, comme chez `Apprenants` : posé en
+      développement, il fermerait `http://localhost`.
+
+      Le reste garde les valeurs de Payload, écrites ici pour qu'on les lise :
+      cinq essais, dix minutes de blocage, une session de deux heures.
+    */
+    cookies: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    },
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
+    tokenExpiration: 2 * 60 * 60,
+  },
+  hooks: {
+    beforeOperation: [exigerUnMotDePasseSolide],
+  },
   admin: {
     useAsTitle: "email",
     defaultColumns: ["email", "nom", "role"],
