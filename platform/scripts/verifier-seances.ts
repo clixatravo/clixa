@@ -10,13 +10,16 @@
  * Ce qui est gardé :
  * - deux jours nommés dans la cadence donnent toutes leurs dates, du premier
  *   au dernier soir, à l'heure de la session ;
+ * - des soirées en plus, datées dans la cadence (« et les vendredis 11 et
+ *   18 déc. »), rejoignent le calendrier — c'est la préparation PMP® ;
  * - un compte qui ne tombe pas juste ne rend rien — ni un nombre annoncé qui
  *   diffère, ni une fin qui n'est pas un jour de séance, ni des soirées en
- *   plus que la cadence ne date pas ;
+ *   plus que la cadence ne date pas, ni une date qui ne tombe pas le jour
+ *   qu'elle dit ;
  * - témoin : une cadence d'un seul jour garde la règle hebdomadaire. Sans lui,
  *   une fonction qui ne rendrait plus rien pour les samedis passerait au vert.
  */
-import { seancesDeLaSession } from "@/lib/format";
+import { planDesSeances, seancesDeLaSession } from "@/lib/format";
 
 let manques = 0;
 const dire = (q: string, v: boolean, detail = "") => {
@@ -56,7 +59,46 @@ dire(
   marJeu?.[0]?.slice(0, 10) === "2026-11-03" && marJeu?.at(-1)?.slice(0, 10) === "2026-12-24",
 );
 
+console.log("\n▸ Des soirées en plus, datées dans la cadence\n");
+
+const CADENCE_PMP = "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 19h00–21h00";
+const pmp = planDesSeances("2026-11-03T19:00:00.000Z", "2026-12-24T21:00:00.000Z", CADENCE_PMP);
+dire(
+  "PMP® : seize soirées régulières",
+  pmp?.regulieres.length === 16,
+  `${pmp?.regulieres.length ?? "rien"}`,
+);
+dire(
+  "et deux en plus, les vendredis 11 et 18 décembre",
+  pmp?.enPlus.map((d) => d.slice(0, 10)).join(",") === "2026-12-11,2026-12-18",
+  pmp?.enPlus.map((d) => d.slice(0, 10)).join(", "),
+);
+dire("à l'heure de la session", Boolean(pmp?.enPlus.every((d) => d.slice(11, 16) === "19:00")));
+dire("les jours réguliers restent mardi et jeudi", pmp?.jours.sort().join(",") === "2,4");
+dire(
+  "dix-huit dates en tout, dans l'ordre",
+  seancesDeLaSession("2026-11-03T19:00:00.000Z", "2026-12-24T21:00:00.000Z", CADENCE_PMP)
+    ?.length === 18,
+);
+
 console.log("\n▸ Ce qui ne tombe pas juste ne rend rien\n");
+
+dire(
+  "⚠️ une date en plus qui ne tombe pas le jour qu'elle dit",
+  seancesDeLaSession(
+    "2026-11-03T19:00:00.000Z",
+    "2026-12-24T21:00:00.000Z",
+    "18 soirées · mardis et jeudis, et les vendredis 12 et 18 déc. · 19h00–21h00",
+  ) === undefined,
+);
+dire(
+  "⚠️ une date en plus hors de la période",
+  seancesDeLaSession(
+    "2026-11-03T19:00:00.000Z",
+    "2026-12-24T21:00:00.000Z",
+    "18 soirées · mardis et jeudis, et les vendredis 18 et 25 déc. · 19h00–21h00",
+  ) === undefined,
+);
 
 dire(
   "⚠️ un nombre annoncé qui diffère",
@@ -84,8 +126,11 @@ dire(
 );
 dire(
   "une date illisible",
-  seancesDeLaSession("pas une date", "2026-12-24T21:00:00.000Z", "16 soirées · mardis et jeudis") ===
-    undefined,
+  seancesDeLaSession(
+    "pas une date",
+    "2026-12-24T21:00:00.000Z",
+    "16 soirées · mardis et jeudis",
+  ) === undefined,
 );
 
 console.log("\n▸ Témoin : un seul jour garde la règle hebdomadaire\n");

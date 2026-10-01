@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Session } from "@/lib/types";
 import { placesRestantes } from "@/lib/types";
 import {
@@ -139,6 +140,20 @@ export function SessionsDisponibles({
           </div>
         );
       })}
+
+      {/*
+        Le calendrier d'une session dit les soirs de ce parcours ; l'emploi du
+        temps dit ceux de tous les autres — ce que regarde quelqu'un qui hésite
+        entre deux parcours, ou qui ne peut se libérer qu'un soir donné.
+      */}
+      {sessions.some((s) => !s.cloturee) && (
+        <Link
+          href="/emploi-du-temps"
+          className="text-gold hover:text-gold-bright inline-block pt-1 font-mono text-[0.68rem] tracking-[0.1em] uppercase transition-colors"
+        >
+          Voir l&apos;emploi du temps de toutes les formations →
+        </Link>
+      )}
     </div>
   );
 }

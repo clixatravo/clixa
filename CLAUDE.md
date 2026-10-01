@@ -5851,10 +5851,13 @@ dix-huit pour ses 35 heures. Six classes chaque soir, le vendredi libre.
   lundi au mercredi ne rendait rien, et la fiche perdait le « Calendrier des
   séances » que la FAQ annonce. `seancesDeLaSession` lit les jours dans la
   cadence (« 16 soirées · lundis et mercredis · 19h00–21h00 ») et se tait
-  dès que le compte ne tombe pas juste — d'où **aucun calendrier pour la
-  PMP®**, dont les deux vendredis ne se déduisent pas. `verifier-seances.ts` :
-  treize contrôles sans base, **prouvés en retirant les deux vérifications de
-  compte : trois rouges**.
+  dès que le compte ne tombe pas juste. Les soirées ajoutées se **datent dans
+  la cadence** (« et les vendredis 11 et 18 déc. ») : `planDesSeances` les y
+  lit, vérifie qu'elles tombent le jour qu'elles disent et dans la période, et
+  la PMP® a ses dix-huit dates. Écrites « deux vendredis », sans date, elles ne
+  se déduiraient pas, et le calendrier se tairait. `verifier-seances.ts` :
+  vingt contrôles sans base, **prouvés en retirant les vérifications de compte
+  (trois rouges) puis celle du jour de la semaine (un rouge)**.
 - ⚠️ **« 8 séances » était écrit à quatre endroits, et c'étaient des modules.**
   L'accueil et « À propos » (« 8 séances par parcours »), la plaquette PDF
   (« Séances : 8 séances ») comptaient `modules.length` ; vrai tant qu'un
@@ -5893,6 +5896,32 @@ dix-huit pour ses 35 heures. Six classes chaque soir, le vendredi libre.
   2 novembre · mardi 3 novembre »), plaquette regardée. 22 gardes sans base,
   `verifier-horaires`, `-faq`, `-presentation`, `-catalogue` verts, **100
   épreuves Playwright vertes**.
+
+⚠️ **L'emploi du temps se lit sur le site** (`/emploi-du-temps`,
+`lib/emploi.ts`, demandé par la direction le 1er octobre 2026 : « diir liha
+blassa fle site bach i chofha l clien »). Le PDF validé est une photographie ;
+la page regroupe les sessions **ouvertes** par rythme — mêmes jours, même
+horaire, mêmes dates — et en tire chaque soirée par `planDesSeances`, la règle
+du calendrier des fiches. Rien n'y est écrit à la main : une session déplacée
+dans /admin la déplace sur la page.
+
+- **Trois blocs** : la semaine type (une pastille par rythme et par soir, le
+  vendredi « Libre » ou « PMP® »), une carte par rythme avec ses formations,
+  le calendrier soir par soir (« Lundi et mercredi · 5/16 »), puis chaque
+  formation avec ses dates et « Me pré-inscrire », session déjà choisie.
+- ⚠️ **Une session dont le calendrier ne se déduit pas n'est pas devinée** :
+  elle est rendue à part, avec un renvoi vers sa fiche. La ranger dans le
+  rythme voisin lui prêterait des soirées qu'elle n'a pas.
+- **Une seule heure, avec son fuseau** (décision du 4 septembre 2026).
+- **Reliée** depuis le pied de page (« Se former »), le catalogue et chaque
+  fiche (« Voir l'emploi du temps de toutes les formations »), au plan du site,
+  et rafraîchie par les crochets des sessions et des parcours.
+- `verifier-emploi.ts` : dix-neuf contrôles sans base sur la cohorte réelle,
+  **prouvés en comptant les soirées de la PMP® parmi celles de son rythme : un
+  rouge**. `/emploi-du-temps` rejoint `e2e/chemins.ts` : accessibilité et
+  mise en page sur téléphone l'éprouvent (71 épreuves vertes).
+- Regardé à 1280 et 375 px : aucun débordement, le titre de la PMP® passe à
+  la ligne plutôt que d'être coupé le vendredi.
 
 L'ancienne répartition, gardée pour mémoire — jamais publiée :
 

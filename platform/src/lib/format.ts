@@ -138,9 +138,37 @@ const NUMERO_DU_JOUR: Record<string, number> = {
   samedi: 6,
 };
 
+const NUMERO_DU_MOIS: Record<string, number> = {
+  janv: 0,
+  fevr: 1,
+  févr: 1,
+  mars: 2,
+  avr: 3,
+  mai: 4,
+  juin: 5,
+  juil: 6,
+  aout: 7,
+  août: 7,
+  sept: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
+  déc: 11,
+};
+
+/** Le plan d'une session : ses soirées régulières, et celles qu'elle ajoute à date fixe. */
+export interface PlanDesSeances {
+  /** Les jours de la semaine réguliers, 0 = dimanche. */
+  jours: number[];
+  /** Les dates des séances régulières, dans l'ordre. */
+  regulieres: string[];
+  /** Les séances en plus, nommées par leur date dans la cadence. */
+  enPlus: string[];
+}
+
 /**
- * Les dates de chaque séance, que la session tienne un soir par semaine ou
- * plusieurs.
+ * Le plan des séances d'une session, que la session tienne un soir par semaine
+ * ou plusieurs.
  *
  * La cohorte du soir de novembre 2026 se donne deux soirs par semaine
  * (« 16 soirées · lundis et mercredis · 19h00–21h00 ») : le début est un
@@ -149,21 +177,47 @@ const NUMERO_DU_JOUR: Record<string, number> = {
  * celui que la FAQ annonce « sur la fiche de chaque parcours ».
  *
  * Les jours se lisent dans la cadence, qui fait foi (le crochet de
- * `Sessions.ts` y recale déjà les heures). Une cadence qui ne nomme qu'un
- * jour, ou aucun, garde la règle hebdomadaire.
+ * `Sessions.ts` y recale déjà les heures). Une séance ajoutée à date fixe se
+ * nomme avec sa date : « et les vendredis 11 et 18 déc. » — c'est ainsi que la
+ * préparation PMP® tient ses 35 heures. Une cadence qui ne nomme qu'un jour,
+ * sans date, garde la règle hebdomadaire.
  *
  * ⚠️ **Rien n'est rendu dès que le compte ne tombe pas juste** : les deux
- * bouts doivent être des jours de séance, et le nombre écrit en tête de la
- * cadence doit égaler celui des dates. Une session qui ajoute deux vendredis
- * à ses mardis et jeudis n'a pas de calendrier déductible — mieux vaut ne
- * rien afficher que d'en inventer un faux.
+ * bouts doivent être des séances, une date ajoutée doit tomber le jour qu'elle
+ * dit et dans la période, et le nombre écrit en tête de la cadence doit égaler
+ * celui des dates. Des vendredis en plus qui ne sont pas datés ne se déduisent
+ * pas — mieux vaut ne rien afficher que d'inventer un calendrier faux.
  */
-export function seancesDeLaSession(
+export function planDesSeances(
   debut: string,
   fin: string,
   cadence?: string | null,
-): string[] | undefined {
-  const texte = (cadence ?? "").toLowerCase();
+): PlanDesSeances | undefined {
+  const d = new Date(debut).getTime();
+  const f = new Date(fin).getTime();
+  if (Number.isNaN(d) || Number.isNaN(f) || f <= d || f - d > 366 * 86400000) return undefined;
+
+  let texte = (cadence ?? "").toLowerCase();
+
+  // Les séances à date fixe : « vendredis 11 et 18 déc. ».
+  const enPlus: string[] = [];
+  const dates =
+    /\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)s?\s+(\d{1,2}(?:\s*(?:,|et)\s*\d{1,2})*)\s+(janv|f[ée]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[ée]c)\.?/g;
+  for (const m of texte.matchAll(dates)) {
+    const jour = NUMERO_DU_JOUR[m[1]!]!;
+    const mois = NUMERO_DU_MOIS[m[3]!]!;
+    const depart = new Date(d);
+    const annee =
+      mois < depart.getUTCMonth() ? depart.getUTCFullYear() + 1 : depart.getUTCFullYear();
+    for (const n of m[2]!.match(/\d{1,2}/g) ?? []) {
+      const x = new Date(d);
+      x.setUTCFullYear(annee, mois, Number(n));
+      if (x.getUTCDay() !== jour || x.getTime() < d || x.getTime() > f) return undefined;
+      enPlus.push(x.toISOString());
+    }
+  }
+  texte = texte.replace(dates, " ");
+
   const jours = [
     ...new Set(
       [...texte.matchAll(/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)s?\b/g)].map(
@@ -171,24 +225,42 @@ export function seancesDeLaSession(
       ),
     ),
   ];
-  if (jours.length < 2) return seancesHebdomadaires(debut, fin);
 
-  const d = new Date(debut).getTime();
-  const f = new Date(fin).getTime();
-  if (Number.isNaN(d) || Number.isNaN(f) || f <= d || f - d > 366 * 86400000) return undefined;
-
-  const dates: string[] = [];
-  for (let t = d; t <= f; t += 86400000) {
-    if (jours.includes(new Date(t).getUTCDay())) dates.push(new Date(t).toISOString());
+  let regulieres: string[];
+  if (jours.length < 2 && enPlus.length === 0) {
+    const hebdo = seancesHebdomadaires(debut, fin);
+    if (!hebdo) return undefined;
+    regulieres = hebdo;
+  } else {
+    regulieres = [];
+    for (let t = d; t <= f; t += 86400000) {
+      if (jours.includes(new Date(t).getUTCDay())) regulieres.push(new Date(t).toISOString());
+    }
   }
-  if (dates.length === 0) return undefined;
-  if (dates[0]!.slice(0, 10) !== debut.slice(0, 10)) return undefined;
-  if (dates.at(-1)!.slice(0, 10) !== new Date(f).toISOString().slice(0, 10)) return undefined;
+  if (regulieres.length === 0) return undefined;
+
+  const toutes = [...new Set([...regulieres, ...enPlus])].sort();
+  if (toutes[0]!.slice(0, 10) !== new Date(d).toISOString().slice(0, 10)) return undefined;
+  if (toutes.at(-1)!.slice(0, 10) !== new Date(f).toISOString().slice(0, 10)) return undefined;
 
   const annonce = /^\s*(\d{1,3})\b/.exec(texte);
-  if (annonce && Number(annonce[1]) !== dates.length) return undefined;
+  if (annonce && Number(annonce[1]) !== toutes.length) return undefined;
 
-  return dates;
+  return {
+    jours: jours.length ? jours : [new Date(d).getUTCDay()],
+    regulieres,
+    enPlus: enPlus.sort(),
+  };
+}
+
+/** Toutes les dates de séance d'une session, régulières et en plus, dans l'ordre. */
+export function seancesDeLaSession(
+  debut: string,
+  fin: string,
+  cadence?: string | null,
+): string[] | undefined {
+  const plan = planDesSeances(debut, fin, cadence);
+  return plan && [...new Set([...plan.regulieres, ...plan.enPlus])].sort();
 }
 
 /** « 19 sept. » — assez pour une pastille de calendrier. */

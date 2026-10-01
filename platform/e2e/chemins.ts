@@ -9,6 +9,7 @@ export const CHEMINS = [
   "/formations",
   "/formations?q=audit",
   "/formations/directeur-audit-interne",
+  "/emploi-du-temps",
   "/inscription?formation=directeur-audit-interne",
   "/compte/connexion",
   "/compte/creer",

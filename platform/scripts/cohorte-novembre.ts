@@ -74,10 +74,10 @@ const RYTHMES: Record<Rythme, { debut: string; fin: string; cadence: string }> =
     cadence: "16 soirées · mardis et jeudis · 19h00–21h00",
   },
   /*
-    Les deux vendredis sont écrits dans la cadence : c'est la seule chose que
-    le visiteur lit, et la fiche ne les montrerait nulle part ailleurs. Le
-    calendrier des séances, lui, ne s'affiche pas pour cette session — il ne
-    sait pas dater des soirées hors des jours réguliers, et préfère se taire.
+    Les deux vendredis sont écrits dans la cadence, **avec leurs dates** :
+    `planDesSeances` les y lit, et la fiche comme l'emploi du temps public en
+    tirent les dix-huit soirées. ⚠️ Écrits « et deux vendredis », sans date,
+    ils ne se déduiraient pas — le calendrier se tairait.
   */
   pmp: {
     debut: "2026-11-03",

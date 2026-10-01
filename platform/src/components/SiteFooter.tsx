@@ -20,6 +20,7 @@ const colonnes = [
     titre: "Se former",
     liens: [
       { href: "/formations", label: "Toutes les formations" },
+      { href: "/emploi-du-temps", label: "Emploi du temps" },
       { href: "/skillafrique", label: "SkillAfrique" },
       { href: "/campus", label: "Nos campus" },
       { href: "/blog", label: "Blog" },

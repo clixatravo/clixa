@@ -111,6 +111,12 @@ export default async function Catalogue({ searchParams }: Props) {
                   <span>Être conseillé sur un parcours</span>
                   <span>→</span>
                 </Link>
+                <Link
+                  href="/emploi-du-temps"
+                  className="text-gold hover:text-gold-bright font-mono text-xs tracking-wider uppercase transition-colors"
+                >
+                  Voir l&apos;emploi du temps →
+                </Link>
               </div>
             </div>
 
