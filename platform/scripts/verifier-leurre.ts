@@ -78,20 +78,42 @@ dire(
 console.log("\n▸ Les routes et les formulaires\n");
 
 const routes = sources.filter(({ p }) => /api[/\\][^/\\]+[/\\]route\.ts$/.test(p));
-const avecLeurre = routes.filter(({ s }) => s.includes("leurreRempli("));
+const route = (r: string) =>
+  routes.find(({ p }) => p.includes(`${path.sep}api${path.sep}${r}${path.sep}route.ts`));
+
+/*
+  Les routes des formulaires publics, nommées. Une route absente de l'arbre est
+  passée — les témoignages, par exemple, n'existent pas partout en même temps —
+  mais une route présente qui ne lit pas le piège tombe au rouge.
+*/
+const AVEC_PIEGE = [
+  "inscription",
+  "contrat",
+  "signature",
+  "transfert",
+  "compte",
+  "confirmation",
+  "candidature",
+  "temoignage",
+];
+const presentes = AVEC_PIEGE.filter((r) => route(r));
+const sansPiege = presentes.filter((r) => !route(r)!.s.includes("leurreRempli("));
 dire(
-  "les huit routes qui avaient un piège passent par `leurreRempli`",
-  avecLeurre.length >= 8,
-  String(avecLeurre.length),
+  "chaque route d'un formulaire public passe par `leurreRempli`",
+  presentes.length >= 7 && sansPiege.length === 0,
+  sansPiege.length ? `oubliées : ${sansPiege.join(", ")}` : `${presentes.length} routes`,
 );
 const champs = sources.reduce((n, { s }) => n + (s.match(/<ChampLeurre[\s/]/g) ?? []).length, 0);
-dire("les formulaires portent le champ partagé", champs >= 8, `${champs} formulaires`);
+dire(
+  "les formulaires portent le champ partagé",
+  champs >= presentes.length,
+  `${champs} formulaires pour ${presentes.length} routes`,
+);
 
-for (const r of ["inscription", "candidature", "temoignage"]) {
-  const s = routes.find(({ p }) => p.includes(`${path.sep}${r}${path.sep}route.ts`))?.s ?? "";
+for (const r of ["inscription", "candidature", "temoignage"].filter((x) => route(x))) {
   dire(
     `⚠️ /api/${r} écrit la raison de chaque refus`,
-    /console\.warn\(`\[[^\]]+\] refusée?/.test(s),
+    /console\.warn\(`\[[^\]]+\] refusée?/.test(route(r)!.s),
   );
 }
 
