@@ -6079,6 +6079,43 @@ bouton.
   et **refuse tout le fichier** au moindre parcours inconnu, date à venir ou
   cadence illisible. Éprouvé à blanc sur `dev`, dans les deux sens.
 
+⚠️ **Les anciens participants déposent leur témoignage eux-mêmes**
+(`/laisser-un-temoignage`, `api/temoignage`, `lib/temoignages.ts`, demandé par
+la direction le 30 septembre 2026). Cinq champs — nom, fonction, formation
+suivie, cohorte, témoignage —, **sans photo**, et un accord de publication.
+
+- ⚠️ **Un dépôt crée un brouillon, jamais une publication.** La collection est
+  en lecture publique pour ce qui est publié : un dépôt publié d'office
+  paraîtrait sur l'accueil et sur la fiche du parcours sans que personne l'ait
+  lu — un concurrent, un faux participant. `draft: true` **et**
+  `_status: "draft"` vont ensemble ; l'un sans l'autre, Payload publie. L'équipe
+  relit et publie depuis /admin, et le courriel « [Témoignage reçu] » le dit.
+  Vérifié sur `dev` : le dépôt est en base, l'API publique et `/temoignages`
+  n'en montrent rien.
+- **L'accord est daté par la route** (`consentementLe`, en lecture seule) : le
+  nom et la fonction d'une personne paraissent sur le site. Vide sur un
+  témoignage saisi par l'équipe.
+- ⚠️ **Les cohortes sont une liste tenue à la main** (`COHORTES`) : octobre
+  2025, février, avril, juin et octobre 2026. Les cohortes passées ne sont pas
+  en base, on ne peut donc pas les y lire. Le champ est une énumération : une
+  cohorte qui se termine s'ajoute à la liste **et** se pousse au schéma. Une
+  valeur ne se retire jamais — un témoignage qui la porte deviendrait invalide
+  à sa publication.
+- **La carte affiche la cohorte** sous la fonction : « Cohorte d'octobre 2025 ».
+- **La formation est cherchée parmi les parcours publiés** ; un slug inventé est
+  refusé. Un doublon (même nom, même texte, dix minutes) ne crée pas de second
+  brouillon.
+- **`noindex`, hors du plan du site** : la page s'adresse à d'anciens
+  participants, à qui l'équipe envoie le lien. Elle est liée depuis le bas de
+  `/temoignages`.
+- `verifier-temoignages.ts` : vingt-deux contrôles sans base, **prouvés en
+  remettant deux défauts** (dépôt publié d'office, dépôt sans accord) : trois
+  rouges. Essayé sur `dev` par la vraie route — refus, enregistrement, doublon,
+  courriel —, données retirées ensuite. Regardé à 375 px : aucun débordement.
+- **Deux colonnes sur `dev` seulement** (`temoignages.cohorte`,
+  `temoignages.consentement_le`, et leurs jumelles des versions). Avant la mise
+  en ligne : comparer les deux schémas, pousser, puis le code.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |

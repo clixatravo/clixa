@@ -77,6 +77,28 @@ export default async function PageTemoignages() {
       */}
       <GalerieRealisations realisations={realisations} titre="Les autres séances filmées" />
 
+      {/*
+        La porte des anciens participants. C'est ici qu'un visiteur qui a suivi
+        un parcours la cherchera, et c'est le seul lien du site vers elle : la
+        page est hors des moteurs, l'équipe en envoie aussi l'adresse.
+      */}
+      <section className="border-line border-t px-8 py-12">
+        <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-display mb-2 text-[clamp(1.2rem,2.2vw,1.6rem)]">
+              Vous avez suivi un de nos parcours&nbsp;?
+            </h2>
+            <p className="text-ivory-dim/90 max-w-[56ch] text-[0.95rem] leading-relaxed">
+              Partagez votre expérience avec ceux qui hésitent encore. Elle est relue par
+              l&apos;équipe avant d&apos;être publiée.
+            </p>
+          </div>
+          <Button href="/laisser-un-temoignage" variante="contour">
+            Laisser un témoignage
+          </Button>
+        </div>
+      </section>
+
       <section className="border-line border-t px-8 py-16">
         <div className="mx-auto max-w-[1180px] text-center">
           <h2 className="font-display mb-4 text-[clamp(1.4rem,2.6vw,2rem)]">

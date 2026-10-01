@@ -505,7 +505,7 @@ export interface Media {
   };
 }
 /**
- * Paroles d'anciens participants.
+ * Paroles d'anciens participants. Ceux déposés depuis le site arrivent en brouillon : relisez, puis publiez.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "temoignages".
@@ -519,6 +519,11 @@ export interface Temoignage {
   auteur: string;
   fonction?: string | null;
   programme?: (number | null) | Programme;
+  cohorte?: ('2025-10' | '2026-02' | '2026-04' | '2026-06' | '2026-10') | null;
+  /**
+   * Rempli quand la personne a déposé son témoignage depuis le site et accepté qu'il soit publié avec son nom et sa fonction.
+   */
+  consentementLe?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1475,6 +1480,8 @@ export interface TemoignagesSelect<T extends boolean = true> {
   auteur?: T;
   fonction?: T;
   programme?: T;
+  cohorte?: T;
+  consentementLe?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

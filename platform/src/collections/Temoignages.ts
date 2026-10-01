@@ -2,6 +2,7 @@ import type { CollectionConfig } from "payload";
 import { lecturePubliee, reserveA } from "@/access/roles";
 import { requisEnFrancais } from "@/collections/champs";
 import { revaliderVitrine, revaliderVitrineSupprimee } from "@/collections/revalider";
+import { OPTIONS_COHORTE } from "@/lib/temoignages";
 
 /**
  * BE-05 — Témoignages d'anciens participants.
@@ -9,15 +10,20 @@ import { revaliderVitrine, revaliderVitrineSupprimee } from "@/collections/reval
  * Repris d'index.html (carrousel « Ils ont transformé leur trajectoire »). Ils
  * s'affichent sur l'accueil, sur la fiche du parcours cité, et sur
  * `/temoignages` — la page que la direction a demandée le 13 septembre 2026.
+ *
+ * Depuis le 30 septembre 2026, les anciens participants les déposent eux-mêmes
+ * (`/laisser-un-temoignage`). Un dépôt arrive **en brouillon** : rien ne
+ * paraît tant que l'équipe ne l'a pas relu et publié. Voir `lib/temoignages.ts`.
  */
 export const Temoignages: CollectionConfig = {
   slug: "temoignages",
   labels: { singular: "Témoignage", plural: "Témoignages" },
   admin: {
     useAsTitle: "auteur",
-    defaultColumns: ["auteur", "fonction", "programme", "_status"],
+    defaultColumns: ["auteur", "fonction", "programme", "cohorte", "_status"],
     group: "Éditorial",
-    description: "Paroles d'anciens participants.",
+    description:
+      "Paroles d'anciens participants. Ceux déposés depuis le site arrivent en brouillon : relisez, puis publiez.",
   },
   access: {
     read: lecturePubliee,
@@ -68,6 +74,30 @@ export const Temoignages: CollectionConfig = {
       relationTo: "programmes",
       label: "Formation suivie",
       admin: { position: "sidebar" },
+    },
+    {
+      name: "cohorte",
+      type: "select",
+      label: "Cohorte",
+      options: OPTIONS_COHORTE,
+      admin: { position: "sidebar" },
+    },
+    {
+      /*
+        L'accord de publication, daté. Posé par la route au dépôt, jamais à la
+        main : une date saisie ici ne prouverait aucun accord. Vide sur un
+        témoignage saisi par l'équipe — c'est elle qui a recueilli l'accord.
+      */
+      name: "consentementLe",
+      type: "date",
+      label: "Accord de publication donné le",
+      admin: {
+        position: "sidebar",
+        readOnly: true,
+        date: { pickerAppearance: "dayAndTime" },
+        description:
+          "Rempli quand la personne a déposé son témoignage depuis le site et accepté qu'il soit publié avec son nom et sa fonction.",
+      },
     },
   ],
 };

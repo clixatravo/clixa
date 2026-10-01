@@ -231,6 +231,8 @@ export interface Temoignage {
   auteur: string;
   fonction: string;
   programmeSlug?: string;
+  /** « Cohorte d'octobre 2025 », déjà rédigé — voir `libelleCohorte`. */
+  cohorte?: string;
 }
 
 /**

@@ -1226,6 +1226,65 @@ export async function courrielCandidatureFormateur(
   });
 }
 
+/**
+ * Un ancien participant a déposé un témoignage.
+ *
+ * ⚠️ Le message dit qu'il est **en brouillon**, et c'est sa phrase utile : rien
+ * ne paraît tant que quelqu'un de l'équipe ne l'a pas relu et publié. Sans elle,
+ * on croirait le témoignage déjà en ligne — ou l'on chercherait pourquoi il
+ * n'y est pas.
+ */
+export async function courrielTemoignageRecu(
+  payload: Payload,
+  d: {
+    id: number | string;
+    nom: string;
+    fonction: string;
+    cohorte: string;
+    formation: string;
+    texte: string;
+  },
+): Promise<void> {
+  if (!EQUIPE) return;
+
+  const lien = `https://www.clixa.africa/admin/collections/temoignages/${d.id}`;
+
+  const corpsHtml = `
+    <p>Un ancien participant a déposé un témoignage depuis le site. Il est <strong>en brouillon</strong> : rien n'est publié tant que vous ne le publiez pas.</p>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #111a33; border-radius: 6px; padding: 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.8;">
+      <tr><td style="color: #94a3b8; width: 150px;">Participant :</td><td><strong style="color: #ffffff;">${echapper(d.nom)}</strong></td></tr>
+      <tr><td style="color: #94a3b8;">Fonction :</td><td style="color: #ffffff;">${echapper(d.fonction)}</td></tr>
+      <tr><td style="color: #94a3b8;">Formation :</td><td style="color: #ffffff;">${echapper(d.formation)}</td></tr>
+      <tr><td style="color: #94a3b8;">Cohorte :</td><td style="color: #ffffff;">${echapper(d.cohorte)}</td></tr>
+    </table>
+    <p style="color: #94a3b8; margin-bottom: 6px;">Son témoignage :</p>
+    <p style="margin-top: 0; white-space: pre-line; font-style: italic;">${echapper(d.texte)}</p>
+  `;
+
+  await envoyer(payload, {
+    to: EQUIPE,
+    subject: `[Témoignage reçu] ${d.nom} — ${d.formation}`,
+    text: [
+      `${d.nom} (${d.fonction}) a déposé un témoignage depuis le site.`,
+      "Il est en brouillon : rien n'est publié tant que vous ne le publiez pas.",
+      "",
+      `Formation : ${d.formation}`,
+      `Cohorte : ${d.cohorte}`,
+      "",
+      "Son témoignage :",
+      d.texte,
+      "",
+      `Le relire et le publier : ${lien}`,
+    ].join("\n"),
+    html: gabaritHtmlEmail({
+      titre: "Témoignage reçu",
+      corpsHtml,
+      boutonTexte: "Relire et publier",
+      boutonLien: lien,
+    }),
+  });
+}
+
 /** Relance d'échéance avec ton cordial et signature institutionnelle. */
 export async function courrielRelance(
   payload: Payload,

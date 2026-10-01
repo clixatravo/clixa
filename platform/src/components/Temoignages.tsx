@@ -60,6 +60,11 @@ export function Temoignages({
                     <span className="text-ivory-dim block font-mono text-[0.76rem]">
                       {t.fonction}
                     </span>
+                    {t.cohorte && (
+                      <span className="text-gold/80 block font-mono text-[0.7rem]">
+                        {t.cohorte}
+                      </span>
+                    )}
                   </div>
                 </figcaption>
               </figure>

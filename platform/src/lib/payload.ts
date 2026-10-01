@@ -21,6 +21,7 @@ import type {
 } from "@/lib/types";
 import type { Article, CategorieArticle } from "@/lib/blog";
 import { lireLaVideo } from "@/lib/video";
+import { libelleCohorte } from "@/lib/temoignages";
 
 /**
  * INT-01 — Accès à Payload et traduction vers le modèle de domaine.
@@ -265,13 +266,16 @@ export function versTemoignage(d: {
   auteur?: string | null;
   fonction?: string | null;
   programme?: unknown;
+  cohorte?: string | null;
 }): Temoignage {
+  const cohorte = libelleCohorte(d.cohorte);
   return {
     id: String(d.id),
     texte: t(d.texte),
     auteur: t(d.auteur),
     fonction: t(d.fonction),
     ...(slugDe(d.programme) ? { programmeSlug: slugDe(d.programme) } : {}),
+    ...(cohorte ? { cohorte } : {}),
   };
 }
 
