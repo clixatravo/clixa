@@ -5808,6 +5808,16 @@ Nouvelle, Contactée, Retenue, Non retenue.
     se lisait 25, et une devise inventée passait**. Essayé par la vraie route
     sur `dev` : sans taux, refusé avec sa phrase ; avec « 350,50 » MAD,
     enregistré 350,5. Regardé à 375 et 1280 px.
+  - **En ligne le 2 octobre 2026** (`656510f`, repris seul sur `main`) :
+    `taux_horaire` et `taux_devise` poussées sur la production depuis la
+    branche de publication — deux colonnes ajoutées, aucune retirée,
+    128 dossiers intacts. La page servie porte le champ et ses quatre devises.
+  - ⚠️ **La recette a rendu « la cadence finit par mordre — 0 refus sur 26 »**,
+    puis « 1 sur 26 » au passage suivant, contre 6 la veille. Le frein compte
+    en mémoire, par instance ; depuis le passage de Vercel à Pro le même jour,
+    les appels se répartissent sur plusieurs instances. Rien de cassé, mais
+    une protection affaiblie — surtout « mot de passe oublié », qui garde le
+    quota Resend. Laissé à une tâche à part (un compteur partagé).
 - **La page a été redessinée le 1er octobre 2026** (demandé par la direction,
   web et téléphone, avec le bloc de « À propos ») : la photo du formateur en
   séance en tête, trois faits dont le nombre de parcours lu dans le catalogue,
@@ -6266,6 +6276,30 @@ supplémentaire.
 Un `vercel env rm` qui réussit suivi d'un `add` qui échoue sur
 `invalid_visibility` laisse la variable *absente* — c'est ainsi que
 `NEXT_PUBLIC_SITE_URL` a disparu un moment. Poser `--no-sensitive --force`.
+
+⚠️ **Le site a été mis en pause par Vercel le 2 octobre 2026 au matin**, et
+c'est le plan gratuit qui l'a fait : l'équipe a dépassé les **200 000 « ISR
+Writes »** compris dans Hobby (204 442 sur trente jours, mesuré par `npx
+vercel metrics vercel.isr_operation.write_units`). Vercel avait prévenu par
+courriel (« Approaching your limits ») ; les projets sont « automatically
+paused » au-delà. Passage à **Pro** le même jour à 13 h 25 : le site est
+revenu.
+
+- **Une écriture se compte par tranche de 8 Ko.** Depuis `inlineCss`
+  (14 septembre), chaque page porte sa feuille de style : sur dix jours
+  comparables, les écritures ont crû de 26 %, les tranches facturées de
+  **×2,5** (33 301 → 83 866). Le reste vient des pages régénérées chaque heure
+  et de chaque écriture de session, qui lève l'étiquette du catalogue.
+- **En Pro, rien ne s'arrête** : le dépassement se paie (de l'ordre de 1 à 2 $
+  par mois à ce rythme, dans les 20 $ compris). Le budget de l'équipe est à
+  200 $, **« pause : no »** — à laisser ainsi : une limite qui met en pause
+  rouvrirait exactement la panne du 2 octobre. `npx vercel budgets` le relit.
+- ⚠️ **Hobby n'est pas fait pour un site commercial**, selon les conditions de
+  Vercel. Ne pas y revenir pour économiser vingt dollars.
+- Pour réduire, si un jour il le faut : allonger `revalidate` des pages qui ne
+  bougent pas (campus, SkillAfrique, À propos, entreprises) ; retirer
+  `inlineCss` diviserait la taille par trois mais rendrait 1,65 s au premier
+  affichage sur téléphone — non recommandé.
 
 **Deux branches Neon, depuis le 21 août 2026.** `production` sert le site
 public ; `dev` sert le poste de travail et les aperçus de branche. Modifier le
