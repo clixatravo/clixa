@@ -19,7 +19,12 @@
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { separerLesSessions } from "@/lib/cohortes";
+import {
+  COHORTES_SANS_DATE,
+  historiqueDesCohortes,
+  libelleCohorteDuMois,
+  separerLesSessions,
+} from "@/lib/cohortes";
 import { occupationDeLaSession } from "@/lib/occupation";
 import { placesRestantes, type Session } from "@/lib/types";
 
@@ -141,6 +146,40 @@ dire(
 dire(
   "et les cohortes précédentes se lisent à part",
   /\.precedentes/.test(corps("getCohortesPrecedentes")),
+);
+
+console.log("\n▸ Les cohortes connues par leur seul mois\n");
+
+const octobre = session("2026-10-03", { cloturee: true });
+const histo = historiqueDesCohortes([octobre]);
+dire(
+  "octobre 2026 en base, puis juin, avril, février 2026 et octobre 2025",
+  histo.map((l) => l.mois).join(",") === "2026-10,2026-06,2026-04,2026-02,2025-10",
+  histo.map((l) => l.mois).join(", "),
+);
+dire("la session en base garde ses dates", histo[0]?.session === octobre);
+dire(
+  "⚠️ les cohortes d'avant le site ne portent aucune date",
+  histo.slice(1).every((l) => l.session === undefined),
+);
+const juinDate = session("2026-06-06", { cloturee: true });
+const sansDoublon = historiqueDesCohortes([octobre, juinDate]);
+dire(
+  "⚠️ un mois porté par une session n'est pas répété",
+  sansDoublon.filter((l) => l.mois === "2026-06").length === 1 &&
+    sansDoublon.find((l) => l.mois === "2026-06")?.session === juinDate,
+  `${sansDoublon.length} ligne(s)`,
+);
+dire(
+  "témoin : sans session clôturée, les quatre mois restent",
+  historiqueDesCohortes([]).length === COHORTES_SANS_DATE.length,
+);
+dire(
+  "« Cohorte d'octobre 2025 », « Cohorte de juin 2026 », « Cohorte d'avril 2026 »",
+  libelleCohorteDuMois("2025-10") === "Cohorte d'octobre 2025" &&
+    libelleCohorteDuMois("2026-06") === "Cohorte de juin 2026" &&
+    libelleCohorteDuMois("2026-04") === "Cohorte d'avril 2026",
+  `${libelleCohorteDuMois("2025-10")} · ${libelleCohorteDuMois("2026-06")}`,
 );
 
 console.log(manques === 0 ? "\n  ✓ Tout tient.\n" : `\n  ✗ ${manques} contrôle(s) au rouge.\n`);

@@ -7,6 +7,7 @@ import { jsonLdCourse } from "@/lib/seo";
 import { PlanDeCours } from "@/components/PlanDeCours";
 import { SessionsDisponibles } from "@/components/SessionsDisponibles";
 import { CohortesPrecedentes } from "@/components/CohortesPrecedentes";
+import { historiqueDesCohortes } from "@/lib/cohortes";
 import { Temoignages } from "@/components/Temoignages";
 import { TrailerImmersion } from "@/components/TrailerImmersion";
 import { Badge, PlacesBadge } from "@/components/ui/Badge";
@@ -62,7 +63,8 @@ export default async function FicheFormation({ params }: Props) {
   const tarifs = await getTarifs();
   const temoignages = await getTemoignagesDe(programme.slug);
   const prochaine = await getProchaineSession(programme.slug);
-  const precedentes = await getCohortesPrecedentes(programme.slug);
+  // Les sessions clôturées, puis les cohortes connues par leur seul mois.
+  const precedentes = historiqueDesCohortes(await getCohortesPrecedentes(programme.slug));
 
   /*
     ⚠️ **« Aucune date » et « toutes complètes » ne sont pas la même chose.**
@@ -248,7 +250,8 @@ export default async function FicheFormation({ params }: Props) {
               Les cohortes déjà données, à part et après les sessions ouvertes :
               elles attestent que le parcours a eu lieu, elles ne se rejoignent
               pas. Rien ne s'affiche tant qu'aucune n'est clôturée — un cadre
-              vide se lirait comme une page à moitié chargée.
+              vide se lirait comme une page à moitié chargée. Les cohortes
+              d'avant le site n'y figurent que par leur mois.
             */}
             {precedentes.length > 0 && (
               <Bloc titre="Cohortes précédentes">
@@ -262,7 +265,7 @@ export default async function FicheFormation({ params }: Props) {
                     ? `Ces ${precedentes.length} cohortes sont clôturées et ne prennent plus d'inscription. Pour rejoindre ce parcours, choisissez une session ouverte ci-dessus.`
                     : "Cette cohorte est clôturée et ne prend plus d'inscription. Pour rejoindre ce parcours, choisissez une session ouverte ci-dessus."}
                 </p>
-                <CohortesPrecedentes sessions={precedentes} />
+                <CohortesPrecedentes lignes={precedentes} />
               </Bloc>
             )}
 

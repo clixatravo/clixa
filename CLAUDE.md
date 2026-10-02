@@ -6072,12 +6072,27 @@ bouton.
 - `verifier-cohortes.ts` : dix-huit contrôles sans base, **prouvés en remettant
   trois défauts** — le partage sans filtre, la colonne sans le cas clôturé,
   l'agenda sans filtre : sept rouges.
-- ⚠️ **Les cohortes passées ne sont pas encore en base, et ne s'inventent
-  pas.** Quels parcours ont tourné en octobre 2025, février, avril et juin 2026,
-  à quelles dates et à quel rythme : c'est la direction qui le sait.
-  `scripts/cohortes-passees.ts` les enregistre depuis un fichier JSON, clôturées,
-  et **refuse tout le fichier** au moindre parcours inconnu, date à venir ou
-  cadence illisible. Éprouvé à blanc sur `dev`, dans les deux sens.
+- **Les cohortes d'avant le site s'affichent par leur seul mois** (décision de
+  la direction le 2 octobre 2026 : « bla date mohadada »). Octobre 2025,
+  février, avril et juin 2026 paraissent sur chaque fiche, sous la session
+  d'octobre 2026 : « Cohorte d'octobre 2025 · Clôturée », sans date, sans
+  rythme, sans modalité — faute de les connaître, on ne les invente pas.
+  `COHORTES_SANS_DATE` (`lib/cohortes.ts`) est une liste tenue à la main ;
+  `historiqueDesCohortes` y ajoute les sessions clôturées de la base.
+  - ⚠️ **Un mois porté par une session n'est pas répété** : la session l'emporte,
+    avec ses dates. Le jour où la direction donne les dates d'une de ces
+    cohortes, `scripts/cohortes-passees.ts` l'enregistre, et la mention du mois
+    s'efface d'elle-même.
+  - ⚠️ **« Cohorte d'octobre », pas « de octobre »** : l'élision suit la voyelle
+    (`libelleCohorteDuMois`).
+  - Le badge « Clôturée » reste à droite sur téléphone, quelle que soit la
+    longueur du mois — il passait dessous une ligne sur deux.
+  - `verifier-cohortes.ts` : six contrôles de plus, **prouvés en retirant le
+    dédoublonnage : octobre 2026 paraissait deux fois**. Regardé à 375 et
+    1280 px, 55 épreuves vertes.
+  - ⚠️ **Ces quatre mois sont annoncés sur les douze fiches**, comme la
+    direction l'a demandé. Si un parcours n'a pas tourné à l'un d'eux, c'est à
+    corriger ici, parcours par parcours.
 
 ⚠️ **Les anciens participants déposent leur témoignage eux-mêmes**
 (`/laisser-un-temoignage`, `api/temoignage`, `lib/temoignages.ts`, demandé par
