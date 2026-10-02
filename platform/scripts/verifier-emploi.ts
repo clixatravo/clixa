@@ -55,7 +55,7 @@ const session = (slug: string, debut: string, fin: string, cadence: string): Ses
     debut: `${debut}T19:00:00.000Z`,
     fin: `${fin}T21:00:00.000Z`,
     cadence,
-    fuseau: "UTC",
+    fuseau: "Africa/Casablanca",
     capacite: 30,
     placesReservees: 0,
     prixCentimes: 42300,
@@ -64,16 +64,16 @@ const session = (slug: string, debut: string, fin: string, cadence: string): Ses
 
 const sessions: Session[] = [
   ...LUN_MER.map((s) =>
-    session(s, "2026-11-02", "2026-12-23", "16 soirées · lundis et mercredis · 19h00–21h00"),
+    session(s, "2026-11-02", "2026-12-23", "16 soirées · lundis et mercredis · 20h00–22h00"),
   ),
   ...MAR_JEU.map((s) =>
-    session(s, "2026-11-03", "2026-12-24", "16 soirées · mardis et jeudis · 19h00–21h00"),
+    session(s, "2026-11-03", "2026-12-24", "16 soirées · mardis et jeudis · 20h00–22h00"),
   ),
   session(
     PMP,
     "2026-11-03",
     "2026-12-24",
-    "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 19h00–21h00",
+    "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 20h00–22h00",
   ),
 ];
 
@@ -84,7 +84,7 @@ dire("deux rythmes", emploi?.rythmes.length === 2, `${emploi?.rythmes.length ?? 
 const [a, b] = emploi?.rythmes ?? [];
 dire("le premier : lundi et mercredi", a?.libelle === "Lundi et mercredi", a?.libelle);
 dire("le second : mardi et jeudi", b?.libelle === "Mardi et jeudi", b?.libelle);
-dire("l'horaire lu dans la cadence", a?.horaire === "19h00–21h00", a?.horaire);
+dire("l'horaire lu dans la cadence", a?.horaire === "20h00–22h00", a?.horaire);
 dire(
   "six formations chacun, dans l'ordre du catalogue",
   a?.formations.map((f) => f.slug).join() === LUN_MER.join() &&

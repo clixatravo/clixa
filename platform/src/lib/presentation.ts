@@ -73,6 +73,8 @@ export interface FaitsDePresentation {
    * séance — et ce n'est pas un détail, c'est ce qui décide s'il peut suivre.
    */
   cadenceEnAvant?: string;
+  /** Le fuseau de cette cadence, lu dans la même session. */
+  fuseauEnAvant?: string;
   /**
    * Le parcours mis en avant, par son slug.
    *
@@ -150,6 +152,8 @@ export interface ParcoursEnAvant {
   competences: string[];
   /** « 8 samedis · 9h00–13h00 », telle que la session la porte. */
   cadence?: string;
+  /** Le fuseau dans lequel la cadence est écrite — UTC, ou l'heure du Maroc. */
+  fuseau?: string;
   /**
    * Les objectifs, découpés en phrases — trois au plus.
    *
@@ -302,6 +306,7 @@ export function composerLaPresentation(f: FaitsDePresentation): Presentation {
         objectifs: decouperEnPhrases(vedette.objectifs ?? "").slice(0, 3),
         debouches: (vedette.debouches ?? []).slice(0, 4),
         ...(f.cadenceEnAvant ? { cadence: f.cadenceEnAvant } : {}),
+        ...(f.fuseauEnAvant ? { fuseau: f.fuseauEnAvant } : {}),
       }
     : undefined;
 

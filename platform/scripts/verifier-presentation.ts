@@ -533,6 +533,32 @@ try {
     !datesCloses.some((d) => nu.includes(d)),
     datesCloses.filter((d) => nu.includes(d)).join(", "),
   );
+  /*
+    ⚠️ **L'horaire porte le fuseau de sa session.** Le gabarit écrivait « (UTC) »
+    en dur derrière la cadence : faux d'une heure dès la cohorte du soir,
+    annoncée « 20h00–22h00 · heure du Maroc ». Lu en base, comme la rentrée.
+  */
+  const { docs: vedetteEnBase } = await payload.find({
+    collection: "sessions",
+    where: {
+      and: [
+        { cloturee: { not_equals: true } },
+        { "programme.slug": { equals: "directeur-administratif-et-financier" } },
+      ],
+    },
+    limit: 1,
+    sort: "debut",
+    depth: 0,
+    overrideAccess: true,
+  });
+  const fuseauVedette = String(vedetteEnBase[0]?.fuseau ?? "UTC");
+  const { libelleFuseau } = await import("../src/lib/format.js");
+  dire(
+    "⚠️ l'horaire du parcours mis en avant porte le fuseau de sa session",
+    nu.includes(`(${libelleFuseau(fuseauVedette)})`) &&
+      (fuseauVedette === "UTC" || !/\d{1,2}h\d{2}–\d{1,2}h\d{2} \(UTC\)/.test(nu)),
+    libelleFuseau(fuseauVedette),
+  );
   for (const [quoi, motif] of [
     ["les montants", /423|470/],
     ["la rentrée", new RegExp(rentreeAttendue || "(?!)")],

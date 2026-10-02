@@ -1,4 +1,5 @@
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
+import { libelleFuseau } from "@/lib/format";
 import { DEVISE_CLIXA } from "@/lib/marque";
 import type { Payload } from "payload";
 import { phraseDeLaSuite } from "@/lib/versements";
@@ -1913,6 +1914,13 @@ export async function courrielDemarrageCohorte(
     programmeTitre: string;
     /** « 8 samedis · 9h00–13h00 » — la cadence fait foi, elle n'est pas recalculée. */
     cadence?: string;
+    /**
+     * Le fuseau de la session. ⚠️ Le message écrivait « (UTC) » en dur derrière
+     * la cadence : juste tant que toutes les sessions étaient en UTC, faux d'une
+     * heure dès la cohorte du soir, annoncée à l'heure du Maroc — dans un
+     * message parti à des dizaines de personnes, qu'on ne rattrape pas.
+     */
+    fuseau?: string;
     debut: string;
     fin?: string;
     urlDossier: string;
@@ -1952,7 +1960,7 @@ export async function courrielDemarrageCohorte(
           ${ligne("Parcours", `<strong style="color:#ffffff;">${echapper(d.programmeTitre)}</strong>`)}
           ${ligne("Première séance", echapper(debutLong))}
           ${finLong ? ligne("Dernière séance", echapper(finLong)) : ""}
-          ${d.cadence ? ligne("Rythme", echapper(d.cadence) + " (UTC)") : ""}
+          ${d.cadence ? ligne("Rythme", `${echapper(d.cadence)} (${libelleFuseau(d.fuseau ?? "UTC")})`) : ""}
           ${ligne("Format", "Classe virtuelle, en direct avec un formateur")}
           ${ligne("Référence", `<span style="font-family:'SF Mono',Menlo,monospace; color:#e9cd84; letter-spacing:0.04em; white-space:nowrap;">${echapper(d.reference)}</span>`)}
         </table>
@@ -2004,7 +2012,7 @@ export async function courrielDemarrageCohorte(
     `  Parcours       : ${d.programmeTitre}`,
     `  Première séance: ${debutLong}`,
     finLong ? `  Dernière séance: ${finLong}` : "",
-    d.cadence ? `  Rythme         : ${d.cadence} (UTC)` : "",
+    d.cadence ? `  Rythme         : ${d.cadence} (${libelleFuseau(d.fuseau ?? "UTC")})` : "",
     `  Format         : classe virtuelle, en direct avec un formateur`,
     `  Référence      : ${d.reference}`,
     "",
@@ -2293,7 +2301,7 @@ export async function courrielPresentation(
               .join("")}
           </table>
           <div style="margin-top:14px; font-size:12px; color:#94a3b8; line-height:1.55;">
-            ${v ? `${v.heures} h en direct &middot; ${echapper(v.cadence ?? "")} (UTC) &middot; ` : ""}certificat nominatif vérifiable en ligne.
+            ${v ? `${v.heures} h en direct &middot; ${echapper(v.cadence ?? "")} (${libelleFuseau(v.fuseau ?? "UTC")}) &middot; ` : ""}certificat nominatif vérifiable en ligne.
             Payer en plusieurs fois coûte un peu plus cher : les échéances sont adossées aux séances, pas au calendrier.
           </div>
         </td></tr>
@@ -2393,7 +2401,7 @@ export async function courrielPresentation(
     "",
     "TARIFS — les mêmes pour tous les parcours",
     ...p.formules.map((f) => `  ${f.libelle} : ${f.total} (${f.detail})`),
-    v ? `  ${v.heures} h en direct · ${v.cadence ?? ""} (UTC)` : "",
+    v ? `  ${v.heures} h en direct · ${v.cadence ?? ""} (${libelleFuseau(v.fuseau ?? "UTC")})` : "",
     "  Les échéances sont adossées aux séances, pas au calendrier.",
     "",
     "Séminaire dirigeants · Agadir — les parcours, eux, se donnent en classe virtuelle.",

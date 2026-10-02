@@ -225,6 +225,7 @@ export async function POST(requete: Request): Promise<Response> {
       apprenantEmail: email,
       programmeTitre: titre,
       ...(session.cadence ? { cadence: String(session.cadence) } : {}),
+      ...(session.fuseau ? { fuseau: String(session.fuseau) } : {}),
       debut: String(session.debut),
       ...(session.fin ? { fin: String(session.fin) } : {}),
       urlDossier: `${site}/inscription/${reference}`,

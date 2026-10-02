@@ -151,6 +151,7 @@ export async function POST(requete: Request): Promise<Response> {
     */
     misEnAvant: vedette,
     ...(sessionVedette?.cadence ? { cadenceEnAvant: sessionVedette.cadence } : {}),
+    ...(sessionVedette?.fuseau ? { fuseauEnAvant: sessionVedette.fuseau } : {}),
     ...(prochaine?.debut ? { prochaineRentree: new Date(prochaine.debut) } : {}),
     ...(prochaine?.fin ? { finDeCohorte: new Date(prochaine.fin) } : {}),
     site: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.clixa.africa",

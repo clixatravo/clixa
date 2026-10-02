@@ -35,7 +35,7 @@ console.log("\n▸ Deux soirs par semaine\n");
 const lunMer = seancesDeLaSession(
   "2026-11-02T19:00:00.000Z",
   "2026-12-23T21:00:00.000Z",
-  "16 soirées · lundis et mercredis · 19h00–21h00",
+  "16 soirées · lundis et mercredis · 20h00–22h00",
 );
 dire("lundi et mercredi : seize dates", lunMer?.length === 16, `${lunMer?.length ?? "rien"}`);
 dire(
@@ -51,7 +51,7 @@ dire("à l'heure de la session", Boolean(lunMer?.every((d) => d.slice(11, 16) ==
 const marJeu = seancesDeLaSession(
   "2026-11-03T19:00:00.000Z",
   "2026-12-24T21:00:00.000Z",
-  "16 soirées · mardis et jeudis · 19h00–21h00",
+  "16 soirées · mardis et jeudis · 20h00–22h00",
 );
 dire("mardi et jeudi : seize dates", marJeu?.length === 16, `${marJeu?.length ?? "rien"}`);
 dire(
@@ -61,7 +61,7 @@ dire(
 
 console.log("\n▸ Des soirées en plus, datées dans la cadence\n");
 
-const CADENCE_PMP = "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 19h00–21h00";
+const CADENCE_PMP = "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 20h00–22h00";
 const pmp = planDesSeances("2026-11-03T19:00:00.000Z", "2026-12-24T21:00:00.000Z", CADENCE_PMP);
 dire(
   "PMP® : seize soirées régulières",
@@ -88,7 +88,7 @@ dire(
   seancesDeLaSession(
     "2026-11-03T19:00:00.000Z",
     "2026-12-24T21:00:00.000Z",
-    "18 soirées · mardis et jeudis, et les vendredis 12 et 18 déc. · 19h00–21h00",
+    "18 soirées · mardis et jeudis, et les vendredis 12 et 18 déc. · 20h00–22h00",
   ) === undefined,
 );
 dire(
@@ -96,7 +96,7 @@ dire(
   seancesDeLaSession(
     "2026-11-03T19:00:00.000Z",
     "2026-12-24T21:00:00.000Z",
-    "18 soirées · mardis et jeudis, et les vendredis 18 et 25 déc. · 19h00–21h00",
+    "18 soirées · mardis et jeudis, et les vendredis 18 et 25 déc. · 20h00–22h00",
   ) === undefined,
 );
 
@@ -105,7 +105,7 @@ dire(
   seancesDeLaSession(
     "2026-11-02T19:00:00.000Z",
     "2026-12-23T21:00:00.000Z",
-    "15 soirées · lundis et mercredis · 19h00–21h00",
+    "15 soirées · lundis et mercredis · 20h00–22h00",
   ) === undefined,
 );
 dire(
@@ -113,7 +113,7 @@ dire(
   seancesDeLaSession(
     "2026-11-02T19:00:00.000Z",
     "2026-12-24T21:00:00.000Z",
-    "16 soirées · lundis et mercredis · 19h00–21h00",
+    "16 soirées · lundis et mercredis · 20h00–22h00",
   ) === undefined,
 );
 dire(
@@ -121,7 +121,7 @@ dire(
   seancesDeLaSession(
     "2026-11-03T19:00:00.000Z",
     "2026-12-24T21:00:00.000Z",
-    "18 soirées · mardis et jeudis, et deux vendredis · 19h00–21h00",
+    "18 soirées · mardis et jeudis, et deux vendredis · 20h00–22h00",
   ) === undefined,
 );
 dire(

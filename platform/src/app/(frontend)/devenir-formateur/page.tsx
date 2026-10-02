@@ -36,7 +36,7 @@ const pourquoi = [
   {
     titre: "La classe virtuelle, en soirée",
     texte:
-      "Nos parcours se donnent en direct, deux soirs par semaine, de 19h00 à 21h00 UTC. Vous animez depuis chez vous, pour des participants de tout le continent.",
+      "Nos parcours se donnent en direct, deux soirs par semaine, de 20h00 à 22h00 (heure du Maroc). Vous animez depuis chez vous, pour des participants de tout le continent.",
     trace: "M3 5h18v11H3z M8 21h8 M12 16v5 M10 9l4 2.5-4 2.5z",
   },
   {

@@ -164,13 +164,30 @@ try {
     }[]
   )
     .filter((s) => !aSupprimer.includes((s as unknown as { id: string | number }).id))
-    .filter((s) => (s.fuseau ?? "UTC") === "UTC")
+    /*
+      ⚠️ **Chaque session se lit dans son fuseau, pas seulement les UTC.** Ce
+      contrôle ne regardait que les sessions en UTC — juste tant qu'il n'y en
+      avait pas d'autres. La cohorte du soir de novembre 2026 s'annonce
+      « 20h00–22h00 · heure du Maroc », et le crochet de `Sessions.ts` se tait
+      devant elle : sans ce contrôle, rien ne vérifiait que ses instants
+      (19:00 UTC) disent bien 20h00 à Casablanca. C'est le défaut des
+      ressources humaines du 4 septembre, une porte plus loin.
+    */
     .map((s) => {
       const dits = /(\d{1,2})h(\d{2})\D+(\d{1,2})h(\d{2})/.exec(s.cadence ?? "");
       if (!dits) return undefined;
+      const zone = !s.fuseau || s.fuseau === "GMT" ? "UTC" : s.fuseau;
+      const heureDans = (iso: string) =>
+        new Intl.DateTimeFormat("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: zone,
+        }).format(new Date(iso));
       const attendu = `${dits[1]!.padStart(2, "0")}:${dits[2]} → ${dits[3]!.padStart(2, "0")}:${dits[4]}`;
-      const reel = `${HEURE(s.debut)} → ${HEURE(s.fin)}`;
-      return attendu === reel ? undefined : `${s.reference} : ${reel} au lieu de ${attendu}`;
+      const reel = `${heureDans(s.debut)} → ${heureDans(s.fin)}`;
+      return attendu === reel
+        ? undefined
+        : `${s.reference} : ${reel} (${zone}) au lieu de ${attendu}`;
     })
     .filter(Boolean);
   dire(

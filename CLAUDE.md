@@ -5834,11 +5834,34 @@ Nouvelle, Contactée, Retenue, Non retenue.
 clôturée** (`scripts/cohorte-novembre.ts`, rejouable, rien n'est écrit sans
 `ECRIRE=1`). Décision de la direction le 1er octobre 2026, après un emploi du
 temps soumis en PDF : **deux soirs par semaine, pendant deux mois**, de
-20h00 à 22h00 heure du Maroc — **19h00–21h00 UTC**, l'heure de toutes les
-fiches (« b tawe9it l 3am kifma kan f sesion l 9dima »). Elle **remplace** la
-cohorte du week-end préparée le 30 septembre, jamais publiée.
+**20h00 à 22h00, heure du Maroc** — affichée telle quelle (fuseau
+`Africa/Casablanca`, instants enregistrés à 19h00–21h00 UTC). Elle
+**remplace** la cohorte du week-end préparée le 30 septembre, jamais publiée.
 
-| Soirs (19h00–21h00 UTC) | Du … au … | Parcours |
+⚠️ **Le premier jet affichait « 19h00–21h00 · UTC »**, et c'était une
+mauvaise lecture. À la question « quelle heure afficher ? », la réponse « b
+tawe9it l 3am kifma kan f sesion l 9dima » a été comprise comme « dans le
+fuseau des anciennes sessions » ; la direction voulait l'heure qu'elle avait
+annoncée (« rah getlk mn 8h l 10h »). Une réponse qui ne nomme pas l'heure se
+redemande avec l'heure écrite dedans.
+
+- ⚠️ **Hors UTC, plus rien ne gardait l'heure.** Le crochet de `Sessions.ts`
+  se tait devant une session à l'heure du Maroc, et `verifier-horaires.ts` ne
+  lisait que les sessions en UTC. Il lit maintenant chaque session **dans son
+  fuseau**. **Prouvé en avançant d'une heure le début d'une session de `dev`** :
+  « 21:00 → 22:00 (Africa/Casablanca) au lieu de 20:00 → 22:00 » ; le script
+  la remet d'aplomb, et repasse au vert.
+- ⚠️ **Deux courriels écrivaient « (UTC) » en dur derrière la cadence** —
+  l'annonce de démarrage et la présentation. Ils auraient annoncé
+  « 20h00–22h00 (UTC) », une heure de trop, à des dizaines de personnes. Ils
+  lisent le fuseau de la session (`libelleFuseau`). `verifier-presentation.ts`
+  le vérifie sur le message réel, **prouvé en remettant « (UTC) » : un
+  rouge**.
+- **Le script remet à l'heure une session déjà ouverte** dont l'horaire, le
+  fuseau ou la cadence diffèrent — c'est ainsi que `dev` est passé de UTC au
+  Maroc, et ce qui répare une session qu'on aurait déplacée à la main.
+
+| Soirs (20h00–22h00, heure du Maroc) | Du … au … | Parcours |
 |---|---|---|
 | lundi et mercredi | 2 nov. → 23 déc. | DAF, audit interne, contrôle de gestion, production, maintenance, industriel |
 | mardi et jeudi | 3 nov. → 24 déc. | commercial, marketing, RH, QHSE, projets, PMP® (+ vendredis 11 et 18 déc.) |
@@ -5850,7 +5873,7 @@ dix-huit pour ses 35 heures. Six classes chaque soir, le vendredi libre.
   `seancesHebdomadaires` exige le même jour aux deux bouts ; une session du
   lundi au mercredi ne rendait rien, et la fiche perdait le « Calendrier des
   séances » que la FAQ annonce. `seancesDeLaSession` lit les jours dans la
-  cadence (« 16 soirées · lundis et mercredis · 19h00–21h00 ») et se tait
+  cadence (« 16 soirées · lundis et mercredis · 20h00–22h00 ») et se tait
   dès que le compte ne tombe pas juste. Les soirées ajoutées se **datent dans
   la cadence** (« et les vendredis 11 et 18 déc. ») : `planDesSeances` les y
   lit, vérifie qu'elles tombent le jour qu'elles disent et dans la période, et
@@ -5883,7 +5906,7 @@ dix-huit pour ses 35 heures. Six classes chaque soir, le vendredi libre.
   deux rouges, qui nomment « 3 octobre 2026 ».** Sa ligne « huit séances de
   quatre heures, le samedi » est retirée : l'horaire vient de la cadence.
 - **La page « Devenir formateur » et « À propos » disaient « le week-end »** :
-  elles disent « en soirée », 19h00–21h00 UTC.
+  elles disent « en soirée », de 20h00 à 22h00, heure du Maroc.
 - ⚠️ **Les sessions du week-end n'existent que sur `dev`**, ouvertes par le
   premier jet du script. Il les retire, et **renonce** si l'une porte un
   dossier : supprimer la session d'un inscrit lui retirerait sa place sans
@@ -5912,14 +5935,24 @@ dans /admin la déplace sur la page.
 - ⚠️ **Une session dont le calendrier ne se déduit pas n'est pas devinée** :
   elle est rendue à part, avec un renvoi vers sa fiche. La ranger dans le
   rythme voisin lui prêterait des soirées qu'elle n'a pas.
-- **Une seule heure, avec son fuseau** (décision du 4 septembre 2026).
+- **Une seule heure, avec son fuseau** (décision du 4 septembre 2026) :
+  « de 20h00 à 22h00 (heure du Maroc) ».
 - **Reliée** depuis le pied de page (« Se former »), le catalogue et chaque
   fiche (« Voir l'emploi du temps de toutes les formations »), au plan du site,
   et rafraîchie par les crochets des sessions et des parcours.
 - `verifier-emploi.ts` : dix-neuf contrôles sans base sur la cohorte réelle,
   **prouvés en comptant les soirées de la PMP® parmi celles de son rythme : un
   rouge**. `/emploi-du-temps` rejoint `e2e/chemins.ts` : accessibilité et
-  mise en page sur téléphone l'éprouvent (71 épreuves vertes).
+  mise en page sur téléphone l'éprouvent. **102 épreuves vertes** après le
+  passage à l'heure du Maroc.
+- ⚠️ **Une série a d'abord rendu 5 rouges**, le 2 octobre 2026 : `admin.spec`
+  (« Contrat vérifié », la signature Neon connue) et les quatre épreuves
+  d'`apparitions.spec`, dont le rapport montrait l'accueil en « This page
+  couldn't load » — erreur serveur, sans détail : le serveur avait été arrêté
+  par l'application pendant une pause, son journal perdu avec lui. Relancé,
+  l'accueil répond en 200 ; les deux fichiers passent (8/8), puis la série
+  entière (102/102). Non expliqué. Si l'accueil retombe, lire le journal du
+  serveur **avant** de le relancer.
 - Regardé à 1280 et 375 px : aucun débordement, le titre de la PMP® passe à
   la ligne plutôt que d'être coupé le vendredi.
 

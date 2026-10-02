@@ -80,7 +80,10 @@ export default async function PageEmploiDuTemps() {
   const horaires = [...new Set(rythmes.map((r) => r.horaire).filter(Boolean))];
   const fuseaux = [...new Set(rythmes.map((r) => r.fuseau).filter(Boolean) as string[])];
   const fuseau = fuseaux.length === 1 ? libelleFuseau(fuseaux[0]!) : undefined;
-  const heure = horaires.length === 1 ? [horaires[0], fuseau].filter(Boolean).join(" ") : undefined;
+  const heure =
+    horaires.length === 1
+      ? `${horaires[0]!.replace("–", " à ")}${fuseau ? ` (${fuseau})` : ""}`
+      : undefined;
   const titreDeRythme = new Map(rythmes.map((r, i) => [i, r]));
   const enPlusParJour = new Map<number, Set<string>>();
   for (const r of rythmes) {

@@ -5,10 +5,18 @@
  *   ECRIRE=1 npx payload run scripts/cohorte-novembre.ts   # écrit
  *
  * Décision de la direction, le 1er octobre 2026 : la cohorte de novembre se
- * donne **le soir, deux soirs par semaine, pendant deux mois**, de 20h00 à
- * 22h00 heure du Maroc — **19h00–21h00 UTC**, l'heure qu'affichent toutes les
- * fiches. Elle **remplace** la cohorte du week-end préparée le 30 septembre
- * (samedi et dimanche dès le 31 octobre), qui n'a jamais été publiée.
+ * donne **le soir, deux soirs par semaine, pendant deux mois**, de **20h00 à
+ * 22h00, heure du Maroc** — affichée telle quelle sur les fiches (« rah getlk
+ * mn 8h l 10h »). Les instants enregistrés sont 19h00–21h00 UTC : le Maroc
+ * est à GMT+1 de novembre à décembre. Elle **remplace** la cohorte du
+ * week-end préparée le 30 septembre (samedi et dimanche dès le 31 octobre),
+ * qui n'a jamais été publiée.
+ *
+ * ⚠️ **Le premier jet affichait 19h00–21h00 UTC** : « l'heure des anciennes
+ * sessions » avait été lu comme « leur fuseau ». La direction voulait l'heure
+ * qu'elle a annoncée. Le crochet de `Sessions.ts` se tait devant une session
+ * hors UTC ; c'est `verifier-horaires.ts` qui confronte maintenant la cadence
+ * aux instants **dans le fuseau de la session**.
  *
  *   lundi et mercredi, du 2 novembre au 23 décembre    DAF, audit interne,
  *                                                      contrôle de gestion,
@@ -43,13 +51,13 @@
  * ranger dans un rythme par défaut, c'est annoncer au visiteur un horaire que
  * personne n'a décidé.
  *
- * ⚠️ **Rejouable.** Une session du soir déjà ouverte n'est pas recréée, une
- * session déjà clôturée n'est pas réécrite, un texte déjà à jour n'est pas
+ * ⚠️ **Rejouable.** Une session du soir déjà ouverte n'est pas recréée ; si son
+ * horaire, son fuseau ou sa cadence ne sont plus ceux d'ici, ils sont remis.
+ * Une session déjà clôturée n'est pas réécrite, un texte déjà à jour n'est pas
  * touché.
  *
- * Les heures sont posées par le crochet de `Sessions.ts` à partir de la
- * cadence, qui fait foi : le script les écrit aussi, pour que la relecture
- * ci-dessous ne dépende pas de lui. Les dates de chaque séance, elles, se
+ * Les instants sont écrits par le script : le crochet de `Sessions.ts` ne
+ * recale que les sessions en UTC, et celles-ci sont à l'heure du Maroc. Les dates de chaque séance, elles, se
  * déduisent des jours nommés dans la cadence (`seancesDeLaSession`).
  */
 import { getPayload } from "payload";
@@ -58,7 +66,9 @@ import config from "@payload-config";
 const ECRIRE = process.env.ECRIRE === "1";
 const OCTOBRE = "2026-10-03";
 const WEEK_END = ["2026-10-31", "2026-11-01"];
+/** En UTC : 20h00–22h00 à Casablanca, à GMT+1 en novembre et décembre. */
 const HEURES = { debut: 19, fin: 21 };
+const FUSEAU = "Africa/Casablanca";
 
 type Rythme = "lundi-mercredi" | "mardi-jeudi" | "pmp";
 
@@ -66,12 +76,12 @@ const RYTHMES: Record<Rythme, { debut: string; fin: string; cadence: string }> =
   "lundi-mercredi": {
     debut: "2026-11-02",
     fin: "2026-12-23",
-    cadence: "16 soirées · lundis et mercredis · 19h00–21h00",
+    cadence: "16 soirées · lundis et mercredis · 20h00–22h00",
   },
   "mardi-jeudi": {
     debut: "2026-11-03",
     fin: "2026-12-24",
-    cadence: "16 soirées · mardis et jeudis · 19h00–21h00",
+    cadence: "16 soirées · mardis et jeudis · 20h00–22h00",
   },
   /*
     Les deux vendredis sont écrits dans la cadence, **avec leurs dates** :
@@ -82,7 +92,7 @@ const RYTHMES: Record<Rythme, { debut: string; fin: string; cadence: string }> =
   pmp: {
     debut: "2026-11-03",
     fin: "2026-12-24",
-    cadence: "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 19h00–21h00",
+    cadence: "18 soirées · mardis et jeudis, et les vendredis 11 et 18 déc. · 20h00–22h00",
   },
 };
 
@@ -191,6 +201,7 @@ let cloturees = 0;
 let retirees = 0;
 let ouvertes = 0;
 let deja = 0;
+let remises = 0;
 let rythmes = 0;
 
 // 2 — la cohorte du week-end, jamais publiée.
@@ -237,8 +248,35 @@ for (const p of programmes) {
   // 3 — la cohorte du soir.
   const debut = aHeure(rythme.debut, HEURES.debut);
   const fin = aHeure(rythme.fin, HEURES.fin);
-  if (sessions.some((s) => String(s.debut ?? "").slice(0, 10) === rythme.debut)) {
-    console.log(`  = soir      ${String(p.titre).padEnd(42)} déjà ouverte`);
+  const existante = sessions.find((s) => String(s.debut ?? "").slice(0, 10) === rythme.debut);
+  if (existante) {
+    const juste =
+      new Date(String(existante.debut)).getTime() === debut.getTime() &&
+      new Date(String(existante.fin)).getTime() === fin.getTime() &&
+      existante.cadence === rythme.cadence &&
+      existante.fuseau === FUSEAU;
+    if (juste) {
+      console.log(`  = soir      ${String(p.titre).padEnd(42)} déjà ouverte`);
+    } else {
+      console.log(
+        `  ↻ soir      ${String(p.titre).padEnd(42)} « ${String(existante.cadence)} · ${String(existante.fuseau)} » → « ${rythme.cadence} · ${FUSEAU} »`,
+      );
+      if (ECRIRE) {
+        await payload.update({
+          collection: "sessions",
+          id: existante.id,
+          locale: "fr",
+          overrideAccess: true,
+          data: {
+            debut: debut.toISOString(),
+            fin: fin.toISOString(),
+            cadence: rythme.cadence,
+            fuseau: FUSEAU,
+          },
+        });
+      }
+      remises += 1;
+    }
     deja += 1;
   } else {
     const modele =
@@ -259,7 +297,7 @@ for (const p of programmes) {
           debut: debut.toISOString(),
           fin: fin.toISOString(),
           cadence: rythme.cadence,
-          fuseau: "UTC",
+          fuseau: FUSEAU,
           capacite: 30,
           placesReservees: 0,
           prix: modele?.prix ?? 423,
@@ -278,8 +316,13 @@ for (const p of programmes) {
     if (regle) {
       aEcrire[champ] = regle.apres;
       console.log(`  ~ ${champ.padEnd(9)} ${String(p.titre).padEnd(42)} « ${regle.apres} »`);
-    } else if (/s[ée]ances?|sessions? live/i.test(actuel) && !TEXTES.some((t) => t.apres === actuel)) {
-      console.log(`  ? ${champ.padEnd(9)} ${String(p.titre).padEnd(42)} réécrit à la main, à relire : « ${actuel} »`);
+    } else if (
+      /s[ée]ances?|sessions? live/i.test(actuel) &&
+      !TEXTES.some((t) => t.apres === actuel)
+    ) {
+      console.log(
+        `  ? ${champ.padEnd(9)} ${String(p.titre).padEnd(42)} réécrit à la main, à relire : « ${actuel} »`,
+      );
     }
   }
   if (Object.keys(aEcrire).length > 0) {
@@ -298,7 +341,7 @@ for (const p of programmes) {
 
 console.log(
   `\n  ${cloturees} session(s) d'octobre à clôturer, ${retirees} session(s) du week-end à retirer, ` +
-    `${ouvertes} session(s) du soir à ouvrir, ${deja} déjà ouverte(s), ${rythmes} texte(s) de fiche à mettre à jour.`,
+    `${ouvertes} session(s) du soir à ouvrir, ${deja} déjà ouverte(s) dont ${remises} à remettre à l'heure, ${rythmes} texte(s) de fiche à mettre à jour.`,
 );
 if (!ECRIRE) console.log("  Relancer avec ECRIRE=1 pour écrire.\n");
 
