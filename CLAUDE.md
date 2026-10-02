@@ -5956,6 +5956,26 @@ dans /admin la déplace sur la page.
 - Regardé à 1280 et 375 px : aucun débordement, le titre de la PMP® passe à
   la ligne plutôt que d'être coupé le vendredi.
 
+**En ligne le 2 octobre 2026** (`86754cb`, cinq commits repris à part sur
+`main`, sans les témoignages ni le dépliant), dans cet ordre :
+
+1. `sessions.cloturee` poussée sur la production depuis la branche de
+   publication, **après comparaison des deux schémas** : une colonne ajoutée,
+   aucune retirée, 128 dossiers intacts.
+2. Le script contre la production, à blanc puis `ECRIRE=1` : 12 sessions
+   d'octobre clôturées (le réglage « 5 places tenues » retiré du DAF),
+   12 sessions du soir ouvertes, 23 textes de fiche. Relu en base : octobre
+   garde ses 125 dossiers vivants.
+3. Le code. `/api/version` a rendu `86754cb` en 105 s, la recette est sortie
+   en 0, et les pages servies ont été relues : fiche DAF « 20h00–22h00 · heure
+   du Maroc » et 16 dates, fiche PMP® 18 dates, `/emploi-du-temps` du 2 novembre
+   au 24 décembre, accueil « 8 modules par parcours », FAQ « lundi 2 novembre ·
+   mardi 3 novembre », formulaire, plan du site, pied de page.
+
+- ⚠️ **Les 125 inscrits d'octobre n'ont pas bougé** : leur session est
+  clôturée aux nouvelles inscriptions, leurs dossiers restent sur la cohorte du
+  samedi 3 octobre. Les déplacer vers le soir est une décision de la direction.
+
 L'ancienne répartition, gardée pour mémoire — jamais publiée :
 
 | Créneau (UTC) | Début | Parcours |
