@@ -1111,6 +1111,11 @@ export interface CandidaturesFormateur {
       )
     | null;
   experience?: ('debutant' | 'moins-2' | '2-5' | '5-10' | 'plus-10') | null;
+  /**
+   * Brut, par heure de formation.
+   */
+  tauxHoraire?: number | null;
+  tauxDevise?: ('MAD' | 'EUR' | 'XOF' | 'USD') | null;
   nom: string;
   email: string;
   whatsapp: string;
@@ -1831,6 +1836,8 @@ export interface CandidaturesFormateursSelect<T extends boolean = true> {
   statut?: T;
   specialite?: T;
   experience?: T;
+  tauxHoraire?: T;
+  tauxDevise?: T;
   nom?: T;
   email?: T;
   whatsapp?: T;

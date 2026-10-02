@@ -5789,6 +5789,25 @@ Nouvelle, Contactée, Retenue, Non retenue.
   deux rouges. Essayé de bout en bout sur `dev` par la vraie route (refus,
   enregistrement, doublon, CV privé, courriel), données retirées ensuite.
   Regardé à 375 px : aucun débordement.
+- **Le taux horaire brut demandé** (demandé par la direction le 2 octobre
+  2026 : « ajoute taux horaire brut demandé ») : un montant et sa devise
+  (MAD, EUR, FCFA, USD), exigés au formulaire **et** par la route, jamais
+  `required` dans la collection — les candidatures d'avant deviendraient
+  invalides à leur premier changement de statut. Colonnes `taux_horaire` et
+  `taux_devise`.
+  - ⚠️ **La devise est demandée, jamais devinée** : « 300 » vaut dix fois
+    plus en euros qu'en dirhams, et aucune n'est choisie d'avance.
+  - **Un champ texte, pas `type="number"`** : celui-ci refuse « 25 000 » et
+    « 350,50 », que l'on tape naturellement. `montantTaux` lit les deux.
+  - Le courriel de l'équipe porte « Taux demandé : 25 000 FCFA brut / heure »,
+    et /admin une colonne. ⚠️ **Ce courriel ne figurait pas dans
+    `apercu-courriel.ts`** : personne ne l'avait jamais regardé sans déposer
+    une candidature. Il y est (23 aperçus).
+  - `verifier-candidatures.ts` : treize contrôles de plus, **prouvés en
+    retirant le contrôle de la devise et la lecture des espaces : « 25 000 »
+    se lisait 25, et une devise inventée passait**. Essayé par la vraie route
+    sur `dev` : sans taux, refusé avec sa phrase ; avec « 350,50 » MAD,
+    enregistré 350,5. Regardé à 375 et 1280 px.
 - **La page a été redessinée le 1er octobre 2026** (demandé par la direction,
   web et téléphone, avec le bloc de « À propos ») : la photo du formateur en
   séance en tête, trois faits dont le nombre de parcours lu dans le catalogue,

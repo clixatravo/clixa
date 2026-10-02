@@ -7,7 +7,12 @@ import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { ChampWhatsapp } from "@/components/ChampWhatsapp";
 import { ChampPays } from "@/components/ChampPays";
 import { getProgrammes } from "@/lib/catalogue";
-import { EXPERIENCES_FORMATION, MESSAGES_CANDIDATURE, SPECIALITES } from "@/lib/candidatures";
+import {
+  DEVISES_TAUX,
+  EXPERIENCES_FORMATION,
+  MESSAGES_CANDIDATURE,
+  SPECIALITES,
+} from "@/lib/candidatures";
 import { ChampLeurre } from "@/components/ChampLeurre";
 
 export const metadata: Metadata = {
@@ -426,6 +431,48 @@ export default async function DevenirFormateur({ searchParams }: Props) {
                           </option>
                         ))}
                       </select>
+                    </div>
+                    {/*
+                      Le taux horaire brut, avec sa devise (2 octobre 2026). Un
+                      champ texte et non `type="number"` : celui-ci refuse « 25 000 »
+                      et « 350,50 », que l'on tape naturellement — la route lit les
+                      deux. `inputMode` ouvre tout de même le pavé numérique.
+                    */}
+                    <div className="flex flex-col gap-2 sm:col-span-2">
+                      <label htmlFor="tauxHoraire" className={classeLabel}>
+                        TAUX HORAIRE BRUT DEMANDÉ <span className="text-gold">*</span>
+                      </label>
+                      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+                        <input
+                          id="tauxHoraire"
+                          name="tauxHoraire"
+                          required
+                          inputMode="decimal"
+                          autoComplete="off"
+                          placeholder="Ex. 350"
+                          className={classeChamp}
+                        />
+                        <select
+                          id="tauxDevise"
+                          name="tauxDevise"
+                          required
+                          defaultValue=""
+                          aria-label="Devise du taux horaire"
+                          className={classeChamp}
+                        >
+                          <option value="" disabled>
+                            Devise…
+                          </option>
+                          {DEVISES_TAUX.map((d) => (
+                            <option key={d.valeur} value={d.valeur}>
+                              {d.libelle}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <small className="text-ivory-dim/80 text-[0.78rem]">
+                        Brut, avant impôts et charges, par heure de formation animée.
+                      </small>
                     </div>
                   </Groupe>
 

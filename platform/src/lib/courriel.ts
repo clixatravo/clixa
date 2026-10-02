@@ -1170,6 +1170,8 @@ export async function courrielCandidatureFormateur(
     pays: string;
     specialite: string;
     experience: string;
+    /** « 350 MAD brut / heure », déjà mis en forme. */
+    taux: string;
     linkedin?: string;
     avecCv: boolean;
     message: string;
@@ -1188,6 +1190,7 @@ export async function courrielCandidatureFormateur(
       <tr><td style="color: #94a3b8; width: 150px;">Candidat :</td><td><strong style="color: #ffffff;">${echapper(d.nom)}</strong> (${echapper(d.pays)})</td></tr>
       <tr><td style="color: #94a3b8;">Domaine :</td><td style="color: #ffffff;">${echapper(d.specialite)}</td></tr>
       <tr><td style="color: #94a3b8;">Expérience :</td><td style="color: #ffffff;">${echapper(d.experience)}</td></tr>
+      <tr><td style="color: #94a3b8;">Taux demandé :</td><td style="color: #e9cd84; font-weight: 600;">${echapper(d.taux)}</td></tr>
       <tr><td style="color: #94a3b8;">WhatsApp :</td><td><a href="https://wa.me/${d.whatsapp.replace(/[^0-9]/g, "")}" style="color: #2fa37d; font-weight: bold; text-decoration: none;">${echapper(d.whatsapp)} ↗</a></td></tr>
       <tr><td style="color: #94a3b8;">E-mail :</td><td><a href="mailto:${echapper(d.email)}" style="color: #e9cd84;">${echapper(d.email)}</a></td></tr>
       <tr><td style="color: #94a3b8;">Parcours :</td><td style="color: #ffffff;">${echapper(parcours)}</td></tr>
@@ -1203,6 +1206,7 @@ export async function courrielCandidatureFormateur(
       "",
       `Domaine : ${d.specialite}`,
       `Expérience de formateur : ${d.experience}`,
+      `Taux horaire brut demandé : ${d.taux}`,
       `Parcours : ${parcours}`,
       "",
       `E-mail : ${d.email}`,

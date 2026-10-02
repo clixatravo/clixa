@@ -9,6 +9,7 @@ import {
   TAILLE_MAX_CV,
   estTypeCv,
   libelleExperienceFormation,
+  libelleTaux,
   libelleSpecialite,
   validerCandidature,
 } from "@/lib/candidatures";
@@ -68,6 +69,8 @@ export async function POST(request: Request) {
     pays,
     specialite: texte("specialite"),
     experience: texte("experience"),
+    tauxHoraire: texte("tauxHoraire"),
+    tauxDevise: texte("tauxDevise"),
     linkedin: texte("linkedin"),
     message: texte("message"),
     consentement: texte("consentement"),
@@ -137,6 +140,8 @@ export async function POST(request: Request) {
         pays: saisie.pays,
         specialite: verdict.specialite,
         experience: verdict.experience,
+        tauxHoraire: verdict.tauxHoraire,
+        tauxDevise: verdict.tauxDevise,
         linkedin: verdict.linkedin,
         message: saisie.message,
         ...(cv && aUnCv
@@ -164,6 +169,7 @@ export async function POST(request: Request) {
     pays: saisie.pays,
     specialite: libelleSpecialite(verdict.specialite),
     experience: libelleExperienceFormation(verdict.experience),
+    taux: libelleTaux(verdict.tauxHoraire, verdict.tauxDevise),
     linkedin: verdict.linkedin,
     avecCv: Boolean(cv),
     message: saisie.message,

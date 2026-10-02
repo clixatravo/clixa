@@ -17,6 +17,8 @@ import {
   TAILLE_MAX_CV,
   estTypeCv,
   lienLinkedin,
+  libelleTaux,
+  montantTaux,
   validerCandidature,
   type SaisieCandidature,
 } from "@/lib/candidatures";
@@ -34,6 +36,8 @@ const bonne: SaisieCandidature = {
   pays: "Sénégal",
   specialite: "finance",
   experience: "5-10",
+  tauxHoraire: "25 000",
+  tauxDevise: "XOF",
   linkedin: "",
   message: "",
   consentement: "oui",
@@ -141,6 +145,37 @@ dire(
     "technique",
   ].every((e) => ((MESSAGES_CANDIDATURE as Record<string, string>)[e] ?? "").length > 20),
 );
+
+console.log("\n▸ Le taux horaire brut demandé\n");
+
+const ok = avec({});
+dire(
+  "« 25 000 » FCFA se lit 25 000, pas 25",
+  ok.ok === true && ok.tauxHoraire === 25000 && ok.tauxDevise === "XOF",
+  ok.ok ? `${ok.tauxHoraire} ${ok.tauxDevise}` : ok.erreur,
+);
+dire("« 350,50 » se lit 350,5", montantTaux("350,50") === 350.5);
+dire("« 350.50 » aussi", montantTaux("350.50") === 350.5);
+dire("⚠️ sans taux : refusé, et dit comme tel", refus({ tauxHoraire: "" }) === "taux");
+dire("⚠️ des lettres : refusé", refus({ tauxHoraire: "à discuter" }) === "taux");
+dire("⚠️ zéro : refusé", refus({ tauxHoraire: "0" }) === "taux");
+dire("⚠️ un montant négatif : refusé", refus({ tauxHoraire: "-300" }) === "taux");
+dire("⚠️ plus d'un million : refusé", refus({ tauxHoraire: "2000000" }) === "taux");
+dire(
+  "⚠️ sans devise : refusé — « 300 » ne dit pas si ce sont des dirhams ou des euros",
+  refus({ tauxDevise: "" }) === "devise",
+);
+dire("⚠️ une devise inventée : refusée", refus({ tauxDevise: "BTC" }) === "devise");
+dire(
+  "chaque refus a sa phrase",
+  Boolean(MESSAGES_CANDIDATURE.taux) && Boolean(MESSAGES_CANDIDATURE.devise),
+);
+dire(
+  "l'équipe lit « 350 MAD brut / heure »",
+  libelleTaux(350, "MAD") === "350 MAD brut / heure",
+  libelleTaux(350, "MAD"),
+);
+dire("une candidature d'avant, sans taux, se lit « — »", libelleTaux(null, null) === "—");
 
 console.log(manques === 0 ? "\n  Tout tient.\n" : `\n  ${manques} contrôle(s) au rouge.\n`);
 process.exit(manques === 0 ? 0 : 1);

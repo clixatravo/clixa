@@ -90,6 +90,57 @@ export function libelleExperienceFormation(valeur?: string | null): string {
   return EXPERIENCES_FORMATION.find((e) => e.valeur === valeur)?.libelle ?? String(valeur);
 }
 
+/**
+ * Le taux horaire brut demandé par le candidat, et sa devise.
+ *
+ * Demandé par la direction le 2 octobre 2026 (« ajoute taux horaire brut
+ * demandé ») : sans lui, l'équipe appelait un candidat pour découvrir à la fin
+ * de l'échange que ses attentes étaient hors de portée.
+ *
+ * ⚠️ **La devise est demandée, jamais devinée.** Les candidats écrivent du
+ * Maroc, d'Afrique de l'Ouest, d'Europe : « 300 » ne veut rien dire tant qu'on
+ * ne sait pas si ce sont des dirhams ou des euros — et un écart de dix entre
+ * les deux lectures ferait écarter, ou retenir, quelqu'un pour une erreur de
+ * lecture. Aucune devise n'est choisie d'avance : la leçon du sélecteur de pays
+ * qui s'ouvrait sur « Maroc ».
+ */
+export const DEVISES_TAUX = [
+  { valeur: "MAD", libelle: "Dirhams (MAD)", court: "MAD" },
+  { valeur: "EUR", libelle: "Euros (EUR)", court: "€" },
+  { valeur: "XOF", libelle: "Francs CFA (FCFA)", court: "FCFA" },
+  { valeur: "USD", libelle: "Dollars (USD)", court: "$" },
+] as const;
+
+export type DeviseTaux = (typeof DEVISES_TAUX)[number]["valeur"];
+
+export const OPTIONS_DEVISE_TAUX = DEVISES_TAUX.map((d) => ({ label: d.libelle, value: d.valeur }));
+
+/**
+ * Un montant horaire lisible, ou `undefined`.
+ *
+ * Accepte la virgule comme le point (« 350,50 »), et les espaces qu'on met
+ * entre les milliers (« 25 000 » FCFA). Borné à un million : au-delà, c'est
+ * une faute de frappe, pas une attente.
+ */
+export function montantTaux(brut: string): number | undefined {
+  const nettoye = brut.replace(/[\s\u00a0\u202f]/g, "").replace(",", ".");
+  if (!/^\d{1,7}(\.\d{1,2})?$/.test(nettoye)) return undefined;
+  const n = Number(nettoye);
+  return n > 0 && n <= 1_000_000 ? n : undefined;
+}
+
+export function deviseTauxValide(valeur: string): DeviseTaux | undefined {
+  return DEVISES_TAUX.find((d) => d.valeur === valeur)?.valeur;
+}
+
+/** « 350 MAD brut / heure », tel que l'équipe le lit. */
+export function libelleTaux(montant?: number | null, devise?: string | null): string {
+  if (montant == null || !devise) return "—";
+  const court = DEVISES_TAUX.find((d) => d.valeur === devise)?.court ?? devise;
+  const chiffre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(montant);
+  return `${chiffre} ${court} brut / heure`;
+}
+
 /** Ce que l'équipe fait d'une candidature. */
 export const STATUTS_CANDIDATURE = [
   { label: "Nouvelle", value: "nouvelle" },
@@ -163,6 +214,9 @@ export interface SaisieCandidature {
   pays: string;
   specialite: string;
   experience: string;
+  /** Le montant tel que tapé : « 350 », « 350,50 », « 25 000 ». */
+  tauxHoraire: string;
+  tauxDevise: string;
   linkedin: string;
   message: string;
   consentement: string;
@@ -177,6 +231,8 @@ export type ErreurCandidature =
   | "indicatif"
   | "specialite"
   | "experience"
+  | "taux"
+  | "devise"
   | "linkedin"
   | "cv-ou-linkedin"
   | "consentement"
@@ -187,6 +243,8 @@ export type ResultatCandidature =
       ok: true;
       specialite: Specialite;
       experience: ExperienceFormation;
+      tauxHoraire: number;
+      tauxDevise: DeviseTaux;
       linkedin: string | undefined;
     }
   | { ok: false; erreur: ErreurCandidature };
@@ -225,6 +283,11 @@ export function validerCandidature(s: SaisieCandidature): ResultatCandidature {
   const experience = experienceFormationValide(s.experience);
   if (!experience) return { ok: false, erreur: "experience" };
 
+  const tauxHoraire = montantTaux(s.tauxHoraire);
+  if (tauxHoraire === undefined) return { ok: false, erreur: "taux" };
+  const tauxDevise = deviseTauxValide(s.tauxDevise);
+  if (!tauxDevise) return { ok: false, erreur: "devise" };
+
   const linkedin = lienLinkedin(s.linkedin);
   if (s.linkedin.trim() && !linkedin) return { ok: false, erreur: "linkedin" };
 
@@ -232,7 +295,7 @@ export function validerCandidature(s: SaisieCandidature): ResultatCandidature {
 
   if (s.consentement !== "oui") return { ok: false, erreur: "consentement" };
 
-  return { ok: true, specialite, experience, linkedin };
+  return { ok: true, specialite, experience, tauxHoraire, tauxDevise, linkedin };
 }
 
 /** Les phrases de la page, une par refus. Elles disent quoi corriger. */
@@ -248,6 +311,8 @@ export const MESSAGES_CANDIDATURE: Record<
     "Votre numéro WhatsApp doit commencer par l'indicatif de votre pays : choisissez votre pays dans la liste, puis tapez votre numéro.",
   specialite: "Choisissez le domaine dans lequel vous formez.",
   experience: "Indiquez votre expérience comme formateur.",
+  taux: "Indiquez votre taux horaire brut en chiffres, par exemple 350 ou 25 000.",
+  devise: "Choisissez la devise de votre taux horaire : dirhams, euros, francs CFA ou dollars.",
   linkedin:
     "Ce lien ne mène pas à un profil LinkedIn. Copiez l'adresse de votre profil, qui commence par linkedin.com/in/…",
   "cv-ou-linkedin":

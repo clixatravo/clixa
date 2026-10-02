@@ -468,6 +468,28 @@ const gabarits: { nom: string; produire: () => Promise<unknown> }[] = [
         }),
       }),
   },
+  /*
+    La candidature d'un formateur, que l'équipe reçoit. Absente des aperçus
+    jusqu'au 2 octobre 2026 : on y a ajouté le taux horaire brut demandé, et il
+    n'existait aucun moyen de regarder le message sans déposer une candidature.
+  */
+  {
+    nom: "candidature-formateur",
+    produire: () =>
+      c.courrielCandidatureFormateur(faux, {
+        id: 7,
+        nom: "Awa Diallo",
+        email: "awa.diallo@exemple.sn",
+        whatsapp: "+221770000000",
+        pays: "Sénégal",
+        specialite: "Finance et comptabilité",
+        experience: "5 à 10 ans",
+        taux: "25 000 FCFA brut / heure",
+        linkedin: "https://www.linkedin.com/in/awa-diallo",
+        avecCv: true,
+        message: "Formatrice en finance d'entreprise depuis huit ans.",
+      }),
+  },
 ];
 
 /*

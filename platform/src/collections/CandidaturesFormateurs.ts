@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { connecte, reserveA } from "@/access/roles";
 import {
+  OPTIONS_DEVISE_TAUX,
   OPTIONS_EXPERIENCE_FORMATION,
   OPTIONS_SPECIALITE,
   STATUTS_CANDIDATURE,
@@ -29,7 +30,16 @@ export const CandidaturesFormateurs: CollectionConfig = {
   labels: { singular: "Candidature formateur", plural: "Candidatures formateurs" },
   admin: {
     useAsTitle: "nom",
-    defaultColumns: ["nom", "specialite", "experience", "pays", "statut", "createdAt"],
+    defaultColumns: [
+      "nom",
+      "specialite",
+      "experience",
+      "tauxHoraire",
+      "tauxDevise",
+      "pays",
+      "statut",
+      "createdAt",
+    ],
     group: "Recrutement",
     description:
       "Les candidatures déposées depuis la page « Devenir formateur ». Le CV ne s'ouvre que d'ici.",
@@ -66,6 +76,31 @@ export const CandidaturesFormateurs: CollectionConfig = {
           type: "select",
           label: "Expérience de formateur",
           options: OPTIONS_EXPERIENCE_FORMATION,
+          admin: { width: "33%", readOnly: true },
+        },
+      ],
+    },
+    /*
+      Le taux horaire brut demandé, saisi par le candidat (2 octobre 2026).
+      ⚠️ Jamais `required` ici : la règle est vérifiée par la route. Exigé dans
+      la collection, il ferait refuser toute écriture des candidatures déposées
+      avant — un changement de statut, une note — sur un champ qu'elles n'ont
+      pas. La leçon du champ « Pays » des inscriptions.
+    */
+    {
+      type: "row",
+      fields: [
+        {
+          name: "tauxHoraire",
+          type: "number",
+          label: "Taux horaire brut demandé",
+          admin: { width: "33%", readOnly: true, description: "Brut, par heure de formation." },
+        },
+        {
+          name: "tauxDevise",
+          type: "select",
+          label: "Devise",
+          options: OPTIONS_DEVISE_TAUX,
           admin: { width: "33%", readOnly: true },
         },
       ],
