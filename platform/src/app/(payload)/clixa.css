@@ -5097,3 +5097,157 @@ h3,
   border-color: var(--clixa-or);
   box-shadow: 0 0 6px -1px rgba(201, 162, 76, 0.7);
 }
+
+/* ── Témoignages : le bandeau « Par cohorte », au-dessus de la liste ──────────
+   Le dessin des blocs de la maison (encre, filet d'ivoire, filet doré en tête).
+   L'or ne teinte que « à relire » et la carte active : c'est la seule chose à
+   faire sur cet écran. Une cohorte vide reste visible, effacée — elle dit où
+   il reste à recueillir. */
+.clixa-cohortes {
+  /* Calé sur les marges de la liste : Payload pose le bandeau hors de sa gouttière. */
+  margin: 1.5rem var(--gutter-h) 1rem;
+  padding: 1.2rem 1.3rem 1.3rem;
+  background: rgba(17, 26, 51, 0.75);
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.clixa-cohortes::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--clixa-or), rgba(201, 162, 76, 0));
+}
+.clixa-cohortes__entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.clixa-cohortes__titre {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--clixa-ivoire);
+}
+.clixa-cohortes__soustitre {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgba(243, 239, 228, 0.7);
+}
+.clixa-cohortes__raccourcis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.clixa-cohortes__lien {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(243, 239, 228, 0.18);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--clixa-ivoire) !important;
+  text-decoration: none !important;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+.clixa-cohortes__lien:hover,
+.clixa-cohortes__lien:focus-visible {
+  border-color: var(--clixa-or);
+  color: var(--clixa-or-clair) !important;
+}
+.clixa-cohortes__lien--or {
+  border-color: rgba(201, 162, 76, 0.5);
+  color: var(--clixa-or-clair) !important;
+}
+.clixa-cohortes__lien--actif {
+  box-shadow: 0 0 0 1px var(--clixa-or) inset;
+}
+.clixa-cohortes__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
+  gap: 0.75rem;
+}
+@media (max-width: 520px) {
+  .clixa-cohortes {
+    padding: 1rem;
+  }
+  .clixa-cohortes__grille {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+.clixa-cohorte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  background: #111a33;
+  border: 1px solid rgba(243, 239, 228, 0.12);
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none !important;
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s ease,
+    background 0.22s ease;
+}
+.clixa-cohorte:hover,
+.clixa-cohorte:focus-visible {
+  transform: translateY(-2px);
+  background: #161f3d;
+  border-color: var(--clixa-or);
+}
+.clixa-cohorte--actif {
+  border-color: var(--clixa-or);
+  box-shadow: 0 0 16px -4px rgba(201, 162, 76, 0.35);
+}
+.clixa-cohorte--vide {
+  opacity: 0.6;
+}
+.clixa-cohorte--vide.clixa-cohorte--actif,
+.clixa-cohorte--vide:hover {
+  opacity: 1;
+}
+.clixa-cohorte__tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(243, 239, 228, 0.55);
+}
+.clixa-cohorte__titre {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--clixa-ivoire);
+}
+.clixa-cohorte__comptes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(243, 239, 228, 0.75);
+}
+.clixa-cohorte__arelire {
+  color: var(--clixa-or-clair);
+  font-weight: 600;
+}
+.clixa-cohorte__vide {
+  font-size: 0.78rem;
+  color: rgba(243, 239, 228, 0.6);
+}

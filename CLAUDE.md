@@ -6140,6 +6140,36 @@ suivie, cohorte, témoignage —, **sans photo**, et un accord de publication.
   est sortie en 1 sur le seul point connu — « la cadence finit par mordre —
   0 refus sur 26 », le frein compté par instance depuis Pro.
 
+⚠️ **Dans /admin, les témoignages se rangent par cohorte** (demandé par la
+direction le 5 octobre 2026 : « ndirohom f site admin 3la hssab cohort l
+9dam », « ikon dakxi professional »). Au-dessus de la liste, un bandeau
+« Par cohorte » (`TemoignagesParCohorte.tsx`, `repartitionParCohorte`) : une
+carte par cohorte, de la plus récente à la plus ancienne, avec ce qui attend
+d'être relu et ce qui est en ligne ; un clic filtre la liste. Le site public
+ne change pas.
+
+- **Les cohortes vides paraissent** (« Aucun témoignage encore ») : elles
+  disent où il reste à recueillir.
+- ⚠️ **« À relire » veut dire brouillon**, et c'est le seul or de l'écran. Une
+  valeur hors liste va dans « Sans cohorte », jamais dans une cohorte voisine.
+- ⚠️ **De vrais liens, pas `<Link>`.** La liste de Payload garde sa requête
+  dans un état client : par `<Link>`, la carte « Octobre 2026 » ramenait
+  l'adresse sans `where` et montrait les six témoignages ; chargée, aucun.
+  Vu à l'écran, pas au type.
+- ⚠️ **Le bandeau sort de la gouttière de Payload** : il est calé sur
+  `var(--gutter-h)`. Sans cela il collait au bord gauche.
+- **La liste trie du plus récent au plus ancien** (`defaultSort`), la colonne
+  Cohorte passe en deuxième, et « Créé(e) à » s'ajoute.
+- ⚠️ **Les six témoignages déjà en base viennent de l'ancien site**
+  (`index.html`) : pas de cohorte, pas de formation, une fonction en guise de
+  nom et une ville en guise de fonction. Ils comptent « 6 à relire » dans
+  « Sans cohorte ». Rien ne dit que ce sont de vraies personnes : **ne pas les
+  publier en l'état** — c'est à la direction de les garder ou de les retirer.
+- `verifier-temoignages.ts` : onze contrôles de plus, **prouvés en comptant
+  les brouillons parmi les publiés et en rangeant l'inconnu dans une cohorte :
+  trois rouges**. Regardé sur `dev` à 1280 et 375 px, liste filtrée par clic,
+  aucun débordement. Aucun changement de schéma.
+
 ## Points ouverts
 
 | Sujet | Où | Attend |

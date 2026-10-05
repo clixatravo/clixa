@@ -121,3 +121,116 @@ export const MESSAGES_TEMOIGNAGE: Record<ErreurTemoignage | "technique", string>
     "Pour que votre témoignage paraisse sur le site, nous avons besoin de votre accord : cochez la case.",
   technique: "Votre témoignage n'a pas pu être enregistré. Réessayez dans un instant.",
 };
+
+/* ── Le rangement par cohorte, dans /admin ───────────────────────────────── */
+
+/**
+ * Ce que le bandeau « Par cohorte » compte, au-dessus de la liste de /admin.
+ *
+ * Demandé par la direction le 5 octobre 2026 : les témoignages se relisent et
+ * se publient cohorte par cohorte, et l'écran doit le montrer. La liste de
+ * Payload ne sait que trier une colonne ; elle ne dit pas « octobre 2025 : deux
+ * à relire, aucun publié ».
+ *
+ * - **Toutes les cohortes paraissent, même vides**, de la plus récente à la
+ *   plus ancienne. Une cohorte à zéro dit où il reste à recueillir — c'est
+ *   l'information, pas un trou.
+ * - ⚠️ **« À relire », c'est un brouillon.** Un témoignage déposé depuis le site
+ *   naît brouillon, et rien ne paraît avant qu'on le publie. Le compter parmi
+ *   les publiés ferait croire qu'il est en ligne.
+ * - ⚠️ **Une valeur hors liste va dans « Sans cohorte »**, jamais dans une
+ *   cohorte voisine : ranger au hasard, c'est attribuer un témoignage à des
+ *   gens qui ne l'ont pas écrit.
+ */
+export interface CompteDeCohorte {
+  aRelire: number;
+  publies: number;
+}
+
+export interface LigneDeCohorteAdmin extends CompteDeCohorte {
+  valeur: Cohorte;
+  libelle: string;
+}
+
+export interface RepartitionDesTemoignages {
+  cohortes: LigneDeCohorteAdmin[];
+  sansCohorte: CompteDeCohorte;
+  aRelire: number;
+  total: number;
+}
+
+export function repartitionParCohorte(
+  docs: { cohorte?: string | null; _status?: string | null }[],
+): RepartitionDesTemoignages {
+  const parValeur = new Map<string, CompteDeCohorte>();
+  const sansCohorte: CompteDeCohorte = { aRelire: 0, publies: 0 };
+  let aRelire = 0;
+
+  for (const d of docs) {
+    const brouillon = d._status !== "published";
+    if (brouillon) aRelire += 1;
+    const valeur = cohorteValide(d.cohorte ?? "");
+    const compte = valeur
+      ? (parValeur.get(valeur) ?? parValeur.set(valeur, { aRelire: 0, publies: 0 }).get(valeur)!)
+      : sansCohorte;
+    if (brouillon) compte.aRelire += 1;
+    else compte.publies += 1;
+  }
+
+  const cohortes = [...COHORTES].reverse().map((c) => ({
+    valeur: c.valeur,
+    libelle: c.libelle,
+    ...(parValeur.get(c.valeur) ?? { aRelire: 0, publies: 0 }),
+  }));
+
+  return { cohortes, sansCohorte, aRelire, total: docs.length };
+}
+
+/** Ce que l'on filtre depuis le bandeau. */
+export type FiltreDesTemoignages =
+  | { genre: "tous" }
+  | { genre: "a-relire" }
+  | { genre: "cohorte"; cohorte: Cohorte }
+  | { genre: "sans-cohorte" };
+
+/**
+ * L'adresse de la liste de /admin, filtrée.
+ *
+ * ⚠️ **Un filtre d'URL faux ne casse rien** : Payload rend la liste entière,
+ * sans erreur. Les noms de champs (`cohorte`, `_status`) sont donc écrits ici
+ * une fois, et `filtreDeLAdresse` les relit avec les mêmes.
+ */
+export function lienDesTemoignages(f: FiltreDesTemoignages): string {
+  const base = "/admin/collections/temoignages";
+  switch (f.genre) {
+    case "a-relire":
+      return `${base}?where[_status][equals]=draft`;
+    case "cohorte":
+      return `${base}?where[cohorte][equals]=${encodeURIComponent(f.cohorte)}`;
+    case "sans-cohorte":
+      return `${base}?where[cohorte][exists]=false`;
+    default:
+      return base;
+  }
+}
+
+/**
+ * Le filtre que porte l'adresse, pour marquer la carte active.
+ *
+ * Next rend les paramètres tels quels (`where[cohorte][equals]`), Payload les
+ * rend parfois déjà imbriqués : les deux formes sont lues.
+ */
+export function filtreDeLAdresse(
+  params: Record<string, unknown> | undefined,
+): FiltreDesTemoignages {
+  const p = params ?? {};
+  const where = (p.where ?? {}) as Record<string, Record<string, unknown> | undefined>;
+  const lire = (champ: string, op: string): unknown =>
+    p[`where[${champ}][${op}]`] ?? where[champ]?.[op];
+
+  const cohorte = cohorteValide(String(lire("cohorte", "equals") ?? ""));
+  if (cohorte) return { genre: "cohorte", cohorte };
+  if (String(lire("cohorte", "exists") ?? "") === "false") return { genre: "sans-cohorte" };
+  if (String(lire("_status", "equals") ?? "") === "draft") return { genre: "a-relire" };
+  return { genre: "tous" };
+}

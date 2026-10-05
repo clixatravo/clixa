@@ -18,10 +18,20 @@ import { OPTIONS_COHORTE } from "@/lib/temoignages";
 export const Temoignages: CollectionConfig = {
   slug: "temoignages",
   labels: { singular: "Témoignage", plural: "Témoignages" },
+  // Le plus récent d'abord : c'est le dernier déposé qu'on vient relire.
+  defaultSort: "-createdAt",
   admin: {
     useAsTitle: "auteur",
-    defaultColumns: ["auteur", "fonction", "programme", "cohorte", "_status"],
+    defaultColumns: ["auteur", "cohorte", "programme", "fonction", "_status", "createdAt"],
     group: "Éditorial",
+    /*
+      Le bandeau « Par cohorte » (demandé par la direction le 5 octobre 2026) :
+      une carte par cohorte, ce qui attend d'être relu et ce qui est en ligne,
+      et un clic filtre la liste. Voir `repartitionParCohorte`.
+    */
+    components: {
+      beforeList: ["@/components/admin/TemoignagesParCohorte#TemoignagesParCohorte"],
+    },
     description:
       "Paroles d'anciens participants. Ceux déposés depuis le site arrivent en brouillon : relisez, puis publiez.",
   },

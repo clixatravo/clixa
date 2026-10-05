@@ -14,7 +14,11 @@
  * - la route crée **un brouillon**. Ce dernier point lit la source, faute de
  *   pouvoir l'appeler sans base : le défaut qu'il garde n'est pas une valeur,
  *   c'est un oubli — retirer `_status: "draft"` mettrait en ligne, sur
- *   l'accueil et sur la fiche du parcours, ce que n'importe qui écrit.
+ *   l'accueil et sur la fiche du parcours, ce que n'importe qui écrit ;
+ * - le bandeau « Par cohorte » de /admin compte un brouillon parmi « à
+ *   relire », jamais parmi les publiés, range une valeur inconnue dans « Sans
+ *   cohorte », montre les cohortes vides, et ses liens relisent les mêmes
+ *   champs qu'ils écrivent.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -24,7 +28,10 @@ import {
   TEXTE_MAX,
   TEXTE_MIN,
   cohorteValide,
+  filtreDeLAdresse,
   libelleCohorte,
+  lienDesTemoignages,
+  repartitionParCohorte,
   validerTemoignage,
   type SaisieTemoignage,
 } from "@/lib/temoignages";
@@ -121,6 +128,71 @@ dire(
 dire(
   "la formation est cherchée parmi les parcours publiés",
   /_status:\s*\{\s*equals:\s*"published"\s*\}/.test(route),
+);
+
+console.log("\n▸ Le bandeau « Par cohorte » de /admin\n");
+const rep = repartitionParCohorte([
+  { cohorte: "2025-10", _status: "draft" },
+  { cohorte: "2025-10", _status: "draft" },
+  { cohorte: "2025-10", _status: "published" },
+  { cohorte: "2026-06", _status: "published" },
+  { cohorte: "2099-01", _status: "draft" },
+  { cohorte: null, _status: "published" },
+]);
+const oct25 = rep.cohortes.find((c) => c.valeur === "2025-10");
+dire(
+  "⚠️ un brouillon compte « à relire », jamais « publié »",
+  oct25?.aRelire === 2 && oct25.publies === 1,
+  JSON.stringify(oct25),
+);
+dire("le total à relire couvre toutes les cohortes", rep.aRelire === 3, String(rep.aRelire));
+dire(
+  "⚠️ une valeur inconnue va dans « Sans cohorte », pas dans une voisine",
+  rep.sansCohorte.aRelire === 1 &&
+    rep.sansCohorte.publies === 1 &&
+    rep.cohortes.reduce((n, c) => n + c.aRelire + c.publies, 0) === 4,
+  JSON.stringify(rep.sansCohorte),
+);
+dire(
+  "toutes les cohortes paraissent, même vides, de la plus récente à la plus ancienne",
+  rep.cohortes.map((c) => c.valeur).join() ===
+    [...COHORTES]
+      .reverse()
+      .map((c) => c.valeur)
+      .join() && rep.cohortes.find((c) => c.valeur === "2026-02")?.publies === 0,
+);
+dire("témoin : une base vide ne compte rien", repartitionParCohorte([]).total === 0);
+
+const aller = (f: Parameters<typeof lienDesTemoignages>[0]) => {
+  const q = new URLSearchParams(lienDesTemoignages(f).split("?")[1] ?? "");
+  return filtreDeLAdresse(Object.fromEntries(q));
+};
+dire(
+  "⚠️ le lien d'une cohorte se relit comme cette cohorte",
+  JSON.stringify(aller({ genre: "cohorte", cohorte: "2026-04" })) ===
+    JSON.stringify({ genre: "cohorte", cohorte: "2026-04" }),
+);
+dire(
+  "le lien « à relire » filtre les brouillons",
+  aller({ genre: "a-relire" }).genre === "a-relire",
+);
+dire(
+  "le lien « Sans cohorte » se relit tel quel",
+  aller({ genre: "sans-cohorte" }).genre === "sans-cohorte",
+);
+dire(
+  "les champs filtrés sont ceux de la collection",
+  lienDesTemoignages({ genre: "cohorte", cohorte: "2026-04" }).includes(
+    "where[cohorte][equals]=2026-04",
+  ) && lienDesTemoignages({ genre: "a-relire" }).includes("where[_status][equals]=draft"),
+);
+dire(
+  "une forme imbriquée (Payload) se lit aussi",
+  filtreDeLAdresse({ where: { cohorte: { equals: "2025-10" } } }).genre === "cohorte",
+);
+dire(
+  "témoin : une cohorte inventée dans l'adresse ne marque aucune carte",
+  filtreDeLAdresse({ "where[cohorte][equals]": "2099-01" }).genre === "tous",
 );
 
 console.log(manques === 0 ? "\n  ✓ Tout tient.\n" : `\n  ✗ ${manques} contrôle(s) au rouge.\n`);
