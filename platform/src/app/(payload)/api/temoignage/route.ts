@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { COHORTES, validerTemoignage } from "@/lib/temoignages";
 import { courrielTemoignageRecu } from "@/lib/courriel";
+import { leurreRempli } from "@/lib/leurre";
 
 /**
  * Recevoir un témoignage d'ancien participant.
@@ -31,7 +32,6 @@ import { courrielTemoignageRecu } from "@/lib/courriel";
  * ni second courriel.
  */
 
-const LEURRE = "site_web";
 const PAGE = "/laisser-un-temoignage";
 
 export async function POST(request: Request) {
@@ -39,9 +39,13 @@ export async function POST(request: Request) {
 
   const form = await request.formData();
   const texte = (cle: string) => (form.get(cle) ?? "").toString().trim();
-  const echec = (erreur: string): never => redirect(`${PAGE}?erreur=${erreur}#formulaire` as Route);
+  // Chaque refus laisse sa raison au journal — voir `api/candidature`.
+  const echec = (erreur: string): never => {
+    console.warn(`[témoignage] refusé : ${erreur}`);
+    redirect(`${PAGE}?erreur=${erreur}#formulaire` as Route);
+  };
 
-  if (texte(LEURRE) !== "") redirect(`${PAGE}?envoye=1` as Route);
+  if (leurreRempli(form, "temoignage")) redirect(`${PAGE}?envoye=1` as Route);
 
   const saisie = {
     nom: texte("nom"),

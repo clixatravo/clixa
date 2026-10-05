@@ -4,6 +4,7 @@ import { FilAriane } from "@/components/FilAriane";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { getProgrammes } from "@/lib/catalogue";
 import { COHORTES, MESSAGES_TEMOIGNAGE, TEXTE_MAX } from "@/lib/temoignages";
+import { ChampLeurre } from "@/components/ChampLeurre";
 
 /*
   ⚠️ `noindex`, et hors du plan du site. Cette page s'adresse à d'anciens
@@ -90,17 +91,7 @@ export default async function LaisserUnTemoignage({ searchParams }: Props) {
                 method="POST"
                 className="border-line bg-panel border p-6 sm:p-8"
               >
-                {/* Leurre : invisible pour un humain, rempli par la plupart des robots. */}
-                <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
-                  <label htmlFor="site_web">Ne pas remplir</label>
-                  <input
-                    id="site_web"
-                    name="site_web"
-                    type="text"
-                    tabIndex={-1}
-                    autoComplete="off"
-                  />
-                </div>
+                <ChampLeurre />
 
                 <div className="grid gap-5 sm:grid-cols-2 [&>*]:min-w-0">
                   <div className="flex flex-col gap-2">
