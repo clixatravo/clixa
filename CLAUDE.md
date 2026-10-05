@@ -6093,6 +6093,8 @@ bouton.
   - ⚠️ **Ces quatre mois sont annoncés sur les douze fiches**, comme la
     direction l'a demandé. Si un parcours n'a pas tourné à l'un d'eux, c'est à
     corriger ici, parcours par parcours.
+  - **En ligne le 5 octobre 2026** (`8db6f61`, avec les témoignages). La fiche
+    DAF servie porte « Cohortes précédentes » et les quatre mois.
 
 ⚠️ **Les anciens participants déposent leur témoignage eux-mêmes**
 (`/laisser-un-temoignage`, `api/temoignage`, `lib/temoignages.ts`, demandé par
@@ -6127,9 +6129,16 @@ suivie, cohorte, témoignage —, **sans photo**, et un accord de publication.
   remettant deux défauts** (dépôt publié d'office, dépôt sans accord) : trois
   rouges. Essayé sur `dev` par la vraie route — refus, enregistrement, doublon,
   courriel —, données retirées ensuite. Regardé à 375 px : aucun débordement.
-- **Deux colonnes sur `dev` seulement** (`temoignages.cohorte`,
-  `temoignages.consentement_le`, et leurs jumelles des versions). Avant la mise
-  en ligne : comparer les deux schémas, pousser, puis le code.
+- **En ligne le 5 octobre 2026** (`8db6f61`, trois commits repris à part sur
+  `main`, sans le dépliant). `temoignages.cohorte`,
+  `temoignages.consentement_le` et leurs jumelles des versions poussées sur la
+  production **après comparaison des deux schémas** : quatre colonnes
+  ajoutées, aucune retirée, plus aucun écart avec `dev`, 128 dossiers et
+  6 témoignages intacts. `/api/version` a rendu le bon commit en 95 s ; la page
+  répond 200 en `noindex`, `/temoignages` y mène, le plan du site ne la porte
+  pas. **Aucun témoignage d'essai n'a été déposé en production.** La recette
+  est sortie en 1 sur le seul point connu — « la cadence finit par mordre —
+  0 refus sur 26 », le frein compté par instance depuis Pro.
 
 ## Points ouverts
 
