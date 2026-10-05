@@ -808,6 +808,28 @@ matin.
   deux de l'autre. Sans cette comparaison, on aurait aussi bien pu accuser
   Payload d'avoir changé de comportement.
 
+⚠️ **Sur ordinateur, le menu ne s'ouvrait plus du tout** (signalé par la
+direction le 5 octobre 2026 : « kanclicki makadozx makaytfekx l menu »).
+C'était le nôtre, pas Payload : `Marque.tsx` referme le tiroir quand on clique
+« dehors », et il le faisait **dans la même milliseconde que l'ouverture**.
+
+- **La cause** : son gestionnaire passe après React. Le clic sur le bouton a
+  déjà ouvert le tiroir, et React a remplacé l'icône cliquée (« ouvrir »
+  devient « fermer ») : la cible n'est plus dans la page, `closest()` ne
+  remonte plus jusqu'au bouton, et le script prenait le clic pour un clic à
+  côté. Mesuré : un clic réel sur l'icône, puis un `click()` non réel sur
+  `nav__mobile-close` cinq millisecondes après. Sur téléphone, le bouton de
+  l'en-tête ne remplace pas son icône de la même façon, d'où « ça marche sur
+  mobile ».
+- **Le remède** : lire `e.composedPath()`, figé au départ du clic, qui garde
+  le bouton même après le remplacement.
+- **Vérifié à 1280, 1600 et 375 px** : le clic ouvre, un clic à côté
+  referme, un lien du menu mène à sa page et referme le tiroir, le bouton
+  ferme. Avant la correction, à 1280 px : « ouvre au clic : false ».
+- ⚠️ **Rien ne l'attrape** : ni type, ni lint, ni build, ni épreuve
+  Playwright, qui ne cliquent pas sur le menu. Présent depuis le 15 septembre
+  2026 (`939a1f9`).
+
 ⚠️ **Et la console disait le jour d'UTC** (corrigé le même jour). L'intitulé du
 tableau de bord se formatait en `timeZone: "UTC"`. Le Maroc étant à +1, l'équipe
 lisait **la veille entre minuit et une heure** : vu à 00 h 58 à Agadir, la

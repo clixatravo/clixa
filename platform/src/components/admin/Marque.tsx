@@ -61,21 +61,33 @@ export function Icone() {
     function gererClic(e: MouseEvent) {
       const nav = document.querySelector(".nav--nav-open");
       if (!nav) return;
-      const cible = e.target as HTMLElement | null;
-      if (!cible) return;
+
+      /*
+        ⚠️ Le chemin du clic, jamais `e.target.closest(…)`. Ce gestionnaire
+        passe après React : le clic sur le bouton du menu a déjà ouvert le
+        tiroir, et React a remplacé l'icône cliquée (« ouvrir » devient
+        « fermer »). La cible n'est plus dans la page, `closest` ne remonte
+        plus jusqu'au bouton, et le tiroir se refermait dans la même
+        milliseconde — sur ordinateur, le menu ne s'ouvrait jamais (signalé
+        le 5 octobre 2026). `composedPath()` est figé au départ du clic : il
+        garde le bouton, même après le remplacement.
+      */
+      const chemin = e.composedPath().filter((n): n is Element => n instanceof Element);
+      if (chemin.length === 0) return;
+      const touche = (selecteur: string) => chemin.some((el) => el.matches(selecteur));
 
       // 1. Clic sur un lien dans le tiroir : fermer immédiatement le tiroir pour une navigation fluide
-      if (cible.closest(".nav a")) {
+      if (touche(".nav a")) {
         fermerTiroir();
         return;
       }
 
       // 2. Ne rien faire si on clique dans le tiroir, sur les boutons menu ou sur le bouton Accueil
       if (
-        nav.contains(cible) ||
-        cible.closest(".app-header__mobile-nav-toggler") ||
-        cible.closest(".template-default__nav-toggler") ||
-        cible.closest(".step-nav__home")
+        chemin.includes(nav) ||
+        touche(".app-header__mobile-nav-toggler") ||
+        touche(".template-default__nav-toggler") ||
+        touche(".step-nav__home")
       ) {
         return;
       }
