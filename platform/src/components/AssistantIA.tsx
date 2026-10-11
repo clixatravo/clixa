@@ -2,14 +2,34 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   consentementAuServeur,
   lireConsentement,
   MESURE_ACTIVE,
   souscrireConsentement,
 } from "@/lib/consentement";
-import { useState } from "react";
+import {
+  CLEF_INVITATION,
+  invitationPour,
+  SECONDES_AVANT_INVITATION,
+  SECONDES_DE_VIE_INVITATION,
+} from "@/lib/assistant-invitation";
+
+const dejaInvite = () => {
+  try {
+    return window.sessionStorage.getItem(CLEF_INVITATION) !== null;
+  } catch {
+    return true; // stockage refusé : mieux vaut se taire que revenir à chaque page
+  }
+};
+const retenirInvitation = () => {
+  try {
+    window.sessionStorage.setItem(CLEF_INVITATION, "1");
+  } catch {
+    /* rien à faire */
+  }
+};
 
 /*
   La fenêtre n'est téléchargée qu'au premier clic : le bouton seul ne pèse rien
@@ -83,11 +103,49 @@ export function AssistantIA() {
     à côté d'un échéancier personnel est la meilleure façon de contredire ce que
     la page affiche. Là, c'est un conseiller qu'il faut.
   */
-  if (chemin.startsWith("/inscription") || chemin.startsWith("/compte")) return null;
+  /*
+    L'invitation (`lib/assistant-invitation.ts`) : quelques secondes après
+    l'arrivée, une bulle propose l'aide de l'assistant et trois questions
+    prêtes. Une fois par visite, effacée d'elle-même avant que la fenêtre
+    « Gardez votre place » ne s'ouvre dans le même coin.
+
+    Retenir **le chemin** plutôt qu'un booléen, comme `PopupInscription` : la
+    bulle d'une page ne survit pas à la navigation, sans rien à remettre à zéro.
+  */
+  const [inviteSur, setInviteSur] = useState<string | null>(null);
+  const [aPoser, setAPoser] = useState<{ texte: string; n: number } | undefined>();
+  const invitation = inviteSur === chemin && !ouvert ? invitationPour(chemin) : undefined;
+  const masque = chemin.startsWith("/inscription") || chemin.startsWith("/compte");
+
+  useEffect(() => {
+    if (masque || ouvert || bandeauOuvert || !invitationPour(chemin) || dejaInvite()) return;
+    const minuteur = window.setTimeout(() => {
+      retenirInvitation();
+      setInviteSur(chemin);
+    }, SECONDES_AVANT_INVITATION * 1000);
+    return () => window.clearTimeout(minuteur);
+  }, [chemin, masque, ouvert, bandeauOuvert]);
+
+  useEffect(() => {
+    if (!inviteSur) return;
+    const minuteur = window.setTimeout(() => setInviteSur(null), SECONDES_DE_VIE_INVITATION * 1000);
+    return () => window.clearTimeout(minuteur);
+  }, [inviteSur]);
+
+  if (masque) return null;
+
+  const poser = (texte: string) => {
+    setInviteSur(null);
+    setCharge(true);
+    setOuvert(true);
+    setAPoser((a) => ({ texte, n: (a?.n ?? 0) + 1 }));
+  };
 
   return (
     <>
-      {charge && <AssistantFenetre ouvert={ouvert} onFermer={() => setOuvert(false)} />}
+      {charge && (
+        <AssistantFenetre ouvert={ouvert} onFermer={() => setOuvert(false)} aPoser={aPoser} />
+      )}
       {/*
         Rond et doré, comme le bouton d'action du site de conseil, et un robot
         dedans : on le reconnaît d'un coup d'œil comme « poser une question ». Le point vert
@@ -98,7 +156,36 @@ export function AssistantIA() {
           bandeauOuvert ? "bottom-28 sm:bottom-60" : "bottom-5"
         }`}
       >
-        {!ouvert && (
+        {invitation && (
+          <div
+            role="dialog"
+            aria-label="L'assistant vous propose son aide"
+            className="border-gold/50 bg-panel rounded-clixa absolute right-0 bottom-full mb-3 w-[min(320px,calc(100vw-2.5rem))] border p-4 shadow-2xl motion-safe:animate-[clixa-monter_0.35s_ease-out]"
+          >
+            <button
+              type="button"
+              onClick={() => setInviteSur(null)}
+              aria-label="Fermer la proposition"
+              className="text-ivory-dim hover:text-ivory absolute top-2 right-2.5 cursor-pointer text-lg leading-none"
+            >
+              ×
+            </button>
+            <p className="text-ivory pr-5 text-[0.86rem] leading-relaxed">{invitation.texte}</p>
+            <div className="mt-3 flex flex-col gap-1.5">
+              {invitation.questions.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => poser(q)}
+                  className="border-line text-ivory-dim hover:border-gold hover:text-ivory rounded-clixa cursor-pointer border px-3 py-1.5 text-left text-[0.8rem] transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!ouvert && !invitation && (
           <span className="border-line bg-panel text-ivory rounded-clixa pointer-events-none hidden border px-3 py-1.5 text-[0.78rem] font-semibold whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
             Une question ? Demandez à l&apos;assistant
           </span>

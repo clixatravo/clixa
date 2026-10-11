@@ -5587,6 +5587,55 @@ déplie en colonne, il disparaissait entièrement dessous.
   même leçon que la page qui semblait sauter sous la vidéo, et que le panneau de
   navigateur masqué qui ne peint rien.
 
+⚠️ **L'assistant conseille comme l'équipe, et vient au-devant du visiteur**
+(demandé par la direction le 10 octobre 2026 : « i probose 3la nass o i diir
+des conversation li kono kbar o ykon khadam professional », avec les réponses
+types que Mounir Mokhtari a données à l'équipe le 7 octobre).
+
+- **Ce qu'il sait de plus, écrit une fois** (`DEROULEMENT`, `lib/assistant.ts`) :
+  les séances se donnent en direct ; **chacune est enregistrée dans l'espace
+  Classroom, accessible douze mois** ; l'accès s'ouvre **une fois le contrat
+  signé et la première tranche payée** ; le programme détaillé est dans la
+  plaquette. Ce sont des faits de la direction, que le catalogue ne porte pas.
+  ⚠️ **Ce journal disait « rien ne produit de replays »** (FAQ, présentation,
+  rythme de la PMP®) : la direction affirme désormais l'inverse, c'est elle qui
+  fait foi. La FAQ et la présentation se taisent toujours sur les
+  enregistrements — à aligner si la direction le veut.
+- **Chaque formation porte sa plaquette et son lien de pré-inscription**,
+  formation déjà choisie : « quel est le programme ? » se répond par la
+  plaquette, comme l'équipe le fait.
+- **Il mène la conversation** : il répond, puis propose une seule suite — une
+  question sur le poste ou l'objectif, ou l'étape suivante. Trente messages au
+  lieu de seize (le fil se perdait au huitième échange), quarante questions par
+  dix minutes au lieu de vingt, 1 500 jetons de réponse au lieu de 900.
+- **Il part de la fiche que le visiteur regarde** (`contextePage`). ⚠️ Le chemin
+  vient du navigateur : il n'est **jamais recopié** dans la consigne. Seule une
+  fiche qui existe au catalogue donne une phrase, écrite par nous, avec son
+  titre lu en base.
+- ⚠️ **Il reste un assistant IA**, et le dit : « Conseiller en ligne » en titre,
+  « Assistant IA » dessous, et une consigne qui lui interdit de se faire passer
+  pour une personne de l'équipe.
+- **L'invitation** (`lib/assistant-invitation.ts`) : huit secondes après
+  l'arrivée, une bulle propose trois questions prêtes selon la page ; un clic
+  ouvre la conversation et pose la question. **Une fois par visite**, jamais
+  sous le bandeau de consentement, effacée au bout de quinze secondes — **avant**
+  la fenêtre « Gardez votre place », qui s'ouvre dans le même coin à
+  vingt-cinq. Aucune sur `/entreprises` (l'assistant ne connaît pas les
+  séminaires), ni sur les pages faites pour autre chose que choisir une
+  formation.
+- **« 3 tranches » ne se coupe plus sur un téléphone**, dans les options de
+  règlement de la fiche : le libellé tient sur une ligne, les montants
+  reviennent à la ligne.
+- `verifier-assistant.ts` : vingt-sept contrôles de plus, **prouvés en remettant
+  trois défauts** — un chemin recopié dans la consigne, le fait des douze mois
+  retiré, une bulle qui dure jusqu'à croiser l'autre fenêtre : trois rouges.
+  ⚠️ Le contrôle des douze mois est d'abord **resté vert** sans le fait : la
+  réponse type le répétait. Il lit maintenant la phrase du fait.
+- ⚠️ **Pas de clef Gemini en développement** : les réponses elles-mêmes ne
+  s'éprouvent qu'en production. Vérifié sur `dev` : la bulle à 8 s, à 1280 et
+  375 px sans débordement, la question choisie part avec la page, et pas de
+  seconde bulle dans la même visite. 102 épreuves vertes.
+
 ⚠️ **Une seule langue par réponse** (14 septembre 2026). À une question posée en
 darija, l'assistant commençait en darija — « Tfaddal chof details kamlin » — et
 finissait le même message en français. Ce n'est pas une maladresse de

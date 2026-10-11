@@ -4,6 +4,7 @@ import {
   ErreurAssistant,
   connaissancesCatalogue,
   consignesAssistant,
+  contextePage,
   repondreEnFlux,
   type MessageAssistant,
 } from "@/lib/assistant";
@@ -13,11 +14,17 @@ import { SITE_URL } from "@/lib/seo";
  * L'assistant IA du site — voir `lib/assistant.ts` pour ce qu'il sait et ce
  * qu'il ne dit pas.
  *
- * Entrée : POST { messages: [{ role, content }] }
+ * Entrée : POST { messages: [{ role, content }], page?: "/formations/…" }
  * Sortie : le texte de la réponse en flux, ou une erreur JSON.
  */
 
-const MAX_MESSAGES = 16;
+/*
+  Trente messages, soit une quinzaine d'échanges : la direction a demandé le
+  5 octobre 2026 des conversations « longues », menées comme par un conseiller.
+  Seize coupaient le fil au huitième échange, et le modèle oubliait la formation
+  dont on parlait.
+*/
+const MAX_MESSAGES = 30;
 const MAX_CARACTERES = 1500;
 
 const erreur = (status: number, corps: Record<string, string>) =>
@@ -28,11 +35,14 @@ export async function POST(request: Request) {
     Le quota gratuit de Gemini est partagé par tous les visiteurs du jour : un
     seul onglet qui boucle ne doit pas l'épuiser pour les autres.
   */
-  if (!cadenceOk("assistant", appelant(request), 20, 10 * 60_000)) {
+  if (!cadenceOk("assistant", appelant(request), 40, 10 * 60_000)) {
     return tropVite(60);
   }
 
-  const corps = (await request.json().catch(() => null)) as { messages?: unknown } | null;
+  const corps = (await request.json().catch(() => null)) as {
+    messages?: unknown;
+    page?: unknown;
+  } | null;
   const messages = (Array.isArray(corps?.messages) ? corps.messages : [])
     .slice(-MAX_MESSAGES)
     .filter(
@@ -66,7 +76,10 @@ export async function POST(request: Request) {
       site: SITE_URL,
     });
 
-    const flux = await repondreEnFlux(consignesAssistant(catalogue, SITE_URL), messages);
+    const flux = await repondreEnFlux(
+      consignesAssistant(catalogue, SITE_URL, new Date(), contextePage(corps?.page, programmes)),
+      messages,
+    );
     return new Response(flux, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",

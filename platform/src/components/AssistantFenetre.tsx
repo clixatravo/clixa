@@ -1,24 +1,26 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { Robot } from "@/components/AssistantIA";
+import { questionsDAccueil } from "@/lib/assistant-invitation";
 import { RESEAUX_CLIXA } from "@/lib/reseaux";
 
 type Message = { role: "user" | "assistant"; content: string };
 
 const CLE = "clixa-assistant";
 
-const SUGGESTIONS = [
-  "Quelles formations proposez-vous ?",
-  "Prochaine session du parcours DAF ?",
-  "Combien coûte une formation ?",
-  "Wach kayn khlas b tranches ?",
-];
+/*
+  Trente messages gardés et envoyés, comme la route les accepte : une
+  conversation menée par un conseiller dure plus de huit échanges, et le modèle
+  doit se souvenir de la formation dont on parle depuis le début.
+*/
+const HISTORIQUE = 30;
 
 const ACCUEIL: Message = {
   role: "assistant",
   content:
-    "Bonjour 👋 Je suis l'assistant IA de **CLIXA Institute**. Posez-moi vos questions sur nos formations : programmes, dates, tarifs, certification.",
+    "Bonjour 👋 Je suis l'assistant IA de **CLIXA Institute**, votre conseiller en ligne. Je vous aide à choisir votre formation et je réponds à vos questions : programme, horaires, déroulement, tarifs. Que recherchez-vous ?",
 };
 
 const lireHistorique = (): Message[] => {
@@ -128,7 +130,17 @@ function Texte({ contenu }: { contenu: string }) {
   return <>{blocs}</>;
 }
 
-export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFermer: () => void }) {
+export function AssistantFenetre({
+  ouvert,
+  onFermer,
+  aPoser,
+}: {
+  ouvert: boolean;
+  onFermer: () => void;
+  /** Une question choisie dans l'invitation, à envoyer dès l'ouverture. */
+  aPoser?: { texte: string; n: number };
+}) {
+  const chemin = usePathname();
   const [messages, setMessages] = useState<Message[]>(lireHistorique);
   const [saisie, setSaisie] = useState("");
   const [enCours, setEnCours] = useState(false);
@@ -138,7 +150,7 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(CLE, JSON.stringify(messages.slice(-30)));
+      sessionStorage.setItem(CLE, JSON.stringify(messages.slice(-HISTORIQUE)));
     } catch {
       /* navigation privée : l'historique ne survivra pas au rechargement */
     }
@@ -172,7 +184,7 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: historique.slice(-16) }),
+        body: JSON.stringify({ messages: historique.slice(-HISTORIQUE), page: chemin }),
       });
       if (!res.ok || !res.body) {
         const data = (await res.json().catch(() => ({}))) as { code?: string; error?: string };
@@ -208,6 +220,19 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
     }
   }
 
+  /*
+    La question choisie dans la bulle part une fois, à son numéro : rouvrir la
+    fenêtre ne la renvoie pas, et une seconde question choisie plus tard part à
+    son tour.
+  */
+  const posee = useRef(0);
+  useEffect(() => {
+    if (!aPoser || aPoser.n === posee.current) return;
+    posee.current = aPoser.n;
+    void envoyer(aPoser.texte);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- envoyer change à chaque rendu ; seul le numéro compte
+  }, [aPoser]);
+
   return (
     <section
       role="dialog"
@@ -221,8 +246,8 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
             <Robot className="size-6" />
           </span>
           <div className="leading-tight">
-            <p className="font-display text-ivory text-[0.98rem]">Assistant IA</p>
-            <p className="mono-label text-gold text-[0.58rem]">CLIXA Institute · Formations</p>
+            <p className="font-display text-ivory text-[0.98rem]">Conseiller en ligne</p>
+            <p className="mono-label text-gold text-[0.58rem]">Assistant IA · CLIXA</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -280,7 +305,7 @@ export function AssistantFenetre({ ouvert, onFermer }: { ouvert: boolean; onFerm
 
         {messages.length === 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
-            {SUGGESTIONS.map((s) => (
+            {questionsDAccueil(chemin).map((s) => (
               <button
                 key={s}
                 type="button"

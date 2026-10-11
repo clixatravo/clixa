@@ -322,9 +322,15 @@ export default async function FicheFormation({ params }: Props) {
                       <div className="flex items-baseline justify-between gap-3">
                         <span
                           className={
+                            /*
+                              Le libellé ne se coupe jamais : sur un téléphone,
+                              « 3 tranches » passait sur deux lignes à côté de
+                              « 170 € + 150 € + 150 € ». Ce sont les montants qui
+                              reviennent à la ligne, alignés à droite.
+                            */
                             i === 0
-                              ? "mono-label text-ivory text-[0.65rem] font-semibold"
-                              : "text-ivory-dim text-[0.82rem]"
+                              ? "mono-label text-ivory shrink-0 text-[0.65rem] font-semibold whitespace-nowrap"
+                              : "text-ivory-dim shrink-0 text-[0.82rem] whitespace-nowrap"
                           }
                         >
                           {i === 0 ? "Comptant" : plan.libelle}
@@ -333,7 +339,7 @@ export default async function FicheFormation({ params }: Props) {
                           className={
                             i === 0
                               ? "font-display text-gold-bright text-2xl font-bold"
-                              : "text-ivory font-mono text-[0.84rem] font-semibold tabular-nums"
+                              : "text-ivory text-right font-mono text-[0.84rem] font-semibold tabular-nums"
                           }
                         >
                           {i === 0

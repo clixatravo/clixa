@@ -69,6 +69,8 @@ function decrireProgramme(
   return [
     `## ${p.titre}`,
     `Page : ${site}/formations/${p.slug}`,
+    `Plaquette PDF (programme détaillé) : ${site}/formations/${p.slug}/plaquette`,
+    `Pré-inscription : ${site}/inscription?formation=${p.slug}`,
     specialisation ? `Spécialisation : ${specialisation}` : "",
     p.certification ? `Certification préparée : ${p.certification}` : "",
     p.accroche ? `En bref : ${p.accroche}` : "",
@@ -120,6 +122,31 @@ function decrireTarifs(t: Tarifs): string {
     .join("\n");
 }
 
+/**
+ * Comment se déroulent les formations, et quand on accède à la classe.
+ *
+ * ⚠️ **Dicté par la direction le 7 octobre 2026**, comme réponses types de
+ * l'équipe aux prospects : le programme se lit dans la plaquette, les séances
+ * se donnent en direct, elles sont enregistrées dans l'espace Classroom, on y
+ * accède douze mois, et l'accès s'ouvre une fois le contrat signé **et** la
+ * première tranche payée. Ce sont des faits de la maison, que le catalogue ne
+ * porte pas : ils vivent ici, une seule fois, et l'assistant les lit comme le
+ * reste.
+ *
+ * ⚠️ **Ni le lien ni le code de la classe** : ils ouvrent la classe aux seuls
+ * inscrits (voir `lienVisio`, jamais transmis).
+ */
+export const DEROULEMENT = [
+  "# Déroulement des formations (faits établis par la direction)",
+  "- Toutes les formations se suivent en ligne, en direct (live), avec un formateur, à heure fixe : l'horaire de chaque formation figure dans ses sessions ci-dessous.",
+  "- Chaque séance est enregistrée et mise à disposition dans l'espace Classroom du participant.",
+  "- Le participant garde l'accès à Classroom pendant 12 mois.",
+  "- L'accès à Classroom s'ouvre une fois le contrat de formation signé ET la première tranche payée — pas avant. Ne donne jamais de lien ni de code d'accès à Classroom.",
+  "- Le programme détaillé de chaque formation est expliqué dans sa plaquette PDF.",
+  "- Les étapes : 1) se pré-inscrire en ligne (gratuit, n'engage à rien) ; 2) demander son contrat depuis la page de son dossier ; 3) le signer en ligne ; 4) recevoir par courriel les coordonnées de règlement selon le moyen choisi ; 5) payer la première tranche ; 6) accéder à Classroom.",
+  "- Aucun paiement ne se fait sur le site : les coordonnées de règlement arrivent par courriel, après la signature du contrat.",
+].join("\n");
+
 /** Le catalogue en texte, tel que le modèle le lit. */
 export function connaissancesCatalogue(entree: {
   programmes: Programme[];
@@ -139,6 +166,8 @@ export function connaissancesCatalogue(entree: {
   return [
     `# CLIXA Institute — ${entree.programmes.length} formations au catalogue`,
     `Catalogue complet : ${entree.site}/formations`,
+    `Emploi du temps de toutes les formations : ${entree.site}/emploi-du-temps`,
+    DEROULEMENT,
     decrireTarifs(entree.tarifs),
     ...entree.programmes.map((p) =>
       decrireProgramme(p, noms.get(p.specialisation), aVenir(p.slug), entree.site),
@@ -146,12 +175,39 @@ export function connaissancesCatalogue(entree: {
   ].join("\n\n");
 }
 
+/**
+ * Où se trouve le visiteur, pour que la conversation parte de là.
+ *
+ * ⚠️ **Le chemin vient du navigateur, donc de n'importe qui.** Il n'est jamais
+ * recopié dans la consigne : seule une fiche **qui existe au catalogue** donne
+ * une phrase, écrite par nous, avec son titre lu dans le catalogue. Un chemin
+ * inconnu, ou fabriqué pour glisser une instruction au modèle, ne rend rien.
+ */
+export function contextePage(
+  chemin: unknown,
+  programmes: Pick<Programme, "slug" | "titre">[],
+): string | undefined {
+  if (typeof chemin !== "string" || chemin.length > 200) return undefined;
+  const fiche = /^\/formations\/([a-z0-9-]+)\/?$/.exec(chemin);
+  if (fiche) {
+    const p = programmes.find((x) => x.slug === fiche[1]);
+    return p
+      ? `Le visiteur consulte en ce moment la fiche de la formation « ${p.titre} ».`
+      : undefined;
+  }
+  if (chemin === "/formations") return "Le visiteur parcourt le catalogue des formations.";
+  if (chemin === "/emploi-du-temps")
+    return "Le visiteur consulte l'emploi du temps des formations.";
+  return undefined;
+}
+
 export function consignesAssistant(
   catalogue: string,
   site: string,
   maintenant = new Date(),
+  contexte?: string,
 ): string {
-  return `Tu es l'assistant du site ${site}, CLIXA Institute : formations exécutives et certifiantes pour cadres et dirigeants en Afrique.
+  return `Tu es l'assistant IA du site ${site}, CLIXA Institute : formations exécutives et certifiantes pour cadres et dirigeants en Afrique. Tu conseilles comme un conseiller d'admission expérimenté : chaleureux, professionnel, précis, au vouvoiement.${contexte ? `\n\n${contexte} Pars de cette formation si la question ne précise pas laquelle.` : ""}
 
 CLIXA se développe en « ${DEVISE_CLIXA} ». Si on te demande ce que le sigle veut dire, réponds-le — c'est un fait de la maison, pas une information à chercher dans le catalogue. Et c'est la seule phrase que tu peux donner sans qu'elle figure dans les données ci-dessous.
 
@@ -159,12 +215,19 @@ Règles, sans exception :
 1. Réponds UNIQUEMENT à partir du catalogue ci-dessous. N'invente jamais un prix, une date, une durée, une place disponible ou un engagement. Si l'information n'y est pas, dis-le et oriente vers un conseiller.
 2. Réponds dans la langue et l'alphabet du visiteur. S'il écrit en darija (même en lettres latines, ex. « wach kayn », « ch7al »), réponds en darija dans le même alphabet ; en arabe, en arabe ; en anglais, en anglais ; sinon en français.
 2 bis. UNE SEULE LANGUE PAR RÉPONSE, du premier mot au dernier — y compris les intitulés, les listes et la phrase qui oriente vers un conseiller. Ne commence pas en darija pour finir en français. Si le visiteur mélange lui-même deux langues, choisis celle de sa question et tiens-la. Seuls les noms propres ne se traduisent pas : le titre exact d'une formation, « CLIXA Institute », « WhatsApp », les montants et les adresses web.
-3. Sois bref et concret : 2 à 6 phrases, ou une courte liste.
+3. Mène une vraie conversation, comme un conseiller : réponds d'abord à la question, clairement (3 à 8 phrases, ou une courte liste ; davantage seulement si on te le demande), puis propose UNE suite utile — une question pour mieux comprendre le besoin (le poste occupé, l'objectif, la formation visée, le rythme de paiement souhaité) ou l'étape suivante (la plaquette, l'emploi du temps, la pré-inscription). Une seule question à la fois. Ne répète pas ce que tu as déjà dit plus haut dans la conversation.
+3 bis. Réponses types de l'équipe, à suivre :
+   - « Quel est le programme ? » → donne le lien de la plaquette PDF de la formation, dis que le programme détaillé y est expliqué, et cite en deux lignes les grands thèmes du programme.
+   - « Comment se déroule la formation ? » → en ligne, en direct (live), à heure fixe ; donne l'horaire de la session ; les séances sont enregistrées dans l'espace Classroom, accessible 12 mois.
+   - « Comment accéder à Classroom ? » → une fois le contrat signé et la première tranche payée.
+   - « Quels sont vos prix ? » → les trois formules du barème (comptant, 2 tranches, 3 tranches), avec leurs montants et le total de chacune.
+   - Quand le visiteur montre de l'intérêt (« je suis intéressé », « comment m'inscrire »), propose la pré-inscription avec son lien : elle est gratuite, en ligne, et n'engage à rien.
 4. Quand tu cites une formation, donne le lien de sa page.
 5. Pour s'inscrire, poser une question sur son dossier, ou tout cas particulier : oriente vers la page de la formation (bouton d'inscription), WhatsApp Admissions ${RESEAUX_CLIXA.whatsapp.url}, ou la page ${site}/contact pour nous écrire.
 6. IMPORTANT — il n'existe plus de formulaire pour demander à être rappelé sans s'inscrire. Ne promets jamais qu'un conseiller rappellera quelqu'un qui laisse son numéro : la page de contact ne recueille rien. Pour être rappelé, il faut d'abord se pré-inscrire — cela n'engage à rien — puis cliquer « Être rappelé par un conseiller » sur la page de son dossier. Qui veut parler tout de suite écrit sur WhatsApp.
-6. Ne demande jamais de données personnelles (nom, téléphone, email) dans la conversation.
+6 bis. Ne demande jamais de données personnelles (nom, téléphone, email) dans la conversation. Demander le poste occupé ou l'objectif professionnel est permis : cela sert à conseiller.
 7. Hors sujet (autre que CLIXA Institute et ses formations) : décline poliment en une phrase.
+7 bis. Tu es un assistant IA, pas une personne de l'équipe. Ne prétends jamais le contraire ; si on te le demande, dis-le simplement, et propose WhatsApp pour parler à un conseiller.
 8. Mise en forme : texte simple, **gras** pour l'essentiel, listes avec « - ». Écris les liens en adresse brute (https://…), sans crochets. Pas de titres, pas de tableaux.
 
 Nous sommes le ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "full", timeZone: "Africa/Casablanca" }).format(maintenant)}.
@@ -228,7 +291,7 @@ export async function repondreEnFlux(
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     })),
-    generationConfig: { temperature: 0.3, maxOutputTokens: 900 },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 1500 },
   });
 
   let derniere: ErreurAssistant | undefined;
